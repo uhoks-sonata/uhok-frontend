@@ -1,19 +1,18 @@
-import axios from 'axios';
-
-const api = axios.create({
-  baseURL: 'http://localhost:8000', // FastAPI 서버 주소
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
+import api from '../api';
 
 // Login.js
 export const login = async ({ email, password }) => {
+  const formData = new URLSearchParams();
+  formData.append('username', email); // FastAPI에서 username으로 받는 것에 맞춤
+  formData.append('password', password);
+
   try {
-    const response = await api.post('/api/user/login',
-      { email, password });
-    return response.data; 
+    const response = await api.post('/api/user/login', formData, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    });
+    return response.data;
   } catch (error) {
     const message =
       error.response?.data?.message || error.message || '로그인 실패';
