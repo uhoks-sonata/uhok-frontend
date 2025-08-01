@@ -41,11 +41,11 @@ body {
 
 /* 각 메뉴 아이템 너비, 높이 고정 및 중앙 정렬 */
 .bottom-nav a {
-  width: 80px;          /* 고정 너비 */
-  height: 80px;         /* 고정 높이 */
+  width: 80px;
+  height: 80px;
   color: #555;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 800;
   text-decoration: none;
   text-align: center;
   display: flex;
@@ -55,14 +55,17 @@ body {
   cursor: pointer;
   padding-top: 6px;
   position: relative;
-  box-sizing: border-box; /* padding 포함 크기 유지 */
+  box-sizing: border-box;
 }
 
-/* 활성화 및 호버 효과 */
 .bottom-nav a.active,
 .bottom-nav a:hover {
   color: #f68cb1;
   font-weight: 900;
+}
+
+.bottom-nav a:not(.image-button-wrapper) {
+  margin-top: 30px; /* 이미지 버튼 제외하고만 마진 적용 */
 }
 
 /* 메인 이미지 버튼 래퍼 */
@@ -72,8 +75,8 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: -20px; /* 필요시 조절 */
-  flex-grow: 0; /* 크기 고정 */
+  margin-top: -80px;
+  flex-grow: 0; 
 }
 
 /* 이미지 자체 스타일 */
@@ -84,4 +87,16 @@ body {
   border-radius: 50%;
   display: block;
   box-shadow: 0 -4px 10px rgba(109, 109, 109, 0.1);
+}
+
+.image-button-wrapper span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-weight: bold;
+  font-size: 24px;
+  pointer-events: none;
+  user-select: none;
 }

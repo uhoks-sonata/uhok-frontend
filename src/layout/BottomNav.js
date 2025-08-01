@@ -22,27 +22,9 @@ const BottomNav = () => {
         레시피 추천
       </Link>
 
-      <Link
-        to="/main"
-        className="image-button-wrapper"
-        style={{ marginTop: "-80px", position: "relative" }} // position: relative 꼭 필요
-      >
+      <Link to="/main" className="image-button-wrapper">
         <img src={bottomNavImage} alt="메인 버튼" className="image-button" />
-        <span
-          style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            color: "white",
-            fontWeight: "bold",
-            fontSize: "24px",
-            pointerEvents: "none", 
-            userSelect: "none",
-          }}
-        >
-          혹
-        </span>
+        <span>혹</span>
       </Link>
 
       <Link
