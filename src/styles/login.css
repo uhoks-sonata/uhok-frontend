@@ -29,7 +29,7 @@ h1 {
 
 .login-form button {
   padding: 10px;
-  background-color: #000000;
+  background-color: #EA008A;
   color: white;
   border: none;
   border-radius: 6px;
@@ -38,7 +38,7 @@ h1 {
 }
 
 .login-form button:hover {
-  background-color: #EA008A;
+  background-color: #000000;
 }
 
 .signup-link {

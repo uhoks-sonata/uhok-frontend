@@ -1,38 +1,87 @@
+body {
+  margin: 0;
+  background-color: #f0f0f0;
+  overflow: hidden;
+}
+
+.wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  background-color: #f0f0f0;
+}
+
+.App {
+  background-color: #fff;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  height: 100vh;
+  max-width: 500px;
+  min-height: 1000px;
+  padding: 10px;
+}
+
+/* 기존 bottom-nav 컨테이너 유지 */
 .bottom-nav {
   position: fixed;
   bottom: 0;
-  left: 0;
-  right: 0;
-  height: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 80px;
+  width: 100%;
+  max-width: 500px;
   background-color: white;
-  border-top: 1px solid #ddd;
   display: flex;
   justify-content: space-around;
   align-items: center;
+  box-shadow: 0 -4px 10px rgba(109, 109, 109, 0.1);
   z-index: 1000;
 }
 
+/* 각 메뉴 아이템 너비, 높이 고정 및 중앙 정렬 */
 .bottom-nav a {
-  text-decoration: none;
+  width: 80px;          /* 고정 너비 */
+  height: 80px;         /* 고정 높이 */
   color: #555;
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  padding-top: 6px;
+  position: relative;
+  box-sizing: border-box; /* padding 포함 크기 유지 */
 }
 
-.bottom-nav a.active {
-  color: #EA008A;
-  font-weight: bold;
+/* 활성화 및 호버 효과 */
+.bottom-nav a.active,
+.bottom-nav a:hover {
+  color: #f68cb1;
+  font-weight: 900;
 }
 
-.round-button {
-  background-color: #EA008A;
-  color: white;
-  font-size: 24px;
+/* 메인 이미지 버튼 래퍼 */
+.image-button-wrapper {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: -20px; /* 필요시 조절 */
+  flex-grow: 0; /* 크기 고정 */
+}
+
+/* 이미지 자체 스타일 */
+.image-button {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
   border-radius: 50%;
-  width: 50px;
-  height: 50px;
-  line-height: 50px;
-  text-align: center;
-  margin-top: -20px; /* 위로 띄우기 */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  display: block;
+  box-shadow: 0 -4px 10px rgba(109, 109, 109, 0.1);
 }
