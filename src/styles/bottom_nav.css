@@ -1,0 +1,38 @@
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background-color: white;
+  border-top: 1px solid #ddd;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000;
+}
+
+.bottom-nav a {
+  text-decoration: none;
+  color: #555;
+  font-size: 13px;
+  text-align: center;
+}
+
+.bottom-nav a.active {
+  color: #EA008A;
+  font-weight: bold;
+}
+
+.round-button {
+  background-color: #EA008A;
+  color: white;
+  font-size: 24px;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  line-height: 50px;
+  text-align: center;
+  margin-top: -20px; /* 위로 띄우기 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}

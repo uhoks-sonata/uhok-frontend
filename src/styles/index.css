@@ -1,0 +1,29 @@
+/* 전체 전역 스타일 */
+/* 모바일 환경에서 잘 보이도록 기본 설정 */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body, html, #root {
+  height: 100%;
+  font-family: 'Noto Sans KR', sans-serif;
+  background-color: #f0f0f0;  /* 전체 바탕 연한 회색 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 모바일 뷰포트 대응 */
+html {
+  font-size: 16px; /* 기준 폰트 크기 */
+}
+
+input, button {
+  font-family: inherit;
+}
+
+button {
+  cursor: pointer;
+}
