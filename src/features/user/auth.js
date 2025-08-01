@@ -27,7 +27,6 @@ export const signup = async ({ email, password, password_confirm, username }) =>
     const response = await api.post('/api/user/signup', {
       email,
       password,
-      password_confirm,
       username,
     });
     return response.data;
