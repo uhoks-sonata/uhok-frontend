@@ -166,8 +166,8 @@ export const ShoppingHeader = ({ searchQuery, setSearchQuery, onSearch, onNotifi
   );
 };
 
-// 3. 결제, 알림, 검색 인터페이스 - 현재 인터페이스 정보
-export const SimpleHeader = ({ title, onBack }) => {
+// 3. 검색 인터페이스 - 뒤로가기/검색창
+export const SearchHeader = ({ searchQuery, setSearchQuery, onSearch, onBack }) => {
   const handleBack = () => {
     if (onBack) {
       onBack();
@@ -176,11 +176,29 @@ export const SimpleHeader = ({ title, onBack }) => {
     }
   };
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (onSearch) {
+      onSearch(searchQuery);
+    }
+  };
+
   return (
-    <div className="header simple-header">
+    <div className="header search-header">
       <button className="back-btn" onClick={handleBack}>←</button>
-      <h1 className="header-title">{title}</h1>
-      <div className="header-spacer"></div>
+      <div className="search-container">
+        <input
+          type="text"
+          placeholder="홈쇼핑/콕 상품 검색"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && handleSearch(e)}
+          className="search-input"
+        />
+        <button className="search-btn" onClick={handleSearch}>
+          <img src={searchIcon} alt="검색" className="search-icon" />
+        </button>
+      </div>
     </div>
   );
 };
@@ -210,6 +228,8 @@ export const MyPageHeader = () => {
     </div>
   );
 };
+
+// 5. 결제, 알림 - 현재 인터페이스 정보
 
 // 5. 레시피 상세, 결과 인터페이스 - 현재 인터페이스 정보
 export const RecipeHeader = ({ onBack }) => {
