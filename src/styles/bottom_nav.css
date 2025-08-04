@@ -44,7 +44,7 @@ body {
 /* 네비게이션 링크 기본 스타일 */
 .bottom-nav a {
   width: 80px;
-  height: 80px;
+  height: 70px;
   color: #555;
   font-size: 12px;
   font-weight: 800;
@@ -73,7 +73,8 @@ body {
 
 /* 네비게이션 아이콘 */
 .nav-icon {
-  width: 40px;
+  width: 35px;
+  height: 35px;
   margin-bottom: 4px;
   display: block;
   object-fit: contain;
@@ -88,6 +89,7 @@ body {
   line-height: 1.2;
   color: #555;
   font-weight: 500;
+  margin-top: 2px;
 }
 
 /* ===== 아이콘 호버/활성 효과 ===== */
@@ -96,6 +98,7 @@ body {
 .bottom-nav a.nav-item:hover .nav-icon,
 .bottom-nav a:hover img.nav-icon {
   width: 44px !important;
+  height: 44px !important;
   filter: brightness(0.8) saturate(1.2);
 }
 
@@ -104,6 +107,7 @@ body {
 .bottom-nav a.nav-item.active .nav-icon,
 .bottom-nav a.active img.nav-icon {
   width: 42px !important;
+  height: 42px !important;
   filter: brightness(0.8) saturate(1.2);
 }
 
@@ -128,6 +132,7 @@ body {
 }
 
 .image-button-wrapper span {
+  bottom: 18px;
   position: absolute;
   top: 5%;
   left: 50%;
@@ -154,18 +159,21 @@ body {
   
   .nav-icon {
     width: 35px;
+    height: 35px;
   }
   
   .bottom-nav a:hover .nav-icon,
   .bottom-nav a.nav-item:hover .nav-icon,
   .bottom-nav a:hover img.nav-icon {
     width: 38px !important;
+    height: 38px !important;
   }
   
   .bottom-nav a.active .nav-icon,
   .bottom-nav a.nav-item.active .nav-icon,
   .bottom-nav a.active img.nav-icon {
     width: 37px !important;
+    height: 37px !important;
   }
 }
 
