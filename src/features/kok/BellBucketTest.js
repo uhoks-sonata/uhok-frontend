@@ -4,7 +4,7 @@ import '../../styles/recommend_recipe.css';
 // import BottomNav, { RecipeHeader } from '../../layout/BottomNav';
 import BottomNav from '../../layout/BottomNav';
 import { RecipeHeader, HomeShoppingHeader, ShoppingHeader, SearchHeader, useNotifications } from '../../layout/HeaderNav';
-import NotificationManager from '../../components/NotificationManager';
+import NotificationManager from '../../components/NotificationManagerTest';
 
 const RecommendRecipe = () => {
   const [fadeIn, setFadeIn] = useState(false);

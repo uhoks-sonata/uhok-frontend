@@ -4,7 +4,7 @@ import './styles/App.css';
 import Login from './pages/user/Login';
 import Signup from './pages/user/Signup';
 import Main from './pages/home_shopping/HomeShoppingMain';
-import RecommendRecipe from './features/kok/bell_bucket_test';
+import RecommendRecipe from './features/kok/BellBucketTest';
 import { NotificationProvider } from './layout/HeaderNav';
 
 function App() {
