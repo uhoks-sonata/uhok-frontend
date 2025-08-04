@@ -4,12 +4,17 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 20px;
+  
+  padding-top: 15px;
+  padding-right: 20px;
+  padding-left: 5px;
+  padding-bottom: 5px;
+
   background-color: #ffffff;
   border-bottom: 1px solid #e0e0e0;
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 100;  
 }
 
 /* 검색 컨테이너 */
@@ -19,16 +24,29 @@
   position: relative;
   display: flex;
   align-items: center;
+  max-width: 500px;
 }
 
 .search-input {
   width: 100%;
-  padding: 10px 15px;
+  padding: 10px 40px 10px 15px;
   border: 1px solid #e0e0e0;
   border-radius: 20px;
   font-size: 14px;
   background-color: #f8f8f8;
   color: #333;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.search-input:hover {
+  border-color: #ff69b4;
+  background-color: #fff5f8;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #ff69b4;
+  background-color: #ffffff;
 }
 
 .search-input::placeholder {
@@ -41,7 +59,10 @@
   border: none;
   cursor: pointer;
   padding: 8px;
-  margin-left: 8px;
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -50,7 +71,30 @@
 }
 
 .search-btn:hover {
-  background-color: #f0f0f0;
+  background-color: #ff69b4;
+}
+
+/* 검색 아이콘 */
+.search-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+/* 벨 아이콘 */
+.bell-icon {
+  width: 40px;
+  height: 28px;
+  object-fit: contain;
+  transition: transform 0.2s ease;
+}
+
+/* 장바구니 아이콘 */
+.bucket-icon {
+  width: 40px;
+  height: 28px;
+  object-fit: contain;
+  transition: transform 0.2s ease;
 }
 
 /* 헤더 아이콘 컨테이너 */
@@ -76,12 +120,18 @@
   position: relative;
 }
 
-/* 버튼 호버 둥근 배경 */
-/* .notification-btn:hover,
-.back-btn:hover,
-.cart-btn:hover {
-  background-color: #f0f0f0;
-} */
+/* 버튼 호버 효과 */
+.notification-btn:hover .bell-icon {
+  transform: scale(1.2);
+}
+
+.cart-btn:hover .bucket-icon {
+  transform: scale(1.2);
+}
+
+.back-btn:hover {
+  background-color: #ff69b4;
+}
 
 /* 헤더 제목 */
 .header-title {
