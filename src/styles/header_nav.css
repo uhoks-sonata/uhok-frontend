@@ -1,0 +1,153 @@
+/* ===== 헤더 컴포넌트 ===== */
+/* 공통 헤더 스타일 */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* 검색 컨테이너 */
+.search-container {
+  flex: 1;
+  margin: 0 15px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  font-size: 14px;
+  background-color: #f8f8f8;
+  color: #333;
+}
+
+.search-input::placeholder {
+  color: #999;
+}
+
+/* 검색 버튼 */
+.search-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  margin-left: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.search-btn:hover {
+  background-color: #f0f0f0;
+}
+
+/* 헤더 아이콘 컨테이너 */
+.header-icons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 버튼 공통 스타일 */
+.notification-btn,
+.back-btn,
+.cart-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  /* border-radius: 50%; */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+  position: relative;
+}
+
+/* 버튼 호버 둥근 배경 */
+/* .notification-btn:hover,
+.back-btn:hover,
+.cart-btn:hover {
+  background-color: #f0f0f0;
+} */
+
+/* 헤더 제목 */
+.header-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+/* 헤더 스페이서 */
+.header-spacer {
+  width: 40px;
+}
+
+/* 알림/장바구니 카운트 */
+.notification-count,
+.cart-count {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background-color: #ff4757;
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+}
+
+/* 아이콘 스타일 */
+.header-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+/* ===== 반응형 디자인 ===== */
+@media (max-width: 480px) {
+  .header {
+    padding: 12px 15px;
+  }
+  
+  .header-title {
+    font-size: 16px;
+  }
+  
+  .search-input {
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+  
+  .notification-btn,
+  .back-btn,
+  .cart-btn {
+    padding: 6px;
+  }
+  
+  .notification-count,
+  .cart-count {
+    width: 14px;
+    height: 14px;
+    font-size: 9px;
+    min-width: 14px;
+  }
+} 
