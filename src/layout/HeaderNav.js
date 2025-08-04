@@ -107,8 +107,8 @@ export const HomeShoppingHeader = ({ searchQuery, setSearchQuery, onSearch, onNo
   );
 };
 
-// 2. 찜, 콕쇼핑몰 관련 인터페이스 - 알림/장바구니 기능
-export const ShoppingHeader = ({ onBack, onNotificationClick, onCartClick }) => {
+// 2. 콕쇼핑몰 상품 상세 인터페이스 - 알림/장바구니/뒤로가기 기능
+export const ShoppingProductHeader = ({ onBack, onNotificationClick, onCartClick }) => {
   const { notificationCount, cartCount } = useNotifications();
   
   const handleBack = () => {

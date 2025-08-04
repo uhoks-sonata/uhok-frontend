@@ -8,7 +8,7 @@
   padding-top: 15px;
   padding-right: 20px;
   padding-left: 5px;
-  padding-bottom: 5px;
+  padding-bottom: 10px;
 
   background-color: #ffffff;
   border-bottom: 1px solid #e0e0e0;
@@ -101,7 +101,6 @@
 .header-icons {
   display: flex;
   align-items: center;
-  gap: 8px;
 }
 
 /* 버튼 공통 스타일 */
@@ -111,13 +110,28 @@
   background: none;
   border: none;
   cursor: pointer;
-  padding: 8px;
+  padding: 4px;
   /* border-radius: 50%; */
   display: flex;
   align-items: center;
   justify-content: center;
   transition: background-color 0.2s ease;
   position: relative;
+}
+
+/* 뒤로가기 버튼 특별 스타일 */
+.back-btn {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* 개별 버튼 패딩 조정 */
+.notification-btn {
+  padding-right: 0px;
+}
+
+.cart-btn {
+  padding-left: 4px;
 }
 
 /* 버튼 호버 효과 */
@@ -130,7 +144,7 @@
 }
 
 .back-btn:hover {
-  background-color: #ff69b4;
+  color: #ff69b4;
 }
 
 /* 헤더 제목 */
