@@ -1,6 +1,6 @@
 body {
   margin: 0;
-  background-color: #f0f0f0;
+  background-color: #ffffff;
   overflow: hidden;
 }
 
@@ -9,7 +9,7 @@ body {
   justify-content: center;
   align-items: flex-start;
   min-height: 100vh;
-  background-color: #f0f0f0;
+  background-color: #ffffff;
 }
 
 /* 기존 App 스타일 유지 */
