@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import '../../styles/recommend_recipe.css';
 // import BottomNav, { RecipeHeader } from '../../layout/BottomNav';
 import BottomNav from '../../layout/BottomNav';
-import { RecipeHeader, HomeShoppingHeader, ShoppingProductHeader, useNotifications } from '../../layout/HeaderNav';
+import { RecipeHeader, HomeShoppingHeader, ShoppingHeader, useNotifications } from '../../layout/HeaderNav';
 import NotificationManager from '../../components/NotificationManager';
 
 const RecommendRecipe = () => {
@@ -236,15 +236,15 @@ const RecommendRecipe = () => {
 
   return (
     <div className={`main-page ${fadeIn ? 'fade-in' : ''}`}>
-      {/* 테스트용: ShoppingProductHeader 사용 */}
+      {/* 테스트용: ShoppingHeader 사용 */}
       {activeView === 'main' ? (
-        <ShoppingProductHeader
+        <ShoppingHeader
           onBack={handleShoppingBack}
           onNotificationClick={handleShoppingNotification}
           onCartClick={handleShoppingCart}
         />
       ) : activeView === 'ingredients' ? (
-        <ShoppingProductHeader
+        <ShoppingHeader
           onBack={handleShoppingBack}
           onNotificationClick={handleShoppingNotification}
           onCartClick={handleShoppingCart}
