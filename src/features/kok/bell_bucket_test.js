@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import '../../styles/recommend_recipe.css';
 // import BottomNav, { RecipeHeader } from '../../layout/BottomNav';
 import BottomNav from '../../layout/BottomNav';
-import { RecipeHeader, HomeShoppingHeader, ShoppingHeader, useNotifications } from '../../layout/HeaderNav';
+import { RecipeHeader, HomeShoppingHeader, ShoppingProductHeader, useNotifications } from '../../layout/HeaderNav';
 import NotificationManager from '../../components/NotificationManager';
 
 const RecommendRecipe = () => {
@@ -116,7 +116,12 @@ const RecommendRecipe = () => {
 
   // 쇼핑 헤더 핸들러들
   const handleShoppingBack = () => {
-    setActiveView('main');
+    // 메인 화면에서는 뒤로가기 시 이전 페이지로 이동
+    if (activeView === 'main') {
+      navigate('/main');
+    } else {
+      setActiveView('main');
+    }
   };
 
   const handleShoppingNotification = () => {
@@ -231,16 +236,15 @@ const RecommendRecipe = () => {
 
   return (
     <div className={`main-page ${fadeIn ? 'fade-in' : ''}`}>
-      {/* 테스트용: 다양한 헤더 사용 */}
+      {/* 테스트용: ShoppingProductHeader 사용 */}
       {activeView === 'main' ? (
-        <HomeShoppingHeader 
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          onSearch={handleHomeShoppingSearch}
-          onNotificationClick={handleHomeShoppingNotification}
+        <ShoppingProductHeader
+          onBack={handleShoppingBack}
+          onNotificationClick={handleShoppingNotification}
+          onCartClick={handleShoppingCart}
         />
       ) : activeView === 'ingredients' ? (
-        <ShoppingHeader
+        <ShoppingProductHeader
           onBack={handleShoppingBack}
           onNotificationClick={handleShoppingNotification}
           onCartClick={handleShoppingCart}
