@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import '../../styles/recommend_recipe.css';
 // import BottomNav, { RecipeHeader } from '../../layout/BottomNav';
 import BottomNav from '../../layout/BottomNav';
-import { RecipeHeader, HomeShoppingHeader, ShoppingHeader, useNotifications } from '../../layout/HeaderNav';
+import { RecipeHeader, HomeShoppingHeader, ShoppingHeader, SearchHeader, useNotifications } from '../../layout/HeaderNav';
 import NotificationManager from '../../components/NotificationManager';
 
 const RecommendRecipe = () => {
@@ -93,8 +93,8 @@ const RecommendRecipe = () => {
     setRecipeList([]);
   };
 
-  // 검색 핸들러
-  const handleSearch = (e) => {
+  // 검색 핸들러 (기존)
+  const handleSearchSubmit = (e) => {
     e.preventDefault();
     console.log('검색어:', searchQuery);
     // 검색 로직 구현
@@ -114,8 +114,8 @@ const RecommendRecipe = () => {
 
 
 
-  // 쇼핑 헤더 핸들러들
-  const handleShoppingBack = () => {
+  // 검색 헤더 핸들러들
+  const handleSearchBack = () => {
     // 메인 화면에서는 뒤로가기 시 이전 페이지로 이동
     if (activeView === 'main') {
       navigate('/main');
@@ -124,12 +124,9 @@ const RecommendRecipe = () => {
     }
   };
 
-  const handleShoppingNotification = () => {
-    console.log('쇼핑 알림창 클릭');
-  };
-
-  const handleShoppingCart = () => {
-    console.log('쇼핑 장바구니 클릭');
+  const handleSearchQuery = (query) => {
+    console.log('검색어:', query);
+    // 검색 로직 구현
   };
 
   // 메인 화면 렌더링
@@ -142,9 +139,9 @@ const RecommendRecipe = () => {
             placeholder="상품 검색"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSearch(e)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSearchSubmit(e)}
           />
-          <button onClick={handleSearch}>🔍</button>
+          <button onClick={handleSearchSubmit}>🔍</button>
         </div>
       </div>
       
@@ -236,18 +233,20 @@ const RecommendRecipe = () => {
 
   return (
     <div className={`main-page ${fadeIn ? 'fade-in' : ''}`}>
-      {/* 테스트용: ShoppingHeader 사용 */}
+      {/* 테스트용: SearchHeader 사용 */}
       {activeView === 'main' ? (
-        <ShoppingHeader
-          onBack={handleShoppingBack}
-          onNotificationClick={handleShoppingNotification}
-          onCartClick={handleShoppingCart}
+        <SearchHeader
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          onSearch={handleSearchQuery}
+          onBack={handleSearchBack}
         />
       ) : activeView === 'ingredients' ? (
-        <ShoppingHeader
-          onBack={handleShoppingBack}
-          onNotificationClick={handleShoppingNotification}
-          onCartClick={handleShoppingCart}
+        <SearchHeader
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          onSearch={handleSearchQuery}
+          onBack={handleSearchBack}
         />
       ) : (
         <RecipeHeader 
