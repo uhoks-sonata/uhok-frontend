@@ -107,15 +107,14 @@ export const HomeShoppingHeader = ({ searchQuery, setSearchQuery, onSearch, onNo
   );
 };
 
-// 2. 콕쇼핑몰 상품 상세 인터페이스 - 알림/장바구니/뒤로가기 기능
-export const ShoppingProductHeader = ({ onBack, onNotificationClick, onCartClick }) => {
+// 2. 찜/콕쇼핑몰 상품 상세 인터페이스 - 검색/알림/장바구니 기능
+export const ShoppingHeader = ({ searchQuery, setSearchQuery, onSearch, onNotificationClick, onCartClick }) => {
   const { notificationCount, cartCount } = useNotifications();
-  
-  const handleBack = () => {
-    if (onBack) {
-      onBack();
-    } else {
-      window.history.back();
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (onSearch) {
+      onSearch(searchQuery);
     }
   };
 
@@ -134,8 +133,20 @@ export const ShoppingProductHeader = ({ onBack, onNotificationClick, onCartClick
   };
 
   return (
-    <div className="header shopping-header">
-      <button className="back-btn" onClick={handleBack}>←</button>
+    <div className="header shopping-product-header">
+      <div className="search-container">
+        <input
+          type="text"
+          placeholder="상품 검색"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && handleSearch(e)}
+          className="search-input"
+        />
+        <button className="search-btn" onClick={handleSearch}>
+          <img src={searchIcon} alt="검색" className="search-icon" />
+        </button>
+      </div>
       
       <div className="header-icons">
         <button className="notification-btn" onClick={handleNotificationClick}>
@@ -217,4 +228,6 @@ export const RecipeHeader = ({ onBack }) => {
       <div className="header-spacer"></div>
     </div>
   );
-}; 
+};
+
+ 
