@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import '../../styles/recommend_recipe.css';
 // import BottomNav, { RecipeHeader } from '../../layout/BottomNav';
 import BottomNav from '../../layout/BottomNav';
-import { RecipeHeader, HomeShoppingHeader, ShoppingHeader, SearchHeader, useNotifications } from '../../layout/HeaderNav';
+import { RecipeHeader, HomeShoppingHeader, ShoppingHeader, SearchHeader, NotificationHeader, BackTitleHeader, useNotifications } from '../../layout/HeaderNav';
 import NotificationManager from '../../components/NotificationManagerTest';
 
 const RecommendRecipe = () => {
@@ -233,26 +233,12 @@ const RecommendRecipe = () => {
 
   return (
     <div className={`main-page ${fadeIn ? 'fade-in' : ''}`}>
-      {/* 테스트용: SearchHeader 사용 */}
-      {activeView === 'main' ? (
-        <SearchHeader
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          onSearch={handleSearchQuery}
-          onBack={handleSearchBack}
-        />
-      ) : activeView === 'ingredients' ? (
-        <SearchHeader
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          onSearch={handleSearchQuery}
-          onBack={handleSearchBack}
-        />
-      ) : (
-        <RecipeHeader 
-          onBack={handleBackClick}
-        />
-      )}
+      {/* 테스트용: 범용 헤더 사용 - 제목을 변수로 처리 */}
+      <BackTitleHeader 
+        title="알림" 
+        onBack={handleSearchBack} 
+        className="notification-header" 
+      />
 
       <div className="main-container">
         {activeView === 'main' && renderMainView()}
