@@ -160,6 +160,36 @@
   width: 40px;
 }
 
+/* 범용 헤더 스타일 (뒤로가기 + 제목 형태) */
+.back-title-header {
+  justify-content: space-between;
+  padding: 15px 20px 10px 20px;
+}
+
+.back-title-header .header-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+  flex: 1;
+  margin: 0;
+}
+
+/* 알림 헤더 특별 스타일 */
+.notification-header {
+  justify-content: space-between;
+  padding: 15px 20px 10px 20px;
+}
+
+.notification-header .header-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+  flex: 1;
+  margin: 0;
+}
+
 /* 알림/장바구니 카운트 */
 .notification-count,
 .cart-count {

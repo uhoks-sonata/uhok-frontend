@@ -253,7 +253,33 @@ export const SearchHeader = ({ searchQuery, setSearchQuery, onSearch, onBack }) 
   );
 };
 
-// ===== 4. 마이페이지 헤더 컴포넌트 =====
+// ===== 4. 범용 헤더 컴포넌트 =====
+// 뒤로가기 + 제목 형태의 모든 헤더에서 재사용 가능한 범용 컴포넌트
+// 결제, 알림, 레시피 추천 등에서 사용
+export const BackTitleHeader = ({ title, onBack, className = "" }) => {
+  // 뒤로가기 버튼 클릭 핸들러
+  const handleBack = () => {
+    if (onBack) {
+      onBack(); // 부모 컴포넌트에서 전달받은 뒤로가기 함수 실행
+    } else {
+      window.history.back(); // 브라우저 히스토리 뒤로가기
+    }
+  };
+
+  // 범용 헤더 JSX 반환
+  return (
+    <div className={`header back-title-header ${className}`}>
+      {/* 뒤로가기 버튼 */}
+      <button className="back-btn" onClick={handleBack}>←</button>
+      {/* 페이지 제목 */}
+      <h1 className="header-title">{title}</h1>
+      {/* 우측 여백을 위한 빈 div */}
+      <div className="header-spacer"></div>
+    </div>
+  );
+};
+
+// ===== 5. 마이페이지 헤더 컴포넌트 =====
 // 마이페이지에서 사용하는 헤더 (제목 + 알림 + 장바구니 기능)
 export const MyPageHeader = () => {
   // 전역 알림 및 장바구니 상태 가져오기
@@ -288,29 +314,20 @@ export const MyPageHeader = () => {
   );
 };
 
-// ===== 5. 레시피 헤더 컴포넌트 =====
+// ===== 5. 레시피 헤더 컴포넌트 (범용 헤더 사용) =====
 // 레시피 상세/결과 페이지에서 사용하는 헤더 (뒤로가기 + 제목)
 export const RecipeHeader = ({ onBack }) => {
-  // 뒤로가기 버튼 클릭 핸들러
-  const handleBack = () => {
-    if (onBack) {
-      onBack(); // 부모 컴포넌트에서 전달받은 뒤로가기 함수 실행
-    } else {
-      window.history.back(); // 브라우저 히스토리 뒤로가기
-    }
-  };
-
-  // 레시피 헤더 JSX 반환
-  return (
-    <div className="header recipe-header">
-      {/* 뒤로가기 버튼 */}
-      <button className="back-btn" onClick={handleBack}>←</button>
-      {/* 페이지 제목 */}
-      <h1 className="header-title">레시피 추천</h1>
-      {/* 우측 여백을 위한 빈 div */}
-      <div className="header-spacer"></div>
-    </div>
-  );
+  return <BackTitleHeader title="레시피 추천" onBack={onBack} className="recipe-header" />;
 };
 
- 
+// ===== 6. 결제 헤더 컴포넌트 (범용 헤더 사용) =====
+// 결제 페이지에서 사용하는 헤더 (뒤로가기 + '주문 결제'텍스트)
+export const PaymentHeader = ({ onBack }) => {
+  return <BackTitleHeader title="주문 결제" onBack={onBack} className="payment-header" />;
+};
+
+// ===== 7. 알림 헤더 컴포넌트 (범용 헤더 사용) =====
+// 알림 페이지에서 사용하는 헤더 (뒤로가기 + '알림'텍스트)
+export const NotificationHeader = ({ onBack }) => {
+  return <BackTitleHeader title="알림" onBack={onBack} className="notification-header" />;
+};

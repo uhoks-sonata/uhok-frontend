@@ -11,7 +11,7 @@ import Signup from './pages/user/Signup';
 // 홈쇼핑 메인 페이지 컴포넌트 import
 import Main from './pages/home_shopping/HomeShoppingMain';
 // 레시피 추천 테스트 페이지 컴포넌트 import
-import RecommendRecipe from './features/kok/bell_bucket_test';
+import RecommendRecipe from './features/kok/BellBucketTest';
 // 전역 알림 상태 관리 Provider import
 import { NotificationProvider } from './layout/HeaderNav';
 
