@@ -18,6 +18,8 @@ import OrderHistoryTest from './features/kok/OrderHistoryTest';
 import MyPageTest from './features/kok/MyPageTest';
 // 레시피 상세 헤더 테스트 페이지 컴포넌트 import
 import RecipeDetailTest from './features/kok/RecipeDetailTest';
+// 장바구니 헤더 테스트 페이지 컴포넌트 import
+import CartTest from './features/kok/CartTest';
 // 전역 알림 상태 관리 Provider import
 import { NotificationProvider } from './layout/HeaderNav';
 
@@ -50,6 +52,8 @@ function App() {
               <Route path="/mypage-test" element={<MyPageTest />} />
               {/* 레시피 상세 헤더 테스트 경로 (/recipe-detail) */}
               <Route path="/recipe-detail" element={<RecipeDetailTest />} />
+              {/* 장바구니 헤더 테스트 경로 (/cart) */}
+              <Route path="/cart" element={<CartTest />} />
             </Routes>
           </Router>
         </div>

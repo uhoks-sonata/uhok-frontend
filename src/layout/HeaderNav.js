@@ -335,8 +335,9 @@ export const NotificationHeader = ({ onBack }) => {
 // ===== 8. 범용 헤더 컴포넌트 (뒤로가기 + 제목 + 알림 + 장바구니) =====
 // 뒤로가기 + 제목 + 알림 + 장바구니 형태의 모든 헤더에서 재사용 가능한 범용 컴포넌트
 // 주문내역, 마이페이지, 레시피 상세 등에서 사용
+// 특징: 알림은 카운트 없이 버튼 역할만, 장바구니는 카운트 표시
 export const BackTitleWithIconsHeader = ({ title, onBack, onNotificationClick, onCartClick, className = "" }) => {
-  // 전역 장바구니 상태만 가져오기 (알림 카운트 제거)
+  // 전역 장바구니 상태만 가져오기 (알림 카운트 제거 - 요구사항에 따라)
   const { cartCount } = useNotifications();
 
   // 뒤로가기 버튼 클릭 핸들러
@@ -344,11 +345,11 @@ export const BackTitleWithIconsHeader = ({ title, onBack, onNotificationClick, o
     if (onBack) {
       onBack(); // 부모 컴포넌트에서 전달받은 뒤로가기 함수 실행
     } else {
-      window.history.back(); // 브라우저 히스토리 뒤로가기
+      window.history.back(); // 브라우저 히스토리 뒤로가기 (기본 동작)
     }
   };
 
-  // 알림 아이콘 클릭 핸들러
+  // 알림 아이콘 클릭 핸들러 (카운트 없이 버튼 역할만)
   const handleNotificationClick = () => {
     if (onNotificationClick) {
       onNotificationClick(); // 부모 컴포넌트에서 전달받은 알림 클릭 함수 실행
@@ -356,7 +357,7 @@ export const BackTitleWithIconsHeader = ({ title, onBack, onNotificationClick, o
     console.log('알림창 인터페이스 전환');
   };
 
-  // 장바구니 아이콘 클릭 핸들러
+  // 장바구니 아이콘 클릭 핸들러 (카운트 표시 포함)
   const handleCartClick = () => {
     if (onCartClick) {
       onCartClick(); // 부모 컴포넌트에서 전달받은 장바구니 클릭 함수 실행
@@ -367,18 +368,18 @@ export const BackTitleWithIconsHeader = ({ title, onBack, onNotificationClick, o
   // 범용 헤더 JSX 반환
   return (
     <div className={`header back-title-with-icons-header ${className}`}>
-      {/* 뒤로가기 버튼 */}
+      {/* 뒤로가기 버튼 (왼쪽 고정) */}
       <button className="back-btn" onClick={handleBack}>←</button>
-      {/* 페이지 제목 */}
+      {/* 페이지 제목 (중앙 정렬) */}
       <h1 className="header-title">{title}</h1>
       
-      {/* 헤더 우측 아이콘 영역 */}
+      {/* 헤더 우측 아이콘 영역 (오른쪽 고정) */}
       <div className="header-icons">
-        {/* 알림 버튼 (카운트 없음) */}
+        {/* 알림 버튼 (카운트 없음 - 요구사항에 따라) */}
         <button className="notification-btn" onClick={handleNotificationClick}>
           <img src={bellIcon} alt="알림" className="bell-icon" />
         </button>
-        {/* 장바구니 버튼 */}
+        {/* 장바구니 버튼 (카운트 표시 포함) */}
         <button className="cart-btn" onClick={handleCartClick}>
           <img src={bucketIcon} alt="장바구니" className="bucket-icon" />
           {/* 장바구니 개수가 0보다 클 때만 장바구니 개수 표시 */}
@@ -429,6 +430,59 @@ export const RecipeDetailHeader = ({ onBack, onNotificationClick, onCartClick })
       onNotificationClick={onNotificationClick}
       onCartClick={onCartClick}
       className="recipe-detail-header" 
+    />
+  );
+};
+
+// ===== 12. 범용 헤더 컴포넌트 (뒤로가기 + 제목 + 알림) =====
+// 뒤로가기 + 제목 + 알림 형태의 모든 헤더에서 재사용 가능한 범용 컴포넌트
+// 장바구니 등에서 사용 (장바구니 아이콘 없음)
+export const BackTitleWithNotificationHeader = ({ title, onBack, onNotificationClick, className = "" }) => {
+  // 뒤로가기 버튼 클릭 핸들러
+  const handleBack = () => {
+    if (onBack) {
+      onBack(); // 부모 컴포넌트에서 전달받은 뒤로가기 함수 실행
+    } else {
+      window.history.back(); // 브라우저 히스토리 뒤로가기 (기본 동작)
+    }
+  };
+
+  // 알림 아이콘 클릭 핸들러 (카운트 없이 버튼 역할만)
+  const handleNotificationClick = () => {
+    if (onNotificationClick) {
+      onNotificationClick(); // 부모 컴포넌트에서 전달받은 알림 클릭 함수 실행
+    }
+    console.log('알림창 인터페이스 전환');
+  };
+
+  // 범용 헤더 JSX 반환
+  return (
+    <div className={`header back-title-with-notification-header ${className}`}>
+      {/* 뒤로가기 버튼 (왼쪽 고정) */}
+      <button className="back-btn" onClick={handleBack}>←</button>
+      {/* 페이지 제목 (중앙 정렬) */}
+      <h1 className="header-title">{title}</h1>
+      
+      {/* 헤더 우측 아이콘 영역 (오른쪽 고정) */}
+      <div className="header-icons">
+        {/* 알림 버튼 (카운트 없음 - 요구사항에 따라) */}
+        <button className="notification-btn" onClick={handleNotificationClick}>
+          <img src={bellIcon} alt="알림" className="bell-icon" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// ===== 13. 장바구니 헤더 컴포넌트 (범용 헤더 사용) =====
+// 장바구니 페이지에서 사용하는 헤더 (뒤로가기 + '장바구니'텍스트 + 알림)
+export const CartHeader = ({ onBack, onNotificationClick }) => {
+  return (
+    <BackTitleWithNotificationHeader 
+      title="장바구니" 
+      onBack={onBack} 
+      onNotificationClick={onNotificationClick}
+      className="cart-header" 
     />
   );
 };
