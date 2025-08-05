@@ -30,7 +30,7 @@ body {
   transform: translateX(-50%);
   height: 80px;
   width: 100%;
-  max-width: 500px;
+  max-width: 500px; /* 모바일 앱 최대 너비 */
   background-color: white;
   display: flex;
   justify-content: space-around;
@@ -41,10 +41,10 @@ body {
 
 /* 각 메뉴 아이템 너비, 높이 고정 및 중앙 정렬 */
 .bottom-nav a {
-  width: 80px;
-  height: 80px;
+  width: 60px; /* 너비 줄임 */
+  height: 60px; /* 높이 줄임 */
   color: #555;
-  font-size: 12px;
+  font-size: 11px; /* 폰트 크기 줄임 */
   font-weight: 800;
   text-decoration: none;
   text-align: center;
@@ -53,7 +53,7 @@ body {
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  padding-top: 6px;
+  padding-top: 4px; /* 패딩 줄임 */
   position: relative;
   box-sizing: border-box;
 }
@@ -65,17 +65,17 @@ body {
 }
 
 .bottom-nav a:not(.image-button-wrapper) {
-  margin-top: 30px; /* 이미지 버튼 제외하고만 마진 적용 */
+  margin-top: 20px; /* 마진 줄임 */
 }
 
 /* 메인 이미지 버튼 래퍼 */
 .image-button-wrapper {
-  width: 80px;
-  height: 80px;
+  width: 70px; /* 크기 조정 */
+  height: 70px; /* 크기 조정 */
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: -80px;
+  margin-top: -70px; /* 마진 조정 */
   flex-grow: 0; 
 }
 
@@ -96,7 +96,36 @@ body {
   transform: translate(-50%, -50%);
   color: white;
   font-weight: bold;
-  font-size: 24px;
+  font-size: 20px; /* 폰트 크기 줄임 */
   pointer-events: none;
   user-select: none;
+}
+
+/* 모바일 최적화 */
+@media (max-width: 500px) {
+  .bottom-nav {
+    max-width: 100%;
+    height: 70px; /* 높이 줄임 */
+  }
+  
+  .bottom-nav a {
+    width: 50px; /* 더 작게 */
+    height: 50px; /* 더 작게 */
+    font-size: 10px; /* 더 작게 */
+    padding-top: 3px;
+  }
+  
+  .bottom-nav a:not(.image-button-wrapper) {
+    margin-top: 15px;
+  }
+  
+  .image-button-wrapper {
+    width: 60px;
+    height: 60px;
+    margin-top: -60px;
+  }
+  
+  .image-button-wrapper span {
+    font-size: 18px;
+  }
 }

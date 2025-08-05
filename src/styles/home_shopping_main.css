@@ -1,10 +1,87 @@
+.home-shopping-main {
+  min-height: 100vh;
+  background: #f8f9fa;
+  padding-bottom: 80px; /* BottomNav 높이만큼 패딩 */
+  overflow-y: auto; /* 세로 스크롤 활성화 */
+  scrollbar-width: thin; /* Firefox 스크롤바 */
+  scrollbar-color: #ccc transparent; /* Firefox 스크롤바 색상 */
+  position: relative; /* 스크롤바 위치 기준 */
+  width: 100%; /* 전체 너비 */
+  height: 100vh; /* 전체 높이 */
+}
+
+/* Webkit 브라우저 스크롤바 스타일링 */
+.home-shopping-main::-webkit-scrollbar {
+  width: 8px; /* 스크롤바 너비 */
+}
+
+.home-shopping-main::-webkit-scrollbar-track {
+  background: transparent; /* 스크롤바 트랙 배경 */
+}
+
+.home-shopping-main::-webkit-scrollbar-thumb {
+  background: #ccc; /* 스크롤바 썸 색상 */
+  border-radius: 4px; /* 스크롤바 모서리 둥글게 */
+}
+
+.home-shopping-main::-webkit-scrollbar-thumb:hover {
+  background: #999; /* 호버 시 스크롤바 색상 */
+}
+
+.main-content {
+  padding-top: 120px; /* Header 높이만큼 상단 패딩 */
+  padding-bottom: 20px;
+  padding-right: 8px; /* 스크롤바 공간 확보 */
+  overflow-x: hidden; /* 가로 스크롤 방지 */
+}
+
+/* 섹션 내부 스크롤 방지 */
+.product-section {
+  overflow-x: hidden; /* 섹션 레벨에서 가로 스크롤 방지 */
+}
+
+/* 그리드 컨테이너만 가로 스크롤 허용 */
+.products-container.grid {
+  overflow-x: auto; /* 그리드 컨테이너만 가로 스크롤 허용 */
+  overflow-y: hidden;
+}
+
+/* 페이드인 애니메이션 */
 .fade-in {
-  animation: fadeIn 0.5s ease forwards;
-  opacity: 0;
+  animation: fadeIn 0.5s ease-in;
 }
 
 @keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
   to {
     opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 모바일 최적화 */
+@media (max-width: 768px) {
+  .home-shopping-main {
+    padding-bottom: 70px;
+  }
+  
+  .main-content {
+    padding-top: 110px;
+  }
+  
+  /* 모바일에서 스크롤바 너비 조정 */
+  .home-shopping-main::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .product-section {
+    padding: 0 12px;
+  }
+  
+  .section-title {
+    font-size: 16px;
   }
 }

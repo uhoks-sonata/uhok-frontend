@@ -1,0 +1,131 @@
+.product-section {
+  margin-bottom: 24px;
+  padding: 24px 16px; /* 위아래 패딩 동일하게 24px */
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+}
+
+.more-button {
+  background: none;
+  border: none;
+  color: #FA5F8C;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  font-weight: 500;
+}
+
+.more-button:hover {
+  color: #e04a7a;
+}
+
+.arrow {
+  font-size: 12px;
+}
+
+.arrow-icon {
+  color: #666;
+  font-size: 16px;
+}
+
+.products-container {
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 8px;
+  gap: 12px;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+}
+
+.products-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* 기본 타입 (횡스크롤) */
+.products-container.default {
+  gap: 12px;
+  scroll-snap-type: x mandatory;
+}
+
+.products-container.default .product-card {
+  scroll-snap-align: start;
+}
+
+/* 특별 타입 (횡스크롤) */
+.products-container.special {
+  gap: 12px;
+  scroll-snap-type: x mandatory;
+}
+
+.products-container.special .product-card {
+  scroll-snap-align: start;
+}
+
+/* 그리드 타입 (2줄 표시, 횡스크롤) */
+.products-container.grid {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 200px; /* 고정 너비로 열 생성 */
+  grid-template-rows: repeat(2, auto); /* 2줄 */
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  white-space: nowrap;
+  padding-bottom: 8px;
+  width: max-content;
+  min-width: 100%;
+  cursor: grab;
+}
+
+.products-container.grid:active {
+  cursor: grabbing;
+}
+
+.products-container.grid.dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.products-container.grid .product-card {
+  scroll-snap-align: start;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  width: 200px;
+  height: fit-content;
+}
+
+/* 고정 타입 (3개 고정) */
+.products-container.fixed {
+  display: flex;
+  justify-content: space-between;
+  overflow: visible;
+  white-space: normal;
+  gap: 12px;
+}
+
+.products-container.fixed .product-card {
+  flex: 1;
+  min-width: 0;
+}

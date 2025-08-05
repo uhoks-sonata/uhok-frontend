@@ -13,11 +13,17 @@ body, html, #root {
   background-color: #f0f0f0;  /* 전체 바탕 연한 회색 */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow: hidden; /* 전체 스크롤 방지 */
 }
 
 /* 모바일 뷰포트 대응 */
 html {
-  font-size: 16px; /* 기준 폰트 크기 */
+  font-size: 14px; /* 기준 폰트 크기 줄임 */
+}
+
+/* body 스크롤 제거 - home-shopping-main에서만 스크롤 처리 */
+body {
+  overflow: hidden; /* body 스크롤 비활성화 */
 }
 
 input, button {
@@ -26,4 +32,11 @@ input, button {
 
 button {
   cursor: pointer;
+}
+
+/* 모바일 최적화 */
+@media (max-width: 500px) {
+  html {
+    font-size: 13px; /* 더 작은 기준 폰트 크기 */
+  }
 }
