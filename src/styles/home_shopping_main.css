@@ -3,6 +3,7 @@
   background: #f8f9fa;
   padding-bottom: 80px; /* BottomNav 높이만큼 패딩 */
   overflow-y: auto; /* 세로 스크롤 활성화 */
+  overflow-x: auto;
   scrollbar-width: thin; /* Firefox 스크롤바 */
   scrollbar-color: #ccc transparent; /* Firefox 스크롤바 색상 */
   position: relative; /* 스크롤바 위치 기준 */
@@ -29,10 +30,10 @@
 }
 
 .main-content {
-  padding-top: 120px; /* Header 높이만큼 상단 패딩 */
+  padding-top: 80px;/* Header 높이만큼 상단 패딩 */
   padding-bottom: 20px;
   padding-right: 8px; /* 스크롤바 공간 확보 */
-  overflow-x: hidden; /* 가로 스크롤 방지 */
+  overflow-x: scroll; /* 가로 스크롤 방지 */
 }
 
 /* 섹션 내부 스크롤 방지 */

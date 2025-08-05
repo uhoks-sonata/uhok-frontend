@@ -2,12 +2,20 @@ import React, { useEffect, useRef } from 'react';
 import ProductCard from './ProductCard';
 import '../styles/product_section.css';
 
-const ProductSection = ({ title, products, type = 'default', showMore = false }) => {
+const ProductSection = ({ 
+  title, 
+  products, 
+  type = 'default', 
+  showMore = false,
+  sectionStyle = {},
+  containerStyle = {},
+  cardStyle = {}
+}) => {
   const containerRef = useRef(null);
 
   useEffect(() => {
-    // grid 타입일 때만 마우스 드래그 기능 추가
-    if (type === 'grid' && containerRef.current) {
+    // grid 타입들일 때만 마우스 드래그 기능 추가
+    if ((type === 'grid' || type === 'discount-grid' || type === 'non-duplicated-grid') && containerRef.current) {
       const container = containerRef.current;
       let isDown = false;
       let startX;
@@ -97,10 +105,15 @@ const ProductSection = ({ title, products, type = 'default', showMore = false })
   }, [type]);
 
   return (
-    <div className="product-section">
+    <div className="product-section" style={sectionStyle}>
       <div className="section-header">
         <h2 className="section-title">{title}</h2>
-        {showMore && (
+        {showMore && (type === 'discount-grid' || type === 'non-duplicated-grid') && (
+          <button className="more-button">
+            <img src="/right_arrow.webp" alt="더보기" className="arrow-image" />
+          </button>
+        )}
+        {showMore && type !== 'discount-grid' && type !== 'non-duplicated-grid' && (
           <button className="more-button">
             더보기 <span className="arrow">{'>'}</span>
           </button>
@@ -110,12 +123,14 @@ const ProductSection = ({ title, products, type = 'default', showMore = false })
       <div 
         ref={containerRef}
         className={`products-container ${type}`}
+        style={containerStyle}
       >
         {products.map((product) => (
           <ProductCard 
             key={product.id} 
             product={product} 
             type={type}
+            style={cardStyle}
           />
         ))}
       </div>

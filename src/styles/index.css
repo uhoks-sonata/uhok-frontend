@@ -10,7 +10,7 @@
 body, html, #root {
   height: 100%;
   font-family: 'Noto Sans KR', sans-serif;
-  background-color: #f0f0f0;  /* 전체 바탕 연한 회색 */
+  background-color: #ffffff;  /* 전체 바탕 흰색 */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow: hidden; /* 전체 스크롤 방지 */
@@ -35,7 +35,7 @@ button {
 }
 
 /* 모바일 최적화 */
-@media (max-width: 500px) {
+@media (max-width: 480px) {
   html {
     font-size: 13px; /* 더 작은 기준 폰트 크기 */
   }

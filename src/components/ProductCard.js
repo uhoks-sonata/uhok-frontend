@@ -1,7 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../styles/product_card.css';
 
-const ProductCard = ({ product, type = 'default' }) => {
+const ProductCard = ({ product, type = 'default', style = {} }) => {
+  const navigate = useNavigate();
   const { 
     id, 
     name, 
@@ -14,24 +16,30 @@ const ProductCard = ({ product, type = 'default' }) => {
     isSpecial = false 
   } = product;
 
+  const handleCardClick = () => {
+    navigate(`/product/${id}`);
+  };
+
   return (
-    <div className={`product-card ${isSpecial ? 'special' : ''}`}>
+    <div 
+      className={`product-card ${isSpecial ? 'special' : ''}`} 
+      style={{ ...style, cursor: 'pointer' }}
+      onClick={handleCardClick}
+    >
       <div className="product-image-container">
         <img src={image} alt={name} className="product-image" />
       </div>
       <div className="product-info">
+        <div className="price-info">
+          <span className="discount-rate">{discountRate}%</span>
+          <span className="discount-price">{discountPrice.toLocaleString()}</span>
+        </div>
         <h3 className="product-name">{name}</h3>
-        {(type === 'default' || type === 'special' || type === 'grid' || type === 'fixed') && (
-          <>
-            <div className="price-info">
-              <span className="discount-rate">{discountRate}%</span>
-              <span className="discount-price">{discountPrice.toLocaleString()}원</span>
-            </div>
-            <div className="rating-info">
-              <span className="stars">★ {rating}</span>
-              <span className="review-count">({reviewCount})</span>
-            </div>
-          </>
+        {(type === 'default' || type === 'special' || type === 'grid' || type === 'fixed' || type === 'non-duplicated-grid') && (
+          <div className="rating-info">
+            <span className="stars">★ {rating}</span>
+            <span className="review-count">({reviewCount})</span>
+          </div>
         )}
       </div>
     </div>

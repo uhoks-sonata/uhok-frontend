@@ -1,0 +1,589 @@
+/* 상품 상세 페이지 전체 스타일 */
+.product-detail-page {
+  max-width: 480px;
+  margin: 0 auto;
+  background-color: #ffffff;
+  height: 100vh; /* min-height에서 height로 변경 */
+  position: relative;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* 전체 페이지에서 스크롤 방지 */
+}
+
+/* 탭 네비게이션 */
+.tab-navigation {
+  display: flex !important;
+  background-color: #ffffff !important;
+  border-bottom: 2px solid #e0e0e0 !important;
+  flex-shrink: 0 !important;
+  position: relative !important;
+  z-index: 10 !important;
+  width: 100% !important;
+  min-height: 48px !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.tab-button {
+  flex: 1 !important;
+  background: none !important;
+  border: none !important;
+  padding: 16px 8px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: #666 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  position: relative !important;
+  min-height: 48px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  user-select: none !important;
+  margin: 0 !important;
+}
+
+.tab-button:hover {
+  color: #333 !important;
+  background-color: #f8f8f8 !important;
+}
+
+.tab-button.active {
+  color: #333 !important;
+  font-weight: bold !important;
+  background-color: #ffffff !important;
+}
+
+.tab-button.active::after {
+  content: '' !important;
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 3px !important;
+  background-color: #FA5F8C !important;
+  border-radius: 2px 2px 0 0 !important;
+}
+
+/* 탭 컨텐츠 */
+.tab-content-container {
+  flex: 1 !important;
+  overflow-y: scroll !important;
+  background-color: #ffffff !important;
+  padding-bottom: 100px !important;
+  position: relative !important;
+  z-index: 1 !important;
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+}
+
+.tab-content {
+  padding: 16px !important;
+  animation: fadeIn 0.3s ease-in-out !important;
+  min-height: 100% !important;
+  display: block !important;
+  width: 100% !important;
+  background-color: #ffffff !important;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 제품 메인 정보 */
+.product-main-info {
+  margin-bottom: 24px;
+}
+
+.product-image-large {
+  width: 100%;
+  height: 300px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.product-image-large img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.product-basic-info {
+  padding: 0 4px;
+}
+
+.product-name {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+}
+
+.product-price-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.product-price-info .discount-rate {
+  color: #FA5F8C;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.product-price-info .discount-price {
+  color: #333;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.product-price-info .original-price {
+  color: #999;
+  text-decoration: line-through;
+  font-size: 14px;
+}
+
+.product-rating-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.product-rating-info .stars {
+  color: #FA5F8C;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.product-rating-info .review-count {
+  color: #666;
+  font-size: 14px;
+}
+
+/* 브랜드 섹션 */
+.brand-section {
+  margin-bottom: 24px;
+  padding: 20px 0;
+  border-top: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.brand-logos {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.brand-logo {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  text-align: center;
+  color: white;
+}
+
+.brand-logo.red {
+  background-color: #ff4444;
+}
+
+.brand-logo.black {
+  background-color: #333;
+}
+
+.logo-text {
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+
+.logo-subtext {
+  font-size: 8px;
+  opacity: 0.8;
+}
+
+.brand-info {
+  text-align: center;
+}
+
+.brand-name {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  margin: 0 0 8px 0;
+}
+
+.brand-tagline {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+}
+
+/* 제품 설명 */
+.product-description-content {
+  margin-bottom: 24px;
+}
+
+.product-description-content h3 {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  margin: 0 0 12px 0;
+}
+
+.product-description-content p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #333;
+  margin: 0;
+}
+
+/* 제품 상세 정보 요약 */
+.product-details-summary {
+  margin-bottom: 24px;
+}
+
+.product-details-summary h3 {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  margin: 0 0 16px 0;
+}
+
+.details-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.details-grid .detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.details-grid .detail-label {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+.details-grid .detail-value {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+/* 리뷰 섹션 */
+.reviews-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.reviews-header h3 {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+}
+
+.overall-rating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rating-stars {
+  font-size: 20px;
+  color: #FA5F8C;
+  font-weight: bold;
+}
+
+/* 평점 분포 */
+.rating-distribution {
+  margin-bottom: 24px;
+}
+
+.rating-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.star-label {
+  font-size: 12px;
+  color: #666;
+  min-width: 30px;
+}
+
+.bar-container {
+  flex: 1;
+  height: 8px;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background-color: #FA5F8C;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* 피드백 섹션 */
+.feedback-section {
+  margin-bottom: 24px;
+}
+
+.feedback-section h4 {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  margin: 0 0 16px 0;
+}
+
+.feedback-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.feedback-text {
+  font-size: 14px;
+  color: #333;
+  min-width: 120px;
+}
+
+.feedback-bar-container {
+  flex: 1;
+  height: 6px;
+  background-color: #f0f0f0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.feedback-bar-fill {
+  height: 100%;
+  background-color: #FA5F8C;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+/* 리뷰 목록 */
+.reviews-list {
+  border-top: 1px solid #f0f0f0;
+  padding-top: 16px;
+}
+
+.review-item {
+  padding: 16px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.review-item:last-child {
+  border-bottom: none;
+}
+
+.review-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.review-user {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.review-stars {
+  color: #FA5F8C;
+  font-size: 14px;
+}
+
+.review-date {
+  font-size: 12px;
+  color: #999;
+  margin-left: auto;
+}
+
+.review-comment {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #333;
+  margin: 0;
+}
+
+.no-reviews {
+  text-align: center;
+  padding: 40px 0;
+  color: #999;
+}
+
+/* 판매자 정보 및 상세정보 */
+.seller-info,
+.product-info-disclosure {
+  margin-bottom: 32px;
+}
+
+.seller-info h3,
+.product-info-disclosure h3 {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  margin: 0 0 16px 0;
+}
+
+.info-table {
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.info-row {
+  display: flex;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  background-color: #f8f9fa;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+  min-width: 120px;
+  flex-shrink: 0;
+}
+
+.info-value {
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #333;
+  flex: 1;
+  word-break: break-all;
+}
+
+/* 구매 버튼 */
+.purchase-button-container {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  padding: 16px;
+  background-color: #ffffff;
+  border-top: 1px solid #f0f0f0;
+  z-index: 1000;
+  flex-shrink: 0;
+}
+
+.purchase-button {
+  width: 100%;
+  background-color: #FA5F8C;
+  color: white;
+  border: none;
+  padding: 16px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.purchase-button:hover {
+  background-color: #e04a7a;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 480px) {
+  .product-detail-page {
+    max-width: 100%;
+  }
+  
+  .purchase-button-container {
+    max-width: 100%;
+  }
+  
+  .product-name {
+    font-size: 16px;
+  }
+  
+  .product-image-large {
+    height: 250px;
+  }
+  
+  .brand-name {
+    font-size: 20px;
+  }
+  
+  .info-label {
+    min-width: 100px;
+    font-size: 13px;
+  }
+  
+  .info-value {
+    font-size: 13px;
+  }
+}
+
+/* 스크롤바 스타일 - 더 명확하게 표시 */
+.tab-content-container::-webkit-scrollbar {
+  width: 8px; /* 6px에서 8px로 증가 */
+}
+
+.tab-content-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+  margin: 2px 0;
+}
+
+.tab-content-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  border: 1px solid #f1f1f1;
+}
+
+.tab-content-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+.tab-content-container::-webkit-scrollbar-thumb:active {
+  background: #999;
+}
+
+/* Firefox 스크롤바 스타일 */
+.tab-content-container {
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f1f1f1;
+}
+
+/* 스크롤바가 항상 표시되도록 강제 */
+.tab-content-container {
+  scrollbar-gutter: stable;
+} 

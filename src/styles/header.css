@@ -4,7 +4,7 @@
   left: 50%;
   transform: translateX(-50%);
   width: 100%;
-  max-width: 500px; /* 모바일 앱 최대 너비 */
+  max-width: 480px; /* 모바일 앱 최대 너비 */
   background: white;
   z-index: 1000;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -97,7 +97,7 @@
 }
 
 /* 모바일 최적화 */
-@media (max-width: 500px) {
+@media (max-width: 480px) {
   .header {
     max-width: 100%;
   }

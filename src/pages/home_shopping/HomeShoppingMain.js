@@ -1,11 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import Header from '../../components/Header';
+import { HomeShoppingHeader } from '../../layout/HeaderNav';
 import ProductSection from '../../components/ProductSection';
 import BottomNav from '../../layout/BottomNav';
 import '../../styles/home_shopping_main.css';
 
 const HomeShoppingMain = () => {
   const [fadeIn, setFadeIn] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // 검색 핸들러
+  const handleSearch = (query) => {
+    console.log('검색어:', query);
+    // 여기에 실제 검색 로직을 구현할 수 있습니다
+  };
+
+  // 알림 클릭 핸들러
+  const handleNotificationClick = () => {
+    console.log('알림 클릭됨');
+    // 여기에 알림 관련 로직을 구현할 수 있습니다
+  };
 
   // 더미 데이터
   const discountProducts = [
@@ -21,7 +34,7 @@ const HomeShoppingMain = () => {
       isSpecial: true
     },
     {
-      id: 2,
+      id: 1,
       name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
       originalPrice: 150000,
       discountPrice: 124000,
@@ -32,7 +45,7 @@ const HomeShoppingMain = () => {
       isSpecial: true
     },
     {
-      id: 3,
+      id: 1,
       name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
       originalPrice: 150000,
       discountPrice: 124000,
@@ -43,7 +56,7 @@ const HomeShoppingMain = () => {
       isSpecial: true
     },
     {
-      id: 4,
+      id: 1,
       name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
       originalPrice: 150000,
       discountPrice: 124000,
@@ -54,7 +67,7 @@ const HomeShoppingMain = () => {
       isSpecial: true
     },
     {
-      id: 5,
+      id: 1,
       name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
       originalPrice: 150000,
       discountPrice: 124000,
@@ -65,7 +78,7 @@ const HomeShoppingMain = () => {
       isSpecial: true
     },
     {
-      id: 6,
+      id: 1,
       name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
       originalPrice: 150000,
       discountPrice: 124000,
@@ -76,7 +89,7 @@ const HomeShoppingMain = () => {
       isSpecial: true
     },
     {
-      id: 7,
+      id: 1,
       name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
       originalPrice: 150000,
       discountPrice: 124000,
@@ -87,7 +100,7 @@ const HomeShoppingMain = () => {
       isSpecial: true
     },
     {
-      id: 8,
+      id: 1,
       name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
       originalPrice: 150000,
       discountPrice: 124000,
@@ -98,7 +111,7 @@ const HomeShoppingMain = () => {
       isSpecial: true
     },
     {
-      id: 9,
+      id: 1,
       name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
       originalPrice: 150000,
       discountPrice: 124000,
@@ -109,7 +122,7 @@ const HomeShoppingMain = () => {
       isSpecial: true
     },
     {
-      id: 10,
+      id: 1,
       name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
       originalPrice: 150000,
       discountPrice: 124000,
@@ -120,7 +133,7 @@ const HomeShoppingMain = () => {
       isSpecial: true
     },
     {
-      id: 11,
+      id: 1,
       name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
       originalPrice: 150000,
       discountPrice: 124000,
@@ -131,7 +144,7 @@ const HomeShoppingMain = () => {
       isSpecial: true
     },
     {
-      id: 12,
+      id: 1,
       name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
       originalPrice: 150000,
       discountPrice: 124000,
@@ -145,141 +158,96 @@ const HomeShoppingMain = () => {
 
   const highSellingProducts = [
     {
-      id: 9,
-      name: "국내산 청결 햇 고춧가루 4kg (500g 8팩)",
-      originalPrice: 150000,
-      discountPrice: 124000,
-      discountRate: 17,
-      image: "/test1.png",
-      rating: 4.4,
-      reviewCount: 23
+      id: 2,
+      name: "전라도식 파김치",
+      originalPrice: 13600,
+      discountPrice: 13600,
+      discountRate: 51,
+      image: "/test2.png",
+      rating: 4.1,
+      reviewCount: 17
     },
     {
-      id: 10,
-      name: "국내산 청결 햇 고춧가루 4kg (500g 8팩)",
-      originalPrice: 150000,
-      discountPrice: 124000,
-      discountRate: 17,
-      image: "/test1.png",
-      rating: 4.4,
-      reviewCount: 23
+      id: 2,
+      name: "전라도식 파김치",
+      originalPrice: 13600,
+      discountPrice: 13600,
+      discountRate: 51,
+      image: "/test2.png",
+      rating: 4.1,
+      reviewCount: 17
     },
     {
-      id: 11,
-      name: "국내산 청결 햇 고춧가루 4kg (500g 8팩)",
-      originalPrice: 150000,
-      discountPrice: 124000,
-      discountRate: 17,
-      image: "/test1.png",
-      rating: 4.4,
-      reviewCount: 23
+      id: 2,
+      name: "전라도식 파김치",
+      originalPrice: 13600,
+      discountPrice: 13600,
+      discountRate: 51,
+      image: "/test2.png",
+      rating: 4.1,
+      reviewCount: 17
     }
   ];
 
   const nonDuplicatedProducts = [
     {
-      id: 12,
-      name: "붉은빛깔 고추가루",
-      originalPrice: 150000,
-      discountPrice: 124000,
-      discountRate: 17,
-      image: "/test1.png",
-      rating: 4.4,
-      reviewCount: 23,
+      id: 3,
+      name: "햅쌀",
+      originalPrice: 25000,
+      discountPrice: 20900,
+      discountRate: 16,
+      image: "/test3.png",
+      rating: 4.8,
+      reviewCount: 24,
       isSpecial: true
     },
     {
-      id: 13,
-      name: "붉은빛깔 고추가루",
-      originalPrice: 150000,
-      discountPrice: 124000,
-      discountRate: 17,
-      image: "/test1.png",
-      rating: 4.4,
-      reviewCount: 23,
+      id: 3,
+      name: "햅쌀",
+      originalPrice: 25000,
+      discountPrice: 20900,
+      discountRate: 16,
+      image: "/test3.png",
+      rating: 4.8,
+      reviewCount: 24,
+      isSpecial: true
+    },
+    {
+      id: 3,
+      name: "햅쌀",
+      originalPrice: 25000,
+      discountPrice: 20900,
+      discountRate: 16,
+      image: "/test3.png",
+      rating: 4.8,
+      reviewCount: 24,
+      isSpecial: true
+    },
+    {
+      id: 3,
+      name: "햅쌀",
+      originalPrice: 25000,
+      discountPrice: 20900,
+      discountRate: 16,
+      image: "/test3.png",
+      rating: 4.8,
+      reviewCount: 24,
+      isSpecial: true
+    },
+    {
+      id: 3,
+      name: "햅쌀",
+      originalPrice: 25000,
+      discountPrice: 20900,
+      discountRate: 16,
+      image: "/test3.png",
+      rating: 4.8,
+      reviewCount: 24,
       isSpecial: true
     }
   ];
 
-  const recommendedProducts = [
-    {
-      id: 14,
-      name: "추천 고춧가루 1kg",
-      originalPrice: 45000,
-      discountPrice: 38000,
-      discountRate: 15,
-      image: "/test1.png",
-      rating: 4.6,
-      reviewCount: 45,
-      isSpecial: true
-    },
-    {
-      id: 15,
-      name: "추천 고춧가루 1kg",
-      originalPrice: 45000,
-      discountPrice: 38000,
-      discountRate: 15,
-      image: "/test1.png",
-      rating: 4.6,
-      reviewCount: 45,
-      isSpecial: true
-    },
-    {
-      id: 16,
-      name: "추천 고춧가루 1kg",
-      originalPrice: 45000,
-      discountPrice: 38000,
-      discountRate: 15,
-      image: "/test1.png",
-      rating: 4.6,
-      reviewCount: 45,
-      isSpecial: true
-    },
-    {
-      id: 17,
-      name: "추천 고춧가루 1kg",
-      originalPrice: 45000,
-      discountPrice: 38000,
-      discountRate: 15,
-      image: "/test1.png",
-      rating: 4.6,
-      reviewCount: 45,
-      isSpecial: true
-    }
-  ];
 
-  const newProducts = [
-    {
-      id: 18,
-      name: "신상 고춧가루 2kg",
-      originalPrice: 80000,
-      discountPrice: 65000,
-      discountRate: 19,
-      image: "/test1.png",
-      rating: 4.8,
-      reviewCount: 12
-    },
-    {
-      id: 19,
-      name: "신상 고춧가루 2kg",
-      originalPrice: 80000,
-      discountPrice: 65000,
-      discountRate: 19,
-      image: "/test1.png",
-      rating: 4.8,
-      reviewCount: 12
-    },
-    {
-      id: 20,
-      name: "신상 고춧가루 2kg",
-      originalPrice: 80000,
-      discountPrice: 65000,
-      discountRate: 19,
-      image: "/test1.png",
-      rating: 4.8,
-      reviewCount: 12
-    }
-  ];
 
   useEffect(() => {
     setFadeIn(true);
@@ -287,14 +255,28 @@ const HomeShoppingMain = () => {
 
   return (
     <div className={`home-shopping-main ${fadeIn ? 'fade-in' : ''}`}>
-      <Header />
+      <HomeShoppingHeader 
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        onSearch={handleSearch}
+        onNotificationClick={handleNotificationClick}
+      />
       
       <main className="main-content">
         <ProductSection 
           title="할인 특가 상품" 
           products={discountProducts} 
-          type="grid"
+          type="discount-grid"
           showMore={true}
+          sectionStyle={{
+            margin: '0 0 24px 0'
+          }}
+          containerStyle={{
+            gap: '12px'
+          }}
+                     cardStyle={{
+             boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+           }}
         />
         
         <ProductSection 
@@ -302,28 +284,34 @@ const HomeShoppingMain = () => {
           products={highSellingProducts} 
           type="fixed"
           showMore={true}
+          sectionStyle={{
+            margin: '0 0 24px 0'
+          }}
+          containerStyle={{
+            gap: '4px'
+          }}
+                     cardStyle={{
+             boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+           }}
         />
         
         <ProductSection 
-          title="최근 구매 상품과 중복되지 않는 상품" 
+          title="구매한 스토어 내 리뷰 많은 상품" 
           products={nonDuplicatedProducts} 
-          type="special"
+          type="non-duplicated-grid"
           showMore={true}
+          sectionStyle={{
+            margin: '0 0 24px 0'
+          }}
+          containerStyle={{
+            gap: '14px'
+          }}
+                     cardStyle={{
+             boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+           }}
         />
 
-        <ProductSection 
-          title="추천 상품" 
-          products={recommendedProducts} 
-          type="grid"
-          showMore={true}
-        />
 
-        <ProductSection 
-          title="신상품" 
-          products={newProducts} 
-          type="fixed"
-          showMore={true}
-        />
       </main>
       
       <BottomNav />
