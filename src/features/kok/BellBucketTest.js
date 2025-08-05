@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/recommend_recipe.css';
-// import BottomNav, { RecipeHeader } from '../../layout/BottomNav';
-import BottomNav from '../../layout/BottomNav';
-import { RecipeHeader, HomeShoppingHeader, ShoppingHeader, SearchHeader, NotificationHeader, BackTitleHeader, useNotifications } from '../../layout/HeaderNav';
+import { RecipeHeader, HomeShoppingHeader, ShoppingHeader, SearchHeader, NotificationHeader, BackTitleHeader, OrderHistoryHeader, MyPageWithBackHeader, RecipeDetailHeader, useNotifications } from '../../layout/HeaderNav';
 import NotificationManager from '../../components/NotificationManagerTest';
 
 const RecommendRecipe = () => {
@@ -233,11 +231,12 @@ const RecommendRecipe = () => {
 
   return (
     <div className={`main-page ${fadeIn ? 'fade-in' : ''}`}>
-      {/* 테스트용: 범용 헤더 사용 - 제목을 변수로 처리 */}
-      <BackTitleHeader 
-        title="알림" 
-        onBack={handleSearchBack} 
-        className="notification-header" 
+      {/* 테스트용: 새로운 범용 헤더들 테스트 */}
+      {/* 주문내역 헤더 테스트 */}
+      <OrderHistoryHeader 
+        onBack={handleSearchBack}
+        onNotificationClick={() => console.log('주문내역 알림 클릭')}
+        onCartClick={() => console.log('주문내역 장바구니 클릭')}
       />
 
       <div className="main-container">
@@ -246,7 +245,7 @@ const RecommendRecipe = () => {
         {activeView === 'recipe' && renderRecipeView()}
       </div>
 
-      <BottomNav />
+      {/* 하단 네비게이션 제거 - 순수 헤더 테스트용 */}
     </div>
   );
 };
