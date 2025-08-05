@@ -122,17 +122,16 @@ body {
 
 /* ===== 메인 이미지 버튼 ===== */
 .image-button-wrapper {
-  width: 80px;
-  height: 80px;
+  width: 100px; /* 버튼 크기 */
+  height: 100px;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: -15px;
-  flex-grow: 0;
+  margin-top: -15px; /* 네비게이션 바 위로 조금 올림 */
   position: relative;
   cursor: pointer;
   transition: all 0.3s ease;
-  z-index: 10000;
+  z-index: 9999; /* 최상위 레이어로 설정 */
 }
 
 .image-button-wrapper:hover {
@@ -156,7 +155,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 -4px 10px rgba(109, 109, 109, 0.1);
+  box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.2);
   background: #ffffff;
   border: 3px solid #f0f0f0;
   transition: all 0.3s ease;
@@ -168,27 +167,27 @@ body {
   box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.3);
 }
 
-/* 콕 텍스트 스타일 */
-.kok-text {
-  color: #000000;
-  font-weight: bold;
-  font-size: 18px;
-  user-select: none;
-  text-align: center; /* 텍스트를 중앙에 정렬 */
-  position: relative; /* 텍스트 중앙 배치 */
+/* 텍스트 스타일 */
+.image-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* 중앙 정렬 */
+  z-index: 1; /* 이미지 위에 표시되도록 설정 */
 }
 
-.image-button-wrapper span {
-  position: absolute;
-  bottom: -25px;
-  left: 50%;
-  transform: translateX(-50%);
-  color: #000000;
-  font-weight: bold;
-  font-size: 12px;
-  pointer-events: none;
+.kok-text {
+  color: #ffffff;
+  font-weight: unset;
+  font-size: 18px;
   user-select: none;
+  transition: color 0.3s ease;
 }
+
+.image-button-wrapper:hover .kok-text {
+  color: #000000;
+}
+
 
 /* ===== 반응형 디자인 ===== */
 @media (max-width: 480px) {

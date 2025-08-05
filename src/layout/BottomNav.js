@@ -92,21 +92,24 @@ const BottomNav = () => {
             {/* 가운데 동그란 버튼 (두 번째 아이템 다음에 추가) */}
             {index === 1 && (
               <div className="image-button-wrapper">
-                <Link to="/main" className="main-button-link">
-                  <div className="image-button">
-                    <img 
-                      src={bottomNavImage} 
-                      alt="메인 버튼" 
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        borderRadius: '50%',
-                        objectFit: 'cover'
-                      }}
-                    />
+              <Link to="/main" className="main-button-link">
+                <div className="image-button">
+                  <div className="image-text">
+                    <span className="kok-text">혹</span>
                   </div>
-                </Link>
-              </div>
+                  <img 
+                    src={bottomNavImage} 
+                    alt="메인 버튼" 
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      borderRadius: '50%',
+                      objectFit: 'cover'
+                    }}
+                  />
+                </div>
+              </Link>
+            </div>            
             )}
           </React.Fragment>
         );
