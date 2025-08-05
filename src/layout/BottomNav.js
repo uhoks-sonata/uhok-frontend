@@ -11,7 +11,9 @@ import bottomIconKok from "../assets/bottom_icon_kok.png";
 // 콕 쇼핑몰 아이콘 (비활성 상태) import
 import bottomIconKokBlack from "../assets/bottom_icon_kok_black.png";
 // 레시피 아이콘 (비활성 상태) import
-import bottomIconReciptBlack from "../assets/bottom_icon_recipt-black.png";
+import bottomIconReciptBlack from "../assets/bottom_icon_recipt_black.png";
+// 레시피 아이콘 (비활성 상태) import
+import bottomIconRecipt from "../assets/bottom_icon_recipt.png";
 // 찜 아이콘 (활성 상태) import
 import bottomIconHeart from "../assets/bottom_icon_heart.png";
 // 찜 아이콘 (비활성 상태) import
@@ -32,36 +34,37 @@ const BottomNav = () => {
   const navItems = [
     {
       path: "/kok", // 콕 쇼핑몰 페이지 경로
-      icon: bottomIconKok, // 활성 상태 아이콘
-      blackIcon: bottomIconKokBlack, // 비활성 상태 아이콘
+      icon: bottomIconKokBlack, // 활성 상태 아이콘 (검은색)
+      blackIcon: bottomIconKok, // 비활성 상태 아이콘 (일반)
       label: "콕 쇼핑몰" // 네비게이션 라벨
     },
     {
-      path: "/test", // 레시피 추천 페이지 경로 (테스트용)
-      icon: bottomIconReciptBlack, // 활성 상태 아이콘
-      blackIcon: bottomIconReciptBlack, // 비활성 상태 아이콘 (동일)
+      path: "/recipe-detail", // 레시피 추천 페이지 경로 (테스트용)
+      icon: bottomIconReciptBlack, // 활성 상태 아이콘 (검은색)
+      blackIcon: bottomIconRecipt, // 비활성 상태 아이콘 (콕 아이콘으로 변경)
       label: "레시피 추천" // 네비게이션 라벨
     },
     {
-      path: "/main", // 홈쇼핑 메인 페이지 경로
-      icon: bottomIconHeart, // 활성 상태 아이콘
-      blackIcon: bottomIconHeartBlack, // 비활성 상태 아이콘
+      path: "/wishlist", // 찜 페이지 경로
+      icon: bottomIconHeartBlack, // 활성 상태 아이콘 (검은색)
+      blackIcon: bottomIconHeart, // 비활성 상태 아이콘 (일반)
       label: "찜" // 네비게이션 라벨
     },
     {
       path: "/mypage", // 마이페이지 경로
-      icon: bottomIconMypage, // 활성 상태 아이콘
-      blackIcon: bottomIconMypageBlack, // 비활성 상태 아이콘
+      icon: bottomIconMypageBlack, // 활성 상태 아이콘 (검은색)
+      blackIcon: bottomIconMypage, // 비활성 상태 아이콘 (일반)
       label: "마이페이지" // 네비게이션 라벨
     }
   ];
 
-  // 하단 네비게이션 JSX 반환
+      // 하단 네비게이션 JSX 반환
   return (
     // 하단 네비게이션 컨테이너
     <nav className="bottom-nav">
+      
       {/* 네비게이션 아이템들을 map으로 순회하여 렌더링 */}
-      {navItems.map((item) => {
+      {navItems.map((item, index) => {
         // 현재 경로가 해당 아이템의 경로와 일치하는지 확인
         const isActive = location.pathname === item.path;
         
@@ -70,21 +73,42 @@ const BottomNav = () => {
         
         // 각 네비게이션 아이템 렌더링
         return (
-          // Link 컴포넌트로 감싸서 클릭 시 해당 경로로 이동
-          <Link
-            key={item.path} // React key prop (고유 식별자)
-            to={item.path} // 이동할 경로
-            className={`nav-item ${isActive ? 'active' : ''}`} // 활성 상태에 따른 CSS 클래스 적용
-          >
-            {/* 네비게이션 아이콘 */}
-            <img
-              src={currentIcon} // 현재 상태에 맞는 아이콘 이미지
-              alt={item.label} // 접근성을 위한 alt 텍스트
-              className="nav-icon" // 아이콘 스타일 클래스
-            />
-            {/* 네비게이션 라벨 */}
-            <span className="nav-label">{item.label}</span>
-          </Link>
+          <React.Fragment key={item.path}>
+            {/* 네비게이션 아이템 */}
+            <Link
+              to={item.path} // 이동할 경로
+              className={`nav-item ${isActive ? 'active' : ''}`} // 활성 상태에 따른 CSS 클래스 적용
+            >
+              {/* 네비게이션 아이콘 */}
+              <img
+                src={currentIcon} // 현재 상태에 맞는 아이콘 이미지
+                alt={item.label} // 접근성을 위한 alt 텍스트
+                className="nav-icon" // 아이콘 스타일 클래스
+              />
+              {/* 네비게이션 라벨 */}
+              <span className="nav-label">{item.label}</span>
+            </Link>
+            
+            {/* 가운데 동그란 버튼 (두 번째 아이템 다음에 추가) */}
+            {index === 1 && (
+              <div className="image-button-wrapper">
+                <Link to="/main" className="main-button-link">
+                  <div className="image-button">
+                    <img 
+                      src={bottomNavImage} 
+                      alt="메인 버튼" 
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        borderRadius: '50%',
+                        objectFit: 'cover'
+                      }}
+                    />
+                  </div>
+                </Link>
+              </div>
+            )}
+          </React.Fragment>
         );
       })}
     </nav>
