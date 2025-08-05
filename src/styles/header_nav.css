@@ -216,6 +216,142 @@
   object-fit: contain;
 }
 
+/* 범용 헤더 스타일 (뒤로가기 + 제목 + 알림 + 장바구니) */
+.back-title-with-icons-header {
+  display: flex;
+  align-items: center;
+  padding: 20px 20px 15px 20px;
+  position: relative;
+  min-height: 60px;
+}
+
+.back-title-with-icons-header .back-btn {
+  position: absolute;
+  left: 20px;
+  z-index: 1;
+}
+
+.back-title-with-icons-header .header-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+  flex: 1;
+  margin: 0;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+}
+
+.back-title-with-icons-header .header-icons {
+  position: absolute;
+  right: 20px;
+  z-index: 1;
+}
+
+/* 주문내역 헤더 특별 스타일 */
+.order-history-header {
+  display: flex;
+  align-items: center;
+  padding: 20px 20px 15px 20px;
+  position: relative;
+  min-height: 60px;
+}
+
+.order-history-header .back-btn {
+  position: absolute;
+  left: 20px;
+  z-index: 1;
+}
+
+.order-history-header .header-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+  flex: 1;
+  margin: 0;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+}
+
+.order-history-header .header-icons {
+  position: absolute;
+  right: 20px;
+  z-index: 1;
+}
+
+/* 마이페이지 헤더 특별 스타일 */
+.mypage-with-back-header {
+  display: flex;
+  align-items: center;
+  padding: 20px 20px 15px 20px;
+  position: relative;
+  min-height: 60px;
+}
+
+.mypage-with-back-header .back-btn {
+  position: absolute;
+  left: 20px;
+  z-index: 1;
+}
+
+.mypage-with-back-header .header-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+  flex: 1;
+  margin: 0;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+}
+
+.mypage-with-back-header .header-icons {
+  position: absolute;
+  right: 20px;
+  z-index: 1;
+}
+
+/* 레시피 상세 헤더 특별 스타일 */
+.recipe-detail-header {
+  display: flex;
+  align-items: center;
+  padding: 20px 20px 15px 20px;
+  position: relative;
+  min-height: 60px;
+}
+
+.recipe-detail-header .back-btn {
+  position: absolute;
+  left: 20px;
+  z-index: 1;
+}
+
+.recipe-detail-header .header-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+  flex: 1;
+  margin: 0;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+}
+
+.recipe-detail-header .header-icons {
+  position: absolute;
+  right: 20px;
+  z-index: 1;
+}
+
 /* ===== 반응형 디자인 ===== */
 @media (max-width: 480px) {
   .header {

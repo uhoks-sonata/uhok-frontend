@@ -12,6 +12,12 @@ import Signup from './pages/user/Signup';
 import Main from './pages/home_shopping/HomeShoppingMain';
 // 레시피 추천 테스트 페이지 컴포넌트 import
 import RecommendRecipe from './features/kok/BellBucketTest';
+// 주문내역 헤더 테스트 페이지 컴포넌트 import
+import OrderHistoryTest from './features/kok/OrderHistoryTest';
+// 마이페이지 헤더 테스트 페이지 컴포넌트 import  
+import MyPageTest from './features/kok/MyPageTest';
+// 레시피 상세 헤더 테스트 페이지 컴포넌트 import
+import RecipeDetailTest from './features/kok/RecipeDetailTest';
 // 전역 알림 상태 관리 Provider import
 import { NotificationProvider } from './layout/HeaderNav';
 
@@ -38,6 +44,12 @@ function App() {
               <Route path="/main" element={<Main />} />
               {/* 테스트 경로 (/test) - 레시피 추천 테스트 페이지 */}
               <Route path="/test" element={<RecommendRecipe />} />
+              {/* 주문내역 헤더 테스트 경로 (/order-history) */}
+              <Route path="/order-history" element={<OrderHistoryTest />} />
+              {/* 마이페이지 헤더 테스트 경로 (/mypage-test) */}
+              <Route path="/mypage-test" element={<MyPageTest />} />
+              {/* 레시피 상세 헤더 테스트 경로 (/recipe-detail) */}
+              <Route path="/recipe-detail" element={<RecipeDetailTest />} />
             </Routes>
           </Router>
         </div>
