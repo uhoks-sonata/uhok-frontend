@@ -1,6 +1,6 @@
 // React와 필요한 훅들을 가져옵니다
 import React, { useState, useEffect } from 'react';
-// 마이페이지 헤더 컴포넌트를 가져옵니다
+// 상단 네비게이션 컴포넌트를 가져옵니다
 import { MyPageHeader } from '../../layout/HeaderNav';
 // 하단 네비게이션 컴포넌트를 가져옵니다
 import BottomNav from '../../layout/BottomNav';
@@ -165,13 +165,7 @@ const MyPage = () => {
     fetchMyPageData();
   }, []); // 빈 배열을 의존성으로 설정하여 컴포넌트 마운트 시에만 실행됩니다
 
-  // 뒤로가기 버튼 클릭 시 실행되는 핸들러 함수를 정의합니다
-  const handleBackClick = () => {
-    // 콘솔에 클릭 로그를 출력합니다
-    console.log('뒤로가기 버튼 클릭');
-    // 이전 페이지로 이동합니다
-    window.history.back();
-  };
+
 
   // 주문 내역 클릭 시 실행되는 핸들러 함수를 정의합니다
   const handleOrderHistoryClick = () => {
@@ -191,7 +185,7 @@ const MyPage = () => {
   if (loading) {
     return (
       <div className="mypage-page">
-        {/* 마이페이지 헤더 컴포넌트를 렌더링합니다 */}
+        {/* 상단 네비게이션 */}
         <MyPageHeader />
         {/* 메인 콘텐츠 영역 */}
         <div className="mypage-content">
@@ -208,7 +202,7 @@ const MyPage = () => {
   if (error) {
     return (
       <div className="mypage-page">
-        {/* 마이페이지 헤더 컴포넌트를 렌더링합니다 */}
+        {/* 상단 네비게이션 */}
         <MyPageHeader />
         {/* 메인 콘텐츠 영역 */}
         <div className="mypage-content">
@@ -224,32 +218,34 @@ const MyPage = () => {
   // 정상적인 마이페이지를 렌더링합니다
   return (
     <div className="mypage-page">
-      {/* 마이페이지 헤더 */}
+      {/* 상단 네비게이션 */}
       <MyPageHeader />
-
       {/* 메인 콘텐츠 */}
       <div className="mypage-content">
-        {/* 유저 정보 카드 */}
-        <div className="user-info-card">
-          {/* 프로필 이미지 - 기본 사용자 아이콘 사용 */}
-          <div className="profile-image">
-            <img src={userIcon} alt="프로필" />
-          </div>
-          
-          {/* 유저 정보 */}
-          <div className="user-details">
-            {/* 유저 이름을 표시합니다 (API에서 받아옴) */}
-            <div className="user-name">{userData.username} 님</div>
-            {/* 유저 이메일을 표시합니다 (API에서 받아옴) */}
-            <div className="user-email">{userData.email}</div>
-          </div>
-          
-          {/* 주문 내역 링크 */}
-          <div className="order-history-link" onClick={handleOrderHistoryClick}>
-            <span className="order-history-text">주문 내역</span>
-            <span className="order-count">{userData.orderCount} &gt;</span>
-          </div>
-        </div>
+                 {/* 유저 정보 카드 */}
+         <div className="user-info-card">
+           {/* 사용자 정보 컨텐츠 */}
+           <div className="user-info-content">
+             {/* 프로필 이미지 - 기본 사용자 아이콘 사용 */}
+             <div className="profile-image">
+               <img src={userIcon} alt="프로필" />
+             </div>
+             
+             {/* 유저 정보 */}
+             <div className="user-details">
+               {/* 유저 이름을 표시합니다 (API에서 받아옴) */}
+               <div className="user-name">{userData.username} 님</div>
+               {/* 유저 이메일을 표시합니다 (API에서 받아옴) */}
+               <div className="user-email">{userData.email}</div>
+             </div>
+           </div>
+           
+           {/* 주문 내역 링크 */}
+           <div className="order-history-link" onClick={handleOrderHistoryClick}>
+             <span className="order-history-text">주문 내역</span>
+             <span className="order-count">{userData.orderCount} &gt;</span>
+           </div>
+         </div>
 
         {/* 최근 주문 섹션 */}
         <div className="recent-orders-section">

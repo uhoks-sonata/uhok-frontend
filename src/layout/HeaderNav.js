@@ -292,13 +292,25 @@ export const BackTitleHeader = ({ title, onBack, className = "" }) => {
 
 // ===== 5. 마이페이지 헤더 컴포넌트 =====
 // 마이페이지에서 사용하는 헤더 (제목 + 알림 + 장바구니 기능)
-export const MyPageHeader = () => {
+export const MyPageHeader = ({ onBack }) => {
   // 전역 알림 및 장바구니 상태 가져오기
   const { notificationCount, cartCount } = useNotifications();
+
+  // 뒤로가기 버튼 클릭 핸들러
+  const handleBack = () => {
+    if (onBack) {
+      onBack(); // 부모 컴포넌트에서 전달받은 뒤로가기 함수 실행
+    } else {
+      window.history.back(); // 브라우저 히스토리 뒤로가기 (기본 동작)
+    }
+  };
 
   // 마이페이지 헤더 JSX 반환
   return (
     <div className="header mypage-header">
+      {/* 뒤로가기 버튼 (왼쪽 고정) */}
+      <button className="back-btn" onClick={handleBack}>←</button>
+      
       {/* 페이지 제목 */}
       <h1 className="header-title">마이페이지</h1>
       
