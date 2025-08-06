@@ -68,8 +68,8 @@ body {
 
 /* 네비게이션 아이콘 스타일 */
 .bottom-nav .nav-icon {
-  width: 24px;
-  height: 24px;
+  width: 35px;
+  height: 35px;
   margin-bottom: 4px;
   object-fit: contain;
 }
@@ -119,8 +119,8 @@ body {
 .bottom-nav a:hover .nav-icon,
 .bottom-nav a.nav-item:hover .nav-icon,
 .bottom-nav a:hover img.nav-icon {
-  width: 44px !important;
-  height: 44px !important;
+  width: 50px !important;
+  height: 50px !important;
   filter: brightness(0.8) saturate(1.2);
 }
 
@@ -128,8 +128,8 @@ body {
 .bottom-nav a.active .nav-icon,
 .bottom-nav a.nav-item.active .nav-icon,
 .bottom-nav a.active img.nav-icon {
-  width: 42px !important;
-  height: 42px !important;
+  /* width: 42px !important;
+  height: 42px !important; */
   filter: brightness(0.8) saturate(1.2);
 }
 
