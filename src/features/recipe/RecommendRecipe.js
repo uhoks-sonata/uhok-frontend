@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/recommend_recipe.css';
-import { RecipeHeader, HomeShoppingHeader, ShoppingHeader, SearchHeader, NotificationHeader, BackTitleHeader, OrderHistoryHeader, MyPageWithBackHeader, RecipeDetailHeader, useNotifications } from '../../layout/HeaderNav';
-import NotificationManager from '../../components/NotificationManagerTest';
+import BottomNav from '../../layout/BottomNav';
 
-const RecommendRecipe = () => {
+const Main = () => {
   const [fadeIn, setFadeIn] = useState(false);
   const [activeView, setActiveView] = useState('main'); // 'main', 'ingredients', 'recipe'
   const [searchQuery, setSearchQuery] = useState('');
   const [ingredientsList, setIngredientsList] = useState([]);
   const [recipeList, setRecipeList] = useState([]);
   const [loading, setLoading] = useState(false);
-  const { notificationCount, cartCount, addNotification, clearNotifications, addToCart, clearCart } = useNotifications();
 
   const navigate = useNavigate();
 
@@ -91,39 +89,10 @@ const RecommendRecipe = () => {
     setRecipeList([]);
   };
 
-  // 검색 핸들러 (기존)
-  const handleSearchSubmit = (e) => {
+  // 검색 핸들러
+  const handleSearch = (e) => {
     e.preventDefault();
     console.log('검색어:', searchQuery);
-    // 검색 로직 구현
-  };
-
-  // 홈쇼핑 헤더 검색 핸들러
-  const handleHomeShoppingSearch = (query) => {
-    console.log('홈쇼핑 검색어:', query);
-    // 홈쇼핑 검색 로직 구현
-  };
-
-  // 홈쇼핑 헤더 알림 핸들러
-  const handleHomeShoppingNotification = () => {
-    console.log('홈쇼핑 알림창 클릭');
-    // 홈쇼핑 알림창 인터페이스 전환 로직
-  };
-
-
-
-  // 검색 헤더 핸들러들
-  const handleSearchBack = () => {
-    // 메인 화면에서는 뒤로가기 시 이전 페이지로 이동
-    if (activeView === 'main') {
-      navigate('/main');
-    } else {
-      setActiveView('main');
-    }
-  };
-
-  const handleSearchQuery = (query) => {
-    console.log('검색어:', query);
     // 검색 로직 구현
   };
 
@@ -137,9 +106,9 @@ const RecommendRecipe = () => {
             placeholder="상품 검색"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSearchSubmit(e)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSearch(e)}
           />
-          <button onClick={handleSearchSubmit}>🔍</button>
+          <button onClick={handleSearch}>🔍</button>
         </div>
       </div>
       
@@ -148,7 +117,7 @@ const RecommendRecipe = () => {
           className="ingredients-btn"
           onClick={handleIngredientsClick}
         >
-          <span className="icon">📦</span>
+          <span className="icon">��</span>
           <span className="text">재료 소진</span>
         </button>
         
@@ -156,13 +125,13 @@ const RecommendRecipe = () => {
           className="recipe-btn"
           onClick={handleRecipeClick}
         >
-          <span className="icon">👨‍🍳</span>
+          <span className="icon">👨‍��</span>
           <span className="text">레시피 추천</span>
         </button>
       </div>
       
       <div className="content-area">
-        <NotificationManager />
+        {/* 검색 결과나 다른 콘텐츠가 표시될 영역 */}
       </div>
     </div>
   );
@@ -231,13 +200,25 @@ const RecommendRecipe = () => {
 
   return (
     <div className={`main-page ${fadeIn ? 'fade-in' : ''}`}>
-      {/* 테스트용: 새로운 범용 헤더들 테스트 */}
-      {/* 주문내역 헤더 테스트 */}
-      <OrderHistoryHeader 
-        onBack={handleSearchBack}
-        onNotificationClick={() => console.log('주문내역 알림 클릭')}
-        onCartClick={() => console.log('주문내역 장바구니 클릭')}
-      />
+      <div className="top-bar">
+        {activeView !== 'main' && (
+          <button className="back-btn" onClick={handleBackClick}>←</button>
+        )}
+        <div className="search-container">
+          <input
+            type="text"
+            placeholder="상품 검색"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSearch(e)}
+          />
+          <button className="search-btn">🔍</button>
+        </div>
+        <div className="top-icons">
+          <button className="notification-btn">��</button>
+          <button className="cart-btn">🛒<span className="cart-count">1</span></button>
+        </div>
+      </div>
 
       <div className="main-container">
         {activeView === 'main' && renderMainView()}
@@ -245,9 +226,9 @@ const RecommendRecipe = () => {
         {activeView === 'recipe' && renderRecipeView()}
       </div>
 
-      {/* 하단 네비게이션 제거 - 순수 헤더 테스트용 */}
+      <BottomNav />
     </div>
   );
 };
 
-export default RecommendRecipe; 
+export default Main;
