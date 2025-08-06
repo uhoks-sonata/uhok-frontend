@@ -4,6 +4,13 @@ import ProductSection from '../../components/ProductSection';
 import BottomNav from '../../layout/BottomNav';
 import '../../styles/home_shopping_main.css';
 
+// 상품 데이터 import
+import { 
+  discountProducts, 
+  highSellingProducts, 
+  nonDuplicatedProducts 
+} from '../../data/products';
+
 const HomeShoppingMain = () => {
   const [fadeIn, setFadeIn] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -20,232 +27,7 @@ const HomeShoppingMain = () => {
     // 여기에 알림 관련 로직을 구현할 수 있습니다
   };
 
-  // 더미 데이터
-  const discountProducts = [
-    {
-      id: 1,
-      name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
-      originalPrice: 150000,
-      discountPrice: 124000,
-      discountRate: 17,
-      image: "/test1.png",
-      rating: 4.4,
-      reviewCount: 23,
-      isSpecial: true
-    },
-    {
-      id: 2,
-      name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
-      originalPrice: 150000,
-      discountPrice: 124000,
-      discountRate: 17,
-      image: "/test1.png",
-      rating: 4.4,
-      reviewCount: 23,
-      isSpecial: true
-    },
-    {
-      id: 3,
-      name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
-      originalPrice: 150000,
-      discountPrice: 124000,
-      discountRate: 17,
-      image: "/test1.png",
-      rating: 4.4,
-      reviewCount: 23,
-      isSpecial: true
-    },
-    {
-      id: 4,
-      name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
-      originalPrice: 150000,
-      discountPrice: 124000,
-      discountRate: 17,
-      image: "/test1.png",
-      rating: 4.4,
-      reviewCount: 23,
-      isSpecial: true
-    },
-    {
-      id: 5,
-      name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
-      originalPrice: 150000,
-      discountPrice: 124000,
-      discountRate: 17,
-      image: "/test1.png",
-      rating: 4.4,
-      reviewCount: 23,
-      isSpecial: true
-    },
-    {
-      id: 6,
-      name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
-      originalPrice: 150000,
-      discountPrice: 124000,
-      discountRate: 17,
-      image: "/test1.png",
-      rating: 4.4,
-      reviewCount: 23,
-      isSpecial: true
-    },
-    {
-      id: 7,
-      name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
-      originalPrice: 150000,
-      discountPrice: 124000,
-      discountRate: 17,
-      image: "/test1.png",
-      rating: 4.4,
-      reviewCount: 23,
-      isSpecial: true
-    },
-    {
-      id: 8,
-      name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
-      originalPrice: 150000,
-      discountPrice: 124000,
-      discountRate: 17,
-      image: "/test1.png",
-      rating: 4.4,
-      reviewCount: 23,
-      isSpecial: true
-    },
-    {
-      id: 9,
-      name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
-      originalPrice: 150000,
-      discountPrice: 124000,
-      discountRate: 17,
-      image: "/test1.png",
-      rating: 4.4,
-      reviewCount: 23,
-      isSpecial: true
-    },
-    {
-      id: 10,
-      name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
-      originalPrice: 150000,
-      discountPrice: 124000,
-      discountRate: 17,
-      image: "/test1.png",
-      rating: 4.4,
-      reviewCount: 23,
-      isSpecial: true
-    },
-    {
-      id: 11,
-      name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
-      originalPrice: 150000,
-      discountPrice: 124000,
-      discountRate: 17,
-      image: "/test1.png",
-      rating: 4.4,
-      reviewCount: 23,
-      isSpecial: true
-    },
-    {
-      id: 12,
-      name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
-      originalPrice: 150000,
-      discountPrice: 124000,
-      discountRate: 17,
-      image: "/test1.png",
-      rating: 4.4,
-      reviewCount: 23,
-      isSpecial: true
-    }
-  ];
 
-  const highSellingProducts = [
-    {
-      id: 13,
-      name: "전라도식 파김치",
-      originalPrice: 13600,
-      discountPrice: 13600,
-      discountRate: 51,
-      image: "/test2.png",
-      rating: 4.1,
-      reviewCount: 17
-    },
-    {
-      id: 14,
-      name: "전라도식 파김치",
-      originalPrice: 13600,
-      discountPrice: 13600,
-      discountRate: 51,
-      image: "/test2.png",
-      rating: 4.1,
-      reviewCount: 17
-    },
-    {
-      id: 15,
-      name: "전라도식 파김치",
-      originalPrice: 13600,
-      discountPrice: 13600,
-      discountRate: 51,
-      image: "/test2.png",
-      rating: 4.1,
-      reviewCount: 17
-    }
-  ];
-
-  const nonDuplicatedProducts = [
-    {
-      id: 16,
-      name: "햅쌀",
-      originalPrice: 25000,
-      discountPrice: 20900,
-      discountRate: 16,
-      image: "/test3.png",
-      rating: 4.8,
-      reviewCount: 24,
-      isSpecial: true
-    },
-    {
-      id: 17,
-      name: "햅쌀",
-      originalPrice: 25000,
-      discountPrice: 20900,
-      discountRate: 16,
-      image: "/test3.png",
-      rating: 4.8,
-      reviewCount: 24,
-      isSpecial: true
-    },
-    {
-      id: 18,
-      name: "햅쌀",
-      originalPrice: 25000,
-      discountPrice: 20900,
-      discountRate: 16,
-      image: "/test3.png",
-      rating: 4.8,
-      reviewCount: 24,
-      isSpecial: true
-    },
-    {
-      id: 19,
-      name: "햅쌀",
-      originalPrice: 25000,
-      discountPrice: 20900,
-      discountRate: 16,
-      image: "/test3.png",
-      rating: 4.8,
-      reviewCount: 24,
-      isSpecial: true
-    },
-    {
-      id: 20,
-      name: "햅쌀",
-      originalPrice: 25000,
-      discountPrice: 20900,
-      discountRate: 16,
-      image: "/test3.png",
-      rating: 4.8,
-      reviewCount: 24,
-      isSpecial: true
-    }
-  ];
 
 
 
@@ -263,53 +45,56 @@ const HomeShoppingMain = () => {
       />
       
       <main className="main-content">
-        <ProductSection 
-          title="할인 특가 상품" 
-          products={discountProducts} 
-          type="discount-grid"
-          showMore={true}
-          sectionStyle={{
-            margin: '0 0 24px 0'
-          }}
-          containerStyle={{
-            gap: '12px'
-          }}
-                     cardStyle={{
+                                                   <ProductSection 
+           title="할인 특가 상품" 
+           products={discountProducts.slice(0, 12)} 
+           type="discount-grid"
+           showMore={true}
+           sectionStyle={{
+             margin: '0 0 24px 0',
+             padding: '0 0px'
+           }}
+           containerStyle={{
+             gap: '12px'
+           }}
+                       cardStyle={{
              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
            }}
-        />
+         />
         
-        <ProductSection 
+                <ProductSection 
           title="판매율 높은 상품" 
-          products={highSellingProducts} 
+          products={highSellingProducts.slice(0, 3)} 
           type="fixed"
           showMore={true}
           sectionStyle={{
-            margin: '0 0 24px 0'
+            margin: '0 0 24px 0',
+            padding: '0 0px'
           }}
           containerStyle={{
             gap: '4px'
           }}
                      cardStyle={{
-             boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
-           }}
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+          }}
         />
         
-        <ProductSection 
-          title="구매한 스토어 내 리뷰 많은 상품" 
-          products={nonDuplicatedProducts} 
-          type="non-duplicated-grid"
-          showMore={true}
-          sectionStyle={{
-            margin: '0 0 24px 0'
-          }}
-          containerStyle={{
-            gap: '14px'
-          }}
-                     cardStyle={{
-             boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
-           }}
-        />
+                                   <ProductSection 
+            title="구매한 스토어 내 리뷰 많은 상품" 
+            products={nonDuplicatedProducts.slice(0, 5)} 
+            type="non-duplicated-grid"
+            showMore={true}
+            sectionStyle={{
+              margin: '0 0 24px 0',
+              padding: '0 0px'
+            }}
+            containerStyle={{
+              gap: '14px'
+            }}
+                       cardStyle={{
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+            }}
+         />
 
 
       </main>

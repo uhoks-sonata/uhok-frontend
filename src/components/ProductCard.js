@@ -37,7 +37,7 @@ const ProductCard = ({ product, type = 'default', style = {} }) => {
         <h3 className="product-name">{name}</h3>
         {(type === 'default' || type === 'special' || type === 'grid' || type === 'fixed' || type === 'non-duplicated-grid') && (
           <div className="rating-info">
-            <span className="stars">★ {rating}</span>
+            <span className="stars">★ {rating.toFixed(1)}</span>
             <span className="review-count">({reviewCount})</span>
           </div>
         )}

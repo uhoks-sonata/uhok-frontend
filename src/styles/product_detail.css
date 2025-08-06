@@ -3,12 +3,18 @@
   max-width: 480px;
   margin: 0 auto;
   background-color: #ffffff;
-  height: 100vh; /* min-height에서 height로 변경 */
+  min-height: 100vh;
   position: relative;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* 전체 페이지에서 스크롤 방지 */
+  overflow: hidden; /* 전체 페이지 스크롤 제거 */
+  height: 100vh; /* 명시적으로 높이 설정 */
+  position: fixed; /* 고정 위치로 설정 */
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
 }
 
 /* 탭 네비게이션 */
@@ -71,14 +77,15 @@
 /* 탭 컨텐츠 */
 .tab-content-container {
   flex: 1 !important;
-  overflow-y: scroll !important;
+  overflow-y: auto !important;
   background-color: #ffffff !important;
   padding-bottom: 100px !important;
   position: relative !important;
   z-index: 1 !important;
   display: block !important;
   width: 100% !important;
-  height: auto !important;
+  height: 0 !important; /* flex 아이템에서 높이를 0으로 설정 */
+  min-height: 0 !important; /* flex 아이템에서 최소 높이도 0으로 설정 */
 }
 
 .tab-content {
@@ -88,6 +95,7 @@
   display: block !important;
   width: 100% !important;
   background-color: #ffffff !important;
+  overflow-y: auto !important;
 }
 
 @keyframes fadeIn {
@@ -517,6 +525,15 @@
 
 .purchase-button:hover {
   background-color: #e04a7a;
+}
+
+/* 제품 컨텐츠 영역 */
+.product-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  height: 0; /* flex 아이템에서 높이를 0으로 설정하여 스크롤이 제대로 작동하도록 함 */
+  min-height: 0; /* flex 아이템에서 최소 높이도 0으로 설정 */
 }
 
 /* 반응형 디자인 */

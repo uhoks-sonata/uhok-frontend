@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ProductCard from './ProductCard';
 import '../styles/product_section.css';
 
@@ -12,6 +13,7 @@ const ProductSection = ({
   cardStyle = {}
 }) => {
   const containerRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // grid 타입들일 때만 마우스 드래그 기능 추가
@@ -104,17 +106,31 @@ const ProductSection = ({
     }
   }, [type]);
 
+  const handleMoreClick = () => {
+    // 섹션 타입에 따라 다른 경로로 이동
+    let sectionType = '';
+    switch (type) {
+      case 'discount-grid':
+        sectionType = 'discount';
+        break;
+      case 'fixed':
+        sectionType = 'high-selling';
+        break;
+      case 'non-duplicated-grid':
+        sectionType = 'reviews';
+        break;
+      default:
+        sectionType = 'all';
+    }
+    navigate(`/products/${sectionType}`);
+  };
+
   return (
     <div className="product-section" style={sectionStyle}>
       <div className="section-header">
         <h2 className="section-title">{title}</h2>
-        {showMore && (type === 'discount-grid' || type === 'non-duplicated-grid') && (
-          <button className="more-button">
-            <img src="/right_arrow.webp" alt="더보기" className="arrow-image" />
-          </button>
-        )}
-        {showMore && type !== 'discount-grid' && type !== 'non-duplicated-grid' && (
-          <button className="more-button">
+        {showMore && (
+          <button className="more-button" onClick={handleMoreClick}>
             더보기 <span className="arrow">{'>'}</span>
           </button>
         )}

@@ -14,6 +14,7 @@ import Signup from './pages/user/Signup';
 // 홈쇼핑 관련 페이지
 import HomeShoppingMain from './pages/home_shopping/HomeShoppingMain';
 import ProductDetail from './pages/home_shopping/ProductDetail';
+import ProductListPage from './pages/home_shopping/ProductListPage';
 
 // ===== 기능별 컴포넌트들 import =====
 // KOK 관련 컴포넌트
@@ -72,6 +73,8 @@ function App() {
               <Route path="/main" element={<HomeShoppingMain />} />
               {/* 제품 상세 경로 (/product/:productId) - 제품 상세 페이지 */}
               <Route path="/product/:productId" element={<ProductDetail />} />
+              {/* 제품 목록 경로 (/products/:sectionType) - 제품 목록 페이지 */}
+              <Route path="/products/:sectionType" element={<ProductListPage />} />
               
               {/* 알림 관리 테스트 경로 (/notification-test) */}
               <Route path="/notification-test" element={<NotificationManagerTest />} />
