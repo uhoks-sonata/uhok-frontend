@@ -11,6 +11,11 @@ const RecommendRecipe = () => {
   const [ingredientsList, setIngredientsList] = useState([]);
   const [recipeList, setRecipeList] = useState([]);
   const [loading, setLoading] = useState(false);
+  // 버튼 클릭 상태 관리
+  const [ingredientsClicked, setIngredientsClicked] = useState(false);
+  const [recipeClicked, setRecipeClicked] = useState(false);
+  const [searchClicked, setSearchClicked] = useState(false);
+  const [notificationClicked, setNotificationClicked] = useState(false);
   const { notificationCount, cartCount, addNotification, clearNotifications, addToCart, clearCart } = useNotifications();
 
   const navigate = useNavigate();
@@ -21,6 +26,11 @@ const RecommendRecipe = () => {
 
   // 재고소진 버튼 클릭 핸들러
   const handleIngredientsClick = async () => {
+    setIngredientsClicked(true);
+    console.log('재료 소진 버튼이 클릭되었습니다!');
+    // 3초 후 상태 초기화
+    setTimeout(() => setIngredientsClicked(false), 3000);
+    
     setActiveView('ingredients');
     setLoading(true);
     
@@ -44,6 +54,11 @@ const RecommendRecipe = () => {
 
   // 레시피 추천 버튼 클릭 핸들러
   const handleRecipeClick = async () => {
+    setRecipeClicked(true);
+    console.log('레시피 추천 버튼이 클릭되었습니다!');
+    // 3초 후 상태 초기화
+    setTimeout(() => setRecipeClicked(false), 3000);
+    
     setActiveView('recipe');
     setLoading(true);
     
@@ -94,7 +109,11 @@ const RecommendRecipe = () => {
   // 검색 핸들러 (기존)
   const handleSearchSubmit = (e) => {
     e.preventDefault();
+    setSearchClicked(true);
+    console.log('검색 버튼이 클릭되었습니다!');
     console.log('검색어:', searchQuery);
+    // 3초 후 상태 초기화
+    setTimeout(() => setSearchClicked(false), 3000);
     // 검색 로직 구현
   };
 
@@ -106,7 +125,10 @@ const RecommendRecipe = () => {
 
   // 홈쇼핑 헤더 알림 핸들러
   const handleHomeShoppingNotification = () => {
-    console.log('홈쇼핑 알림창 클릭');
+    setNotificationClicked(true);
+    console.log('알림 버튼이 클릭되었습니다!');
+    // 3초 후 상태 초기화
+    setTimeout(() => setNotificationClicked(false), 3000);
     // 홈쇼핑 알림창 인터페이스 전환 로직
   };
 
@@ -163,6 +185,26 @@ const RecommendRecipe = () => {
       
       <div className="content-area">
         <NotificationManager />
+      </div>
+      
+      {/* 테스트 결과 표시 */}
+      <div style={{ marginTop: '20px', padding: '20px', backgroundColor: '#f5f5f5', borderRadius: '8px' }}>
+        <h3>테스트 결과:</h3>
+        <p>재료 소진 버튼 클릭: {ingredientsClicked ? '✅ 클릭됨' : '❌ 클릭되지 않음'}</p>
+        <p>레시피 추천 버튼 클릭: {recipeClicked ? '✅ 클릭됨' : '❌ 클릭되지 않음'}</p>
+        <p>검색 버튼 클릭: {searchClicked ? '✅ 클릭됨' : '❌ 클릭되지 않음'}</p>
+        <p>알림 버튼 클릭: {notificationClicked ? '✅ 클릭됨' : '❌ 클릭되지 않음'}</p>
+        
+        <div style={{ marginTop: '20px' }}>
+          <h4>사용법:</h4>
+          <ul>
+            <li>위의 "재료 소진" 버튼을 클릭해보세요</li>
+            <li>위의 "레시피 추천" 버튼을 클릭해보세요</li>
+            <li>검색창에서 검색 버튼을 클릭해보세요</li>
+            <li>헤더의 알림 아이콘을 클릭해보세요</li>
+            <li>콘솔에서 로그를 확인하세요</li>
+          </ul>
+        </div>
       </div>
     </div>
   );

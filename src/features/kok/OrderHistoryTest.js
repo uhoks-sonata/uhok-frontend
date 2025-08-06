@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 // 스타일 CSS 파일 import
 import '../../styles/recommend_recipe.css';
-// 주문내역 헤더 및 전역 알림 상태 관리 import
-import { OrderHistoryHeader, useNotifications } from '../../layout/HeaderNav';
+// 주문내역 헤더 import
+import { OrderHistoryHeader } from '../../layout/HeaderNav';
 
 // ===== 주문내역 헤더 테스트 컴포넌트 =====
 // 주문내역 페이지의 헤더를 테스트하는 컴포넌트
@@ -13,8 +13,13 @@ import { OrderHistoryHeader, useNotifications } from '../../layout/HeaderNav';
 const OrderHistoryTest = () => {
   // 페이드인 애니메이션 상태 관리
   const [fadeIn, setFadeIn] = useState(false);
-  // 전역 장바구니 상태 관리 (알림 카운트는 제거됨)
-  const { addToCart } = useNotifications();
+  // 뒤로가기 클릭 상태 관리
+  const [backClicked, setBackClicked] = useState(false);
+  // 알림 클릭 상태 관리
+  const [notificationClicked, setNotificationClicked] = useState(false);
+  // 장바구니 클릭 상태 관리
+  const [cartClicked, setCartClicked] = useState(false);
+
   // 페이지 네비게이션 훅
   const navigate = useNavigate();
 
@@ -25,20 +30,29 @@ const OrderHistoryTest = () => {
 
   // 뒤로가기 핸들러 - 메인 페이지로 이동
   const handleBack = () => {
+    setBackClicked(true);
+    console.log('뒤로가기 버튼이 클릭되었습니다!');
+    // 3초 후 상태 초기화
+    setTimeout(() => setBackClicked(false), 3000);
     navigate('/main');
   };
 
   // 알림 클릭 핸들러 (카운트 없이 버튼 역할만)
   const handleNotificationClick = () => {
-    console.log('주문내역 알림 클릭');
-    // 여기에 알림창 인터페이스 전환 로직 추가 가능
+    setNotificationClicked(true);
+    console.log('알림 버튼이 클릭되었습니다!');
+    // 3초 후 상태 초기화
+    setTimeout(() => setNotificationClicked(false), 3000);
   };
 
-  // 장바구니 클릭 핸들러 (카운트 증가 포함)
+  // 장바구니 클릭 핸들러 (장바구니 페이지로 이동)
   const handleCartClick = () => {
-    addToCart(); // 전역 장바구니 개수 증가
-    console.log('주문내역 장바구니 클릭');
-    // 여기에 장바구니 인터페이스 전환 로직 추가 가능
+    setCartClicked(true);
+    console.log('장바구니 버튼이 클릭되었습니다!');
+    // 3초 후 상태 초기화
+    setTimeout(() => setCartClicked(false), 3000);
+    // 여기에 장바구니 페이지로 이동하는 로직 추가 가능
+    navigate('/cart-test');
   };
 
   // 주문내역 테스트 페이지 JSX 반환
@@ -57,6 +71,24 @@ const OrderHistoryTest = () => {
           <h2>주문내역 페이지</h2>
           <p>주문내역 헤더 테스트 중입니다.</p>
           <p>뒤로가기, 알림, 장바구니 버튼을 테스트해보세요.</p>
+          
+          {/* 테스트 결과 표시 */}
+          <div style={{ marginTop: '20px', padding: '20px', backgroundColor: '#f5f5f5', borderRadius: '8px' }}>
+            <h3>테스트 결과:</h3>
+            <p>뒤로가기 버튼 클릭: {backClicked ? '✅ 클릭됨' : '❌ 클릭되지 않음'}</p>
+            <p>알림 버튼 클릭: {notificationClicked ? '✅ 클릭됨' : '❌ 클릭되지 않음'}</p>
+            <p>장바구니 버튼 클릭: {cartClicked ? '✅ 클릭됨' : '❌ 클릭되지 않음'}</p>
+            
+            <div style={{ marginTop: '20px' }}>
+              <h4>사용법:</h4>
+              <ul>
+                <li>왼쪽의 뒤로가기 버튼을 클릭해보세요</li>
+                <li>오른쪽의 알림 아이콘을 클릭해보세요</li>
+                <li>오른쪽의 장바구니 아이콘을 클릭해보세요</li>
+                <li>콘솔에서 로그를 확인하세요</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
     </div>
