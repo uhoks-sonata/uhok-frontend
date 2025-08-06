@@ -9,6 +9,26 @@ import './styles/App.css';
 // 사용자 관련 페이지
 import Login from './pages/user/Login';
 import Signup from './pages/user/Signup';
+
+
+// 홈쇼핑 관련 페이지
+import HomeShoppingMain from './pages/home_shopping/HomeShoppingMain';
+import ProductDetail from './pages/home_shopping/ProductDetail';
+
+// ===== 기능별 컴포넌트들 import =====
+// KOK 관련 컴포넌트
+import BellBucketTest from './features/kok/BellBucketTest';
+
+// ===== 레이아웃 컴포넌트들 import =====
+import { HomeShoppingHeader, ShoppingHeader, SearchHeader, MyPageHeader, RecipeHeader } from './layout/HeaderNav';
+import BottomNav from './layout/BottomNav';
+
+// ===== 일반 컴포넌트들 import =====
+import ProductCard from './components/ProductCard';
+import ProductSection from './components/ProductSection';
+import NotificationManagerTest from './components/NotificationManagerTest';
+
+// ===== 전역 상태 관리 Provider import =====
 // 홈쇼핑 메인 페이지 컴포넌트 import
 import Main from './pages/home_shopping/HomeShoppingMain';
 // 레시피 추천 테스트 페이지 컴포넌트 import
@@ -49,6 +69,23 @@ function App() {
               
               {/* ===== 홈쇼핑 라우트 ===== */}
               {/* 홈쇼핑 메인 경로 (/main) - 홈쇼핑 메인 페이지 */}
+              <Route path="/main" element={<HomeShoppingMain />} />
+              {/* 제품 상세 경로 (/product/:productId) - 제품 상세 페이지 */}
+              <Route path="/product/:productId" element={<ProductDetail />} />
+              
+              {/* 알림 관리 테스트 경로 (/notification-test) */}
+              <Route path="/notification-test" element={<NotificationManagerTest />} />
+              
+              {/* 헤더 네비게이션 테스트 경로들 */}
+              <Route path="/header-nav-test" element={<HomeShoppingHeader />} />
+              <Route path="/shopping-header-test" element={<ShoppingHeader />} />
+              <Route path="/search-header-test" element={<SearchHeader />} />
+              <Route path="/mypage-header-test" element={<MyPageHeader />} />
+              <Route path="/recipe-header-test" element={<RecipeHeader />} />
+              
+              {/* 하단 네비게이션 테스트 경로 (/bottom-nav-test) */}
+              <Route path="/bottom-nav-test" element={<BottomNav />} />
+              
               <Route path="/main" element={<Main />} />
               {/* 테스트 경로 (/test) - 레시피 추천 테스트 페이지 */}
               <Route path="/test" element={<RecommendRecipe />} />

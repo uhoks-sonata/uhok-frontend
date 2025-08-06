@@ -497,3 +497,41 @@ export const CartHeader = ({ onBack, onNotificationClick }) => {
     />
   );
 };
+
+// ===== 14. 편성표 헤더 컴포넌트 =====
+// 편성표 페이지에서 사용하는 헤더 (편성표 버튼 + 알림)
+export const ScheduleHeader = ({ onScheduleClick, onNotificationClick }) => {
+  // 편성표 버튼 클릭 핸들러
+  const handleScheduleClick = () => {
+    if (onScheduleClick) {
+      onScheduleClick(); // 부모 컴포넌트에서 전달받은 편성표 클릭 함수 실행
+    }
+    console.log('편성표 인터페이스 전환');
+  };
+
+  // 알림 버튼 클릭 핸들러
+  const handleNotificationClick = () => {
+    if (onNotificationClick) {
+      onNotificationClick(); // 부모 컴포넌트에서 전달받은 알림 클릭 함수 실행
+    }
+    console.log('알림창 인터페이스 전환');
+  };
+
+  // 편성표 헤더 JSX 반환
+  return (
+    <div className="header schedule-header">
+      {/* 편성표 버튼 (왼쪽) */}
+      <button className="schedule-btn" onClick={handleScheduleClick}>
+        편성표
+      </button>
+      
+      {/* 헤더 우측 아이콘 영역 (오른쪽) */}
+      <div className="header-icons">
+        {/* 알림 버튼 */}
+        <button className="notification-btn" onClick={handleNotificationClick}>
+          <img src={bellIcon} alt="알림" className="bell-icon" />
+        </button>
+      </div>
+    </div>
+  );
+};

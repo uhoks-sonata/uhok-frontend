@@ -1,0 +1,167 @@
+[1mdiff --git a/src/App.js b/src/App.js[m
+[1mindex 575ceb3..e28c4b1 100644[m
+[1m--- a/src/App.js[m
+[1m+++ b/src/App.js[m
+[36m@@ -9,26 +9,19 @@[m [mimport './styles/App.css';[m
+ // 사용자 관련 페이지[m
+ import Login from './pages/user/Login';[m
+ import Signup from './pages/user/Signup';[m
+[31m-[m
+[31m-// 홈쇼핑 관련 페이지[m
+[31m-import HomeShoppingMain from './pages/home_shopping/HomeShoppingMain';[m
+[31m-import ProductDetail from './pages/home_shopping/ProductDetail';[m
+[31m-[m
+[31m-// ===== 기능별 컴포넌트들 import =====[m
+[31m-// KOK 관련 컴포넌트[m
+[31m-import BellBucketTest from './features/kok/BellBucketTest';[m
+[31m-[m
+[31m-// ===== 레이아웃 컴포넌트들 import =====[m
+[31m-import { HomeShoppingHeader, ShoppingHeader, SearchHeader, MyPageHeader, RecipeHeader } from './layout/HeaderNav';[m
+[31m-import BottomNav from './layout/BottomNav';[m
+[31m-[m
+[31m-// ===== 일반 컴포넌트들 import =====[m
+[31m-import Header from './components/Header';[m
+[31m-import ProductCard from './components/ProductCard';[m
+[31m-import ProductSection from './components/ProductSection';[m
+[31m-import NotificationManagerTest from './components/NotificationManagerTest';[m
+[31m-[m
+[31m-// ===== 전역 상태 관리 Provider import =====[m
+[32m+[m[32m// 홈쇼핑 메인 페이지 컴포넌트 import[m
+[32m+[m[32mimport Main from './pages/home_shopping/HomeShoppingMain';[m
+[32m+[m[32m// 레시피 추천 테스트 페이지 컴포넌트 import[m
+[32m+[m[32mimport RecommendRecipe from './features/kok/BellBucketTest';[m
+[32m+[m[32m// 주문내역 헤더 테스트 페이지 컴포넌트 import[m
+[32m+[m[32mimport OrderHistoryTest from './features/kok/OrderHistoryTest';[m
+[32m+[m[32m// 마이페이지 헤더 테스트 페이지 컴포넌트 import[m[41m  [m
+[32m+[m[32mimport MyPageTest from './features/kok/MyPageTest';[m
+[32m+[m[32m// 레시피 상세 헤더 테스트 페이지 컴포넌트 import[m
+[32m+[m[32mimport RecipeDetailTest from './features/kok/RecipeDetailTest';[m
+[32m+[m[32m// 장바구니 헤더 테스트 페이지 컴포넌트 import[m
+[32m+[m[32mimport CartTest from './features/kok/CartTest';[m
+[32m+[m[32m// 전역 알림 상태 관리 Provider import[m
+ import { NotificationProvider } from './layout/HeaderNav';[m
+ [m
+ // ===== 메인 앱 컴포넌트 =====[m
+[36m@@ -56,111 +49,17 @@[m [mfunction App() {[m
+               [m
+               {/* ===== 홈쇼핑 라우트 ===== */}[m
+               {/* 홈쇼핑 메인 경로 (/main) - 홈쇼핑 메인 페이지 */}[m
+[31m-              <Route path="/main" element={<HomeShoppingMain />} />[m
+[31m-              {/* 제품 상세 경로 (/product/:productId) - 제품 상세 페이지 */}[m
+[31m-              <Route path="/product/:productId" element={<ProductDetail />} />[m
+[31m-              [m
+[31m-              {/* ===== KOK 관련 라우트 ===== */}[m
+[31m-              {/* 레시피 추천 테스트 경로 (/test) - 레시피 추천 테스트 페이지 */}[m
+[31m-              <Route path="/test" element={<BellBucketTest />} />[m
+[31m-              {/* KOK 메인 경로 (/kok) - KOK 메인 페이지 */}[m
+[31m-              <Route path="/kok" element={<BellBucketTest />} />[m
+[31m-              [m
+[31m-              {/* ===== 컴포넌트 테스트 라우트 ===== */}[m
+[31m-              {/* 헤더 테스트 경로 (/header-test) */}[m
+[31m-              <Route path="/header-test" element={<Header />} />[m
+[31m-              [m
+[31m-              {/* 제품 카드 테스트 경로 (/product-card-test) */}[m
+[31m-              <Route path="/product-card-test" element={[m
+[31m-                <div style={{ padding: '20px' }}>[m
+[31m-                  <ProductCard [m
+[31m-                    name="테스트 제품"[m
+[31m-                    price="15,000원"[m
+[31m-                    image="https://via.placeholder.com/150"[m
+[31m-                    rating={4.5}[m
+[31m-                    reviewCount={128}[m
+[31m-                    type="default"[m
+[31m-                  />[m
+[31m-                </div>[m
+[31m-              } />[m
+[31m-              [m
+[31m-              {/* 제품 섹션 테스트 경로 (/product-section-test) */}[m
+[31m-              <Route path="/product-section-test" element={[m
+[31m-                <div style={{ padding: '20px' }}>[m
+[31m-                  <ProductSection [m
+[31m-                    title="테스트 제품 섹션"[m
+[31m-                    products={[[m
+[31m-                      {[m
+[31m-                        id: 1,[m
+[31m-                        name: "제품 1",[m
+[31m-                        price: "10,000원",[m
+[31m-                        image: "https://via.placeholder.com/150",[m
+[31m-                        rating: 4.0,[m
+[31m-                        reviewCount: 50[m
+[31m-                      },[m
+[31m-                      {[m
+[31m-                        id: 2,[m
+[31m-                        name: "제품 2", [m
+[31m-                        price: "20,000원",[m
+[31m-                        image: "https://via.placeholder.com/150",[m
+[31m-                        rating: 4.5,[m
+[31m-                        reviewCount: 100[m
+[31m-                      }[m
+[31m-                    ]}[m
+[31m-                    type="default"[m
+[31m-                  />[m
+[31m-                </div>[m
+[31m-              } />[m
+[31m-              [m
+[31m-              {/* 알림 관리 테스트 경로 (/notification-test) */}[m
+[31m-              <Route path="/notification-test" element={<NotificationManagerTest />} />[m
+[31m-              [m
+[31m-              {/* 헤더 네비게이션 테스트 경로들 */}[m
+[31m-              <Route path="/header-nav-test" element={<HomeShoppingHeader />} />[m
+[31m-              <Route path="/shopping-header-test" element={<ShoppingHeader />} />[m
+[31m-              <Route path="/search-header-test" element={<SearchHeader />} />[m
+[31m-              <Route path="/mypage-header-test" element={<MyPageHeader />} />[m
+[31m-              <Route path="/recipe-header-test" element={<RecipeHeader />} />[m
+[31m-              [m
+[31m-              {/* 하단 네비게이션 테스트 경로 (/bottom-nav-test) */}[m
+[31m-              <Route path="/bottom-nav-test" element={<BottomNav />} />[m
+[31m-              [m
+[31m-              {/* ===== 404 페이지 ===== */}[m
+[31m-              {/* 정의되지 않은 경로에 대한 기본 페이지 */}[m
+[31m-              <Route path="*" element={[m
+[31m-                <div style={{ [m
+[31m-                  display: 'flex', [m
+[31m-                  flexDirection: 'column', [m
+[31m-                  alignItems: 'center', [m
+[31m-                  justifyContent: 'center', [m
+[31m-                  height: '100vh',[m
+[31m-                  padding: '20px',[m
+[31m-                  textAlign: 'center'[m
+[31m-                }}>[m
+[31m-                  <h1>404 - 페이지를 찾을 수 없습니다</h1>[m
+[31m-                  <p>요청하신 페이지가 존재하지 않습니다.</p>[m
+[31m-                  <div style={{ marginTop: '20px' }}>[m
+[31m-                    <h3>사용 가능한 페이지:</h3>[m
+[31m-                    <ul style={{ listStyle: 'none', padding: 0 }}>[m
+[31m-                      <li><a href="/">홈 (로그인)</a></li>[m
+[31m-                      <li><a href="/signup">회원가입</a></li>[m
+[31m-                      <li><a href="/main">홈쇼핑 메인</a></li>[m
+[31m-                      <li><a href="/test">KOK 테스트</a></li>[m
+[31m-                      <li><a href="/kok">KOK 메인</a></li>[m
+[31m-                      <li><a href="/header-test">헤더 테스트</a></li>[m
+[31m-                      <li><a href="/product-card-test">제품 카드 테스트</a></li>[m
+[31m-                      <li><a href="/product-section-test">제품 섹션 테스트</a></li>[m
+[31m-                      <li><a href="/notification-test">알림 관리 테스트</a></li>[m
+[31m-                      <li><a href="/header-nav-test">홈쇼핑 헤더 테스트</a></li>[m
+[31m-                      <li><a href="/shopping-header-test">쇼핑 헤더 테스트</a></li>[m
+[31m-                      <li><a href="/search-header-test">검색 헤더 테스트</a></li>[m
+[31m-                      <li><a href="/mypage-header-test">마이페이지 헤더 테스트</a></li>[m
+[31m-                      <li><a href="/recipe-header-test">레시피 헤더 테스트</a></li>[m
+[31m-                      <li><a href="/bottom-nav-test">하단 네비게이션 테스트</a></li>[m
+[31m-                    </ul>[m
+[31m-                  </div>[m
+[31m-                </div>[m
+[31m-              } />[m
+[32m+[m[32m              <Route path="/main" element={<Main />} />[m
+[32m+[m[32m              {/* 테스트 경로 (/test) - 레시피 추천 테스트 페이지 */}[m
+[32m+[m[32m              <Route path="/test" element={<RecommendRecipe />} />[m
+[32m+[m[32m              {/* 주문내역 헤더 테스트 경로 (/order-history) */}[m
+[32m+[m[32m              <Route path="/order-history" element={<OrderHistoryTest />} />[m
+[32m+[m[32m              {/* 마이페이지 헤더 테스트 경로 (/mypage-test) */}[m
+[32m+[m[32m              <Route path="/mypage-test" element={<MyPageTest />} />[m
+[32m+[m[32m              {/* 레시피 상세 헤더 테스트 경로 (/recipe-detail) */}[m
+[32m+[m[32m              <Route path="/recipe-detail" element={<RecipeDetailTest />} />[m
+[32m+[m[32m              {/* 장바구니 헤더 테스트 경로 (/cart) */}[m
+[32m+[m[32m              <Route path="/cart" element={<CartTest />} />[m
+             </Routes>[m
+           </Router>[m
+         </div>[m
