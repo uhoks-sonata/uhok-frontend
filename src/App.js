@@ -10,7 +10,6 @@ import './styles/App.css';
 import Login from './pages/user/Login';
 import Signup from './pages/user/Signup';
 
-
 // 홈쇼핑 관련 페이지
 import HomeShoppingMain from './pages/home_shopping/HomeShoppingMain';
 import ProductDetail from './pages/home_shopping/ProductDetail';
@@ -20,7 +19,7 @@ import ProductDetail from './pages/home_shopping/ProductDetail';
 import BellBucketTest from './features/kok/BellBucketTest';
 
 // ===== 레이아웃 컴포넌트들 import =====
-import { HomeShoppingHeader, ShoppingHeader, SearchHeader, MyPageHeader, RecipeHeader } from './layout/HeaderNav';
+import { HomeShoppingHeader, ShoppingHeader, SearchHeader, MyPageHeader, RecipeHeader, ScheduleHeader } from './layout/HeaderNav';
 import BottomNav from './layout/BottomNav';
 
 // ===== 일반 컴포넌트들 import =====
@@ -41,6 +40,8 @@ import MyPageTest from './features/kok/MyPageTest';
 import RecipeDetailTest from './features/kok/RecipeDetailTest';
 // 장바구니 헤더 테스트 페이지 컴포넌트 import
 import CartTest from './features/kok/CartTest';
+// 편성표 헤더 테스트 페이지 컴포넌트 import
+import ScheduleHeaderTest from './features/kok/ScheduleHeaderTest';
 // 전역 알림 상태 관리 Provider import
 import { NotificationProvider } from './layout/HeaderNav';
 
@@ -82,6 +83,7 @@ function App() {
               <Route path="/search-header-test" element={<SearchHeader />} />
               <Route path="/mypage-header-test" element={<MyPageHeader />} />
               <Route path="/recipe-header-test" element={<RecipeHeader />} />
+              <Route path="/schedule-header-test" element={<ScheduleHeader />} />
               
               {/* 하단 네비게이션 테스트 경로 (/bottom-nav-test) */}
               <Route path="/bottom-nav-test" element={<BottomNav />} />
@@ -90,13 +92,15 @@ function App() {
               {/* 테스트 경로 (/test) - 레시피 추천 테스트 페이지 */}
               <Route path="/test" element={<RecommendRecipe />} />
               {/* 주문내역 헤더 테스트 경로 (/order-history) */}
-              <Route path="/order-history" element={<OrderHistoryTest />} />
+              <Route path="/order-history-test" element={<OrderHistoryTest />} />
               {/* 마이페이지 헤더 테스트 경로 (/mypage-test) */}
               <Route path="/mypage-test" element={<MyPageTest />} />
               {/* 레시피 상세 헤더 테스트 경로 (/recipe-detail) */}
-              <Route path="/recipe-detail" element={<RecipeDetailTest />} />
+              <Route path="/recipe-detail-test" element={<RecipeDetailTest />} />
               {/* 장바구니 헤더 테스트 경로 (/cart) */}
-              <Route path="/cart" element={<CartTest />} />
+              <Route path="/cart-test" element={<CartTest />} />
+              {/* 편성표 헤더 테스트 경로 (/schedule-test) */}
+              <Route path="/schedule-test" element={<ScheduleHeaderTest />} />
             </Routes>
           </Router>
         </div>
