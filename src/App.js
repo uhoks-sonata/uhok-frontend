@@ -43,6 +43,8 @@ import RecipeDetailTest from './features/kok/RecipeDetailTest';
 import CartTest from './features/kok/CartTest';
 // 편성표 헤더 테스트 페이지 컴포넌트 import
 import ScheduleHeaderTest from './features/kok/ScheduleHeaderTest';
+// 마이페이지 컴포넌트 import
+import MyPage from './pages/user/MyPage';
 // 전역 알림 상태 관리 Provider import
 import { NotificationProvider } from './layout/HeaderNav';
 
@@ -78,6 +80,9 @@ function App() {
               <Route path="/product/:productId" element={<ProductDetail />} />
               {/* 편성표 경로 (/schedule) - 편성표 페이지 */}
               <Route path="/schedule" element={<Schedule />} />
+              
+              {/* 마이페이지 경로 (/mypage) - 마이페이지 */}
+              <Route path="/mypage" element={<MyPage />} />
               
               {/* 알림 관리 테스트 경로 (/notification-test) */}
               <Route path="/notification-test" element={<NotificationManagerTest />} />
