@@ -264,7 +264,33 @@ export const SearchHeader = ({ searchQuery, setSearchQuery, onSearch, onBack }) 
   );
 };
 
-// ===== 4. 마이페이지 헤더 컴포넌트 =====
+// ===== 4. 범용 헤더 컴포넌트 =====
+// 뒤로가기 + 제목 형태의 모든 헤더에서 재사용 가능한 범용 컴포넌트
+// 결제, 알림, 레시피 추천 등에서 사용
+export const BackTitleHeader = ({ title, onBack, className = "" }) => {
+  // 뒤로가기 버튼 클릭 핸들러
+  const handleBack = () => {
+    if (onBack) {
+      onBack(); // 부모 컴포넌트에서 전달받은 뒤로가기 함수 실행
+    } else {
+      window.history.back(); // 브라우저 히스토리 뒤로가기
+    }
+  };
+
+  // 범용 헤더 JSX 반환
+  return (
+    <div className={`header back-title-header ${className}`}>
+      {/* 뒤로가기 버튼 */}
+      <button className="back-btn" onClick={handleBack}>←</button>
+      {/* 페이지 제목 */}
+      <h1 className="header-title">{title}</h1>
+      {/* 우측 여백을 위한 빈 div */}
+      <div className="header-spacer"></div>
+    </div>
+  );
+};
+
+// ===== 5. 마이페이지 헤더 컴포넌트 =====
 // 마이페이지에서 사용하는 헤더 (제목 + 알림 + 장바구니 기능)
 export const MyPageHeader = () => {
   // 전역 알림 및 장바구니 상태 가져오기
@@ -299,29 +325,213 @@ export const MyPageHeader = () => {
   );
 };
 
-// ===== 5. 레시피 헤더 컴포넌트 =====
+// ===== 5. 레시피 헤더 컴포넌트 (범용 헤더 사용) =====
 // 레시피 상세/결과 페이지에서 사용하는 헤더 (뒤로가기 + 제목)
 export const RecipeHeader = ({ onBack }) => {
+  return <BackTitleHeader title="레시피 추천" onBack={onBack} className="recipe-header" />;
+};
+
+// ===== 6. 결제 헤더 컴포넌트 (범용 헤더 사용) =====
+// 결제 페이지에서 사용하는 헤더 (뒤로가기 + '주문 결제'텍스트)
+export const PaymentHeader = ({ onBack }) => {
+  return <BackTitleHeader title="주문 결제" onBack={onBack} className="payment-header" />;
+};
+
+// ===== 7. 알림 헤더 컴포넌트 (범용 헤더 사용) =====
+// 알림 페이지에서 사용하는 헤더 (뒤로가기 + '알림'텍스트)
+export const NotificationHeader = ({ onBack }) => {
+  return <BackTitleHeader title="알림" onBack={onBack} className="notification-header" />;
+};
+
+// ===== 8. 범용 헤더 컴포넌트 (뒤로가기 + 제목 + 알림 + 장바구니) =====
+// 뒤로가기 + 제목 + 알림 + 장바구니 형태의 모든 헤더에서 재사용 가능한 범용 컴포넌트
+// 주문내역, 마이페이지, 레시피 상세 등에서 사용
+// 특징: 알림은 카운트 없이 버튼 역할만, 장바구니는 카운트 표시
+export const BackTitleWithIconsHeader = ({ title, onBack, onNotificationClick, onCartClick, className = "" }) => {
+  // 전역 장바구니 상태만 가져오기 (알림 카운트 제거 - 요구사항에 따라)
+  const { cartCount } = useNotifications();
+
   // 뒤로가기 버튼 클릭 핸들러
   const handleBack = () => {
     if (onBack) {
       onBack(); // 부모 컴포넌트에서 전달받은 뒤로가기 함수 실행
     } else {
-      window.history.back(); // 브라우저 히스토리 뒤로가기
+      window.history.back(); // 브라우저 히스토리 뒤로가기 (기본 동작)
     }
   };
 
-  // 레시피 헤더 JSX 반환
+  // 알림 아이콘 클릭 핸들러 (카운트 없이 버튼 역할만)
+  const handleNotificationClick = () => {
+    if (onNotificationClick) {
+      onNotificationClick(); // 부모 컴포넌트에서 전달받은 알림 클릭 함수 실행
+    }
+    console.log('알림창 인터페이스 전환');
+  };
+
+  // 장바구니 아이콘 클릭 핸들러 (카운트 표시 포함)
+  const handleCartClick = () => {
+    if (onCartClick) {
+      onCartClick(); // 부모 컴포넌트에서 전달받은 장바구니 클릭 함수 실행
+    }
+    console.log('장바구니 인터페이스 전환');
+  };
+
+  // 범용 헤더 JSX 반환
   return (
-    <div className="header recipe-header">
-      {/* 뒤로가기 버튼 */}
+    <div className={`header back-title-with-icons-header ${className}`}>
+      {/* 뒤로가기 버튼 (왼쪽 고정) */}
       <button className="back-btn" onClick={handleBack}>←</button>
-      {/* 페이지 제목 */}
-      <h1 className="header-title">레시피 추천</h1>
-      {/* 우측 여백을 위한 빈 div */}
-      <div className="header-spacer"></div>
+      {/* 페이지 제목 (중앙 정렬) */}
+      <h1 className="header-title">{title}</h1>
+      
+      {/* 헤더 우측 아이콘 영역 (오른쪽 고정) */}
+      <div className="header-icons">
+        {/* 알림 버튼 (카운트 없음 - 요구사항에 따라) */}
+        <button className="notification-btn" onClick={handleNotificationClick}>
+          <img src={bellIcon} alt="알림" className="bell-icon" />
+        </button>
+        {/* 장바구니 버튼 (카운트 표시 포함) */}
+        <button className="cart-btn" onClick={handleCartClick}>
+          <img src={bucketIcon} alt="장바구니" className="bucket-icon" />
+          {/* 장바구니 개수가 0보다 클 때만 장바구니 개수 표시 */}
+          {cartCount > 0 && (
+            <span className="cart-count">{cartCount}</span>
+          )}
+        </button>
+      </div>
     </div>
   );
 };
 
- 
+// ===== 9. 주문내역 헤더 컴포넌트 (범용 헤더 사용) =====
+// 주문내역 페이지에서 사용하는 헤더 (뒤로가기 + '주문내역'텍스트 + 알림 + 장바구니)
+export const OrderHistoryHeader = ({ onBack, onNotificationClick, onCartClick }) => {
+  return (
+    <BackTitleWithIconsHeader 
+      title="주문내역" 
+      onBack={onBack} 
+      onNotificationClick={onNotificationClick}
+      onCartClick={onCartClick}
+      className="order-history-header" 
+    />
+  );
+};
+
+// ===== 10. 마이페이지 헤더 컴포넌트 (범용 헤더 사용) =====
+// 마이페이지에서 사용하는 헤더 (뒤로가기 + '마이페이지'텍스트 + 알림 + 장바구니)
+export const MyPageWithBackHeader = ({ onBack, onNotificationClick, onCartClick }) => {
+  return (
+    <BackTitleWithIconsHeader 
+      title="마이페이지" 
+      onBack={onBack} 
+      onNotificationClick={onNotificationClick}
+      onCartClick={onCartClick}
+      className="mypage-with-back-header" 
+    />
+  );
+};
+
+// ===== 11. 레시피 상세 헤더 컴포넌트 (범용 헤더 사용) =====
+// 레시피 상세 페이지에서 사용하는 헤더 (뒤로가기 + '레시피 상세'텍스트 + 알림 + 장바구니)
+export const RecipeDetailHeader = ({ onBack, onNotificationClick, onCartClick }) => {
+  return (
+    <BackTitleWithIconsHeader 
+      title="레시피 상세" 
+      onBack={onBack} 
+      onNotificationClick={onNotificationClick}
+      onCartClick={onCartClick}
+      className="recipe-detail-header" 
+    />
+  );
+};
+
+// ===== 12. 범용 헤더 컴포넌트 (뒤로가기 + 제목 + 알림) =====
+// 뒤로가기 + 제목 + 알림 형태의 모든 헤더에서 재사용 가능한 범용 컴포넌트
+// 장바구니 등에서 사용 (장바구니 아이콘 없음)
+export const BackTitleWithNotificationHeader = ({ title, onBack, onNotificationClick, className = "" }) => {
+  // 뒤로가기 버튼 클릭 핸들러
+  const handleBack = () => {
+    if (onBack) {
+      onBack(); // 부모 컴포넌트에서 전달받은 뒤로가기 함수 실행
+    } else {
+      window.history.back(); // 브라우저 히스토리 뒤로가기 (기본 동작)
+    }
+  };
+
+  // 알림 아이콘 클릭 핸들러 (카운트 없이 버튼 역할만)
+  const handleNotificationClick = () => {
+    if (onNotificationClick) {
+      onNotificationClick(); // 부모 컴포넌트에서 전달받은 알림 클릭 함수 실행
+    }
+    console.log('알림창 인터페이스 전환');
+  };
+
+  // 범용 헤더 JSX 반환
+  return (
+    <div className={`header back-title-with-notification-header ${className}`}>
+      {/* 뒤로가기 버튼 (왼쪽 고정) */}
+      <button className="back-btn" onClick={handleBack}>←</button>
+      {/* 페이지 제목 (중앙 정렬) */}
+      <h1 className="header-title">{title}</h1>
+      
+      {/* 헤더 우측 아이콘 영역 (오른쪽 고정) */}
+      <div className="header-icons">
+        {/* 알림 버튼 (카운트 없음 - 요구사항에 따라) */}
+        <button className="notification-btn" onClick={handleNotificationClick}>
+          <img src={bellIcon} alt="알림" className="bell-icon" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// ===== 13. 장바구니 헤더 컴포넌트 (범용 헤더 사용) =====
+// 장바구니 페이지에서 사용하는 헤더 (뒤로가기 + '장바구니'텍스트 + 알림)
+export const CartHeader = ({ onBack, onNotificationClick }) => {
+  return (
+    <BackTitleWithNotificationHeader 
+      title="장바구니" 
+      onBack={onBack} 
+      onNotificationClick={onNotificationClick}
+      className="cart-header" 
+    />
+  );
+};
+
+// ===== 14. 편성표 헤더 컴포넌트 =====
+// 편성표 페이지에서 사용하는 헤더 (편성표 버튼 + 알림)
+export const ScheduleHeader = ({ onScheduleClick, onNotificationClick }) => {
+  // 편성표 버튼 클릭 핸들러
+  const handleScheduleClick = () => {
+    if (onScheduleClick) {
+      onScheduleClick(); // 부모 컴포넌트에서 전달받은 편성표 클릭 함수 실행
+    }
+    console.log('편성표 인터페이스 전환');
+  };
+
+  // 알림 버튼 클릭 핸들러
+  const handleNotificationClick = () => {
+    if (onNotificationClick) {
+      onNotificationClick(); // 부모 컴포넌트에서 전달받은 알림 클릭 함수 실행
+    }
+    console.log('알림창 인터페이스 전환');
+  };
+
+  // 편성표 헤더 JSX 반환
+  return (
+    <div className="header schedule-header">
+      {/* 편성표 버튼 (왼쪽) */}
+      <button className="schedule-btn" onClick={handleScheduleClick}>
+        편성표
+      </button>
+      
+      {/* 헤더 우측 아이콘 영역 (오른쪽) */}
+      <div className="header-icons">
+        {/* 알림 버튼 */}
+        <button className="notification-btn" onClick={handleNotificationClick}>
+          <img src={bellIcon} alt="알림" className="bell-icon" />
+        </button>
+      </div>
+    </div>
+  );
+};

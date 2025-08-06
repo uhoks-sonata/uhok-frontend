@@ -36,17 +36,23 @@ body {
   justify-content: space-around;
   align-items: center;
   box-shadow: 0 -4px 10px rgba(109, 109, 109, 0.1);
-  z-index: 9999; /* z-index를 더 높게 설정 */
-  border-top: 1px solid #e0e0e0; /* 상단 테두리 추가 */
+  z-index: 9999;
+  overflow: hidden;
 }
 
-/* 각 메뉴 아이템 너비, 높이 고정 및 중앙 정렬 */
+/* 하단 네비게이션 배경 이미지 */
+.bottom-nav-background {
+  opacity: 0.1;
+  filter: brightness(1.2) contrast(1.1);
+}
+
+/* 네비게이션 링크 기본 스타일 */
 .bottom-nav a {
-  width: 60px; /* 너비 줄임 */
-  height: 60px; /* 높이 줄임 */
+  width: 80px;
+  height: 80px;
   color: #555;
-  font-size: 11px; /* 폰트 크기 줄임 */
-  font-weight: 800;
+  font-size: 12px;
+  font-weight: 700;
   text-decoration: none;
   text-align: center;
   display: flex;
@@ -54,9 +60,10 @@ body {
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  padding-top: 4px; /* 패딩 줄임 */
+  padding-top: 6px;
   position: relative;
   box-sizing: border-box;
+  transition: all 0.3s ease;
 }
 
 /* 네비게이션 아이콘 스타일 */
@@ -81,68 +88,148 @@ body {
   font-weight: 900;
 }
 
-.bottom-nav a:not(.image-button-wrapper) {
-  margin-top: 20px; /* 마진 줄임 */
+.bottom-nav a:hover .nav-label {
+  color: #000000;
+  font-weight: 600;
 }
 
-/* 메인 이미지 버튼 래퍼 */
+/* 네비게이션 아이콘 */
+.nav-icon {
+  width: 35px;
+  height: 35px;
+  margin-bottom: 4px;
+  display: block;
+  object-fit: contain;
+  transition: all 0.3s ease;
+  transform-origin: center;
+}
+
+/* 네비게이션 라벨 */
+.nav-label {
+  font-size: 15px;
+  text-align: center;
+  line-height: 1.2;
+  color: #9b9b9b;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+/* ===== 아이콘 호버/활성 효과 ===== */
+/* 호버 효과 */
+.bottom-nav a:hover .nav-icon,
+.bottom-nav a.nav-item:hover .nav-icon,
+.bottom-nav a:hover img.nav-icon {
+  width: 44px !important;
+  height: 44px !important;
+  filter: brightness(0.8) saturate(1.2);
+}
+
+/* 활성 상태 효과 */
+.bottom-nav a.active .nav-icon,
+.bottom-nav a.nav-item.active .nav-icon,
+.bottom-nav a.active img.nav-icon {
+  width: 42px !important;
+  height: 42px !important;
+  filter: brightness(0.8) saturate(1.2);
+}
+
+/* ===== 메인 이미지 버튼 ===== */
 .image-button-wrapper {
-  width: 70px; /* 크기 조정 */
-  height: 70px; /* 크기 조정 */
+  width: 100px; /* 버튼 크기 */
+  height: 100px;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: -70px; /* 마진 조정 */
-  flex-grow: 0; 
+  margin-top: -13px; /* 네비게이션 바 위로 조금 올림 */
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 9999; /* 최상위 레이어로 설정 */
+}
+
+.image-button-wrapper:hover {
+  transform: translateY(-8px); /* 호버 시 더 위로 올림 */
+}
+
+.main-button-link {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
 }
 
 /* 이미지 자체 스타일 */
 .image-button {
   width: 100%;
   height: 100%;
-  object-fit: contain;
   border-radius: 50%;
-  display: block;
-  box-shadow: 0 -4px 10px rgba(109, 109, 109, 0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #ffffff;
+  border: 3px solid #f0f0f0;
+  transition: all 0.3s ease;
+  position: relative;
 }
 
-.image-button-wrapper span {
+.image-button-wrapper:hover .image-button {
+  transform: scale(1.1);
+}
+
+/* 텍스트 스타일 */
+.image-text {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
-  color: white;
-  font-weight: bold;
-  font-size: 20px; /* 폰트 크기 줄임 */
-  pointer-events: none;
-  user-select: none;
+  transform: translate(-50%, -50%); /* 중앙 정렬 */
+  z-index: 1; /* 이미지 위에 표시되도록 설정 */
 }
 
-/* 모바일 최적화 */
+.kok-text {
+  color: #ffffff;
+  font-weight: unset;
+  font-size: 18px;
+  user-select: none;
+  transition: color 0.3s ease;
+}
+
+.image-button-wrapper:hover .kok-text {
+  color: #000000;
+}
+
+
+/* ===== 반응형 디자인 ===== */
 @media (max-width: 480px) {
   .bottom-nav {
     max-width: 100%;
     height: 70px; /* 높이 줄임 */
   }
-  
+
   .bottom-nav a {
-    width: 50px; /* 더 작게 */
-    height: 50px; /* 더 작게 */
-    font-size: 10px; /* 더 작게 */
-    padding-top: 3px;
+    width: 70px;
+    height: 70px;
+    font-size: 11px;
   }
-  
-  .bottom-nav a:not(.image-button-wrapper) {
-    margin-top: 15px;
+
+  .nav-icon {
+    width: 35px;
+    height: 35px;
   }
-  
-  .image-button-wrapper {
-    width: 60px;
-    height: 60px;
-    margin-top: -60px;
+
+  .bottom-nav a:hover .nav-icon,
+  .bottom-nav a.nav-item:hover .nav-icon,
+  .bottom-nav a:hover img.nav-icon {
+    width: 38px !important;
+    height: 38px !important;
   }
-  
-  .image-button-wrapper span {
-    font-size: 18px;
+
+  .bottom-nav a.active .nav-icon,
+  .bottom-nav a.nav-item.active .nav-icon,
+  .bottom-nav a.active img.nav-icon {
+    width: 37px !important;
+    height: 37px !important;
   }
 }

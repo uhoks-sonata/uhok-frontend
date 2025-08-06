@@ -10,6 +10,7 @@ import './styles/App.css';
 import Login from './pages/user/Login';
 import Signup from './pages/user/Signup';
 
+
 // 홈쇼핑 관련 페이지
 import HomeShoppingMain from './pages/home_shopping/HomeShoppingMain';
 import ProductDetail from './pages/home_shopping/ProductDetail';
@@ -23,12 +24,24 @@ import { HomeShoppingHeader, ShoppingHeader, SearchHeader, MyPageHeader, RecipeH
 import BottomNav from './layout/BottomNav';
 
 // ===== 일반 컴포넌트들 import =====
-import Header from './components/Header';
 import ProductCard from './components/ProductCard';
 import ProductSection from './components/ProductSection';
 import NotificationManagerTest from './components/NotificationManagerTest';
 
 // ===== 전역 상태 관리 Provider import =====
+// 홈쇼핑 메인 페이지 컴포넌트 import
+import Main from './pages/home_shopping/HomeShoppingMain';
+// 레시피 추천 테스트 페이지 컴포넌트 import
+import RecommendRecipe from './features/kok/BellBucketTest';
+// 주문내역 헤더 테스트 페이지 컴포넌트 import
+import OrderHistoryTest from './features/kok/OrderHistoryTest';
+// 마이페이지 헤더 테스트 페이지 컴포넌트 import  
+import MyPageTest from './features/kok/MyPageTest';
+// 레시피 상세 헤더 테스트 페이지 컴포넌트 import
+import RecipeDetailTest from './features/kok/RecipeDetailTest';
+// 장바구니 헤더 테스트 페이지 컴포넌트 import
+import CartTest from './features/kok/CartTest';
+// 전역 알림 상태 관리 Provider import
 import { NotificationProvider } from './layout/HeaderNav';
 
 // ===== 메인 앱 컴포넌트 =====
@@ -60,58 +73,6 @@ function App() {
               {/* 제품 상세 경로 (/product/:productId) - 제품 상세 페이지 */}
               <Route path="/product/:productId" element={<ProductDetail />} />
               
-              {/* ===== KOK 관련 라우트 ===== */}
-              {/* 레시피 추천 테스트 경로 (/test) - 레시피 추천 테스트 페이지 */}
-              <Route path="/test" element={<BellBucketTest />} />
-              {/* KOK 메인 경로 (/kok) - KOK 메인 페이지 */}
-              <Route path="/kok" element={<BellBucketTest />} />
-              
-              {/* ===== 컴포넌트 테스트 라우트 ===== */}
-              {/* 헤더 테스트 경로 (/header-test) */}
-              <Route path="/header-test" element={<Header />} />
-              
-              {/* 제품 카드 테스트 경로 (/product-card-test) */}
-              <Route path="/product-card-test" element={
-                <div style={{ padding: '20px' }}>
-                  <ProductCard 
-                    name="테스트 제품"
-                    price="15,000원"
-                    image="https://via.placeholder.com/150"
-                    rating={4.5}
-                    reviewCount={128}
-                    type="default"
-                  />
-                </div>
-              } />
-              
-              {/* 제품 섹션 테스트 경로 (/product-section-test) */}
-              <Route path="/product-section-test" element={
-                <div style={{ padding: '20px' }}>
-                  <ProductSection 
-                    title="테스트 제품 섹션"
-                    products={[
-                      {
-                        id: 1,
-                        name: "제품 1",
-                        price: "10,000원",
-                        image: "https://via.placeholder.com/150",
-                        rating: 4.0,
-                        reviewCount: 50
-                      },
-                      {
-                        id: 2,
-                        name: "제품 2", 
-                        price: "20,000원",
-                        image: "https://via.placeholder.com/150",
-                        rating: 4.5,
-                        reviewCount: 100
-                      }
-                    ]}
-                    type="default"
-                  />
-                </div>
-              } />
-              
               {/* 알림 관리 테스트 경로 (/notification-test) */}
               <Route path="/notification-test" element={<NotificationManagerTest />} />
               
@@ -125,42 +86,17 @@ function App() {
               {/* 하단 네비게이션 테스트 경로 (/bottom-nav-test) */}
               <Route path="/bottom-nav-test" element={<BottomNav />} />
               
-              {/* ===== 404 페이지 ===== */}
-              {/* 정의되지 않은 경로에 대한 기본 페이지 */}
-              <Route path="*" element={
-                <div style={{ 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  alignItems: 'center', 
-                  justifyContent: 'center', 
-                  height: '100vh',
-                  padding: '20px',
-                  textAlign: 'center'
-                }}>
-                  <h1>404 - 페이지를 찾을 수 없습니다</h1>
-                  <p>요청하신 페이지가 존재하지 않습니다.</p>
-                  <div style={{ marginTop: '20px' }}>
-                    <h3>사용 가능한 페이지:</h3>
-                    <ul style={{ listStyle: 'none', padding: 0 }}>
-                      <li><a href="/">홈 (로그인)</a></li>
-                      <li><a href="/signup">회원가입</a></li>
-                      <li><a href="/main">홈쇼핑 메인</a></li>
-                      <li><a href="/test">KOK 테스트</a></li>
-                      <li><a href="/kok">KOK 메인</a></li>
-                      <li><a href="/header-test">헤더 테스트</a></li>
-                      <li><a href="/product-card-test">제품 카드 테스트</a></li>
-                      <li><a href="/product-section-test">제품 섹션 테스트</a></li>
-                      <li><a href="/notification-test">알림 관리 테스트</a></li>
-                      <li><a href="/header-nav-test">홈쇼핑 헤더 테스트</a></li>
-                      <li><a href="/shopping-header-test">쇼핑 헤더 테스트</a></li>
-                      <li><a href="/search-header-test">검색 헤더 테스트</a></li>
-                      <li><a href="/mypage-header-test">마이페이지 헤더 테스트</a></li>
-                      <li><a href="/recipe-header-test">레시피 헤더 테스트</a></li>
-                      <li><a href="/bottom-nav-test">하단 네비게이션 테스트</a></li>
-                    </ul>
-                  </div>
-                </div>
-              } />
+              <Route path="/main" element={<Main />} />
+              {/* 테스트 경로 (/test) - 레시피 추천 테스트 페이지 */}
+              <Route path="/test" element={<RecommendRecipe />} />
+              {/* 주문내역 헤더 테스트 경로 (/order-history) */}
+              <Route path="/order-history" element={<OrderHistoryTest />} />
+              {/* 마이페이지 헤더 테스트 경로 (/mypage-test) */}
+              <Route path="/mypage-test" element={<MyPageTest />} />
+              {/* 레시피 상세 헤더 테스트 경로 (/recipe-detail) */}
+              <Route path="/recipe-detail" element={<RecipeDetailTest />} />
+              {/* 장바구니 헤더 테스트 경로 (/cart) */}
+              <Route path="/cart" element={<CartTest />} />
             </Routes>
           </Router>
         </div>
