@@ -500,7 +500,7 @@ export const CartHeader = ({ onBack, onNotificationClick }) => {
 
 // ===== 14. 편성표 헤더 컴포넌트 =====
 // 편성표 페이지에서 사용하는 헤더 (편성표 버튼 + 알림)
-export const ScheduleHeader = ({ onScheduleClick, onNotificationClick }) => {
+export const ScheduleHeader = ({ onScheduleClick, onNotificationClick, className = "" }) => {
   // 편성표 버튼 클릭 핸들러
   const handleScheduleClick = () => {
     if (onScheduleClick) {
@@ -519,7 +519,7 @@ export const ScheduleHeader = ({ onScheduleClick, onNotificationClick }) => {
 
   // 편성표 헤더 JSX 반환
   return (
-    <div className="header schedule-header">
+    <div className={`header schedule-header ${className}`}>
       {/* 편성표 버튼 (왼쪽) */}
       <button className="schedule-btn" onClick={handleScheduleClick}>
         편성표

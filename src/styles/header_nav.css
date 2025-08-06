@@ -443,6 +443,46 @@
   z-index: 1;
 }
 
+/* ===== 편성표 헤더 스타일 ===== */
+.schedule-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px 10px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.schedule-header .schedule-btn {
+  background: linear-gradient(135deg, #ff69b4, #ff8da1);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.schedule-header .schedule-btn:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #ff5ba4, #ff7a8f);
+}
+
+.schedule-header .schedule-btn:active {
+  transform: translateY(0);
+}
+
+.schedule-header .header-icons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+} 
+
 /* ===== 반응형 디자인 ===== */
 @media (max-width: 480px) {
   .header {
@@ -471,4 +511,4 @@
     font-size: 9px;
     min-width: 14px;
   }
-} 
+}

@@ -92,7 +92,7 @@ const BottomNav = () => {
             {/* 가운데 동그란 버튼 (두 번째 아이템 다음에 추가) */}
             {index === 1 && (
               <div className="image-button-wrapper">
-              <Link to="/main" className="main-button-link">
+              <Link to="/schedule" className="main-button-link">
                 <div className="image-button">
                   <div className="image-text">
                     <span className="kok-text">혹</span>
