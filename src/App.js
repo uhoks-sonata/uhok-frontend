@@ -13,6 +13,7 @@ import Signup from './pages/user/Signup';
 // 홈쇼핑 관련 페이지
 import KokMain from './pages/kok_mall/KokMain';
 import ProductDetail from './pages/home_shopping/ProductDetail';
+import ProductListPage from './pages/home_shopping/ProductListPage';
 import Schedule from './pages/home_shopping/Schedule';
 
 // ===== 레이아웃 컴포넌트들 import =====
@@ -58,6 +59,8 @@ function App() {
               <Route path="/kokmain" element={<KokMain />} />
               {/* 제품 상세 경로 (/product/:productId) - 제품 상세 페이지 */}
               <Route path="/product/:productId" element={<ProductDetail />} />
+              {/* 제품 목록 경로 (/products/:sectionType) - 제품 목록 페이지 */}
+              <Route path="/products/:sectionType" element={<ProductListPage />} />
               {/* 편성표 경로 (/schedule) - 편성표 페이지 */}
               <Route path="/schedule" element={<Schedule />} />
               

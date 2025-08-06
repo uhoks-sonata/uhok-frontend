@@ -13,7 +13,7 @@ body, html, #root {
   background-color: #ffffff;  /* 전체 바탕 흰색 */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow: hidden; /* 전체 스크롤 방지 */
+  overflow: hidden; /* 전체 스크롤 차단 */
 }
 
 /* 모바일 뷰포트 대응 */
@@ -23,7 +23,7 @@ html {
 
 /* body 스크롤 제거 - home-shopping-main에서만 스크롤 처리 */
 body {
-  overflow: hidden; /* body 스크롤 비활성화 */
+  overflow: hidden; /* body 스크롤 차단 */
 }
 
 input, button {
