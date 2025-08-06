@@ -11,13 +11,9 @@ import Login from './pages/user/Login';
 import Signup from './pages/user/Signup';
 
 // 홈쇼핑 관련 페이지
-import HomeShoppingMain from './pages/home_shopping/HomeShoppingMain';
+import KokMain from './pages/kok_mall/KokMain';
 import ProductDetail from './pages/home_shopping/ProductDetail';
 import Schedule from './pages/home_shopping/Schedule';
-
-// ===== 기능별 컴포넌트들 import =====
-// KOK 관련 컴포넌트
-import BellBucketTest from './features/kok/BellBucketTest';
 
 // ===== 레이아웃 컴포넌트들 import =====
 import { HomeShoppingHeader, ShoppingHeader, SearchHeader, MyPageHeader, RecipeHeader, ScheduleHeader } from './layout/HeaderNav';
@@ -26,23 +22,7 @@ import BottomNav from './layout/BottomNav';
 // ===== 일반 컴포넌트들 import =====
 import ProductCard from './components/ProductCard';
 import ProductSection from './components/ProductSection';
-import NotificationManagerTest from './components/NotificationManagerTest';
 
-// ===== 전역 상태 관리 Provider import =====
-// 홈쇼핑 메인 페이지 컴포넌트 import
-import Main from './pages/home_shopping/HomeShoppingMain';
-// 레시피 추천 테스트 페이지 컴포넌트 import
-import RecommendRecipe from './features/kok/BellBucketTest';
-// 주문내역 헤더 테스트 페이지 컴포넌트 import
-import OrderHistoryTest from './features/kok/OrderHistoryTest';
-// 마이페이지 헤더 테스트 페이지 컴포넌트 import  
-import MyPageTest from './features/kok/MyPageTest';
-// 레시피 상세 헤더 테스트 페이지 컴포넌트 import
-import RecipeDetailTest from './features/kok/RecipeDetailTest';
-// 장바구니 헤더 테스트 페이지 컴포넌트 import
-import CartTest from './features/kok/CartTest';
-// 편성표 헤더 테스트 페이지 컴포넌트 import
-import ScheduleHeaderTest from './features/kok/ScheduleHeaderTest';
 // 마이페이지 컴포넌트 import
 import MyPage from './pages/user/MyPage';
 // 전역 알림 상태 관리 Provider import
@@ -74,8 +54,8 @@ function App() {
               {/* ===== 홈쇼핑 라우트 ===== */}
               {/* 편성표 메인 경로 (/) - 편성표 페이지로 설정 */}
               <Route path="/main" element={<Schedule />} />
-              {/* 홈쇼핑 경로 (/main) - 홈쇼핑 메인 페이지 */}
-              <Route path="/homeshopping" element={<HomeShoppingMain />} />
+              {/* 콕 쇼핑몰 경로 (/kokmain) - 콕 쇼핑몰 메인 페이지 */}
+              <Route path="/kokmain" element={<KokMain />} />
               {/* 제품 상세 경로 (/product/:productId) - 제품 상세 페이지 */}
               <Route path="/product/:productId" element={<ProductDetail />} />
               {/* 편성표 경로 (/schedule) - 편성표 페이지 */}
@@ -83,34 +63,7 @@ function App() {
               
               {/* 마이페이지 경로 (/mypage) - 마이페이지 */}
               <Route path="/mypage" element={<MyPage />} />
-              
-              {/* 알림 관리 테스트 경로 (/notification-test) */}
-              <Route path="/notification-test" element={<NotificationManagerTest />} />
-              
-              {/* 헤더 네비게이션 테스트 경로들 */}
-              <Route path="/header-nav-test" element={<HomeShoppingHeader />} />
-              <Route path="/shopping-header-test" element={<ShoppingHeader />} />
-              <Route path="/search-header-test" element={<SearchHeader />} />
-              <Route path="/mypage-header-test" element={<MyPageHeader />} />
-              <Route path="/recipe-header-test" element={<RecipeHeader />} />
-              <Route path="/schedule-header-test" element={<ScheduleHeader />} />
-              
-              {/* 하단 네비게이션 테스트 경로 (/bottom-nav-test) */}
-              <Route path="/bottom-nav-test" element={<BottomNav />} />
-              
-              <Route path="/main" element={<Main />} />
-              {/* 테스트 경로 (/test) - 레시피 추천 테스트 페이지 */}
-              <Route path="/test" element={<RecommendRecipe />} />
-              {/* 주문내역 헤더 테스트 경로 (/order-history) */}
-              <Route path="/order-history-test" element={<OrderHistoryTest />} />
-              {/* 마이페이지 헤더 테스트 경로 (/mypage-test) */}
-              <Route path="/mypage-test" element={<MyPageTest />} />
-              {/* 레시피 상세 헤더 테스트 경로 (/recipe-detail) */}
-              <Route path="/recipe-detail-test" element={<RecipeDetailTest />} />
-              {/* 장바구니 헤더 테스트 경로 (/cart) */}
-              <Route path="/cart-test" element={<CartTest />} />
-              {/* 편성표 헤더 테스트 경로 (/schedule-test) */}
-              <Route path="/schedule-test" element={<ScheduleHeaderTest />} />
+        
             </Routes>
           </Router>
         </div>

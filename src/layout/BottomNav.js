@@ -33,19 +33,19 @@ const BottomNav = () => {
   // 각 아이템은 경로, 아이콘, 라벨, 활성/비활성 아이콘 정보를 포함
   const navItems = [
     {
-      path: "/kok", // 콕 쇼핑몰 페이지 경로
+      path: "/kokmain", // 콕 쇼핑몰 페이지 경로
       icon: bottomIconKokBlack, // 활성 상태 아이콘 (검은색)
       blackIcon: bottomIconKok, // 비활성 상태 아이콘 (일반)
       label: "콕 쇼핑몰" // 네비게이션 라벨
     },
     {
-      path: "/recipe-detail", // 레시피 추천 페이지 경로 (테스트용)
+      path: "/sample", // 레시피 추천 페이지 경로 (테스트용)
       icon: bottomIconReciptBlack, // 활성 상태 아이콘 (검은색)
       blackIcon: bottomIconRecipt, // 비활성 상태 아이콘 (콕 아이콘으로 변경)
       label: "레시피 추천" // 네비게이션 라벨
     },
     {
-      path: "/wishlist", // 찜 페이지 경로
+      path: "/sample", // 찜 페이지 경로
       icon: bottomIconHeartBlack, // 활성 상태 아이콘 (검은색)
       blackIcon: bottomIconHeart, // 비활성 상태 아이콘 (일반)
       label: "찜" // 네비게이션 라벨
