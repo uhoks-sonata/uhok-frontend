@@ -15,16 +15,16 @@ const ProductDetail = () => {
   const dummyProducts = [
     {
       id: 1,
-      name: "[2025년산 햇 고추] 국내산 청결 햇 고춧가루 2kg(500g4 팩)",
-      originalPrice: 28000,
-      discountPrice: 13600,
-      discountRate: 51,
+      name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
+      originalPrice: 150000,
+      discountPrice: 124000,
+      discountRate: 17,
       image: "/test1.png",
       rating: 4.4,
-      reviewCount: 5,
+      reviewCount: 23,
       description: "예천 청결고추로 만든 특별한 고춧가루입니다. 진한 붉은색과 강한 매운맛이 특징입니다. 햇고추의 신선함을 그대로 담아낸 프리미엄 고춧가루입니다.",
       details: {
-        weight: "2kg (500g 4팩)",
+        weight: "4kg (500g 8팩)",
         origin: "국내산",
         expiryDate: "제조일로부터 24개월",
         storage: "서늘하고 건조한 곳에 보관"
@@ -70,8 +70,8 @@ const ProductDetail = () => {
       }
     },
     {
-      id: 2,
-      name: "농팜 | [농팜] (1+1) 당일제조 전라도식 김치 파김치 500g",
+      id: 13,
+      name: "전라도식 파김치",
       originalPrice: 13600,
       discountPrice: 13600,
       discountRate: 51,
@@ -119,7 +119,7 @@ const ProductDetail = () => {
       }
     },
     {
-      id: 3,
+      id: 16,
       name: "햅쌀",
       originalPrice: 25000,
       discountPrice: 20900,
@@ -181,7 +181,57 @@ const ProductDetail = () => {
     if (foundProduct) {
       setProduct(foundProduct);
     } else {
-      setProduct(dummyProducts[0]);
+      // 제품을 찾지 못한 경우, 기본 제품 데이터를 생성
+      const defaultProduct = {
+        id: parseInt(productId),
+        name: `제품 ${productId}`,
+        originalPrice: 150000,
+        discountPrice: 124000,
+        discountRate: 17,
+        image: "/test1.png",
+        rating: 4.4,
+        reviewCount: 23,
+        description: "이 제품에 대한 상세한 설명입니다.",
+        details: {
+          weight: "4kg (500g 8팩)",
+          origin: "국내산",
+          expiryDate: "제조일로부터 24개월",
+          storage: "서늘하고 건조한 곳에 보관"
+        },
+        seller: {
+          name: "(주)컴퍼니와우",
+          representative: "(주)컴퍼니와우",
+          businessNumber: "119-86-54463",
+          onlineSalesNumber: "제2012-서울금천-0325호",
+          phone: "02-2038-2966",
+          certifiedItems: "사업자 번호, 사업자 상호",
+          certificationDate: "2024-05-21",
+          businessLocation: "서울 금천구 가산디지털1로 70 (가산동) 407호",
+          returnAddress: "08590 서울 금천구 가산디지털1로 70 407호",
+          exchangeAddress: "08590 서울 금천구 가산디지털1로 70 407호"
+        },
+        reviews: [
+          {
+            id: 1,
+            user: "조**",
+            rating: 5,
+            date: "2025.08.01",
+            comment: "가격 적당해요 배송 괜찮네요 맛 먹을만해요."
+          }
+        ],
+        ratingDistribution: {
+          5: 80,
+          4: 0,
+          3: 0,
+          2: 0,
+          1: 0
+        },
+        feedback: {
+          "가격 저렴해요": 47,
+          "배송 빨라요": 37
+        }
+      };
+      setProduct(defaultProduct);
     }
     setLoading(false);
   }, [productId]);

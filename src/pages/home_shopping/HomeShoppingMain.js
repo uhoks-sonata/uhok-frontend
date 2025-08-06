@@ -34,7 +34,7 @@ const HomeShoppingMain = () => {
       isSpecial: true
     },
     {
-      id: 1,
+      id: 2,
       name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
       originalPrice: 150000,
       discountPrice: 124000,
@@ -45,7 +45,7 @@ const HomeShoppingMain = () => {
       isSpecial: true
     },
     {
-      id: 1,
+      id: 3,
       name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
       originalPrice: 150000,
       discountPrice: 124000,
@@ -56,7 +56,7 @@ const HomeShoppingMain = () => {
       isSpecial: true
     },
     {
-      id: 1,
+      id: 4,
       name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
       originalPrice: 150000,
       discountPrice: 124000,
@@ -67,7 +67,7 @@ const HomeShoppingMain = () => {
       isSpecial: true
     },
     {
-      id: 1,
+      id: 5,
       name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
       originalPrice: 150000,
       discountPrice: 124000,
@@ -78,7 +78,7 @@ const HomeShoppingMain = () => {
       isSpecial: true
     },
     {
-      id: 1,
+      id: 6,
       name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
       originalPrice: 150000,
       discountPrice: 124000,
@@ -89,7 +89,7 @@ const HomeShoppingMain = () => {
       isSpecial: true
     },
     {
-      id: 1,
+      id: 7,
       name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
       originalPrice: 150000,
       discountPrice: 124000,
@@ -100,7 +100,7 @@ const HomeShoppingMain = () => {
       isSpecial: true
     },
     {
-      id: 1,
+      id: 8,
       name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
       originalPrice: 150000,
       discountPrice: 124000,
@@ -111,7 +111,7 @@ const HomeShoppingMain = () => {
       isSpecial: true
     },
     {
-      id: 1,
+      id: 9,
       name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
       originalPrice: 150000,
       discountPrice: 124000,
@@ -122,7 +122,7 @@ const HomeShoppingMain = () => {
       isSpecial: true
     },
     {
-      id: 1,
+      id: 10,
       name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
       originalPrice: 150000,
       discountPrice: 124000,
@@ -133,7 +133,7 @@ const HomeShoppingMain = () => {
       isSpecial: true
     },
     {
-      id: 1,
+      id: 11,
       name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
       originalPrice: 150000,
       discountPrice: 124000,
@@ -144,7 +144,7 @@ const HomeShoppingMain = () => {
       isSpecial: true
     },
     {
-      id: 1,
+      id: 12,
       name: "예천 청결고추 | 국내산 청결 햇고춧가루 4kg (500g 8팩)",
       originalPrice: 150000,
       discountPrice: 124000,
@@ -158,7 +158,7 @@ const HomeShoppingMain = () => {
 
   const highSellingProducts = [
     {
-      id: 2,
+      id: 13,
       name: "전라도식 파김치",
       originalPrice: 13600,
       discountPrice: 13600,
@@ -168,7 +168,7 @@ const HomeShoppingMain = () => {
       reviewCount: 17
     },
     {
-      id: 2,
+      id: 14,
       name: "전라도식 파김치",
       originalPrice: 13600,
       discountPrice: 13600,
@@ -178,7 +178,7 @@ const HomeShoppingMain = () => {
       reviewCount: 17
     },
     {
-      id: 2,
+      id: 15,
       name: "전라도식 파김치",
       originalPrice: 13600,
       discountPrice: 13600,
@@ -191,7 +191,7 @@ const HomeShoppingMain = () => {
 
   const nonDuplicatedProducts = [
     {
-      id: 3,
+      id: 16,
       name: "햅쌀",
       originalPrice: 25000,
       discountPrice: 20900,
@@ -202,7 +202,7 @@ const HomeShoppingMain = () => {
       isSpecial: true
     },
     {
-      id: 3,
+      id: 17,
       name: "햅쌀",
       originalPrice: 25000,
       discountPrice: 20900,
@@ -213,7 +213,7 @@ const HomeShoppingMain = () => {
       isSpecial: true
     },
     {
-      id: 3,
+      id: 18,
       name: "햅쌀",
       originalPrice: 25000,
       discountPrice: 20900,
@@ -224,7 +224,7 @@ const HomeShoppingMain = () => {
       isSpecial: true
     },
     {
-      id: 3,
+      id: 19,
       name: "햅쌀",
       originalPrice: 25000,
       discountPrice: 20900,
@@ -235,7 +235,7 @@ const HomeShoppingMain = () => {
       isSpecial: true
     },
     {
-      id: 3,
+      id: 20,
       name: "햅쌀",
       originalPrice: 25000,
       discountPrice: 20900,
