@@ -13,6 +13,7 @@ import Signup from './pages/user/Signup';
 // 홈쇼핑 관련 페이지
 import HomeShoppingMain from './pages/home_shopping/HomeShoppingMain';
 import ProductDetail from './pages/home_shopping/ProductDetail';
+import Schedule from './pages/home_shopping/Schedule';
 
 // ===== 기능별 컴포넌트들 import =====
 // KOK 관련 컴포넌트
@@ -61,18 +62,22 @@ function App() {
             {/* 라우트 정의 컨테이너 */}
             <Routes>
               {/* ===== 메인 페이지 라우트 ===== */}
-              {/* 루트 경로 (/) - 로그인 페이지로 설정 */}
-              <Route path="/" element={<Login />} />
+              {/* 루트 경로 (/) - 로그인 페이지 */}
+              <Route path="/" element={<Login />} />  
               
               {/* ===== 사용자 인증 라우트 ===== */}
               {/* 회원가입 경로 (/signup) - 회원가입 페이지 */}
               <Route path="/signup" element={<Signup />} />
               
               {/* ===== 홈쇼핑 라우트 ===== */}
-              {/* 홈쇼핑 메인 경로 (/main) - 홈쇼핑 메인 페이지 */}
-              <Route path="/main" element={<HomeShoppingMain />} />
+              {/* 편성표 메인 경로 (/) - 편성표 페이지로 설정 */}
+              <Route path="/main" element={<Schedule />} />
+              {/* 홈쇼핑 경로 (/main) - 홈쇼핑 메인 페이지 */}
+              <Route path="/homeshopping" element={<HomeShoppingMain />} />
               {/* 제품 상세 경로 (/product/:productId) - 제품 상세 페이지 */}
               <Route path="/product/:productId" element={<ProductDetail />} />
+              {/* 편성표 경로 (/schedule) - 편성표 페이지 */}
+              <Route path="/schedule" element={<Schedule />} />
               
               {/* 알림 관리 테스트 경로 (/notification-test) */}
               <Route path="/notification-test" element={<NotificationManagerTest />} />

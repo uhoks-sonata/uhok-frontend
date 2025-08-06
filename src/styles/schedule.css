@@ -1,0 +1,279 @@
+/* 편성표 페이지 스타일 */
+.schedule-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #ffffff;
+}
+
+/* 메인 콘텐츠 영역 */
+.schedule-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  padding-bottom: 80px; /* 하단 네비게이션 공간 확보 */
+}
+
+/* 로딩 및 에러 상태 */
+.loading, .error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: 16px;
+  color: #666;
+}
+
+.error {
+  color: #ff4444;
+}
+
+/* 날짜 및 방송 상태 */
+.schedule-header-info {
+  padding: 15px 0;
+}
+
+.date {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.broadcast-status {
+  font-size: 14px;
+  color: #ff4444;
+  font-weight: 500;
+}
+
+/* 섹션 제목 */
+.schedule-section {
+  margin-bottom: 30px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 15px;
+  padding: 10px 0;
+}
+
+/* 방송 중 섹션에 상품 이미지 추가 */
+.schedule-section.on-air {
+  position: relative;
+}
+
+.schedule-section.on-air::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 60px;
+  height: 60px;
+  background-image: var(--on-air-image);
+  background-size: cover;
+  background-position: center;
+  border-radius: 8px;
+  z-index: 1;
+}
+
+/* 상품 카드 컨테이너 */
+.product-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* 상품 카드 */
+.product-card {
+  background-color: #F5F6F8;
+  border-radius: 18px;
+  padding: 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-2px);
+  border-color: #ff69b4;
+}
+
+/* 카드 레이아웃 */
+.card-layout {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+/* 왼쪽: 방송 상태 정보 */
+.status-info {
+  flex-shrink: 0;
+  width: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.status-info .broadcast-status {
+  font-size: 12px;
+  font-weight: 600;
+  color: #ff4444;
+  padding: 4px 8px;
+  background-color: #fff5f5;
+  border-radius: 4px;
+  text-align: center;
+}
+
+/* 방송예정 상태도 빨간색으로 스타일링 */
+.status-info .broadcast-status.scheduled {
+  color: #ff4444;
+  background-color: #fff5f5;
+}
+
+/* 중앙: 상품 정보 */
+.product-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 상품 상세 정보 */
+.product-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 오른쪽: 상품 이미지 컨테이너 */
+.product-image-container {
+  flex-shrink: 0;
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+/* 시간 오버레이 */
+.time-overlay {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  background-color: #333;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+  z-index: 2;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* 상품 이미지 */
+.product-image {
+  width: 100%;
+  height: 100%;
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: #f5f5f5;
+}
+
+.product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 상품 상세 정보 */
+.product-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 가격 정보 */
+.price-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.discount {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ff4444;
+}
+
+.price {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* 브랜드 정보 */
+.brand-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+}
+
+.brand-image {
+  height: 20px;
+  width: auto;
+  object-fit: contain;
+}
+
+.channel {
+  font-size: 14px;
+  color: #666;
+}
+
+/* 상품명 */
+.product-name {
+  font-size: 14px;
+  color: #333;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 480px) {
+  .schedule-content {
+    padding: 15px;
+  }
+  
+  .card-layout {
+    gap: 12px;
+  }
+  
+  .status-info {
+    width: 70px;
+  }
+  
+  .product-image-container {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .time-overlay {
+    font-size: 11px;
+    padding: 3px 6px;
+  }
+  
+  .discount, .price {
+    font-size: 15px;
+  }
+  
+  .product-name {
+    font-size: 13px;
+  }
+} 
