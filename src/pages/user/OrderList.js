@@ -165,7 +165,6 @@ const OrderList = () => {
       } catch (error) {
         // 에러 발생 시 에러 상태를 설정하고 로딩 상태를 false로 설정합니다
         console.error('주문 내역 데이터 가져오기 실패:', error);
-        
         // 네트워크 에러인 경우 더미 데이터 사용, 그 외에는 에러 메시지 표시
         if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED' || 
             (error.name === 'TypeError' && error.message.includes('Failed to fetch')) ||
@@ -259,7 +258,6 @@ const OrderList = () => {
       const response = await api.get(`/api/products/${productId}`);
       return response.data;
     } catch (error) {
-
       // 네트워크 에러인 경우 조용히 처리 (더미 데이터 사용)
       if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED' || 
           (error.name === 'TypeError' && error.message.includes('Failed to fetch')) ||
@@ -312,7 +310,6 @@ const OrderList = () => {
       }
     }
   };
-
   // 로딩 중일 때 표시할 컴포넌트를 정의합니다
   if (loading) {
     return (

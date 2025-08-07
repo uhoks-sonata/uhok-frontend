@@ -62,9 +62,9 @@ const BottomNav = () => {
       label: "콕 쇼핑몰" // 네비게이션 라벨
     },
     {
-      path: "/sample", // 레시피 추천 페이지 경로 (테스트용)
+      path: "/recipes", // 레시피 추천 페이지 경로
       icon: bottomIconReciptBlack, // 활성 상태 아이콘 (검은색)
-      blackIcon: bottomIconRecipt, // 비활성 상태 아이콘 (콕 아이콘으로 변경)
+      blackIcon: bottomIconRecipt, // 비활성 상태 아이콘 (일반)
       label: "레시피 추천" // 네비게이션 라벨
     },
     {
