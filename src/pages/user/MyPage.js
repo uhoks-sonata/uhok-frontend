@@ -13,7 +13,6 @@ import userIcon from '../../assets/user_icon.png';
 // 상품 없음 이미지를 가져옵니다
 import noItemsIcon from '../../assets/no_items.png';
 
-
 // 테스트용 상품 이미지들을 가져옵니다
 import testImage1 from '../../assets/test/test1.png';
 import testImage2 from '../../assets/test/test2.png';
@@ -41,22 +40,58 @@ const MyPage = () => {
   // 에러 상태를 관리합니다 (null: 에러 없음, string: 에러 메시지)
   const [error, setError] = useState(null);
 
-  // 7일 전 날짜를 계산하는 함수를 정의합니다
-  const getSevenDaysAgo = () => {
-    const today = new Date();
-    const sevenDaysAgo = new Date(today);
-    sevenDaysAgo.setDate(today.getDate() - 7);
-    return sevenDaysAgo.toISOString().split('T')[0]; // YYYY-MM-DD 형식
-  };
-
-  // 오늘 날짜를 YYYY-MM-DD 형식으로 반환하는 함수를 정의합니다
-  const getToday = () => {
-    return new Date().toISOString().split('T')[0];
-  };
-
   // 가격을 원화 형식으로 포맷팅하는 함수를 정의합니다
   const formatPrice = (price) => {
     return price.toLocaleString('ko-KR') + '원';
+  };
+
+  // 임시 데이터를 설정하는 함수
+  const setMockData = () => {
+    console.log('임시 데이터를 사용합니다.');
+    setUserData({
+      user_id: 101,
+      username: '홍길동',
+      email: 'user@example.com',
+      created_at: '2025-08-01T02:24:19.206Z',
+      orderCount: 3,
+      recentOrders: [
+        {
+          order_id: 20230701,
+          brand_name: "산지명인",
+          product_name: "구운계란 30구+핑크솔트 증정",
+          product_description: "반숙란 훈제 맥반석 삶은 구운란",
+          product_price: 11900,
+          product_quantity: 1,
+          product_image: testImage1,
+          order_date: "2025-07-25"
+        },
+        {
+          order_id: 20230701,
+          brand_name: "오리온",
+          product_name: "초코파이 12개입",
+          product_description: "부드러운 초콜릿과 마시멜로우가 듬뿍",
+          product_price: 8500,
+          product_quantity: 1,
+          product_image: testImage2,
+          order_date: "2025-07-25"
+        },
+        {
+          order_id: 20230702,
+          brand_name: "농심",
+          product_name: "새우깡",
+          product_description: "새우깡",
+          product_price: 1500,
+          product_quantity: 2,
+          product_image: testImage1,
+          order_date: "2025-07-24"
+        }
+      ]
+    });
+
+    setRecipeData({
+      purchasedRecipe: null,
+      similarRecipes: []
+    });
   };
 
   // 백엔드 API에서 마이페이지 데이터를 가져오는 useEffect를 정의합니다
@@ -66,49 +101,62 @@ const MyPage = () => {
       try {
         // 로딩 상태를 true로 설정합니다
         setLoading(true);
+        setError(null); // 에러 상태 초기화
         
-        // FastAPI 서버의 사용자 정보와 주문 정보를 병렬로 가져옵니다
-        const [userResponse, ordersResponse] = await Promise.all([
-          api.get('/api/user/info', {
-            headers: {
-              'Authorization': 'Bearer <access_token>' // 실제 토큰으로 교체 필요 (API에서 받아옴)
-            }
-          }),
-          api.get('/api/orders/recent?days=7', {
-            headers: {
-              'Authorization': 'Bearer <access_token>' // 실제 토큰으로 교체 필요 (API에서 받아옴)
-            }
-          })
-        ]);
+        console.log('마이페이지 데이터 로딩 시작...');
         
-        // 응답 데이터를 추출합니다
-        const userData = userResponse.data;
-        
-        // 주문 조회 응답을 처리합니다
+        // 모든 API 호출을 개별적으로 처리하여 하나가 실패해도 다른 것은 계속 진행
+        let userData = null;
         let ordersData = { orders: [] };
+        let orderCount = 0;
+        let recipeData = { purchasedRecipe: null, similarRecipes: [] };
+        
+        // 사용자 정보 조회
         try {
-          ordersData = ordersResponse.data;
+          console.log('사용자 정보 조회 중...');
+          const userResponse = await api.get('/api/user/info');
+          userData = userResponse.data;
+          console.log('사용자 정보 조회 성공:', userData);
         } catch (err) {
-          console.log('주문 정보를 가져오는데 실패했습니다.');
+          console.error('사용자 정보 조회 실패:', err);
+          // 사용자 정보가 없으면 임시 데이터 사용
+          setMockData();
+          setLoading(false);
+          return;
         }
         
-        // 주문 내역 개수 조회 (비동기 처리)
-        const orderCountResponse = await api.get('/api/orders/count', {
-          headers: {
-            'Authorization': 'Bearer <access_token>'
-          }
-        });
+        // 최근 주문 조회
+        try {
+          console.log('최근 주문 조회 중...');
+          const ordersResponse = await api.get('/api/orders/recent?days=7');
+          ordersData = ordersResponse.data || { orders: [] };
+          console.log('최근 주문 조회 성공:', ordersData);
+        } catch (err) {
+          console.error('최근 주문 조회 실패:', err);
+          ordersData = { orders: [] };
+        }
         
-        const orderCount = orderCountResponse.data.order_count || 0;
+        // 주문 개수 조회
+        try {
+          console.log('주문 개수 조회 중...');
+          const orderCountResponse = await api.get('/api/orders/count');
+          orderCount = orderCountResponse.data?.order_count || 0;
+          console.log('주문 개수 조회 성공:', orderCount);
+        } catch (err) {
+          console.error('주문 개수 조회 실패:', err);
+          orderCount = 0;
+        }
         
-        // 레시피 정보 조회 (비동기 처리)
-        const recipeResponse = await api.get('/api/recipes/user', {
-          headers: {
-            'Authorization': 'Bearer <access_token>'
-          }
-        });
-        
-        const recipeData = recipeResponse.data;
+        // 레시피 정보 조회
+        try {
+          console.log('레시피 정보 조회 중...');
+          const recipeResponse = await api.get('/api/recipes/user');
+          recipeData = recipeResponse.data || { purchasedRecipe: null, similarRecipes: [] };
+          console.log('레시피 정보 조회 성공:', recipeData);
+        } catch (err) {
+          console.error('레시피 정보 조회 실패:', err);
+          recipeData = { purchasedRecipe: null, similarRecipes: [] };
+        }
         
         // 파싱된 데이터를 상태에 저장합니다
         setUserData({
@@ -121,58 +169,12 @@ const MyPage = () => {
         });
         
         setRecipeData(recipeData);
+        console.log('마이페이지 데이터 로딩 완료');
         
       } catch (err) {
-        // 에러가 발생하면 콘솔에 에러를 출력합니다
-        console.error('마이페이지 데이터 로딩 실패:', err);
-        // API 연결 실패 시 에러 대신 임시 데이터를 사용한다는 로그를 출력합니다
-        console.log('임시 데이터를 사용합니다.');
-        
-        // 임시 데이터를 상태에 설정합니다 (API 연결 전까지 사용)
-        setUserData({
-          user_id: 101,
-          username: '홍길동',
-          email: 'user@example.com',
-          created_at: '2025-08-01T02:24:19.206Z',
-          orderCount: 3,
-          recentOrders: [
-            {
-              order_id: 20230701,
-              brand_name: "산지명인",
-              product_name: "구운계란 30구+핑크솔트 증정",
-              product_description: "반숙란 훈제 맥반석 삶은 구운란",
-              product_price: 11900,
-              product_quantity: 1,
-              product_image: testImage1,
-              order_date: "2025-07-25"
-            },
-            {
-              order_id: 20230701,
-              brand_name: "오리온",
-              product_name: "초코파이 12개입",
-              product_description: "부드러운 초콜릿과 마시멜로우가 듬뿍 부드러운 초콜릿과 마시멜로우가 듬뿍",
-              product_price: 8500,
-              product_quantity: 1,
-              product_image: testImage2,
-              order_date: "2025-07-25"
-            },
-            {
-              order_id: 20230702,
-              brand_name: "농심",
-              product_name: "새우깡",
-              product_description: "새우깡",
-              product_price: 1500,
-              product_quantity: 2,
-              product_image: testImage1,
-              order_date: "2025-07-24"
-            }
-          ]
-        });
-
-        setRecipeData({
-          purchasedRecipe: null,
-          similarRecipes: []
-        });
+        // 예상치 못한 에러가 발생한 경우
+        console.error('마이페이지 데이터 로딩 중 예상치 못한 에러:', err);
+        setMockData();
       } finally {
         // try-catch 블록이 끝나면 항상 로딩 상태를 false로 설정합니다
         setLoading(false);
@@ -183,26 +185,20 @@ const MyPage = () => {
     fetchMyPageData();
   }, []); // 빈 배열을 의존성으로 설정하여 컴포넌트 마운트 시에만 실행됩니다
 
-
-
-  // 주문 내역 클릭 시 실행되는 핸들러 함수를 정의합니다 (비동기)
+  // 주문 내역 클릭 시 실행되는 핸들러 함수를 정의합니다
   const handleOrderHistoryClick = async () => {
     try {
-      // 콘솔에 클릭 로그를 출력합니다
       console.log('주문 내역 클릭');
       
-      // 주문 내역 페이지로 이동하기 전에 로그 기록 (비동기 처리)
-      await api.post('/api/user/activity-log', {
-        action: 'view_order_history',
-        timestamp: new Date().toISOString()
-      }, {
-        headers: {
-          'Authorization': 'Bearer <access_token>'
-        }
-      }).catch(() => {
-        // 로그 기록 실패는 무시하고 계속 진행
-        console.log('활동 로그 기록 실패 (무시됨)');
-      });
+      // 활동 로그 기록 (실패해도 무시)
+      try {
+        await api.post('/api/user/activity-log', {
+          action: 'view_order_history',
+          timestamp: new Date().toISOString()
+        });
+      } catch (err) {
+        console.log('활동 로그 기록 실패 (무시됨):', err.message);
+      }
       
       // 주문 내역 페이지로 이동합니다
       window.location.href = '/orderlist';
@@ -213,21 +209,24 @@ const MyPage = () => {
     }
   };
 
-  // 레시피 클릭 시 실행되는 핸들러 함수를 정의합니다 (비동기)
+  // 레시피 클릭 시 실행되는 핸들러 함수를 정의합니다
   const handleRecipeClick = async (recipeId) => {
     try {
-      // 콘솔에 클릭된 레시피 ID를 출력합니다
       console.log('레시피 클릭:', recipeId);
       
-      // 레시피 상세 정보를 비동기로 가져오는 로직 (향후 구현)
-      const recipeResponse = await api.get(`/api/recipes/${recipeId}`, {
-        headers: {
-          'Authorization': 'Bearer <access_token>'
+      // 레시피 상세 정보 조회 (실패해도 무시)
+      try {
+        const recipeResponse = await api.get(`/api/recipes/${recipeId}`);
+        const recipeDetail = recipeResponse.data;
+        if (recipeDetail) {
+          console.log('레시피 상세 정보:', recipeDetail);
+        } else {
+          console.log('레시피 상세 정보를 가져올 수 없습니다.');
         }
-      });
+      } catch (err) {
+        console.error('레시피 상세 정보 조회 실패:', err);
+      }
       
-      const recipeDetail = recipeResponse.data;
-      console.log('레시피 상세 정보:', recipeDetail);
       // 레시피 상세 페이지로 이동하는 기능을 구현할 예정입니다
       // window.location.href = `/recipe-detail/${recipeId}`;
     } catch (error) {
@@ -252,23 +251,6 @@ const MyPage = () => {
     );
   }
 
-  // 에러가 발생했을 때 표시할 UI를 렌더링합니다
-  if (error) {
-    return (
-      <div className="mypage-page">
-        {/* 상단 네비게이션 */}
-        <MyPageHeader />
-        {/* 메인 콘텐츠 영역 */}
-        <div className="mypage-content">
-          {/* 에러 메시지를 표시합니다 */}
-          <div className="error">오류: {error}</div>
-        </div>
-        {/* 하단 네비게이션을 렌더링합니다 */}
-        <BottomNav />
-      </div>
-    );
-  }
-
   // 정상적인 마이페이지를 렌더링합니다
   return (
     <div className="mypage-page">
@@ -276,117 +258,117 @@ const MyPage = () => {
       <MyPageHeader />
       {/* 메인 콘텐츠 */}
       <div className="mypage-content">
-                 {/* 유저 정보 카드 */}
-         <div className="user-info-card">
-           {/* 사용자 정보 컨텐츠 */}
-           <div className="user-info-content">
-             {/* 프로필 이미지 - 기본 사용자 아이콘 사용 */}
-             <div className="profile-image">
-               <img src={userIcon} alt="프로필" />
-             </div>
-             
-             {/* 유저 정보 */}
-             <div className="user-details">
-               {/* 유저 이름을 표시합니다 (API에서 받아옴) */}
-               <div className="user-name">{userData.username} 님</div>
-               {/* 유저 이메일을 표시합니다 (API에서 받아옴) */}
-               <div className="user-email">{userData.email}</div>
-             </div>
-           </div>
-           
-           {/* 주문 내역 링크 */}
-           <div className="order-history-link" onClick={handleOrderHistoryClick}>
-             <span className="order-history-text">주문 내역</span>
-             <span className="order-count">{userData.orderCount} &gt;</span>
-           </div>
-         </div>
+        {/* 유저 정보 카드 */}
+        <div className="user-info-card">
+          {/* 사용자 정보 컨텐츠 */}
+          <div className="user-info-content">
+            {/* 프로필 이미지 - 기본 사용자 아이콘 사용 */}
+            <div className="profile-image">
+              <img src={userIcon} alt="프로필" />
+            </div>
+            
+            {/* 유저 정보 */}
+            <div className="user-details">
+              {/* 유저 이름을 표시합니다 (API에서 받아옴) */}
+              <div className="user-name">{userData.username} 님</div>
+              {/* 유저 이메일을 표시합니다 (API에서 받아옴) */}
+              <div className="user-email">{userData.email}</div>
+            </div>
+          </div>
+          
+          {/* 주문 내역 링크 */}
+          <div className="order-history-link" onClick={handleOrderHistoryClick}>
+            <span className="order-history-text">주문 내역</span>
+            <span className="order-count">{userData.orderCount} &gt;</span>
+          </div>
+        </div>
 
         {/* 최근 주문 섹션 */}
         <div className="recent-orders-section">
           {/* 섹션 제목 */}
           <h3 className="section-title">최근 7일 동안 주문한 상품</h3>
           
-                     {/* 주문이 있을 때와 없을 때를 구분하여 렌더링합니다 */}
-           {userData.recentOrders.length > 0 ? (
-             // 주문번호별로 그룹화하여 렌더링합니다
-             (() => {
-               // 주문번호별로 상품들을 그룹화합니다
-               const groupedOrders = userData.recentOrders.reduce((groups, order) => {
-                 if (!groups[order.order_id]) {
-                   groups[order.order_id] = [];
-                 }
-                 groups[order.order_id].push(order);
-                 return groups;
-               }, {});
-               
-               // 그룹화된 주문들을 렌더링합니다
-               return Object.entries(groupedOrders).map(([orderId, orders]) => {
-                 const firstOrder = orders[0]; // 첫 번째 상품의 정보를 사용
-                 
-                 return (
-                   <div key={orderId} className="order-item">
-                     {/* 주문 정보 헤더 */}
-                     <div className="order-header">
-                       {/* 주문 날짜를 표시합니다 (API에서 받아옴) */}
-                       <span className="order-date">{firstOrder.order_date}</span>
-                       {/* 주문번호를 표시합니다 (API에서 받아옴) */}
-                       <span className="order-number">주문번호 {orderId}</span>
-                     </div>
-                     
-                     {/* 배송 상태 카드 */}
-                     <div className="delivery-status-card">
-                       {/* 배송 상태를 표시합니다 (API에서 받아옴) */}
-                       <div className="delivery-status">
-                         <span className="delivery-status-text">배송완료</span>
-                         <span className="delivery-date">{firstOrder.order_date} 도착</span>
-                       </div>
-                       
-                       {/* 상품 정보들 - 같은 주문번호의 모든 상품을 표시합니다 */}
-                       {orders.map((order, index) => (
-                         <div key={`${orderId}-${index}`} className="product-info">
-                           {/* 상품 이미지를 표시합니다 (API에서 받아옴) */}
-                           <div className="product-image">
-                             <img src={order.product_image} alt={order.product_name} />
-                           </div>
-                           
-                           {/* 상품 상세 정보 */}
-                           <div className="product-details">
-                             {/* 브랜드명과 상품명을 표시합니다 (API에서 받아옴) */}
-                             <div className="product-name" title={`${order.brand_name} | ${order.product_name}`}>
-                               {`${order.brand_name} | ${order.product_name}`.length > 20 
-                                 ? `${`${order.brand_name} | ${order.product_name}`.substring(0, 20)}...`
-                                 : `${order.brand_name} | ${order.product_name}`
-                               }
-                             </div>
-                             {/* 상품 설명을 표시합니다 (API에서 받아옴) */}
-                             <div className="product-description" title={order.product_description}>
-                               {order.product_description.length > 20 
-                                 ? `${order.product_description.substring(0, 20)}...`
-                                 : order.product_description
-                               }
-                             </div>
-                             {/* 가격과 수량을 표시합니다 (API에서 받아옴) */}
-                             <div className="product-price">{formatPrice(order.product_price)} · {order.product_quantity}개</div>
-                           </div>
-                         </div>
-                       ))}
-                       
-                       {/* 레시피 관련 버튼들 */}
-                       <div className="recipe-buttons">
-                         {/* 레시피 구매 버튼 */}
-                         <div className="recipe-purchase-btn">
-                           이 레시피를 보고 상품을 구매하셨어요!
-                         </div>
-                         {/* 레시피 추천 버튼 */}
-                         <div className="recipe-recommend-btn">
-                           구매 재료들로 만들 수 있는 다른 레시피 추천받기
-                         </div>
-                       </div>
-                     </div>
-                   </div>
-                 );
-               });
-             })()
+          {/* 주문이 있을 때와 없을 때를 구분하여 렌더링합니다 */}
+          {userData.recentOrders.length > 0 ? (
+            // 주문번호별로 그룹화하여 렌더링합니다
+            (() => {
+              // 주문번호별로 상품들을 그룹화합니다
+              const groupedOrders = userData.recentOrders.reduce((groups, order) => {
+                if (!groups[order.order_id]) {
+                  groups[order.order_id] = [];
+                }
+                groups[order.order_id].push(order);
+                return groups;
+              }, {});
+              
+              // 그룹화된 주문들을 렌더링합니다
+              return Object.entries(groupedOrders).map(([orderId, orders]) => {
+                const firstOrder = orders[0]; // 첫 번째 상품의 정보를 사용
+                
+                return (
+                  <div key={orderId} className="order-item">
+                    {/* 주문 정보 헤더 */}
+                    <div className="order-header">
+                      {/* 주문 날짜를 표시합니다 (API에서 받아옴) */}
+                      <span className="order-date">{firstOrder.order_date}</span>
+                      {/* 주문번호를 표시합니다 (API에서 받아옴) */}
+                      <span className="order-number">주문번호 {orderId}</span>
+                    </div>
+                    
+                    {/* 배송 상태 카드 */}
+                    <div className="delivery-status-card">
+                      {/* 배송 상태를 표시합니다 (API에서 받아옴) */}
+                      <div className="delivery-status">
+                        <span className="delivery-status-text">배송완료</span>
+                        <span className="delivery-date">{firstOrder.order_date} 도착</span>
+                      </div>
+                      
+                      {/* 상품 정보들 - 같은 주문번호의 모든 상품을 표시합니다 */}
+                      {orders.map((order, index) => (
+                        <div key={`${orderId}-${index}`} className="product-info">
+                          {/* 상품 이미지를 표시합니다 (API에서 받아옴) */}
+                          <div className="product-image">
+                            <img src={order.product_image} alt={order.product_name} />
+                          </div>
+                          
+                          {/* 상품 상세 정보 */}
+                          <div className="product-details">
+                            {/* 브랜드명과 상품명을 표시합니다 (API에서 받아옴) */}
+                            <div className="product-name" title={`${order.brand_name} | ${order.product_name}`}>
+                              {`${order.brand_name} | ${order.product_name}`.length > 20 
+                                ? `${`${order.brand_name} | ${order.product_name}`.substring(0, 20)}...`
+                                : `${order.brand_name} | ${order.product_name}`
+                              }
+                            </div>
+                            {/* 상품 설명을 표시합니다 (API에서 받아옴) */}
+                            <div className="product-description" title={order.product_description}>
+                              {order.product_description.length > 20 
+                                ? `${order.product_description.substring(0, 20)}...`
+                                : order.product_description
+                              }
+                            </div>
+                            {/* 가격과 수량을 표시합니다 (API에서 받아옴) */}
+                            <div className="product-price">{formatPrice(order.product_price)} · {order.product_quantity}개</div>
+                          </div>
+                        </div>
+                      ))}
+                      
+                      {/* 레시피 관련 버튼들 */}
+                      <div className="recipe-buttons">
+                        {/* 레시피 구매 버튼 */}
+                        <div className="recipe-purchase-btn">
+                          이 레시피를 보고 상품을 구매하셨어요!
+                        </div>
+                        {/* 레시피 추천 버튼 */}
+                        <div className="recipe-recommend-btn">
+                          구매 재료들로 만들 수 있는 다른 레시피 추천받기
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              });
+            })()
           ) : (
             // 주문이 없을 때의 UI - no_items 이미지 사용
             <div className="no-orders-state">

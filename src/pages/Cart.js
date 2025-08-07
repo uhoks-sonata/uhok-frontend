@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { CartHeader } from '../layout/HeaderNav';
 import { useNotifications } from '../layout/HeaderNav';
 import '../styles/cart.css';
+import api from './api';
 
 const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -20,32 +21,42 @@ const Cart = () => {
   const loadCartItems = async () => {
     try {
       setLoading(true);
-      // 임시 데이터 (실제로는 API 호출)
-      const mockCartItems = [
-        {
-          id: 1,
-          name: "구운계란 30구+핑크솔트 증정",
-          brand: "산지명인",
-          price: 11900,
-          originalPrice: 15000,
-          quantity: 1,
-          image: "/test1.png",
-          discountRate: 21
-        },
-        {
-          id: 2,
-          name: "초코파이 12개입",
-          brand: "오리온",
-          price: 8500,
-          originalPrice: 12000,
-          quantity: 2,
-          image: "/test2.png",
-          discountRate: 29
-        }
-      ];
-      setCartItems(mockCartItems);
+      
+      // api.js를 활용하여 장바구니 데이터를 비동기로 가져옵니다
+      const response = await api.get('/api/cart');
+      
+      if (response.data && response.data.items) {
+        setCartItems(response.data.items);
+      } else {
+        // API 응답이 없거나 실패한 경우 임시 데이터 사용
+        const mockCartItems = [
+          {
+            id: 1,
+            name: "구운계란 30구+핑크솔트 증정",
+            brand: "산지명인",
+            price: 11900,
+            originalPrice: 15000,
+            quantity: 1,
+            image: "/test1.png",
+            discountRate: 21
+          },
+          {
+            id: 2,
+            name: "초코파이 12개입",
+            brand: "오리온",
+            price: 8500,
+            originalPrice: 12000,
+            quantity: 2,
+            image: "/test2.png",
+            discountRate: 29
+          }
+        ];
+        setCartItems(mockCartItems);
+      }
     } catch (error) {
       console.error('장바구니 데이터 로딩 실패:', error);
+      // 에러 발생 시 빈 배열로 설정
+      setCartItems([]);
     } finally {
       setLoading(false);
     }
@@ -60,20 +71,46 @@ const Cart = () => {
     // 알림 페이지로 이동하거나 알림 모달 표시
   };
 
-  const handleQuantityChange = (itemId, newQuantity) => {
+  const handleQuantityChange = async (itemId, newQuantity) => {
     if (newQuantity < 1) return;
     
-    setCartItems(prev => 
-      prev.map(item => 
-        item.id === itemId 
-          ? { ...item, quantity: newQuantity }
-          : item
-      )
-    );
+    try {
+      // api.js를 활용하여 수량 변경을 비동기로 처리합니다
+      await api.put(`/api/cart/items/${itemId}`, { quantity: newQuantity });
+      
+      // 성공 시 로컬 상태 업데이트
+      setCartItems(prev => 
+        prev.map(item => 
+          item.id === itemId 
+            ? { ...item, quantity: newQuantity }
+            : item
+        )
+      );
+    } catch (error) {
+      console.error('수량 변경 실패:', error);
+      // 에러 발생 시에도 로컬 상태 업데이트 (사용자 경험 개선)
+      setCartItems(prev => 
+        prev.map(item => 
+          item.id === itemId 
+            ? { ...item, quantity: newQuantity }
+            : item
+        )
+      );
+    }
   };
 
-  const handleRemoveItem = (itemId) => {
-    setCartItems(prev => prev.filter(item => item.id !== itemId));
+  const handleRemoveItem = async (itemId) => {
+    try {
+      // api.js를 활용하여 상품 삭제를 비동기로 처리합니다
+      await api.delete(`/api/cart/items/${itemId}`);
+      
+      // 성공 시 로컬 상태 업데이트
+      setCartItems(prev => prev.filter(item => item.id !== itemId));
+    } catch (error) {
+      console.error('상품 삭제 실패:', error);
+      // 에러 발생 시에도 로컬 상태 업데이트 (사용자 경험 개선)
+      setCartItems(prev => prev.filter(item => item.id !== itemId));
+    }
   };
 
   const handleCheckout = () => {

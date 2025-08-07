@@ -1,4 +1,4 @@
-.product-card {
+.kok-product-card {
   background: white;
   border-radius: 8px; /* 둥글기 줄임 */
   overflow: hidden;
@@ -10,26 +10,26 @@
   align-items: stretch;
 }
 
-.product-card:hover {
+.kok-product-card:hover {
   transform: translateY(-1px); /* 호버 효과 줄임 */
 }
 
-.product-card.special {
+.kok-product-card.special {
   flex: 0 0 auto;
   width: 100%; /* 전체 너비 사용 */
 }
 
-.product-card.default {
+.kok-product-card.default {
   flex: 0 0 auto;
   width: 100%; /* 전체 너비 사용 */
 }
 
-.product-card.fixed {
+.kok-product-card.fixed {
   flex: 1;
   min-width: 0;
 }
 
-.product-image-container {
+.kok-product-image-container {
   position: relative;
   width: 120px; /* 정사각형 너비 */
   height: 120px; /* 정사각형 높이 */
@@ -38,36 +38,36 @@
 }
 
 /* 할인 특가 상품 카드의 이미지 크기 증가 */
-.products-container.discount-grid .product-card .product-image-container {
+.kok-products-container.discount-grid .kok-product-card .kok-product-image-container {
   width: 120px; /* 정확한 이미지 너비 */
   height: 120px; /* 정확한 이미지 높이 */
 }
 
-.product-card.default .product-image-container {
+.kok-product-card.default .kok-product-image-container {
   width: 120px; /* 정사각형 너비 */
   height: 120px; /* 정사각형 높이 */
   flex-shrink: 0;
 }
 
-.product-card.grid .product-image-container {
+.kok-product-card.grid .kok-product-image-container {
   width: 120px; /* 정사각형 너비 */
   height: 120px; /* 정사각형 높이 */
   flex-shrink: 0;
 }
 
-.product-card.fixed .product-image-container {
+.kok-product-card.fixed .kok-product-image-container {
   width: 120px; /* 정사각형 너비 */
   height: 120px; /* 정사각형 높이 */
   flex-shrink: 0;
 }
 
-.product-image {
+.kok-product-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.product-info {
+.kok-product-info {
   padding: 12px; /* 패딩 증가 */
   flex: 1; /* 남은 공간 차지 */
   display: flex;
@@ -76,7 +76,7 @@
 }
 
 /* 할인 특가 상품 카드의 정보 영역 패딩 증가 */
-.products-container.discount-grid .product-card .product-info {
+.kok-products-container.discount-grid .kok-product-card .kok-product-info {
   padding: 8px 12px; /* 적절한 패딩 추가 */
   width: 217px; /* 337px - 120px = 217px (카드 너비 - 이미지 너비) */
   height: 120px; /* 카드 높이와 동일 */
@@ -86,7 +86,7 @@
   gap: 12px; /* 요소 간 간격 증가 */
 }
 
-.product-card.grid .product-info {
+.kok-product-card.grid .kok-product-info {
   padding: 10px 12px; /* 패딩 증가 */
   flex: 1;
   display: flex;
@@ -94,11 +94,11 @@
   justify-content: space-between;
 }
 
-.product-card.fixed .product-info {
+.kok-product-card.fixed .kok-product-info {
   padding: 6px; /* 패딩 줄임 */
 }
 
-.product-name {
+.kok-product-name {
   font-size: 14px; /* 폰트 크기 증가 */
   font-weight: 500;
   color: #333;
@@ -112,7 +112,7 @@
 }
 
 /* 할인 특가 상품 카드의 제품명 폰트 크기 증가 */
-.products-container.discount-grid .product-card .product-name {
+.kok-products-container.discount-grid .kok-product-card .kok-product-name {
   font-size: 13px; /* 폰트 크기 약간 줄임 */
   line-height: 1.3; /* 줄간격 조정 */
   margin: 0; /* 마진 제거 */
@@ -130,27 +130,25 @@
   flex: 1; /* 남은 공간 차지 */
 }
 
-.product-card.default .product-name {
+.kok-product-card.default .kok-product-name {
   font-size: 11px; /* 폰트 크기 줄임 */
   -webkit-line-clamp: 2;
 }
 
-.product-card.grid .product-name {
+.kok-product-card.grid .kok-product-name {
   font-size: 14px; /* 폰트 크기 증가 */
   -webkit-line-clamp: 2;
   margin: 0 0 8px 0; /* 마진 증가 */
   line-height: 1.4; /* 줄간격 증가 */
 }
 
-
-
-.product-card.fixed .product-name {
+.kok-product-card.fixed .kok-product-name {
   font-size: 11px; /* 폰트 크기 줄임 */
   -webkit-line-clamp: 2;
   margin: 0 0 4px 0; /* 마진 줄임 */
 }
 
-.price-info {
+.kok-price-info {
   display: flex;
   align-items: center;
   gap: 6px; /* 간격 줄임 */
@@ -158,23 +156,23 @@
 }
 
 /* 할인 특가 상품 카드의 가격 정보 영역 크기 지정 */
-.products-container.discount-grid .product-card .price-info {
+.kok-products-container.discount-grid .kok-product-card .kok-price-info {
   width: 193px; /* 정보 영역 너비에 맞춤 */
   height: 21px; /* 정확한 가격 정보 높이 */
   margin: 0; /* 마진 제거 */
 }
 
-.product-card.grid .price-info {
+.kok-product-card.grid .kok-price-info {
   gap: 8px; /* 간격 증가 */
   margin-bottom: 6px; /* 마진 증가 */
 }
 
-.product-card.fixed .price-info {
+.kok-product-card.fixed .kok-price-info {
   gap: 4px; /* 간격 줄임 */
   margin-bottom: 2px; /* 마진 줄임 */
 }
 
-.discount-rate {
+.kok-discount-rate {
   color: #FA5F8C !important;
   font-weight: bold;
   font-size: 12px; /* 폰트 크기 줄임 */
@@ -188,7 +186,7 @@
 }
 
 /* 할인 특가 상품 카드의 할인율 폰트 크기 증가 */
-.products-container.discount-grid .product-card .discount-rate {
+.kok-products-container.discount-grid .kok-product-card .kok-discount-rate {
   font-size: 23px; /* 가격과 동일한 크기 */
   color: #FA5F8C !important;
   background: transparent !important; /* 배경 완전 제거 */
@@ -200,233 +198,233 @@
   text-decoration: none; /* 텍스트 장식 제거 */
 }
 
-.product-card.default .discount-rate {
+.kok-product-card.default .kok-discount-rate {
   font-size: 11px; /* 폰트 크기 줄임 */
 }
 
-.product-card.grid .discount-rate {
+.kok-product-card.grid .kok-discount-rate {
   font-size: 13px; /* 폰트 크기 증가 */
 }
 
-.product-card.fixed .discount-rate {
+.kok-product-card.fixed .kok-discount-rate {
   font-size: 11px; /* 폰트 크기 줄임 */
 }
 
-.discount-price {
+.kok-discount-price {
   color: #333;
   font-weight: bold;
   font-size: 12px; /* 폰트 크기 줄임 */
 }
 
 /* 할인 특가 상품 카드의 할인가격 폰트 크기 증가 */
-.products-container.discount-grid .product-card .discount-price {
+.kok-products-container.discount-grid .kok-product-card .kok-discount-price {
   font-size: 23px; /* 더 큰 폰트 크기 */
 }
 
 /* 할인 특가 상품 카드의 '원' 글자만 작은 크기로 설정 */
-.products-container.discount-grid .product-card .discount-price::after {
+.kok-products-container.discount-grid .kok-product-card .kok-discount-price::after {
   content: "원";
   font-size: 17px;
   color: inherit;
   font-weight: inherit;
 }
 
-.product-card.default .discount-price {
+.kok-product-card.default .kok-discount-price {
   font-size: 11px; /* 폰트 크기 줄임 */
 }
 
-.product-card.grid .discount-price {
+.kok-product-card.grid .kok-discount-price {
   font-size: 13px; /* 폰트 크기 증가 */
 }
 
-.product-card.fixed .discount-price {
+.kok-product-card.fixed .kok-discount-price {
   font-size: 11px; /* 폰트 크기 줄임 */
 }
 
-.rating-info {
+.kok-rating-info {
   display: flex;
   align-items: center;
   gap: 3px; /* 간격 줄임 */
 }
 
-.product-card.grid .rating-info {
+.kok-product-card.grid .kok-rating-info {
   gap: 5px; /* 간격 증가 */
 }
 
-.product-card.fixed .rating-info {
+.kok-product-card.fixed .kok-rating-info {
   gap: 2px; /* 간격 줄임 */
 }
 
-.stars {
+.kok-stars {
   color: #FA5F8C;
   font-size: 10px; /* 폰트 크기 줄임 */
 }
 
 /* 할인 특가 상품 카드의 평점 폰트 크기 증가 */
-.products-container.discount-grid .product-card .stars {
+.kok-products-container.discount-grid .kok-product-card .kok-stars {
   font-size: 12px; /* 적절한 폰트 크기 */
 }
 
-.product-card.grid .stars {
+.kok-product-card.grid .kok-stars {
   font-size: 12px; /* 폰트 크기 증가 */
 }
 
-.product-card.fixed .stars {
+.kok-product-card.fixed .kok-stars {
   font-size: 9px; /* 폰트 크기 줄임 */
 }
 
-.review-count {
+.kok-review-count {
   color: #666;
   font-size: 10px; /* 폰트 크기 줄임 */
 }
 
 /* 할인 특가 상품 카드의 리뷰 수 폰트 크기 증가 */
-.products-container.discount-grid .product-card .review-count {
+.kok-products-container.discount-grid .kok-product-card .kok-review-count {
   font-size: 12px; /* 적절한 폰트 크기 */
 }
 
-.product-card.grid .review-count {
+.kok-product-card.grid .kok-review-count {
   font-size: 12px; /* 폰트 크기 증가 */
 }
 
-.product-card.fixed .review-count {
+.kok-product-card.fixed .kok-review-count {
   font-size: 9px; /* 폰트 크기 줄임 */
 }
 
 /* 모바일 최적화 */
 @media (max-width: 480px) {
-  .product-card {
+  .kok-product-card {
     width: 100px; /* 더 작게 */
     border-radius: 6px;
   }
   
-  .product-card.special {
+  .kok-product-card.special {
     width: 140px;
   }
   
-  .product-card.default {
+  .kok-product-card.default {
     width: 100px;
   }
   
-  .product-image-container {
+  .kok-product-image-container {
     height: 100px;
   }
   
-  .product-card.default .product-image-container {
+  .kok-product-card.default .kok-product-image-container {
     height: 80px;
   }
   
-  .product-card.grid .product-image-container {
+  .kok-product-card.grid .kok-product-image-container {
     height: 100px; /* 모바일 높이 증가에 맞게 조정 */
   }
   
-  .product-card.grid .product-info {
+  .kok-product-card.grid .kok-product-info {
     padding: 8px 10px;
   }
   
-  .product-card.fixed .product-info {
+  .kok-product-card.fixed .kok-product-info {
     padding: 4px;
   }
   
-  .product-name {
+  .kok-product-name {
     font-size: 10px;
     margin: 0 0 4px 0;
   }
   
-  .product-card.default .product-name {
+  .kok-product-card.default .kok-product-name {
     font-size: 9px;
   }
   
-  .product-card.grid .product-name {
+  .kok-product-card.grid .kok-product-name {
     font-size: 12px;
     margin: 0 0 6px 0;
   }
   
-  .product-card.fixed .product-name {
+  .kok-product-card.fixed .kok-product-name {
     font-size: 9px;
     margin: 0 0 3px 0;
   }
   
-  .price-info {
+  .kok-price-info {
     gap: 4px;
     margin-bottom: 3px;
   }
   
-  .product-card.grid .price-info {
+  .kok-product-card.grid .kok-price-info {
     gap: 6px;
     margin-bottom: 4px;
   }
   
-  .product-card.fixed .price-info {
+  .kok-product-card.fixed .kok-price-info {
     gap: 3px;
     margin-bottom: 2px;
   }
   
-  .discount-rate {
+  .kok-discount-rate {
     font-size: 10px;
   }
   
-  .product-card.default .discount-rate {
+  .kok-product-card.default .kok-discount-rate {
     font-size: 9px;
   }
   
-  .product-card.grid .discount-rate {
+  .kok-product-card.grid .kok-discount-rate {
     font-size: 11px;
   }
   
-  .product-card.fixed .discount-rate {
+  .kok-product-card.fixed .kok-discount-rate {
     font-size: 9px;
   }
   
-  .discount-price {
+  .kok-discount-price {
     font-size: 10px;
   }
   
-  .product-card.default .discount-price {
+  .kok-product-card.default .kok-discount-price {
     font-size: 9px;
   }
   
-  .product-card.grid .discount-price {
+  .kok-product-card.grid .kok-discount-price {
     font-size: 11px;
   }
   
-  .product-card.fixed .discount-price {
+  .kok-product-card.fixed .kok-discount-price {
     font-size: 9px;
   }
   
-  .rating-info {
+  .kok-rating-info {
     gap: 3px;
   }
   
-  .product-card.grid .rating-info {
+  .kok-product-card.grid .kok-rating-info {
     gap: 4px;
   }
   
-  .product-card.fixed .rating-info {
+  .kok-product-card.fixed .kok-rating-info {
     gap: 2px;
   }
   
-  .stars {
+  .kok-stars {
     font-size: 9px;
   }
   
-  .product-card.grid .stars {
+  .kok-product-card.grid .kok-stars {
     font-size: 10px;
   }
   
-  .product-card.fixed .stars {
+  .kok-product-card.fixed .kok-stars {
     font-size: 7px;
   }
   
-  .review-count {
+  .kok-review-count {
     font-size: 9px;
   }
   
-  .product-card.grid .review-count {
+  .kok-product-card.grid .kok-review-count {
     font-size: 10px;
   }
   
-  .product-card.fixed .review-count {
+  .kok-product-card.fixed .kok-review-count {
     font-size: 7px;
   }
-} 
+}

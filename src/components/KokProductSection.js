@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import KokProductCard from './KokProductCard';
-import '../styles/product_section.css';
+import '../styles/kok_product_section.css';
 
 const KokProductSection = ({ 
   title, 
@@ -126,19 +126,19 @@ const KokProductSection = ({
   };
 
   return (
-    <div className="product-section" style={sectionStyle}>
-      <div className="section-header">
-        <h2 className="section-title">{title}</h2>
+    <div className="kok-product-section" style={sectionStyle}>
+      <div className="kok-section-header">
+        <h2 className="kok-section-title">{title}</h2>
         {showMore && (
-          <button className="more-button" onClick={handleKokMoreClick}>
-            더보기 <span className="arrow">{'>'}</span>
+          <button className="kok-more-button" onClick={handleKokMoreClick}>
+            더보기 <span className="kok-arrow">{'>'}</span>
           </button>
         )}
-        {!showMore && <span className="arrow-icon">{'>'}</span>}
+        {!showMore && <span className="kok-arrow-icon">{'>'}</span>}
       </div>
       <div 
         ref={kokContainerRef}
-        className={`products-container ${type}`}
+        className={`kok-products-container ${type}`}
         style={containerStyle}
       >
         {products.map((product) => (

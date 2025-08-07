@@ -50,28 +50,35 @@ const Schedule = () => {
     return brandLogos[brandKey] || brandLogos['publicshopping'];
   };
 
-  // 백엔드 API에서 편성표 데이터를 가져오는 useEffect를 정의합니다 (API 명세서에 맞춰 수정)
+  // 백엔드 API에서 편성표 데이터를 가져오는 useEffect를 정의합니다 (비동기 처리 개선)
   useEffect(() => {
     // 비동기 함수로 편성표 데이터를 가져옵니다
     const fetchScheduleData = async () => {
       try {
         // 로딩 상태를 true로 설정합니다
         setLoading(true);
+        setError(null); // 에러 상태 초기화
         
         // API 명세서에 맞춰 쿼리 파라미터를 설정합니다
         const today = new Date();
         const date = today.toISOString().split('T')[0]; // YYYY-MM-DD 형식
         const hour = today.getHours(); // 현재 시간
         
-        // FastAPI 서버의 편성표 엔드포인트에 GET 요청을 보냅니다 (API 명세서에 맞춰 수정)
+        // api.js를 활용하여 편성표 데이터를 비동기로 가져옵니다
         const response = await api.get(`/api/home-shopping/schedule?date=${date}&hour=${hour}`);
-        // 응답 데이터를 가져옵니다
-        const data = response.data;
-        // 파싱된 데이터를 상태에 저장합니다
-        setScheduleData(data);
+        
+        // 응답 데이터를 검증하고 상태에 저장합니다
+        if (response.data) {
+          setScheduleData(response.data);
+        } else {
+          throw new Error('응답 데이터가 없습니다.');
+        }
+        
       } catch (err) {
-        // 에러가 발생하면 콘솔에 에러를 출력합니다
+        // 에러가 발생하면 콘솔에 에러를 출력하고 에러 상태를 설정합니다
         console.error('편성표 데이터 로딩 실패:', err);
+        setError('편성표 데이터를 불러오는데 실패했습니다.');
+        
         // API 연결 실패 시 에러 대신 임시 데이터를 사용한다는 로그를 출력합니다
         console.log('임시 데이터를 사용합니다.');
         
