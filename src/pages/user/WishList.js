@@ -23,7 +23,7 @@ const WishList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState('shopping'); // 'homeshopping' 또는 'shopping'
+  const [activeTab, setActiveTab] = useState('homeshopping'); // 'homeshopping' 또는 'shopping'
   const [unlikedProducts, setUnlikedProducts] = useState(new Set()); // 찜 해제된 상품 ID들을 저장
   const navigate = useNavigate();
 
@@ -258,48 +258,60 @@ const WishList = () => {
           </div>
         ) : (
           <div className="wishlist-products">
-                         {filteredProducts.map((product) => (
-               <div key={product.kok_product_id} className="wishlist-product">
-                 <div className="product-image">
-                   <img 
-                     src={product.kok_thumbnail} 
-                     alt={product.kok_product_name}
-                   />
-                 </div>
-                 <div className="product-info">
-                   {activeTab === 'homeshopping' ? (
-                     // 홈쇼핑 탭 레이아웃
-                     <>
-                       <div className="broadcast-info">
-                         <div className="broadcast-date-status">
-                           <span className="broadcast-date">{product.broadcast_date}</span>
-                           <span className="broadcast-status">{product.broadcast_status}</span>
-                         </div>
-                         <span className="broadcast-time">{product.broadcast_time}</span>
-                       </div>
-                       <div className="product-channel-info">
-                         <div className="wishlist-product-name">
-                           {product.kok_product_name}
-                         </div>
-                         <div className="channel-info">
-                           <img 
-                             src={product.channel_logo} 
-                             alt={product.channel_name}
-                             className="channel-logo"
-                           />
-                           <span className="channel-name">{product.channel_name}</span>
-                         </div>
-                       </div>
-                       <button 
-                         className="heart-button"
-                         onClick={() => handleHeartToggle(product.kok_product_id)}>
-                         <img 
-                           src={unlikedProducts.has(product.kok_product_id) ? emptyHeartIcon : filledHeartIcon} 
-                           alt="찜 토글" 
-                           className="heart-icon"
-                         />
-                       </button>
-                     </>
+            {filteredProducts.map((product) => (
+              <div key={product.kok_product_id} className="wishlist-product-container">
+                {activeTab === 'homeshopping' && (
+                  <div className="broadcast-header">
+                    <div className="broadcast-info">
+                      <span className="broadcast-date">{product.broadcast_date}</span>
+                      <span className="broadcast-status">{product.broadcast_status}</span>
+                    </div>
+                    <div className="broadcast-time">{product.broadcast_time}</div>
+                  </div>
+                )}
+                <div className="wishlist-product">
+                  <div className="product-image">
+                    <img 
+                      src={product.kok_thumbnail} 
+                      alt={product.kok_product_name}
+                    />
+                  </div>
+                  <div className="product-info">
+                    {activeTab === 'homeshopping' ? (
+                      // 홈쇼핑 탭 레이아웃
+                      <div className="product-channel-info">
+                        <div className="price-section">
+                          <div className="price-info">
+                            {product.kok_discount_rate > 0 && (
+                              <span className="discount-rate">{product.kok_discount_rate}%</span>
+                            )}
+                            <span className="discounted-price">
+                              {formatPrice(product.kok_discounted_price)}
+                            </span>
+                          </div>
+                          <button 
+                            className="heart-button"
+                            onClick={() => handleHeartToggle(product.kok_product_id)}>
+                            <img 
+                              src={unlikedProducts.has(product.kok_product_id) ? emptyHeartIcon : filledHeartIcon} 
+                              alt="찜 토글" 
+                              className="heart-icon"
+                            />
+                          </button>
+                        </div>
+                        <div className="channel-info">
+                          <img 
+                            src={product.channel_logo} 
+                            alt={product.channel_name}
+                            className="channel-logo"
+                          />
+                          <span className="channel-name">{product.channel_name}</span>
+                          <span className="channel-number">[CH 8]</span>
+                        </div>
+                        <div className="wishlist-product-name">
+                          <span className="wishlist-brand-name">{product.kok_store_name}</span> | {product.kok_product_name}
+                        </div>
+                      </div>
                    ) : (
                      // 쇼핑몰 탭 레이아웃
                      <>
@@ -327,9 +339,10 @@ const WishList = () => {
                        </div>
                      </>
                    )}
-                 </div>
-               </div>
-             ))}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
