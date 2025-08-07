@@ -165,9 +165,6 @@ const OrderList = () => {
       } catch (error) {
         // 에러 발생 시 에러 상태를 설정하고 로딩 상태를 false로 설정합니다
         console.error('주문 내역 데이터 가져오기 실패:', error);
-<<<<<<< HEAD
-        setError('주문 내역을 불러오는데 실패했습니다.');
-=======
         
         // 네트워크 에러인 경우 더미 데이터 사용, 그 외에는 에러 메시지 표시
         if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED' || 
@@ -178,7 +175,6 @@ const OrderList = () => {
         } else {
           setError(error.message);
         }
->>>>>>> 2e5736057dbbe3a4d8417b8c541ab0cc661fb60b
         setLoading(false);
         
         // 테스트용 더미 데이터를 설정합니다 (API 연결 실패 시)
@@ -263,9 +259,7 @@ const OrderList = () => {
       const response = await api.get(`/api/products/${productId}`);
       return response.data;
     } catch (error) {
-<<<<<<< HEAD
-      console.error('상품 정보 가져오기 실패:', error);
-=======
+
       // 네트워크 에러인 경우 조용히 처리 (더미 데이터 사용)
       if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED' || 
           (error.name === 'TypeError' && error.message.includes('Failed to fetch')) ||
@@ -274,7 +268,6 @@ const OrderList = () => {
       } else {
         console.error('상품 정보 가져오기 실패:', error);
       }
->>>>>>> 2e5736057dbbe3a4d8417b8c541ab0cc661fb60b
       return null;
     }
   };
@@ -309,9 +302,6 @@ const OrderList = () => {
       // 주문 상세 페이지로 이동하는 기능을 구현할 예정입니다
       // window.location.href = `/order-detail/${orderId}`;
     } catch (error) {
-<<<<<<< HEAD
-      console.error('주문 상세 보기 에러:', error);
-=======
       // 네트워크 에러인 경우 조용히 처리
       if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED' || 
           (error.name === 'TypeError' && error.message.includes('Failed to fetch')) ||
@@ -320,7 +310,6 @@ const OrderList = () => {
       } else {
         console.error('주문 상세 보기 에러:', error);
       }
->>>>>>> 2e5736057dbbe3a4d8417b8c541ab0cc661fb60b
     }
   };
 
