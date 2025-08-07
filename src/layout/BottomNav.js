@@ -68,7 +68,7 @@ const BottomNav = () => {
       label: "레시피 추천" // 네비게이션 라벨
     },
     {
-      path: "/sample", // 찜 페이지 경로
+      path: "/wishlist", // 찜 페이지 경로
       icon: bottomIconHeartBlack, // 활성 상태 아이콘 (검은색)
       blackIcon: bottomIconHeart, // 비활성 상태 아이콘 (일반)
       label: "찜" // 네비게이션 라벨
@@ -88,9 +88,10 @@ const BottomNav = () => {
       
       {/* 네비게이션 아이템들을 map으로 순회하여 렌더링 */}
       {navItems.map((item, index) => {
-        // 현재 경로가 해당 아이템의 경로와 일치하는지 확인 (주문내역 페이지에서는 마이페이지를 활성화)
+        // 현재 경로가 해당 아이템의 경로와 일치하는지 확인 (주문내역 페이지에서는 마이페이지를 활성화, 찜 페이지에서는 찜 아이콘을 활성화)
         const isActive = location.pathname === item.path || 
-                        (location.pathname === "/orderlist" && item.path === "/mypage");
+                        (location.pathname === "/orderlist" && item.path === "/mypage") ||
+                        (location.pathname === "/wishlist" && item.path === "/wishlist");
         
         // 현재 활성 상태에 따라 사용할 아이콘 결정
         const currentIcon = isActive ? item.icon : item.blackIcon;

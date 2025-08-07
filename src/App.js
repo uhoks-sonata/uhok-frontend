@@ -31,6 +31,8 @@ import MyPage from './pages/user/MyPage';
 import Cart from './pages/Cart';
 // 주문 내역 컴포넌트 import
 import OrderList from './pages/user/OrderList';
+// 찜한 상품 목록 컴포넌트 import
+import WishList from './pages/user/WishList';
 // 전역 알림 상태 관리 Provider import
 import { NotificationProvider } from './layout/HeaderNav';
 
@@ -77,6 +79,8 @@ function App() {
               <Route path="/cart" element={<Cart />} />
               {/* 주문 내역 경로 (/orderlist) - 주문 내역 페이지 */}
               <Route path="/orderlist" element={<OrderList />} />
+              {/* 찜한 상품 목록 경로 (/wishlist) - 찜한 상품 목록 페이지 */}
+              <Route path="/wishlist" element={<WishList />} />
             </Routes>
           </Router>
         </div>
