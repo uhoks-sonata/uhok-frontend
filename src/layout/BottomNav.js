@@ -52,6 +52,20 @@ const BottomNav = () => {
     }
   };
 
+  // 특정 페이지에서 주문/결제 버튼을 표시할지 확인하는 함수
+  const shouldShowOrderButton = () => {
+    const orderPages = ['/cart', '/kok/payment'];
+    return orderPages.some(page => location.pathname.startsWith(page));
+  };
+
+  // 주문/결제 버튼 텍스트 결정
+  const getOrderButtonText = () => {
+    if (location.pathname.startsWith('/kok/payment')) {
+      return '결제하기';
+    }
+    return '주문하기';
+  };
+
   // 네비게이션 아이템 배열 정의
   // 각 아이템은 경로, 아이콘, 라벨, 활성/비활성 아이콘 정보를 포함
   const navItems = [
@@ -84,67 +98,84 @@ const BottomNav = () => {
       // 하단 네비게이션 JSX 반환
   return (
     // 하단 네비게이션 컨테이너
-    <nav className="bottom-nav">
-      
-      {/* 네비게이션 아이템들을 map으로 순회하여 렌더링 */}
-      {navItems.map((item, index) => {
-        // 현재 경로가 해당 아이템의 경로와 일치하는지 확인 (주문내역 페이지에서는 마이페이지를 활성화, 찜 페이지에서는 찜 아이콘을 활성화)
-        const isActive = location.pathname === item.path || 
-                        (location.pathname === "/orderlist" && item.path === "/mypage") ||
-                        (location.pathname === "/wishlist" && item.path === "/wishlist");
+          <nav className="bottom-nav">
         
-        // 현재 활성 상태에 따라 사용할 아이콘 결정
-        const currentIcon = isActive ? item.icon : item.blackIcon;
-        
-        // 각 네비게이션 아이템 렌더링
-        return (
-          <React.Fragment key={item.path}>
-            {/* 네비게이션 아이템 */}
-            <Link
-              to={item.path} // 이동할 경로
-              className={`nav-item ${isActive ? 'active' : ''}`} // 활성 상태에 따른 CSS 클래스 적용
-              onClick={() => logNavigationClick(item.path, item.label)} // 네비게이션 클릭 로그 기록
-            >
-              {/* 네비게이션 아이콘 */}
-              <img
-                src={currentIcon} // 현재 상태에 맞는 아이콘 이미지
-                alt={item.label} // 접근성을 위한 alt 텍스트
-                className="nav-icon" // 아이콘 스타일 클래스
-              />
-              {/* 네비게이션 라벨 */}
-              <span className="nav-label">{item.label}</span>
-            </Link>
-            
-            {/* 가운데 동그란 버튼 (두 번째 아이템 다음에 추가) */}
-            {index === 1 && (
-              <div className="image-button-wrapper">
-              <Link 
-                to="/schedule" 
-                className="main-button-link"
-                onClick={() => logNavigationClick('/schedule', '혹')} // 혹 버튼 클릭 로그 기록
-              >
-                <div className="image-button">
-                  <div className="image-text">
-                    <span className="kok-text">혹</span>
-                  </div>
-                  <img 
-                    src={bottomNavImage} 
-                    alt="메인 버튼" 
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      borderRadius: '50%',
-                      objectFit: 'cover'
+        {/* 주문/결제 페이지에서는 주문하기/결제하기 버튼 표시 */}
+        {shouldShowOrderButton() ? (
+          <div className="order-button-container">
+            <button className="order-button">
+              {getOrderButtonText()}
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* 네비게이션 아이템들을 map으로 순회하여 렌더링 */}
+            {navItems.map((item, index) => {
+              // 현재 경로가 해당 아이템의 경로와 일치하는지 확인 (주문내역 페이지에서는 마이페이지를 활성화, 찜 페이지에서는 찜 아이콘을 활성화)
+              const isActive = location.pathname === item.path || 
+                              (location.pathname === "/orderlist" && item.path === "/mypage") ||
+                              (location.pathname === "/wishlist" && item.path === "/wishlist");
+              
+              // 현재 활성 상태에 따라 사용할 아이콘 결정
+              const currentIcon = isActive ? item.icon : item.blackIcon;
+              
+              // 각 네비게이션 아이템 렌더링
+              return (
+                <React.Fragment key={item.path}>
+                  {/* 네비게이션 아이템 */}
+                  <Link
+                    to={item.path} // 이동할 경로
+                    className={`nav-item ${isActive ? 'active' : ''}`} // 활성 상태에 따른 CSS 클래스 적용
+                    onClick={() => {
+                      logNavigationClick(item.path, item.label); // 네비게이션 클릭 로그 기록
+                      // 현재 활성화된 아이콘을 클릭했을 때도 페이지 새로고침
+                      if (isActive) {
+                        window.location.href = item.path;
+                      }
                     }}
-                  />
-                </div>
-              </Link>
-            </div>            
-            )}
-          </React.Fragment>
-        );
-      })}
-    </nav>
+                  >
+                    {/* 네비게이션 아이콘 */}
+                    <img
+                      src={currentIcon} // 현재 상태에 맞는 아이콘 이미지
+                      alt={item.label} // 접근성을 위한 alt 텍스트
+                      className="nav-icon" // 아이콘 스타일 클래스
+                    />
+                    {/* 네비게이션 라벨 */}
+                    <span className="nav-label">{item.label}</span>
+                  </Link>
+                  
+                  {/* 가운데 동그란 버튼 (두 번째 아이템 다음에 추가) */}
+                  {index === 1 && (
+                    <div className="image-button-wrapper">
+                    <Link 
+                      to="/schedule" 
+                      className="main-button-link"
+                      onClick={() => logNavigationClick('/schedule', '혹')} // 혹 버튼 클릭 로그 기록
+                    >
+                      <div className="image-button">
+                        <div className="image-text">
+                          <span className="kok-text">혹</span>
+                        </div>
+                        <img 
+                          src={bottomNavImage} 
+                          alt="메인 버튼" 
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            borderRadius: '50%',
+                            objectFit: 'cover'
+                          }}
+                        />
+                      </div>
+                    </Link>
+                  </div>            
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </>
+        )}
+      </nav>
   );
 };
 

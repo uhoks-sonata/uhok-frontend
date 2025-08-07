@@ -20,18 +20,14 @@ import KokProductListPage from './pages/kok_shopping/KokProductListPage';
 
 // 레시피 관련 페이지
 import RecipeRecommendation from './pages/recipes/RecipeRecommendation';
-
-// ===== 기능별 컴포넌트들 import =====
-
-// ===== 레이아웃 컴포넌트들 import =====
-
-// ===== 일반 컴포넌트들 import =====
+// 결제 관련 페이지
+import KokPayment from './pages/user/KokPayment';
 
 // ===== 전역 상태 관리 Provider import =====
 // 마이페이지 컴포넌트 import
 import MyPage from './pages/user/MyPage';
 // 장바구니 컴포넌트 import
-import Cart from './pages/Cart';
+import Cart from './pages/user/Cart';
 // 주문 내역 컴포넌트 import
 import OrderList from './pages/user/OrderList';
 // 찜한 상품 목록 컴포넌트 import
@@ -86,6 +82,8 @@ function App() {
               <Route path="/orderlist" element={<OrderList />} />
               {/* 찜한 상품 목록 경로 (/wishlist) - 찜한 상품 목록 페이지 */}
               <Route path="/wishlist" element={<WishList />} />
+              {/* KOK 결제 경로 (/kok/payment) - 결제 페이지 */}
+              <Route path="/kok/payment" element={<KokPayment />} />
             </Routes>
           </Router>
         </div>

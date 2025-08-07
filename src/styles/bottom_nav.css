@@ -201,6 +201,40 @@ body {
 }
 
 
+/* ===== 주문/결제 버튼 스타일 ===== */
+.order-button-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 0 20px;
+}
+
+.order-button {
+  width: 100%;
+  height: 50px;
+  background-color: #f68cb1; /* 분홍색 */
+  color: white;
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(246, 140, 177, 0.3);
+}
+
+/* .order-button:hover {
+  background-color: #e67a9f;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(246, 140, 177, 0.4);
+} */
+
+.order-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(246, 140, 177, 0.3);
+}
+
 /* ===== 반응형 디자인 ===== */
 @media (max-width: 480px) {
   .bottom-nav {
@@ -231,5 +265,10 @@ body {
   .bottom-nav a.active img.nav-icon {
     width: 37px !important;
     height: 37px !important;
+  }
+
+  .order-button {
+    height: 45px;
+    font-size: 15px;
   }
 }

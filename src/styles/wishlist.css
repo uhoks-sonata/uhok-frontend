@@ -81,12 +81,27 @@
   gap: 16px;
 }
 
+.wishlist-product-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.broadcast-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
+
 .wishlist-product {
   display: flex;
   gap: 12px;
   padding: 16px;
   background-color: #ffffff;
   border-radius: 8px;
+  padding-top: 0px;
 }
 
 .product-image {
@@ -173,32 +188,25 @@
 /* 홈쇼핑 탭 전용 스타일 */
 .broadcast-info {
   display: flex;
-  justify-content: space-between;
+  gap: 8px;
   align-items: center;
-  margin-bottom: 8px;
-}
-
-.broadcast-date-status {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
 }
 
 .broadcast-date {
-  font-size: 12px;
-  color: #666;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
 }
 
 .broadcast-status {
   font-size: 12px;
-  color: #ff6b6b;
-  font-weight: 600;
+  color: #666;
 }
 
 .broadcast-time {
   font-size: 14px;
-  color: #333;
-  font-weight: 600;
+  color: #666;
+  margin-bottom: 8px;
 }
 
 .product-channel-info {
@@ -211,12 +219,12 @@
 .channel-info {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .channel-logo {
-  width: 24px;
-  height: 24px;
+  width: 16px;
+  height: 16px;
   object-fit: contain;
 }
 
@@ -225,11 +233,9 @@
   color: #666;
 }
 
-/* 홈쇼핑 탭에서 하트 버튼 위치 조정 */
-.wishlist-product .product-info .heart-button {
-  position: absolute;
-  top: 8px;
-  right: 8px;
+.channel-number {
+  font-size: 12px;
+  color: #333;
 }
 
 /* 에러 메시지 스타일 */
