@@ -4,6 +4,7 @@ import { ShoppingHeader } from '../../layout/HeaderNav';
 import '../../styles/kok_product_list_page.css';
 import emptyHeartIcon from '../../assets/empty_heart.png';
 import filledHeartIcon from '../../assets/filled_heart.png';
+import api from '../api';
 
 // 상품 데이터 import
 import { 
@@ -23,14 +24,8 @@ const KokProductListPage = () => {
   // KOK API에서 할인 특가 상품 데이터를 가져오는 함수
   const fetchKokProducts = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/kok/discounted');
-      
-      if (!response.ok) {
-        throw new Error('KOK 상품 데이터를 가져오는데 실패했습니다.');
-      }
-      
-      const data = await response.json();
-      return data.products || [];
+      const response = await api.get('/api/kok/discounted');
+      return response.data.products || [];
     } catch (err) {
       console.error('KOK 상품 데이터 로딩 실패:', err);
       console.log('임시 데이터를 사용합니다.');
@@ -41,14 +36,8 @@ const KokProductListPage = () => {
   // KOK API에서 판매율 높은 상품 데이터를 가져오는 함수
   const fetchKokTopSellingProducts = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/kok/top-selling');
-      
-      if (!response.ok) {
-        throw new Error('KOK 판매율 높은 상품 데이터를 가져오는데 실패했습니다.');
-      }
-      
-      const data = await response.json();
-      return data.products || [];
+      const response = await api.get('/api/kok/top-selling');
+      return response.data.products || [];
     } catch (err) {
       console.error('KOK 판매율 높은 상품 데이터 로딩 실패:', err);
       console.log('임시 데이터를 사용합니다.');
@@ -59,14 +48,8 @@ const KokProductListPage = () => {
   // KOK API에서 구매한 스토어 내 리뷰 많은 상품 데이터를 가져오는 함수
   const fetchKokStoreBestItems = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/kok/store-best-items');
-      
-      if (!response.ok) {
-        throw new Error('KOK 구매한 스토어 내 리뷰 많은 상품 데이터를 가져오는데 실패했습니다.');
-      }
-      
-      const data = await response.json();
-      return data.products || [];
+      const response = await api.get('/api/kok/store-best-items');
+      return response.data.products || [];
     } catch (err) {
       console.error('KOK 구매한 스토어 내 리뷰 많은 상품 데이터 로딩 실패:', err);
       console.log('임시 데이터를 사용합니다.');
