@@ -6,6 +6,7 @@ import { MyPageHeader } from '../../layout/HeaderNav';
 import BottomNav from '../../layout/BottomNav';
 // 마이페이지 스타일을 가져옵니다
 import '../../styles/mypage.css';
+import api from '../api';
 // 기본 사용자 아이콘 이미지를 가져옵니다
 import userIcon from '../../assets/user_icon.png';
 // 상품 없음 이미지를 가져옵니다
@@ -67,32 +68,27 @@ const MyPage = () => {
         
         // FastAPI 서버의 사용자 정보와 주문 정보를 병렬로 가져옵니다
         const [userResponse, ordersResponse] = await Promise.all([
-          fetch('http://localhost:8000/api/user/info', {
+          api.get('/api/user/info', {
             headers: {
-              'Authorization': 'Bearer <access_token>', // 실제 토큰으로 교체 필요 (API에서 받아옴)
-              'Content-Type': 'application/json'
+              'Authorization': 'Bearer <access_token>' // 실제 토큰으로 교체 필요 (API에서 받아옴)
             }
           }),
-          fetch('http://localhost:8000/api/orders/recent?days=7', {
+          api.get('/api/orders/recent?days=7', {
             headers: {
-              'Authorization': 'Bearer <access_token>', // 실제 토큰으로 교체 필요 (API에서 받아옴)
-              'Content-Type': 'application/json'
+              'Authorization': 'Bearer <access_token>' // 실제 토큰으로 교체 필요 (API에서 받아옴)
             }
           })
         ]);
         
-        // 응답이 성공적이지 않으면 에러를 발생시킵니다
-        if (!userResponse.ok) {
-          throw new Error('사용자 정보를 가져오는데 실패했습니다.');
-        }
-        
-        // 응답 데이터를 JSON 형태로 파싱합니다
-        const userData = await userResponse.json();
+        // 응답 데이터를 추출합니다
+        const userData = userResponse.data;
         
         // 주문 조회 응답을 처리합니다
         let ordersData = { orders: [] };
-        if (ordersResponse.ok) {
-          ordersData = await ordersResponse.json();
+        try {
+          ordersData = ordersResponse.data;
+        } catch (err) {
+          console.log('주문 정보를 가져오는데 실패했습니다.');
         }
         
         // 파싱된 데이터를 상태에 저장합니다

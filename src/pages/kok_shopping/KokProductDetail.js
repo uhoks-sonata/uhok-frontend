@@ -6,6 +6,7 @@ import '../../styles/kok_product_detail.css';
 import emptyHeartIcon from '../../assets/empty_heart.png';
 import filledHeartIcon from '../../assets/filled_heart.png';
 import cartIcon from '../../assets/icon-park-outline_weixin-market.png';
+import api from '../api';
 
 const KokProductDetail = () => {
   const { productId } = useParams();
@@ -25,14 +26,8 @@ const KokProductDetail = () => {
   const fetchKokProductInfo = async (productId) => {
     try {
       setKokLoading(true);
-      const response = await fetch(`http://localhost:8000/api/kok/product/${productId}/info`);
-      
-      if (!response.ok) {
-        throw new Error('KOK 상품 기본 정보를 가져오는데 실패했습니다.');
-      }
-      
-      const data = await response.json();
-      return data;
+      const response = await api.get(`/api/kok/product/${productId}/info`);
+      return response.data;
     } catch (err) {
       console.error('KOK 상품 기본 정보 로딩 실패:', err);
       console.log('임시 데이터를 사용합니다.');
@@ -45,14 +40,8 @@ const KokProductDetail = () => {
   // KOK API에서 상품 상세정보 탭 데이터를 가져오는 함수
   const fetchKokProductTabs = async (productId) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/kok/product/${productId}/tabs`);
-      
-      if (!response.ok) {
-        throw new Error('KOK 상품 상세정보 탭 데이터를 가져오는데 실패했습니다.');
-      }
-      
-      const data = await response.json();
-      return data;
+      const response = await api.get(`/api/kok/product/${productId}/tabs`);
+      return response.data;
     } catch (err) {
       console.error('KOK 상품 상세정보 탭 데이터 로딩 실패:', err);
       console.log('임시 데이터를 사용합니다.');
@@ -63,14 +52,8 @@ const KokProductDetail = () => {
   // KOK API에서 상품 리뷰 데이터를 가져오는 함수
   const fetchKokProductReviews = async (productId) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/kok/product/${productId}/reviews`);
-      
-      if (!response.ok) {
-        throw new Error('KOK 상품 리뷰 데이터를 가져오는데 실패했습니다.');
-      }
-      
-      const data = await response.json();
-      return data;
+      const response = await api.get(`/api/kok/product/${productId}/reviews`);
+      return response.data;
     } catch (err) {
       console.error('KOK 상품 리뷰 데이터 로딩 실패:', err);
       console.log('임시 데이터를 사용합니다.');
@@ -81,14 +64,8 @@ const KokProductDetail = () => {
   // KOK API에서 상품 상세 정보 데이터를 가져오는 함수
   const fetchKokProductDetails = async (productId) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/kok/product/${productId}/details`);
-      
-      if (!response.ok) {
-        throw new Error('KOK 상품 상세 정보 데이터를 가져오는데 실패했습니다.');
-      }
-      
-      const data = await response.json();
-      return data;
+      const response = await api.get(`/api/kok/product/${productId}/details`);
+      return response.data;
     } catch (err) {
       console.error('KOK 상품 상세 정보 데이터 로딩 실패:', err);
       console.log('임시 데이터를 사용합니다.');
@@ -99,14 +76,8 @@ const KokProductDetail = () => {
   // KOK API에서 상품 상세 데이터를 가져오는 함수
   const fetchKokProductDetail = async (productId) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/kok/product/${productId}`);
-      
-      if (!response.ok) {
-        throw new Error('KOK 상품 상세 데이터를 가져오는데 실패했습니다.');
-      }
-      
-      const data = await response.json();
-      return data;
+      const response = await api.get(`/api/kok/product/${productId}`);
+      return response.data;
     } catch (err) {
       console.error('KOK 상품 상세 데이터 로딩 실패:', err);
       console.log('임시 데이터를 사용합니다.');
