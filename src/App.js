@@ -18,6 +18,9 @@ import KokMain from './pages/kok_shopping/KokMain';
 import KokProductDetail from './pages/kok_shopping/KokProductDetail';
 import KokProductListPage from './pages/kok_shopping/KokProductListPage';
 
+// 레시피 관련 페이지
+import RecipeRecommendation from './pages/recipes/RecipeRecommendation';
+
 // ===== 기능별 컴포넌트들 import =====
 
 // ===== 레이아웃 컴포넌트들 import =====
@@ -62,7 +65,6 @@ function App() {
               <Route path="/main" element={<Schedule />} />
               {/* 편성표 경로 (/schedule) - 편성표 페이지 */}
               <Route path="/schedule" element={<Schedule />} />
-              
               {/* ===== KOK 라우트 ===== */}
               {/* KOK 메인 경로 (/kok) - KOK 메인 페이지 */}
               <Route path="/kok" element={<KokMain />} />
@@ -70,6 +72,9 @@ function App() {
               <Route path="/kok/product/:productId" element={<KokProductDetail />} />
               {/* 제품 목록 경로 (/kok/products/:sectionType) - 제품 목록 페이지 */}
               <Route path="/kok/products/:sectionType" element={<KokProductListPage />} />
+              
+              {/* 레시피 추천 경로 (/recipes) - 레시피 추천 페이지 */}
+              <Route path="/recipes" element={<RecipeRecommendation />} />
               
               {/* 마이페이지 경로 (/mypage) - 마이페이지 */}
               <Route path="/mypage" element={<MyPage />} />
