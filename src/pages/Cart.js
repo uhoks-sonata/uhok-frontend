@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CartHeader } from '../layout/HeaderNav';
 import { useNotifications } from '../layout/HeaderNav';
+import Loading from '../components/Loading';
 import '../styles/cart.css';
 
 const Cart = () => {
@@ -91,7 +92,7 @@ const Cart = () => {
       <div className={`cart-page ${fadeIn ? 'fade-in' : ''}`}>
         <CartHeader onBack={handleBack} onNotificationClick={handleNotificationClick} />
         <div className="cart-content">
-          <div className="loading">장바구니를 불러오는 중...</div>
+          <Loading message="장바구니를 불러오는 중 ..." />
         </div>
       </div>
     );

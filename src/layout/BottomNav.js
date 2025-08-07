@@ -88,8 +88,9 @@ const BottomNav = () => {
       
       {/* 네비게이션 아이템들을 map으로 순회하여 렌더링 */}
       {navItems.map((item, index) => {
-        // 현재 경로가 해당 아이템의 경로와 일치하는지 확인
-        const isActive = location.pathname === item.path;
+        // 현재 경로가 해당 아이템의 경로와 일치하는지 확인 (주문내역 페이지에서는 마이페이지를 활성화)
+        const isActive = location.pathname === item.path || 
+                        (location.pathname === "/orderlist" && item.path === "/mypage");
         
         // 현재 활성 상태에 따라 사용할 아이콘 결정
         const currentIcon = isActive ? item.icon : item.blackIcon;

@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { MyPageHeader } from '../../layout/HeaderNav';
 // 하단 네비게이션 컴포넌트를 가져옵니다
 import BottomNav from '../../layout/BottomNav';
+// 로딩 컴포넌트를 가져옵니다
+import Loading from '../../components/Loading';
 // 마이페이지 스타일을 가져옵니다
 import '../../styles/mypage.css';
 // 기본 사용자 아이콘 이미지를 가져옵니다
@@ -238,8 +240,7 @@ const MyPage = () => {
         <MyPageHeader />
         {/* 메인 콘텐츠 영역 */}
         <div className="mypage-content">
-          {/* 로딩 메시지를 표시합니다 */}
-          <div className="loading">마이페이지를 불러오는 중...</div>
+          <Loading message="마이페이지를 불러오는 중 ..." />
         </div>
         {/* 하단 네비게이션을 렌더링합니다 */}
         <BottomNav />
