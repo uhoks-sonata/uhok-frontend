@@ -132,7 +132,7 @@ const MyPage = () => {
               order_id: 20230701, // 주문 ID (API에서 받아옴) - 첫 번째 주문에 추가 상품
               brand_name: "오리온", // 브랜드명 (API에서 받아옴)
               product_name: "초코파이 12개입", // 상품명 (API에서 받아옴)
-              product_description: "부드러운 초콜릿과 마시멜로우가 듬뿍", // 상품 설명 (API에서 받아옴)
+              product_description: "부드러운 초콜릿과 마시멜로우가 듬뿍 부드러운 초콜릿과 마시멜로우가 듬뿍", // 상품 설명 (API에서 받아옴)
               product_price: 8500, // 상품 가격 (API에서 받아옴) - 숫자로 받아옴
               product_quantity: 1, // 상품 개수 (API에서 받아옴)
               product_image: testImage2, // 상품 이미지 (API에서 받아옴)
@@ -171,7 +171,8 @@ const MyPage = () => {
   const handleOrderHistoryClick = () => {
     // 콘솔에 클릭 로그를 출력합니다
     console.log('주문 내역 클릭');
-    // 주문 내역 페이지로 이동하는 기능을 구현할 예정입니다
+    // 주문 내역 페이지로 이동합니다
+    window.location.href = '/orderlist';
   };
 
   // 레시피 클릭 시 실행되는 핸들러 함수를 정의합니다
@@ -298,9 +299,19 @@ const MyPage = () => {
                            {/* 상품 상세 정보 */}
                            <div className="product-details">
                              {/* 브랜드명과 상품명을 표시합니다 (API에서 받아옴) */}
-                             <div className="product-name">{order.brand_name} | {order.product_name}</div>
+                             <div className="product-name" title={`${order.brand_name} | ${order.product_name}`}>
+                               {`${order.brand_name} | ${order.product_name}`.length > 20 
+                                 ? `${`${order.brand_name} | ${order.product_name}`.substring(0, 20)}...`
+                                 : `${order.brand_name} | ${order.product_name}`
+                               }
+                             </div>
                              {/* 상품 설명을 표시합니다 (API에서 받아옴) */}
-                             <div className="product-description">{order.product_description}</div>
+                             <div className="product-description" title={order.product_description}>
+                               {order.product_description.length > 20 
+                                 ? `${order.product_description.substring(0, 20)}...`
+                                 : order.product_description
+                               }
+                             </div>
                              {/* 가격과 수량을 표시합니다 (API에서 받아옴) */}
                              <div className="product-price">{formatPrice(order.product_price)} · {order.product_quantity}개</div>
                            </div>
