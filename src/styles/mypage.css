@@ -167,19 +167,24 @@
 .order-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 10px;
+  flex-direction: row;
+  width: 100%;
 }
 
 .order-date {
   font-size: 14px;
   color: #333;
   font-weight: 500;
+  flex: 0 0 auto;
 }
 
 .order-number {
-  font-size: 14px;
+  font-size: 10px;
   color: #666;
+  flex: 0 0 auto;
+  margin-top: 4px;
 }
 
 /* 배송 상태 카드 */
