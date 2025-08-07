@@ -258,9 +258,7 @@ const OrderList = () => {
       const response = await api.get(`/api/products/${productId}`);
       return response.data;
     } catch (error) {
-<<<<<<< HEAD
-      console.error('상품 정보 가져오기 실패:', error);
-=======
+        console.error('상품 정보 가져오기 실패:', error);
       // 네트워크 에러인 경우 조용히 처리 (더미 데이터 사용)
       if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED' || 
           (error.name === 'TypeError' && error.message.includes('Failed to fetch')) ||
