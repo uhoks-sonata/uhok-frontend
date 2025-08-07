@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/product_card.css';
 
-const ProductCard = ({ product, type = 'default', style = {} }) => {
+const KokProductCard = ({ product, type = 'default', style = {} }) => {
   const navigate = useNavigate();
   const { 
     id, 
@@ -16,15 +16,15 @@ const ProductCard = ({ product, type = 'default', style = {} }) => {
     isSpecial = false 
   } = product;
 
-  const handleCardClick = () => {
-    navigate(`/product/${id}`);
+  const handleKokCardClick = () => {
+    navigate(`/kok/product/${id}`);
   };
 
   return (
     <div 
       className={`product-card ${isSpecial ? 'special' : ''}`} 
       style={{ ...style, cursor: 'pointer' }}
-      onClick={handleCardClick}
+      onClick={handleKokCardClick}
     >
       <div className="product-image-container">
         <img src={image} alt={name} className="product-image" />
@@ -46,4 +46,4 @@ const ProductCard = ({ product, type = 'default', style = {} }) => {
   );
 };
 
-export default ProductCard; 
+export default KokProductCard;

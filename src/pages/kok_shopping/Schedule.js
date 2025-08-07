@@ -1,5 +1,6 @@
 // React와 필요한 훅들을 가져옵니다
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 // 편성표 헤더 컴포넌트를 가져옵니다
 import { ScheduleHeader } from '../../layout/HeaderNav';
 // 하단 네비게이션 컴포넌트를 가져옵니다
@@ -192,7 +193,7 @@ const Schedule = () => {
   // 로딩 중일 때 표시할 UI를 렌더링합니다
   if (loading) {
     return (
-      <div className="schedule-page">
+      <div className="kok-schedule-page">
         {/* 편성표 헤더 컴포넌트를 렌더링합니다 */}
         <ScheduleHeader
           onScheduleClick={handleScheduleClick}

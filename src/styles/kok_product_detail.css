@@ -1,5 +1,5 @@
 /* 상품 상세 페이지 전체 스타일 */
-.product-detail-page {
+.kok-product-detail-page {
   max-width: 480px;
   margin: 0 auto;
   background-color: #ffffff;
@@ -18,7 +18,7 @@
 }
 
 /* 탭 네비게이션 */
-.tab-navigation {
+.kok-tab-navigation {
   display: flex !important;
   background-color: #ffffff !important;
   border-bottom: 2px solid #e0e0e0 !important;
@@ -32,7 +32,7 @@
   padding: 0 !important;
 }
 
-.tab-button {
+.kok-tab-button {
   flex: 1 !important;
   background: none !important;
   border: none !important;
@@ -52,18 +52,18 @@
   margin: 0 !important;
 }
 
-.tab-button:hover {
+.kok-tab-button:hover {
   color: #333 !important;
   background-color: #f8f8f8 !important;
 }
 
-.tab-button.active {
+.kok-tab-button.active {
   color: #333 !important;
   font-weight: bold !important;
   background-color: #ffffff !important;
 }
 
-.tab-button.active::after {
+.kok-tab-button.active::after {
   content: '' !important;
   position: absolute !important;
   bottom: 0 !important;
@@ -75,7 +75,7 @@
 }
 
 /* 탭 컨텐츠 */
-.tab-content-container {
+.kok-tab-content-container {
   flex: 1 !important;
   overflow-y: auto !important;
   background-color: #ffffff !important;
@@ -88,9 +88,9 @@
   min-height: 0 !important; /* flex 아이템에서 최소 높이도 0으로 설정 */
 }
 
-.tab-content {
+.kok-tab-content {
   padding: 16px !important;
-  animation: fadeIn 0.3s ease-in-out !important;
+  animation: kokFadeIn 0.3s ease-in-out !important;
   min-height: 100% !important;
   display: block !important;
   width: 100% !important;

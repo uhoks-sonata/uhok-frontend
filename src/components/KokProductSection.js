@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import ProductCard from './ProductCard';
+import KokProductCard from './KokProductCard';
 import '../styles/product_section.css';
 
-const ProductSection = ({ 
+const KokProductSection = ({ 
   title, 
   products, 
   type = 'default', 
@@ -12,18 +12,18 @@ const ProductSection = ({
   containerStyle = {},
   cardStyle = {}
 }) => {
-  const containerRef = useRef(null);
+  const kokContainerRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     // grid 타입들일 때만 마우스 드래그 기능 추가
-    if ((type === 'grid' || type === 'discount-grid' || type === 'non-duplicated-grid') && containerRef.current) {
-      const container = containerRef.current;
+    if ((type === 'grid' || type === 'discount-grid' || type === 'non-duplicated-grid') && kokContainerRef.current) {
+      const container = kokContainerRef.current;
       let isDown = false;
       let startX;
       let scrollLeft;
 
-      const handleMouseDown = (e) => {
+      const handleKokMouseDown = (e) => {
         isDown = true;
         container.classList.add('dragging');
         startX = e.pageX - container.offsetLeft;
@@ -31,17 +31,17 @@ const ProductSection = ({
         e.preventDefault(); // 기본 동작 방지
       };
 
-      const handleMouseLeave = () => {
+      const handleKokMouseLeave = () => {
         isDown = false;
         container.classList.remove('dragging');
       };
 
-      const handleMouseUp = () => {
+      const handleKokMouseUp = () => {
         isDown = false;
         container.classList.remove('dragging');
       };
 
-      const handleMouseMove = (e) => {
+      const handleKokMouseMove = (e) => {
         if (!isDown) return;
         e.preventDefault();
         const x = e.pageX - container.offsetLeft;
@@ -50,19 +50,19 @@ const ProductSection = ({
       };
 
       // 터치 이벤트도 추가
-      const handleTouchStart = (e) => {
+      const handleKokTouchStart = (e) => {
         isDown = true;
         container.classList.add('dragging');
         startX = e.touches[0].pageX - container.offsetLeft;
         scrollLeft = container.scrollLeft;
       };
 
-      const handleTouchEnd = () => {
+      const handleKokTouchEnd = () => {
         isDown = false;
         container.classList.remove('dragging');
       };
 
-      const handleTouchMove = (e) => {
+      const handleKokTouchMove = (e) => {
         if (!isDown) return;
         e.preventDefault();
         const x = e.touches[0].pageX - container.offsetLeft;
@@ -71,42 +71,42 @@ const ProductSection = ({
       };
 
       // 마우스 이벤트
-      container.addEventListener('mousedown', handleMouseDown);
-      container.addEventListener('mouseleave', handleMouseLeave);
-      container.addEventListener('mouseup', handleMouseUp);
-      container.addEventListener('mousemove', handleMouseMove);
+      container.addEventListener('mousedown', handleKokMouseDown);
+      container.addEventListener('mouseleave', handleKokMouseLeave);
+      container.addEventListener('mouseup', handleKokMouseUp);
+      container.addEventListener('mousemove', handleKokMouseMove);
 
       // 터치 이벤트
-      container.addEventListener('touchstart', handleTouchStart, { passive: false });
-      container.addEventListener('touchend', handleTouchEnd);
-      container.addEventListener('touchmove', handleTouchMove, { passive: false });
+      container.addEventListener('touchstart', handleKokTouchStart, { passive: false });
+      container.addEventListener('touchend', handleKokTouchEnd);
+      container.addEventListener('touchmove', handleKokTouchMove, { passive: false });
 
       // 휠 이벤트 추가
-      const handleWheel = (e) => {
+      const handleKokWheel = (e) => {
         e.preventDefault();
         container.scrollLeft += e.deltaY;
       };
-      container.addEventListener('wheel', handleWheel, { passive: false });
+      container.addEventListener('wheel', handleKokWheel, { passive: false });
 
       return () => {
         // 마우스 이벤트 정리
-        container.removeEventListener('mousedown', handleMouseDown);
-        container.removeEventListener('mouseleave', handleMouseLeave);
-        container.removeEventListener('mouseup', handleMouseUp);
-        container.removeEventListener('mousemove', handleMouseMove);
+        container.removeEventListener('mousedown', handleKokMouseDown);
+        container.removeEventListener('mouseleave', handleKokMouseLeave);
+        container.removeEventListener('mouseup', handleKokMouseUp);
+        container.removeEventListener('mousemove', handleKokMouseMove);
 
         // 터치 이벤트 정리
-        container.removeEventListener('touchstart', handleTouchStart);
-        container.removeEventListener('touchend', handleTouchEnd);
-        container.removeEventListener('touchmove', handleTouchMove);
+        container.removeEventListener('touchstart', handleKokTouchStart);
+        container.removeEventListener('touchend', handleKokTouchEnd);
+        container.removeEventListener('touchmove', handleKokTouchMove);
 
         // 휠 이벤트 정리
-        container.removeEventListener('wheel', handleWheel);
+        container.removeEventListener('wheel', handleKokWheel);
       };
     }
   }, [type]);
 
-  const handleMoreClick = () => {
+  const handleKokMoreClick = () => {
     // 섹션 타입에 따라 다른 경로로 이동
     let sectionType = '';
     switch (type) {
@@ -122,7 +122,7 @@ const ProductSection = ({
       default:
         sectionType = 'all';
     }
-    navigate(`/products/${sectionType}`);
+    navigate(`/kok/products/${sectionType}`);
   };
 
   return (
@@ -130,19 +130,19 @@ const ProductSection = ({
       <div className="section-header">
         <h2 className="section-title">{title}</h2>
         {showMore && (
-          <button className="more-button" onClick={handleMoreClick}>
+          <button className="more-button" onClick={handleKokMoreClick}>
             더보기 <span className="arrow">{'>'}</span>
           </button>
         )}
         {!showMore && <span className="arrow-icon">{'>'}</span>}
       </div>
       <div 
-        ref={containerRef}
+        ref={kokContainerRef}
         className={`products-container ${type}`}
         style={containerStyle}
       >
         {products.map((product) => (
-          <ProductCard 
+          <KokProductCard 
             key={product.id} 
             product={product} 
             type={type}
@@ -154,4 +154,4 @@ const ProductSection = ({
   );
 };
 
-export default ProductSection; 
+export default KokProductSection;

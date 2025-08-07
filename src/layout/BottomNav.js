@@ -33,7 +33,7 @@ const BottomNav = () => {
   // 각 아이템은 경로, 아이콘, 라벨, 활성/비활성 아이콘 정보를 포함
   const navItems = [
     {
-      path: "/kokmain", // 콕 쇼핑몰 페이지 경로
+      path: "/kok", // 콕 쇼핑몰 페이지 경로
       icon: bottomIconKokBlack, // 활성 상태 아이콘 (검은색)
       blackIcon: bottomIconKok, // 비활성 상태 아이콘 (일반)
       label: "콕 쇼핑몰" // 네비게이션 라벨

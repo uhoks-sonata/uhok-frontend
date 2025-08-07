@@ -1,4 +1,4 @@
-.product-list-page {
+.kok-product-list-page {
   max-width: 480px;
   margin: 0 auto;
   background-color: #f8f9fa;
@@ -8,14 +8,14 @@
   overflow: hidden;
 }
 
-.product-list-content {
+.kok-product-list-content {
   flex: 1;
   padding: 16px;
   overflow-y: auto;
   overflow-x: hidden;
 }
 
-.section-header {
+.kok-section-header {
   margin-bottom: 24px;
   padding: 16px;
   background-color: white;
@@ -23,20 +23,20 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.page-title {
+.kok-page-title {
   font-size: 24px;
   font-weight: bold;
   color: #333;
   margin: 0 0 8px 0;
 }
 
-.product-count {
+.kok-product-count {
   font-size: 14px;
   color: #666;
   margin: 0;
 }
 
-.products-grid {
+.kok-products-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
@@ -45,27 +45,27 @@
 
 /* 반응형 디자인 */
 @media (max-width: 480px) {
-  .products-grid {
+  .kok-products-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
   }
   
-  .product-list-content {
+  .kok-product-list-content {
     padding: 12px;
   }
   
-  .section-header {
+  .kok-section-header {
     padding: 12px;
     margin-bottom: 16px;
   }
   
-  .page-title {
+  .kok-page-title {
     font-size: 20px;
   }
 }
 
 /* 제품 카드 스타일 조정 */
-.products-grid .product-card {
+.kok-products-grid .kok-product-card {
   width: 100% !important;
   height: auto !important;
   min-height: 280px;
@@ -78,20 +78,20 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.products-grid .product-card:hover {
+.kok-products-grid .kok-product-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* 제품 카드 내부 스타일 */
-.products-grid .product-card .product-image-container {
+.kok-products-grid .kok-product-card .kok-product-image-container {
   width: 100%;
   height: 0;
   padding-bottom: 100%; /* 가로너비와 동일한 높이 (정사각형) */
   position: relative;
 }
 
-.products-grid .product-card .product-image {
+.kok-products-grid .kok-product-card .kok-product-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -100,7 +100,7 @@
   left: 0;
 }
 
-.products-grid .product-card .product-info {
+.kok-products-grid .kok-product-card .kok-product-info {
   padding: 12px;
   background: white;
   display: flex;
@@ -108,7 +108,7 @@
   gap: 8px;
 }
 
-.products-grid .product-card .product-name {
+.kok-products-grid .kok-product-card .kok-product-name {
   font-size: 14px;
   font-weight: 500;
   color: #333;
@@ -120,7 +120,7 @@
   overflow: hidden;
 }
 
-.products-grid .product-card .price-info {
+.kok-products-grid .kok-product-card .kok-price-info {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -128,35 +128,35 @@
   justify-content: space-between;
 }
 
-.products-grid .product-card .discount-rate {
+.kok-products-grid .kok-product-card .kok-discount-rate {
   font-size: 16px;
   font-weight: bold;
   color: #FA5F8C;
 }
 
-.products-grid .product-card .discount-price {
+.kok-products-grid .kok-product-card .kok-discount-price {
   font-size: 16px;
   font-weight: bold;
   color: #333;
 }
 
-.products-grid .product-card .rating-info {
+.kok-products-grid .kok-product-card .kok-rating-info {
   display: flex;
   align-items: center;
   gap: 4px;
   margin-top: 0;
 }
 
-.products-grid .product-card .stars {
+.kok-products-grid .kok-product-card .kok-stars {
   color: #FA5F8C;
   font-size: 12px;
 }
 
-.products-grid .product-card .review-count {
+.kok-products-grid .kok-product-card .kok-review-count {
   font-size: 12px;
   color: #666;
 }
 
-.products-grid .product-card .heart-button {
+.kok-products-grid .kok-product-card .kok-heart-button {
   flex-shrink: 0;
 }
