@@ -27,8 +27,13 @@ import KokProductListPage from './pages/kok_shopping/KokProductListPage';
 // ===== 전역 상태 관리 Provider import =====
 // 마이페이지 컴포넌트 import
 import MyPage from './pages/user/MyPage';
+<<<<<<< HEAD
 // 장바구니 컴포넌트 import
 import Cart from './pages/Cart';
+=======
+// 주문 내역 컴포넌트 import
+import OrderList from './pages/user/OrderList';
+>>>>>>> origin/joseonyeong
 // 전역 알림 상태 관리 Provider import
 import { NotificationProvider } from './layout/HeaderNav';
 
@@ -71,11 +76,17 @@ function App() {
               
               {/* 마이페이지 경로 (/mypage) - 마이페이지 */}
               <Route path="/mypage" element={<MyPage />} />
+<<<<<<< HEAD
               {/* 장바구니 경로 (/cart) - 장바구니 페이지 */}
               <Route path="/cart" element={<Cart />} />
               
               
 
+=======
+              {/* 주문 내역 경로 (/orderlist) - 주문 내역 페이지 */}
+              <Route path="/orderlist" element={<OrderList />} />
+        
+>>>>>>> origin/joseonyeong
             </Routes>
           </Router>
         </div>

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 // React Router의 useNavigate와 Link 훅/컴포넌트 import
 import { useNavigate, Link } from 'react-router-dom';
 // 회원가입 및 이메일 중복 확인 API 함수 import
-import { signup, checkEmail } from '../../features/user/auth';
+import { signup, checkEmail } from './auth';
 // 회원가입 페이지 스타일 CSS 파일 import
 import '../../styles/signup.css';
 
