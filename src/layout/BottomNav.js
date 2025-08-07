@@ -103,7 +103,13 @@ const BottomNav = () => {
             <Link
               to={item.path} // 이동할 경로
               className={`nav-item ${isActive ? 'active' : ''}`} // 활성 상태에 따른 CSS 클래스 적용
-              onClick={() => logNavigationClick(item.path, item.label)} // 네비게이션 클릭 로그 기록
+              onClick={() => {
+                logNavigationClick(item.path, item.label); // 네비게이션 클릭 로그 기록
+                // 현재 활성화된 아이콘을 클릭했을 때도 페이지 새로고침
+                if (isActive) {
+                  window.location.href = item.path;
+                }
+              }}
             >
               {/* 네비게이션 아이콘 */}
               <img
