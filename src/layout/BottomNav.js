@@ -54,7 +54,7 @@ const BottomNav = () => {
 
   // 특정 페이지에서 주문/결제 버튼을 표시할지 확인하는 함수
   const shouldShowOrderButton = () => {
-    const orderPages = ['/cart', '/kok/payment'];
+    const orderPages = ['/kok/product', '/cart', '/kok/payment'];
     return orderPages.some(page => location.pathname.startsWith(page));
   };
 
@@ -103,7 +103,18 @@ const BottomNav = () => {
         {/* 주문/결제 페이지에서는 주문하기/결제하기 버튼 표시 */}
         {shouldShowOrderButton() ? (
           <div className="order-button-container">
-            <button className="order-button">
+            <button 
+              className="order-button"
+              onClick={() => {
+                if (location.pathname.startsWith('/kok/payment')) {
+                  // 결제 페이지에서는 현재 페이지 유지 (결제 처리)
+                  console.log('결제 처리 중...');
+                } else {
+                  // 상품 상세 페이지나 장바구니에서는 결제 페이지로 이동
+                  window.location.href = '/kok/payment';
+                }
+              }}
+            >
               {getOrderButtonText()}
             </button>
           </div>

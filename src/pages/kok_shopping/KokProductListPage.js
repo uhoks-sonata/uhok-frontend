@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ShoppingHeader } from '../../layout/HeaderNav';
+import BottomNav from '../../layout/BottomNav';
 import '../../styles/kok_product_list_page.css';
 import emptyHeartIcon from '../../assets/heart_empty.png';
 import filledHeartIcon from '../../assets/heart_filled.png';
@@ -196,6 +197,8 @@ const KokProductListPage = () => {
           </div>
         </div>
       </div>
+      
+      <BottomNav />
     </div>
   );
 };

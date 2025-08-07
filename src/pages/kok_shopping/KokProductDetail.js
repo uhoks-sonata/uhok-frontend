@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ShoppingHeader } from '../../layout/HeaderNav';
+import BottomNav from '../../layout/BottomNav';
 import { getProductDetail } from '../../data/products';
 import Loading from '../../components/Loading';
 import '../../styles/kok_product_detail.css';
@@ -779,6 +780,8 @@ const KokProductDetail = () => {
         {/* 탭 컨텐츠 */}
         {renderKokTabContent()}
       </div>
+      
+      <BottomNav />
     </div>
   );
 };
