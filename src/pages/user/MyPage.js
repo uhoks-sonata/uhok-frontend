@@ -65,27 +65,48 @@ const MyPage = () => {
         // 로딩 상태를 true로 설정합니다
         setLoading(true);
         
-        // FastAPI 서버의 사용자 정보 엔드포인트에 GET 요청을 보냅니다
+        // 1. 사용자 정보 조회 (비동기 처리)
         const userResponse = await fetch('http://localhost:8000/api/user/info', {
+          method: 'GET',
           headers: {
-            'Authorization': 'Bearer <access_token>', // 실제 토큰으로 교체 필요 (API에서 받아옴)
-            'Content-Type': 'application/json'
+            'Authorization': 'Bearer <access_token>', // 실제 토큰으로 교체 필요
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
           }
         });
         
         // 응답이 성공적이지 않으면 에러를 발생시킵니다
         if (!userResponse.ok) {
-          throw new Error('사용자 정보를 가져오는데 실패했습니다.');
+          const errorData = await userResponse.json().catch(() => ({}));
+          throw new Error(errorData.detail || '사용자 정보를 가져오는데 실패했습니다.');
         }
         
-        // 응답 데이터를 JSON 형태로 파싱합니다
+        // 응답 데이터를 JSON 형태로 파싱합니다 (비동기)
         const userData = await userResponse.json();
         
-        // FastAPI 서버의 최근 주문 조회 엔드포인트에 GET 요청을 보냅니다
-        const ordersResponse = await fetch('http://localhost:8000/api/orders/recent?days=7', {
+        // 2. 주문 내역 개수 조회 (비동기 처리)
+        const orderCountResponse = await fetch('http://localhost:8000/api/orders/count', {
+          method: 'GET',
           headers: {
-            'Authorization': 'Bearer <access_token>', // 실제 토큰으로 교체 필요 (API에서 받아옴)
-            'Content-Type': 'application/json'
+            'Authorization': 'Bearer <access_token>',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
+        
+        let orderCount = 0;
+        if (orderCountResponse.ok) {
+          const countData = await orderCountResponse.json();
+          orderCount = countData.order_count || 0;
+        }
+        
+        // 3. 최근 주문 조회 (비동기 처리)
+        const ordersResponse = await fetch('http://localhost:8000/api/orders/recent?days=7', {
+          method: 'GET',
+          headers: {
+            'Authorization': 'Bearer <access_token>',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
           }
         });
         
@@ -95,15 +116,33 @@ const MyPage = () => {
           ordersData = await ordersResponse.json();
         }
         
+        // 4. 레시피 정보 조회 (비동기 처리)
+        const recipeResponse = await fetch('http://localhost:8000/api/recipes/user', {
+          method: 'GET',
+          headers: {
+            'Authorization': 'Bearer <access_token>',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
+        
+        let recipeData = { purchasedRecipe: null, similarRecipes: [] };
+        if (recipeResponse.ok) {
+          recipeData = await recipeResponse.json();
+        }
+        
         // 파싱된 데이터를 상태에 저장합니다
         setUserData({
-          user_id: userData.user_id, // 유저 ID (API에서 받아옴)
-          username: userData.username, // 유저 이름 (API에서 받아옴)
-          email: userData.email, // 유저 이메일 (API에서 받아옴)
-          created_at: userData.created_at, // 계정 생성일 (API에서 받아옴)
-          orderCount: ordersData.orders.length, // 주문 내역 개수 (API에서 받아옴)
-          recentOrders: ordersData.orders // 최근 주문 목록 (API에서 받아옴)
+          user_id: userData.user_id,
+          username: userData.username,
+          email: userData.email,
+          created_at: userData.created_at,
+          orderCount: orderCount,
+          recentOrders: ordersData.orders
         });
+        
+        setRecipeData(recipeData);
+        
       } catch (err) {
         // 에러가 발생하면 콘솔에 에러를 출력합니다
         console.error('마이페이지 데이터 로딩 실패:', err);
@@ -112,48 +151,48 @@ const MyPage = () => {
         
         // 임시 데이터를 상태에 설정합니다 (API 연결 전까지 사용)
         setUserData({
-          user_id: 101, // 유저 ID (API에서 받아옴)
-          username: '홍길동', // 유저 이름 (API에서 받아옴)
-          email: 'user@example.com', // 유저 이메일 (API에서 받아옴)
-          created_at: '2025-08-01T02:24:19.206Z', // 계정 생성일 (API에서 받아옴)
-          orderCount: 3, // 주문 내역 개수 (API에서 받아옴)
-          recentOrders: [ // 최근 주문 목록 (API에서 받아옴) - 주문이 있는 상태
+          user_id: 101,
+          username: '홍길동',
+          email: 'user@example.com',
+          created_at: '2025-08-01T02:24:19.206Z',
+          orderCount: 3,
+          recentOrders: [
             {
-              order_id: 20230701, // 주문 ID (API에서 받아옴)
-              brand_name: "산지명인", // 브랜드명 (API에서 받아옴)
-              product_name: "구운계란 30구+핑크솔트 증정", // 상품명 (API에서 받아옴)
-              product_description: "반숙란 훈제 맥반석 삶은 구운란", // 상품 설명 (API에서 받아옴)
-              product_price: 11900, // 상품 가격 (API에서 받아옴) - 숫자로 받아옴
-              product_quantity: 1, // 상품 개수 (API에서 받아옴)
-              product_image: testImage1, // 상품 이미지 (API에서 받아옴)
-              order_date: "2025-07-25" // 주문 날짜 (API에서 받아옴)
+              order_id: 20230701,
+              brand_name: "산지명인",
+              product_name: "구운계란 30구+핑크솔트 증정",
+              product_description: "반숙란 훈제 맥반석 삶은 구운란",
+              product_price: 11900,
+              product_quantity: 1,
+              product_image: testImage1,
+              order_date: "2025-07-25"
             },
             {
-              order_id: 20230701, // 주문 ID (API에서 받아옴) - 첫 번째 주문에 추가 상품
-              brand_name: "오리온", // 브랜드명 (API에서 받아옴)
-              product_name: "초코파이 12개입", // 상품명 (API에서 받아옴)
-              product_description: "부드러운 초콜릿과 마시멜로우가 듬뿍 부드러운 초콜릿과 마시멜로우가 듬뿍", // 상품 설명 (API에서 받아옴)
-              product_price: 8500, // 상품 가격 (API에서 받아옴) - 숫자로 받아옴
-              product_quantity: 1, // 상품 개수 (API에서 받아옴)
-              product_image: testImage2, // 상품 이미지 (API에서 받아옴)
-              order_date: "2025-07-25" // 주문 날짜 (API에서 받아옴)
+              order_id: 20230701,
+              brand_name: "오리온",
+              product_name: "초코파이 12개입",
+              product_description: "부드러운 초콜릿과 마시멜로우가 듬뿍 부드러운 초콜릿과 마시멜로우가 듬뿍",
+              product_price: 8500,
+              product_quantity: 1,
+              product_image: testImage2,
+              order_date: "2025-07-25"
             },
             {
-              order_id: 20230702, // 주문 ID (API에서 받아옴)
-              brand_name: "농심", // 브랜드명 (API에서 받아옴)
-              product_name: "새우깡", // 상품명 (API에서 받아옴)
-              product_description: "새우깡", // 상품 설명 (API에서 받아옴)
-              product_price: 1500, // 상품 가격 (API에서 받아옴) - 숫자로 받아옴
-              product_quantity: 2, // 상품 개수 (API에서 받아옴)
-              product_image: testImage1, // 상품 이미지 (API에서 받아옴)
-              order_date: "2025-07-24" // 주문 날짜 (API에서 받아옴)
+              order_id: 20230702,
+              brand_name: "농심",
+              product_name: "새우깡",
+              product_description: "새우깡",
+              product_price: 1500,
+              product_quantity: 2,
+              product_image: testImage1,
+              order_date: "2025-07-24"
             }
           ]
         });
 
         setRecipeData({
-          purchasedRecipe: null, // 구매한 레시피 정보 (API에서 받아옴) - 주문이 없으므로 null
-          similarRecipes: [] // 유사한 레시피 목록 (API에서 받아옴) - 주문이 없으므로 빈 배열
+          purchasedRecipe: null,
+          similarRecipes: []
         });
       } finally {
         // try-catch 블록이 끝나면 항상 로딩 상태를 false로 설정합니다
@@ -167,19 +206,65 @@ const MyPage = () => {
 
 
 
-  // 주문 내역 클릭 시 실행되는 핸들러 함수를 정의합니다
-  const handleOrderHistoryClick = () => {
-    // 콘솔에 클릭 로그를 출력합니다
-    console.log('주문 내역 클릭');
-    // 주문 내역 페이지로 이동합니다
-    window.location.href = '/orderlist';
+  // 주문 내역 클릭 시 실행되는 핸들러 함수를 정의합니다 (비동기)
+  const handleOrderHistoryClick = async () => {
+    try {
+      // 콘솔에 클릭 로그를 출력합니다
+      console.log('주문 내역 클릭');
+      
+      // 주문 내역 페이지로 이동하기 전에 로그 기록 (비동기 처리)
+      await fetch('http://localhost:8000/api/user/activity-log', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer <access_token>',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          action: 'view_order_history',
+          timestamp: new Date().toISOString()
+        })
+      }).catch(() => {
+        // 로그 기록 실패는 무시하고 계속 진행
+        console.log('활동 로그 기록 실패 (무시됨)');
+      });
+      
+      // 주문 내역 페이지로 이동합니다
+      window.location.href = '/orderlist';
+    } catch (error) {
+      console.error('주문 내역 클릭 에러:', error);
+      // 에러가 발생해도 페이지 이동은 계속 진행
+      window.location.href = '/orderlist';
+    }
   };
 
-  // 레시피 클릭 시 실행되는 핸들러 함수를 정의합니다
-  const handleRecipeClick = (recipeId) => {
-    // 콘솔에 클릭된 레시피 ID를 출력합니다
-    console.log('레시피 클릭:', recipeId);
-    // 레시피 상세 페이지로 이동하는 기능을 구현할 예정입니다
+  // 레시피 클릭 시 실행되는 핸들러 함수를 정의합니다 (비동기)
+  const handleRecipeClick = async (recipeId) => {
+    try {
+      // 콘솔에 클릭된 레시피 ID를 출력합니다
+      console.log('레시피 클릭:', recipeId);
+      
+      // 레시피 상세 정보를 비동기로 가져오는 로직 (향후 구현)
+      const recipeResponse = await fetch(`http://localhost:8000/api/recipes/${recipeId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': 'Bearer <access_token>',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (recipeResponse.ok) {
+        const recipeDetail = await recipeResponse.json();
+        console.log('레시피 상세 정보:', recipeDetail);
+        // 레시피 상세 페이지로 이동하는 기능을 구현할 예정입니다
+        // window.location.href = `/recipe-detail/${recipeId}`;
+      } else {
+        console.error('레시피 상세 정보 가져오기 실패');
+      }
+    } catch (error) {
+      console.error('레시피 클릭 에러:', error);
+    }
   };
 
   // 로딩 중일 때 표시할 UI를 렌더링합니다

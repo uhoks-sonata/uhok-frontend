@@ -25,6 +25,8 @@ import ProductSection from './components/ProductSection';
 
 // 마이페이지 컴포넌트 import
 import MyPage from './pages/user/MyPage';
+// 주문 내역 컴포넌트 import
+import OrderList from './pages/user/OrderList';
 // 전역 알림 상태 관리 Provider import
 import { NotificationProvider } from './layout/HeaderNav';
 
@@ -63,6 +65,8 @@ function App() {
               
               {/* 마이페이지 경로 (/mypage) - 마이페이지 */}
               <Route path="/mypage" element={<MyPage />} />
+              {/* 주문 내역 경로 (/orderlist) - 주문 내역 페이지 */}
+              <Route path="/orderlist" element={<OrderList />} />
         
             </Routes>
           </Router>

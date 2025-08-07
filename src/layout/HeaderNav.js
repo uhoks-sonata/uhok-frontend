@@ -285,12 +285,17 @@ export const MyPageHeader = ({ onBack }) => {
   // 전역 알림 및 장바구니 상태 가져오기
   const { notificationCount, cartCount } = useNotifications();
 
-  // 뒤로가기 버튼 클릭 핸들러
-  const handleBack = () => {
-    if (onBack) {
-      onBack(); // 부모 컴포넌트에서 전달받은 뒤로가기 함수 실행
-    } else {
-      window.history.back(); // 브라우저 히스토리 뒤로가기 (기본 동작)
+  // 뒤로가기 버튼 클릭 핸들러 (비동기)
+  const handleBack = async () => {
+    try {
+      if (onBack) {
+        await onBack(); // 부모 컴포넌트에서 전달받은 뒤로가기 함수 실행 (비동기)
+      } else {
+        window.history.back(); // 브라우저 히스토리 뒤로가기 (기본 동작)
+      }
+    } catch (error) {
+      console.error('뒤로가기 에러:', error);
+      window.history.back();
     }
   };
 
@@ -352,29 +357,77 @@ export const BackTitleWithIconsHeader = ({ title, onBack, onNotificationClick, o
   // 전역 장바구니 상태만 가져오기 (알림 카운트 제거 - 요구사항에 따라)
   const { cartCount } = useNotifications();
 
-  // 뒤로가기 버튼 클릭 핸들러
-  const handleBack = () => {
-    if (onBack) {
-      onBack(); // 부모 컴포넌트에서 전달받은 뒤로가기 함수 실행
-    } else {
-      window.history.back(); // 브라우저 히스토리 뒤로가기 (기본 동작)
+  // 뒤로가기 버튼 클릭 핸들러 (비동기)
+  const handleBack = async () => {
+    try {
+      if (onBack) {
+        await onBack(); // 부모 컴포넌트에서 전달받은 뒤로가기 함수 실행 (비동기)
+      } else {
+        window.history.back(); // 브라우저 히스토리 뒤로가기 (기본 동작)
+      }
+    } catch (error) {
+      console.error('뒤로가기 에러:', error);
+      // 에러가 발생해도 기본 뒤로가기 동작 수행
+      window.history.back();
     }
   };
 
-  // 알림 아이콘 클릭 핸들러 (카운트 없이 버튼 역할만)
-  const handleNotificationClick = () => {
-    if (onNotificationClick) {
-      onNotificationClick(); // 부모 컴포넌트에서 전달받은 알림 클릭 함수 실행
+  // 알림 아이콘 클릭 핸들러 (비동기)
+  const handleNotificationClick = async () => {
+    try {
+      if (onNotificationClick) {
+        await onNotificationClick(); // 부모 컴포넌트에서 전달받은 알림 클릭 함수 실행 (비동기)
+      }
+      console.log('알림창 인터페이스 전환');
+      
+      // 알림 클릭 로그 기록 (비동기 처리)
+      await fetch('http://localhost:8000/api/user/activity-log', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer <access_token>',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          action: 'notification_click',
+          timestamp: new Date().toISOString()
+        })
+      }).catch(() => {
+        // 로그 기록 실패는 무시
+        console.log('알림 클릭 로그 기록 실패 (무시됨)');
+      });
+    } catch (error) {
+      console.error('알림 클릭 에러:', error);
     }
-    console.log('알림창 인터페이스 전환');
   };
 
-  // 장바구니 아이콘 클릭 핸들러 (카운트 표시 포함)
-  const handleCartClick = () => {
-    if (onCartClick) {
-      onCartClick(); // 부모 컴포넌트에서 전달받은 장바구니 클릭 함수 실행
+  // 장바구니 아이콘 클릭 핸들러 (비동기)
+  const handleCartClick = async () => {
+    try {
+      if (onCartClick) {
+        await onCartClick(); // 부모 컴포넌트에서 전달받은 장바구니 클릭 함수 실행 (비동기)
+      }
+      console.log('장바구니 인터페이스 전환');
+      
+      // 장바구니 클릭 로그 기록 (비동기 처리)
+      await fetch('http://localhost:8000/api/user/activity-log', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer <access_token>',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          action: 'cart_click',
+          timestamp: new Date().toISOString()
+        })
+      }).catch(() => {
+        // 로그 기록 실패는 무시
+        console.log('장바구니 클릭 로그 기록 실패 (무시됨)');
+      });
+    } catch (error) {
+      console.error('장바구니 클릭 에러:', error);
     }
-    console.log('장바구니 인터페이스 전환');
   };
 
   // 범용 헤더 JSX 반환
@@ -450,21 +503,47 @@ export const RecipeDetailHeader = ({ onBack, onNotificationClick, onCartClick })
 // 뒤로가기 + 제목 + 알림 형태의 모든 헤더에서 재사용 가능한 범용 컴포넌트
 // 장바구니 등에서 사용 (장바구니 아이콘 없음)
 export const BackTitleWithNotificationHeader = ({ title, onBack, onNotificationClick, className = "" }) => {
-  // 뒤로가기 버튼 클릭 핸들러
-  const handleBack = () => {
-    if (onBack) {
-      onBack(); // 부모 컴포넌트에서 전달받은 뒤로가기 함수 실행
-    } else {
-      window.history.back(); // 브라우저 히스토리 뒤로가기 (기본 동작)
+  // 뒤로가기 버튼 클릭 핸들러 (비동기)
+  const handleBack = async () => {
+    try {
+      if (onBack) {
+        await onBack(); // 부모 컴포넌트에서 전달받은 뒤로가기 함수 실행 (비동기)
+      } else {
+        window.history.back(); // 브라우저 히스토리 뒤로가기 (기본 동작)
+      }
+    } catch (error) {
+      console.error('뒤로가기 에러:', error);
+      window.history.back();
     }
   };
 
-  // 알림 아이콘 클릭 핸들러 (카운트 없이 버튼 역할만)
-  const handleNotificationClick = () => {
-    if (onNotificationClick) {
-      onNotificationClick(); // 부모 컴포넌트에서 전달받은 알림 클릭 함수 실행
+  // 알림 아이콘 클릭 핸들러 (비동기)
+  const handleNotificationClick = async () => {
+    try {
+      if (onNotificationClick) {
+        await onNotificationClick(); // 부모 컴포넌트에서 전달받은 알림 클릭 함수 실행 (비동기)
+      }
+      console.log('알림창 인터페이스 전환');
+      
+      // 알림 클릭 로그 기록 (비동기 처리)
+      await fetch('http://localhost:8000/api/user/activity-log', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer <access_token>',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          action: 'notification_click',
+          timestamp: new Date().toISOString()
+        })
+      }).catch(() => {
+        // 로그 기록 실패는 무시
+        console.log('알림 클릭 로그 기록 실패 (무시됨)');
+      });
+    } catch (error) {
+      console.error('알림 클릭 에러:', error);
     }
-    console.log('알림창 인터페이스 전환');
   };
 
   // 범용 헤더 JSX 반환
@@ -503,19 +582,61 @@ export const CartHeader = ({ onBack, onNotificationClick }) => {
 // 편성표 페이지에서 사용하는 헤더 (편성표 버튼 + 알림)
 export const ScheduleHeader = ({ onScheduleClick, onNotificationClick, className = "" }) => {
   // 편성표 버튼 클릭 핸들러
-  const handleScheduleClick = () => {
-    if (onScheduleClick) {
-      onScheduleClick(); // 부모 컴포넌트에서 전달받은 편성표 클릭 함수 실행
+  const handleScheduleClick = async () => {
+    try {
+      if (onScheduleClick) {
+        await onScheduleClick(); // 부모 컴포넌트에서 전달받은 편성표 클릭 함수 실행 (비동기)
+      }
+      console.log('편성표 인터페이스 전환');
+      
+      // 편성표 클릭 로그 기록 (비동기 처리)
+      await fetch('http://localhost:8000/api/user/activity-log', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer <access_token>',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          action: 'schedule_click',
+          timestamp: new Date().toISOString()
+        })
+      }).catch(() => {
+        // 로그 기록 실패는 무시
+        console.log('편성표 클릭 로그 기록 실패 (무시됨)');
+      });
+    } catch (error) {
+      console.error('편성표 클릭 에러:', error);
     }
-    console.log('편성표 인터페이스 전환');
   };
 
-  // 알림 버튼 클릭 핸들러
-  const handleNotificationClick = () => {
-    if (onNotificationClick) {
-      onNotificationClick(); // 부모 컴포넌트에서 전달받은 알림 클릭 함수 실행
+  // 알림 버튼 클릭 핸들러 (비동기)
+  const handleNotificationClick = async () => {
+    try {
+      if (onNotificationClick) {
+        await onNotificationClick(); // 부모 컴포넌트에서 전달받은 알림 클릭 함수 실행 (비동기)
+      }
+      console.log('알림창 인터페이스 전환');
+      
+      // 알림 클릭 로그 기록 (비동기 처리)
+      await fetch('http://localhost:8000/api/user/activity-log', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer <access_token>',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          action: 'notification_click',
+          timestamp: new Date().toISOString()
+        })
+      }).catch(() => {
+        // 로그 기록 실패는 무시
+        console.log('알림 클릭 로그 기록 실패 (무시됨)');
+      });
+    } catch (error) {
+      console.error('알림 클릭 에러:', error);
     }
-    console.log('알림창 인터페이스 전환');
   };
 
   // 편성표 헤더 JSX 반환

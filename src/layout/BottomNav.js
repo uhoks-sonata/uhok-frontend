@@ -29,6 +29,31 @@ const BottomNav = () => {
   // 현재 페이지의 경로 정보를 가져오는 훅
   const location = useLocation();
 
+  // 네비게이션 클릭 로그를 기록하는 비동기 함수
+  const logNavigationClick = async (path, label) => {
+    try {
+      await fetch('http://localhost:8000/api/user/activity-log', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer <access_token>',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          action: 'navigation_click',
+          path: path,
+          label: label,
+          timestamp: new Date().toISOString()
+        })
+      }).catch(() => {
+        // 로그 기록 실패는 무시
+        console.log('네비게이션 클릭 로그 기록 실패 (무시됨)');
+      });
+    } catch (error) {
+      console.error('네비게이션 로그 기록 에러:', error);
+    }
+  };
+
   // 네비게이션 아이템 배열 정의
   // 각 아이템은 경로, 아이콘, 라벨, 활성/비활성 아이콘 정보를 포함
   const navItems = [
@@ -78,6 +103,7 @@ const BottomNav = () => {
             <Link
               to={item.path} // 이동할 경로
               className={`nav-item ${isActive ? 'active' : ''}`} // 활성 상태에 따른 CSS 클래스 적용
+              onClick={() => logNavigationClick(item.path, item.label)} // 네비게이션 클릭 로그 기록
             >
               {/* 네비게이션 아이콘 */}
               <img
@@ -92,7 +118,11 @@ const BottomNav = () => {
             {/* 가운데 동그란 버튼 (두 번째 아이템 다음에 추가) */}
             {index === 1 && (
               <div className="image-button-wrapper">
-              <Link to="/schedule" className="main-button-link">
+              <Link 
+                to="/schedule" 
+                className="main-button-link"
+                onClick={() => logNavigationClick('/schedule', '혹')} // 혹 버튼 클릭 로그 기록
+              >
                 <div className="image-button">
                   <div className="image-text">
                     <span className="kok-text">혹</span>
