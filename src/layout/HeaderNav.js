@@ -1,5 +1,7 @@
 // React 관련 라이브러리 import
 import React, { useState, createContext, useContext } from "react";
+// React Router의 useNavigate 훅 import
+import { useNavigate } from "react-router-dom";
 // 헤더 스타일 CSS 파일 import
 import "../styles/header_nav.css";
 // 검색 아이콘 이미지 import
@@ -140,6 +142,8 @@ export const HomeShoppingHeader = ({ searchQuery, setSearchQuery, onSearch, onNo
 export const ShoppingHeader = ({ searchQuery, setSearchQuery, onSearch, onNotificationClick, onCartClick, onBack }) => {
   // 전역 알림 및 장바구니 상태 가져오기
   const { notificationCount, cartCount } = useNotifications();
+  // 페이지 이동을 위한 navigate 훅
+  const navigate = useNavigate();
 
   // 뒤로가기 버튼 클릭 핸들러
   const handleBack = () => {
@@ -170,6 +174,9 @@ export const ShoppingHeader = ({ searchQuery, setSearchQuery, onSearch, onNotifi
   const handleCartClick = () => {
     if (onCartClick) {
       onCartClick(); // 부모 컴포넌트에서 전달받은 장바구니 클릭 함수 실행
+    } else {
+      // 기본 동작: 장바구니 페이지로 이동
+      navigate('/cart');
     }
     console.log('장바구니 인터페이스 전환');
   };
@@ -295,6 +302,8 @@ export const BackTitleHeader = ({ title, onBack, className = "" }) => {
 export const MyPageHeader = () => {
   // 전역 알림 및 장바구니 상태 가져오기
   const { notificationCount, cartCount } = useNotifications();
+  // 페이지 이동을 위한 navigate 훅
+  const navigate = useNavigate();
 
   // 마이페이지 헤더 JSX 반환
   return (
@@ -313,7 +322,7 @@ export const MyPageHeader = () => {
           )}
         </button>
         {/* 장바구니 버튼 */}
-        <button className="cart-btn">
+        <button className="cart-btn" onClick={() => navigate('/cart')}>
           <img src={bucketIcon} alt="장바구니" className="bucket-icon" />
           {/* 장바구니 개수가 0보다 클 때만 장바구니 개수 표시 */}
           {cartCount > 0 && (
@@ -350,6 +359,8 @@ export const NotificationHeader = ({ onBack }) => {
 export const BackTitleWithIconsHeader = ({ title, onBack, onNotificationClick, onCartClick, className = "" }) => {
   // 전역 장바구니 상태만 가져오기 (알림 카운트 제거 - 요구사항에 따라)
   const { cartCount } = useNotifications();
+  // 페이지 이동을 위한 navigate 훅
+  const navigate = useNavigate();
 
   // 뒤로가기 버튼 클릭 핸들러
   const handleBack = () => {
@@ -372,6 +383,9 @@ export const BackTitleWithIconsHeader = ({ title, onBack, onNotificationClick, o
   const handleCartClick = () => {
     if (onCartClick) {
       onCartClick(); // 부모 컴포넌트에서 전달받은 장바구니 클릭 함수 실행
+    } else {
+      // 기본 동작: 장바구니 페이지로 이동
+      navigate('/cart');
     }
     console.log('장바구니 인터페이스 전환');
   };

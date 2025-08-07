@@ -11,10 +11,10 @@ import Login from './pages/user/Login';
 import Signup from './pages/user/Signup';
 
 // 홈쇼핑 관련 페이지
-import HomeShoppingMain from './pages/home_shopping/HomeShoppingMain';
-import ProductDetail from './pages/home_shopping/ProductDetail';
-import ProductListPage from './pages/home_shopping/ProductListPage';
-import Schedule from './pages/home_shopping/Schedule';
+import KokMain from './pages/kok_shopping/KokMain';
+import KokProductDetail from './pages/kok_shopping/KokProductDetail';
+import KokProductListPage from './pages/kok_shopping/KokProductListPage';
+import Schedule from './pages/kok_shopping/Schedule';
 
 // ===== 기능별 컴포넌트들 import =====
 // KOK 관련 컴포넌트
@@ -25,13 +25,11 @@ import { HomeShoppingHeader, ShoppingHeader, SearchHeader, MyPageHeader, RecipeH
 import BottomNav from './layout/BottomNav';
 
 // ===== 일반 컴포넌트들 import =====
-import ProductCard from './components/ProductCard';
-import ProductSection from './components/ProductSection';
 import NotificationManagerTest from './components/NotificationManagerTest';
 
 // ===== 전역 상태 관리 Provider import =====
 // 홈쇼핑 메인 페이지 컴포넌트 import
-import Main from './pages/home_shopping/HomeShoppingMain';
+import Main from './pages/kok_shopping/KokMain';
 // 레시피 추천 테스트 페이지 컴포넌트 import
 import RecommendRecipe from './features/kok/BellBucketTest';
 // 주문내역 헤더 테스트 페이지 컴포넌트 import
@@ -46,6 +44,8 @@ import CartTest from './features/kok/CartTest';
 import ScheduleHeaderTest from './features/kok/ScheduleHeaderTest';
 // 마이페이지 컴포넌트 import
 import MyPage from './pages/user/MyPage';
+// 장바구니 컴포넌트 import
+import Cart from './pages/Cart';
 // 전역 알림 상태 관리 Provider import
 import { NotificationProvider } from './layout/HeaderNav';
 
@@ -72,20 +72,24 @@ function App() {
               {/* 회원가입 경로 (/signup) - 회원가입 페이지 */}
               <Route path="/signup" element={<Signup />} />
               
-              {/* ===== 홈쇼핑 라우트 ===== */}
+              {/* ===== 기타 라우트 ===== */}
               {/* 편성표 메인 경로 (/) - 편성표 페이지로 설정 */}
               <Route path="/main" element={<Schedule />} />
-              {/* 홈쇼핑 경로 (/main) - 홈쇼핑 메인 페이지 */}
-              <Route path="/homeshopping" element={<HomeShoppingMain />} />
-              {/* 제품 상세 경로 (/product/:productId) - 제품 상세 페이지 */}
-              <Route path="/product/:productId" element={<ProductDetail />} />
-              {/* 제품 목록 경로 (/products/:sectionType) - 제품 목록 페이지 */}
-              <Route path="/products/:sectionType" element={<ProductListPage />} />
               {/* 편성표 경로 (/schedule) - 편성표 페이지 */}
               <Route path="/schedule" element={<Schedule />} />
               
+              {/* ===== KOK 라우트 ===== */}
+              {/* KOK 메인 경로 (/kok) - KOK 메인 페이지 */}
+              <Route path="/kok" element={<KokMain />} />
+              {/* 제품 상세 경로 (/kok/product/:productId) - 제품 상세 페이지 */}
+              <Route path="/kok/product/:productId" element={<KokProductDetail />} />
+              {/* 제품 목록 경로 (/kok/products/:sectionType) - 제품 목록 페이지 */}
+              <Route path="/kok/products/:sectionType" element={<KokProductListPage />} />
+              
               {/* 마이페이지 경로 (/mypage) - 마이페이지 */}
               <Route path="/mypage" element={<MyPage />} />
+              {/* 장바구니 경로 (/cart) - 장바구니 페이지 */}
+              <Route path="/cart" element={<Cart />} />
               
               {/* 알림 관리 테스트 경로 (/notification-test) */}
               <Route path="/notification-test" element={<NotificationManagerTest />} />
@@ -101,7 +105,7 @@ function App() {
               {/* 하단 네비게이션 테스트 경로 (/bottom-nav-test) */}
               <Route path="/bottom-nav-test" element={<BottomNav />} />
               
-              <Route path="/main" element={<Main />} />
+
               {/* 테스트 경로 (/test) - 레시피 추천 테스트 페이지 */}
               <Route path="/test" element={<RecommendRecipe />} />
               {/* 주문내역 헤더 테스트 경로 (/order-history) */}
@@ -114,6 +118,8 @@ function App() {
               <Route path="/cart-test" element={<CartTest />} />
               {/* 편성표 헤더 테스트 경로 (/schedule-test) */}
               <Route path="/schedule-test" element={<ScheduleHeaderTest />} />
+              
+
             </Routes>
           </Router>
         </div>

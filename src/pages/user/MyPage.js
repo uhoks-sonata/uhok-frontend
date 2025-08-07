@@ -65,13 +65,21 @@ const MyPage = () => {
         // 로딩 상태를 true로 설정합니다
         setLoading(true);
         
-        // FastAPI 서버의 사용자 정보 엔드포인트에 GET 요청을 보냅니다
-        const userResponse = await fetch('http://localhost:8000/api/user/info', {
-          headers: {
-            'Authorization': 'Bearer <access_token>', // 실제 토큰으로 교체 필요 (API에서 받아옴)
-            'Content-Type': 'application/json'
-          }
-        });
+        // FastAPI 서버의 사용자 정보와 주문 정보를 병렬로 가져옵니다
+        const [userResponse, ordersResponse] = await Promise.all([
+          fetch('http://localhost:8000/api/user/info', {
+            headers: {
+              'Authorization': 'Bearer <access_token>', // 실제 토큰으로 교체 필요 (API에서 받아옴)
+              'Content-Type': 'application/json'
+            }
+          }),
+          fetch('http://localhost:8000/api/orders/recent?days=7', {
+            headers: {
+              'Authorization': 'Bearer <access_token>', // 실제 토큰으로 교체 필요 (API에서 받아옴)
+              'Content-Type': 'application/json'
+            }
+          })
+        ]);
         
         // 응답이 성공적이지 않으면 에러를 발생시킵니다
         if (!userResponse.ok) {
@@ -80,14 +88,6 @@ const MyPage = () => {
         
         // 응답 데이터를 JSON 형태로 파싱합니다
         const userData = await userResponse.json();
-        
-        // FastAPI 서버의 최근 주문 조회 엔드포인트에 GET 요청을 보냅니다
-        const ordersResponse = await fetch('http://localhost:8000/api/orders/recent?days=7', {
-          headers: {
-            'Authorization': 'Bearer <access_token>', // 실제 토큰으로 교체 필요 (API에서 받아옴)
-            'Content-Type': 'application/json'
-          }
-        });
         
         // 주문 조회 응답을 처리합니다
         let ordersData = { orders: [] };
