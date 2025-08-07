@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 // React Router의 Link와 useNavigate 훅 import
 import { Link, useNavigate } from 'react-router-dom';
 // 로그인 API 함수 import
-import { login } from '../../features/user/auth';
+import { login } from './auth';
 // 로그인 페이지 스타일 CSS 파일 import
 import '../../styles/login.css';
 

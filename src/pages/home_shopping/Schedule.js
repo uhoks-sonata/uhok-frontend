@@ -6,6 +6,8 @@ import { ScheduleHeader } from '../../layout/HeaderNav';
 import BottomNav from '../../layout/BottomNav';
 // 편성표 페이지 스타일을 가져옵니다
 import '../../styles/schedule.css';
+// API 설정을 가져옵니다
+import api from '../api';
 
 // 홈쇼핑 로고 이미지들을 가져옵니다
 import homeshopping_logo_publicshopping from '../../assets/homeshopping_logo_publicshopping.png'; // 공영홈쇼핑 로고
@@ -61,15 +63,10 @@ const Schedule = () => {
         const hour = today.getHours(); // 현재 시간
         
         // FastAPI 서버의 편성표 엔드포인트에 GET 요청을 보냅니다 (API 명세서에 맞춰 수정)
-        const response = await fetch(`http://localhost:8000/api/home-shopping/schedule?date=${date}&hour=${hour}`);
+        const response = await api.get(`/api/home-shopping/schedule?date=${date}&hour=${hour}`);
         
-        // 응답이 성공적이지 않으면 에러를 발생시킵니다
-        if (!response.ok) {
-          throw new Error('편성표 데이터를 가져오는데 실패했습니다.');
-        }
-        
-        // 응답 데이터를 JSON 형태로 파싱합니다
-        const data = await response.json();
+        // 응답 데이터를 가져옵니다
+        const data = response.data;
         // 파싱된 데이터를 상태에 저장합니다
         setScheduleData(data);
       } catch (err) {

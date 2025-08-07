@@ -8,6 +8,8 @@ import BottomNav from '../../layout/BottomNav';
 import '../../styles/orderlist.css';
 // 상품 없음 이미지를 가져옵니다
 import noItemsIcon from '../../assets/no_items.png';
+// API 설정을 가져옵니다
+import api from '../api';
 
 // 테스트용 상품 이미지들을 가져옵니다
 import testImage1 from '../../assets/test/test1.png';
@@ -70,23 +72,14 @@ const OrderList = () => {
         setLoading(true);
         
         // 주문 내역 목록 조회 (페이지네이션 적용) - 비동기 처리
-        const ordersResponse = await fetch('http://localhost:8000/api/orders?page=1&size=20', {
-          method: 'GET',
+        const ordersResponse = await api.get('/api/orders?page=1&size=20', {
           headers: {
-            'Authorization': 'Bearer <access_token>', // 실제 토큰으로 교체 필요
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Authorization': 'Bearer <access_token>' // 실제 토큰으로 교체 필요
           }
         });
         
-        // 응답이 성공적이지 않으면 에러를 발생시킵니다
-        if (!ordersResponse.ok) {
-          const errorData = await ordersResponse.json().catch(() => ({}));
-          throw new Error(errorData.detail || '주문 내역을 가져오는데 실패했습니다.');
-        }
-        
-        // 응답 데이터를 JSON 형태로 파싱합니다 (비동기)
-        const ordersData = await ordersResponse.json();
+        // 응답 데이터를 가져옵니다
+        const ordersData = ordersResponse.data;
         
         // API 응답을 프론트엔드 형식으로 변환합니다 (비동기 처리)
         const transformedOrders = await Promise.all(
@@ -163,7 +156,14 @@ const OrderList = () => {
       } catch (error) {
         // 에러 발생 시 에러 상태를 설정하고 로딩 상태를 false로 설정합니다
         console.error('주문 내역 데이터 가져오기 실패:', error);
-        setError(error.message);
+        
+        // 네트워크 에러인 경우 더미 데이터 사용, 그 외에는 에러 메시지 표시
+        if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+          console.log('백엔드 서버 연결 실패 - 더미 데이터를 사용합니다.');
+          setError(null); // 에러 상태 초기화
+        } else {
+          setError(error.message);
+        }
         setLoading(false);
         
         // 테스트용 더미 데이터를 설정합니다 (API 연결 실패 시)
@@ -226,21 +226,20 @@ const OrderList = () => {
   // 상품 정보를 비동기로 가져오는 함수 (향후 구현)
   const fetchProductInfo = async (productId) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/products/${productId}`, {
-        method: 'GET',
+      const response = await api.get(`/api/products/${productId}`, {
         headers: {
-          'Authorization': 'Bearer <access_token>',
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Authorization': 'Bearer <access_token>'
         }
       });
       
-      if (response.ok) {
-        return await response.json();
-      }
-      return null;
+      return response.data;
     } catch (error) {
-      console.error('상품 정보 가져오기 실패:', error);
+      // 네트워크 에러인 경우 조용히 처리 (더미 데이터 사용)
+      if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+        console.log('상품 정보 API 연결 실패 - 기본 정보 사용');
+      } else {
+        console.error('상품 정보 가져오기 실패:', error);
+      }
       return null;
     }
   };
@@ -268,25 +267,23 @@ const OrderList = () => {
       console.log('주문 상세 보기:', orderId);
       
       // 주문 상세 정보를 비동기로 가져오는 로직 (향후 구현)
-      const orderDetailResponse = await fetch(`http://localhost:8000/api/orders/${orderId}/detail`, {
-        method: 'GET',
+      const orderDetailResponse = await api.get(`/api/orders/${orderId}/detail`, {
         headers: {
-          'Authorization': 'Bearer <access_token>',
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Authorization': 'Bearer <access_token>'
         }
       });
       
-      if (orderDetailResponse.ok) {
-        const orderDetail = await orderDetailResponse.json();
-        console.log('주문 상세 정보:', orderDetail);
-        // 주문 상세 페이지로 이동하는 기능을 구현할 예정입니다
-        // window.location.href = `/order-detail/${orderId}`;
-      } else {
-        console.error('주문 상세 정보 가져오기 실패');
-      }
+      const orderDetail = orderDetailResponse.data;
+      console.log('주문 상세 정보:', orderDetail);
+      // 주문 상세 페이지로 이동하는 기능을 구현할 예정입니다
+      // window.location.href = `/order-detail/${orderId}`;
     } catch (error) {
-      console.error('주문 상세 보기 에러:', error);
+      // 네트워크 에러인 경우 조용히 처리
+      if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+        console.log('주문 상세 API 연결 실패 - 기능 미구현');
+      } else {
+        console.error('주문 상세 보기 에러:', error);
+      }
     }
   };
 

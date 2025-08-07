@@ -10,6 +10,8 @@ import '../../styles/mypage.css';
 import userIcon from '../../assets/user_icon.png';
 // 상품 없음 이미지를 가져옵니다
 import noItemsIcon from '../../assets/no_items.png';
+// API 설정을 가져옵니다
+import api from '../api';
 
 
 // 테스트용 상품 이미지들을 가져옵니다
@@ -66,70 +68,42 @@ const MyPage = () => {
         setLoading(true);
         
         // 1. 사용자 정보 조회 (비동기 처리)
-        const userResponse = await fetch('http://localhost:8000/api/user/info', {
-          method: 'GET',
+        const userResponse = await api.get('/api/user/info', {
           headers: {
-            'Authorization': 'Bearer <access_token>', // 실제 토큰으로 교체 필요
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Authorization': 'Bearer <access_token>' // 실제 토큰으로 교체 필요
           }
         });
         
-        // 응답이 성공적이지 않으면 에러를 발생시킵니다
-        if (!userResponse.ok) {
-          const errorData = await userResponse.json().catch(() => ({}));
-          throw new Error(errorData.detail || '사용자 정보를 가져오는데 실패했습니다.');
-        }
-        
-        // 응답 데이터를 JSON 형태로 파싱합니다 (비동기)
-        const userData = await userResponse.json();
+        // 응답 데이터를 가져옵니다
+        const userData = userResponse.data;
         
         // 2. 주문 내역 개수 조회 (비동기 처리)
-        const orderCountResponse = await fetch('http://localhost:8000/api/orders/count', {
-          method: 'GET',
+        const orderCountResponse = await api.get('/api/orders/count', {
           headers: {
-            'Authorization': 'Bearer <access_token>',
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Authorization': 'Bearer <access_token>'
           }
         });
         
-        let orderCount = 0;
-        if (orderCountResponse.ok) {
-          const countData = await orderCountResponse.json();
-          orderCount = countData.order_count || 0;
-        }
+        const orderCount = orderCountResponse.data.order_count || 0;
         
         // 3. 최근 주문 조회 (비동기 처리)
-        const ordersResponse = await fetch('http://localhost:8000/api/orders/recent?days=7', {
-          method: 'GET',
+        const ordersResponse = await api.get('/api/orders/recent?days=7', {
           headers: {
-            'Authorization': 'Bearer <access_token>',
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Authorization': 'Bearer <access_token>'
           }
         });
         
         // 주문 조회 응답을 처리합니다
-        let ordersData = { orders: [] };
-        if (ordersResponse.ok) {
-          ordersData = await ordersResponse.json();
-        }
+        const ordersData = ordersResponse.data;
         
         // 4. 레시피 정보 조회 (비동기 처리)
-        const recipeResponse = await fetch('http://localhost:8000/api/recipes/user', {
-          method: 'GET',
+        const recipeResponse = await api.get('/api/recipes/user', {
           headers: {
-            'Authorization': 'Bearer <access_token>',
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Authorization': 'Bearer <access_token>'
           }
         });
         
-        let recipeData = { purchasedRecipe: null, similarRecipes: [] };
-        if (recipeResponse.ok) {
-          recipeData = await recipeResponse.json();
-        }
+        const recipeData = recipeResponse.data;
         
         // 파싱된 데이터를 상태에 저장합니다
         setUserData({
@@ -213,17 +187,13 @@ const MyPage = () => {
       console.log('주문 내역 클릭');
       
       // 주문 내역 페이지로 이동하기 전에 로그 기록 (비동기 처리)
-      await fetch('http://localhost:8000/api/user/activity-log', {
-        method: 'POST',
+      await api.post('/api/user/activity-log', {
+        action: 'view_order_history',
+        timestamp: new Date().toISOString()
+      }, {
         headers: {
-          'Authorization': 'Bearer <access_token>',
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          action: 'view_order_history',
-          timestamp: new Date().toISOString()
-        })
+          'Authorization': 'Bearer <access_token>'
+        }
       }).catch(() => {
         // 로그 기록 실패는 무시하고 계속 진행
         console.log('활동 로그 기록 실패 (무시됨)');
@@ -245,23 +215,16 @@ const MyPage = () => {
       console.log('레시피 클릭:', recipeId);
       
       // 레시피 상세 정보를 비동기로 가져오는 로직 (향후 구현)
-      const recipeResponse = await fetch(`http://localhost:8000/api/recipes/${recipeId}`, {
-        method: 'GET',
+      const recipeResponse = await api.get(`/api/recipes/${recipeId}`, {
         headers: {
-          'Authorization': 'Bearer <access_token>',
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Authorization': 'Bearer <access_token>'
         }
       });
       
-      if (recipeResponse.ok) {
-        const recipeDetail = await recipeResponse.json();
-        console.log('레시피 상세 정보:', recipeDetail);
-        // 레시피 상세 페이지로 이동하는 기능을 구현할 예정입니다
-        // window.location.href = `/recipe-detail/${recipeId}`;
-      } else {
-        console.error('레시피 상세 정보 가져오기 실패');
-      }
+      const recipeDetail = recipeResponse.data;
+      console.log('레시피 상세 정보:', recipeDetail);
+      // 레시피 상세 페이지로 이동하는 기능을 구현할 예정입니다
+      // window.location.href = `/recipe-detail/${recipeId}`;
     } catch (error) {
       console.error('레시피 클릭 에러:', error);
     }

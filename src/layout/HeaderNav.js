@@ -8,6 +8,8 @@ import searchIcon from "../assets/search_icon.png";
 import bellIcon from "../assets/bell_icon.png";
 // 장바구니 아이콘 이미지 import
 import bucketIcon from "../assets/bucket_icon.png";
+// API 설정을 가져옵니다
+import api from "../pages/api";
 
 // ===== 전역 상태 관리 컨텍스트 =====
 // 알림 및 장바구니 상태를 전역적으로 관리하기 위한 React Context 생성
@@ -381,17 +383,13 @@ export const BackTitleWithIconsHeader = ({ title, onBack, onNotificationClick, o
       console.log('알림창 인터페이스 전환');
       
       // 알림 클릭 로그 기록 (비동기 처리)
-      await fetch('http://localhost:8000/api/user/activity-log', {
-        method: 'POST',
+      await api.post('/api/user/activity-log', {
+        action: 'notification_click',
+        timestamp: new Date().toISOString()
+      }, {
         headers: {
-          'Authorization': 'Bearer <access_token>',
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          action: 'notification_click',
-          timestamp: new Date().toISOString()
-        })
+          'Authorization': 'Bearer <access_token>'
+        }
       }).catch(() => {
         // 로그 기록 실패는 무시
         console.log('알림 클릭 로그 기록 실패 (무시됨)');
@@ -410,17 +408,13 @@ export const BackTitleWithIconsHeader = ({ title, onBack, onNotificationClick, o
       console.log('장바구니 인터페이스 전환');
       
       // 장바구니 클릭 로그 기록 (비동기 처리)
-      await fetch('http://localhost:8000/api/user/activity-log', {
-        method: 'POST',
+      await api.post('/api/user/activity-log', {
+        action: 'cart_click',
+        timestamp: new Date().toISOString()
+      }, {
         headers: {
-          'Authorization': 'Bearer <access_token>',
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          action: 'cart_click',
-          timestamp: new Date().toISOString()
-        })
+          'Authorization': 'Bearer <access_token>'
+        }
       }).catch(() => {
         // 로그 기록 실패는 무시
         console.log('장바구니 클릭 로그 기록 실패 (무시됨)');
@@ -526,17 +520,13 @@ export const BackTitleWithNotificationHeader = ({ title, onBack, onNotificationC
       console.log('알림창 인터페이스 전환');
       
       // 알림 클릭 로그 기록 (비동기 처리)
-      await fetch('http://localhost:8000/api/user/activity-log', {
-        method: 'POST',
+      await api.post('/api/user/activity-log', {
+        action: 'notification_click',
+        timestamp: new Date().toISOString()
+      }, {
         headers: {
-          'Authorization': 'Bearer <access_token>',
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          action: 'notification_click',
-          timestamp: new Date().toISOString()
-        })
+          'Authorization': 'Bearer <access_token>'
+        }
       }).catch(() => {
         // 로그 기록 실패는 무시
         console.log('알림 클릭 로그 기록 실패 (무시됨)');
@@ -590,17 +580,13 @@ export const ScheduleHeader = ({ onScheduleClick, onNotificationClick, className
       console.log('편성표 인터페이스 전환');
       
       // 편성표 클릭 로그 기록 (비동기 처리)
-      await fetch('http://localhost:8000/api/user/activity-log', {
-        method: 'POST',
+      await api.post('/api/user/activity-log', {
+        action: 'schedule_click',
+        timestamp: new Date().toISOString()
+      }, {
         headers: {
-          'Authorization': 'Bearer <access_token>',
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          action: 'schedule_click',
-          timestamp: new Date().toISOString()
-        })
+          'Authorization': 'Bearer <access_token>'
+        }
       }).catch(() => {
         // 로그 기록 실패는 무시
         console.log('편성표 클릭 로그 기록 실패 (무시됨)');
@@ -619,17 +605,13 @@ export const ScheduleHeader = ({ onScheduleClick, onNotificationClick, className
       console.log('알림창 인터페이스 전환');
       
       // 알림 클릭 로그 기록 (비동기 처리)
-      await fetch('http://localhost:8000/api/user/activity-log', {
-        method: 'POST',
+      await api.post('/api/user/activity-log', {
+        action: 'notification_click',
+        timestamp: new Date().toISOString()
+      }, {
         headers: {
-          'Authorization': 'Bearer <access_token>',
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          action: 'notification_click',
-          timestamp: new Date().toISOString()
-        })
+          'Authorization': 'Bearer <access_token>'
+        }
       }).catch(() => {
         // 로그 기록 실패는 무시
         console.log('알림 클릭 로그 기록 실패 (무시됨)');

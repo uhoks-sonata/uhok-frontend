@@ -6,6 +6,8 @@ import { Link, useLocation } from "react-router-dom";
 import "../styles/bottom_nav.css";
 // 하단 네비게이션 배경 이미지 import
 import bottomNavImage from "../assets/bottom_navigation.gif";
+// API 설정을 가져옵니다
+import api from "../pages/api";
 // 콕 쇼핑몰 아이콘 (활성 상태) import
 import bottomIconKok from "../assets/bottom_icon_kok.png";
 // 콕 쇼핑몰 아이콘 (비활성 상태) import
@@ -32,19 +34,15 @@ const BottomNav = () => {
   // 네비게이션 클릭 로그를 기록하는 비동기 함수
   const logNavigationClick = async (path, label) => {
     try {
-      await fetch('http://localhost:8000/api/user/activity-log', {
-        method: 'POST',
+      await api.post('/api/user/activity-log', {
+        action: 'navigation_click',
+        path: path,
+        label: label,
+        timestamp: new Date().toISOString()
+      }, {
         headers: {
-          'Authorization': 'Bearer <access_token>',
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          action: 'navigation_click',
-          path: path,
-          label: label,
-          timestamp: new Date().toISOString()
-        })
+          'Authorization': 'Bearer <access_token>'
+        }
       }).catch(() => {
         // 로그 기록 실패는 무시
         console.log('네비게이션 클릭 로그 기록 실패 (무시됨)');
