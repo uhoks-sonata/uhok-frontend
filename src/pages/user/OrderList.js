@@ -4,10 +4,13 @@ import React, { useState, useEffect } from 'react';
 import { OrderHistoryHeader } from '../../layout/HeaderNav';
 // 하단 네비게이션 컴포넌트를 가져옵니다
 import BottomNav from '../../layout/BottomNav';
+// 로딩 컴포넌트를 가져옵니다
+import Loading from '../../components/Loading';
 // 주문 내역 스타일을 가져옵니다
 import '../../styles/orderlist.css';
 // 상품 없음 이미지를 가져옵니다
 import noItemsIcon from '../../assets/no_items.png';
+
 // API 설정을 가져옵니다
 import api from '../api';
 
@@ -20,7 +23,10 @@ import testImage3 from '../../assets/test/test3.png';
 const OrderList = () => {
   // 주문 내역 데이터를 저장할 상태를 초기화합니다 (API에서 받아옴)
   const [orderData, setOrderData] = useState({
-    orders: [] // 주문 목록 (API에서 받아옴)
+    orders: [], // 주문 목록 (API에서 받아옴)
+    total_count: 0, // 전체 주문 개수
+    page: 1, // 현재 페이지
+    size: 20 // 페이지당 주문 개수
   });
 
   // 데이터 로딩 상태를 관리합니다 (true: 로딩 중, false: 로딩 완료)
@@ -147,7 +153,10 @@ const OrderList = () => {
         
         // 파싱된 데이터를 상태에 저장합니다
         setOrderData({
-          orders: validOrders
+          orders: validOrders,
+          total_count: ordersData.total_count || 0,
+          page: ordersData.page || 1,
+          size: ordersData.size || 20
         });
         
         // 로딩 상태를 false로 설정합니다
@@ -156,7 +165,20 @@ const OrderList = () => {
       } catch (error) {
         // 에러 발생 시 에러 상태를 설정하고 로딩 상태를 false로 설정합니다
         console.error('주문 내역 데이터 가져오기 실패:', error);
+<<<<<<< HEAD
         setError('주문 내역을 불러오는데 실패했습니다.');
+=======
+        
+        // 네트워크 에러인 경우 더미 데이터 사용, 그 외에는 에러 메시지 표시
+        if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED' || 
+            (error.name === 'TypeError' && error.message.includes('Failed to fetch')) ||
+            error.message.includes('Network Error')) {
+          console.log('백엔드 서버 연결 실패 - 더미 데이터를 사용합니다.');
+          setError(null); // 에러 상태 초기화
+        } else {
+          setError(error.message);
+        }
+>>>>>>> 2e5736057dbbe3a4d8417b8c541ab0cc661fb60b
         setLoading(false);
         
         // 테스트용 더미 데이터를 설정합니다 (API 연결 실패 시)
@@ -178,10 +200,10 @@ const OrderList = () => {
               ]
             },
             {
-              order_id: '20230620',
-              order_date: '2025-06-20',
-              status: 'shipping',
-              total_amount: 32000,
+              order_id: '20230621',
+              order_date: '2025-06-21',
+              status: 'delivered',
+              total_amount: 23800,
               items: [
                 {
                   product_id: 124,
@@ -193,10 +215,10 @@ const OrderList = () => {
               ]
             },
             {
-              order_id: '20230619',
-              order_date: '2025-06-19',
-              status: 'confirmed',
-              total_amount: 28000,
+              order_id: '20230620',
+              order_date: '2025-06-20',
+              status: 'shipping',
+              total_amount: 32000,
               items: [
                 {
                   product_id: 125,
@@ -206,8 +228,26 @@ const OrderList = () => {
                   price: 28000
                 }
               ]
+            },
+            {
+              order_id: '20230619',
+              order_date: '2025-06-19',
+              status: 'confirmed',
+              total_amount: 28000,
+              items: [
+                {
+                  product_id: 126,
+                  product_name: '신선한 생선 세트',
+                  product_image: testImage1,
+                  quantity: 1,
+                  price: 28000
+                }
+              ]
             }
-          ]
+          ],
+          total_count: 4,
+          page: 1,
+          size: 20
         });
       }
     };
@@ -223,7 +263,18 @@ const OrderList = () => {
       const response = await api.get(`/api/products/${productId}`);
       return response.data;
     } catch (error) {
+<<<<<<< HEAD
       console.error('상품 정보 가져오기 실패:', error);
+=======
+      // 네트워크 에러인 경우 조용히 처리 (더미 데이터 사용)
+      if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED' || 
+          (error.name === 'TypeError' && error.message.includes('Failed to fetch')) ||
+          error.message.includes('Network Error')) {
+        console.log('상품 정보 API 연결 실패 - 기본 정보 사용');
+      } else {
+        console.error('상품 정보 가져오기 실패:', error);
+      }
+>>>>>>> 2e5736057dbbe3a4d8417b8c541ab0cc661fb60b
       return null;
     }
   };
@@ -258,7 +309,18 @@ const OrderList = () => {
       // 주문 상세 페이지로 이동하는 기능을 구현할 예정입니다
       // window.location.href = `/order-detail/${orderId}`;
     } catch (error) {
+<<<<<<< HEAD
       console.error('주문 상세 보기 에러:', error);
+=======
+      // 네트워크 에러인 경우 조용히 처리
+      if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED' || 
+          (error.name === 'TypeError' && error.message.includes('Failed to fetch')) ||
+          error.message.includes('Network Error')) {
+        console.log('주문 상세 API 연결 실패 - 기능 미구현');
+      } else {
+        console.error('주문 상세 보기 에러:', error);
+      }
+>>>>>>> 2e5736057dbbe3a4d8417b8c541ab0cc661fb60b
     }
   };
 
@@ -271,10 +333,7 @@ const OrderList = () => {
           onNotificationClick={handleNotificationClick}
           onCartClick={handleCartClick}
         />
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>주문 내역을 불러오는 중...</p>
-        </div>
+        <Loading message="주문 내역을 불러오는 중 ..." />
         <BottomNav />
       </div>
     );
@@ -310,11 +369,6 @@ const OrderList = () => {
       
       {/* 주문 내역 메인 콘텐츠 */}
       <main className="order-list-main">
-                 {/* 주문 내역 제목 */}
-         <div className="order-list-header">
-           <h2 className="order-list-title">주문 내역</h2>
-         </div>
-
         {/* 주문 내역 목록 */}
         <div className="order-list-content">
           {orderData.orders.length === 0 ? (
@@ -325,55 +379,102 @@ const OrderList = () => {
               <p className="no-orders-subtext">첫 주문을 시작해보세요!</p>
             </div>
           ) : (
-            // 주문 내역 목록을 렌더링
-            <div className="orders-container">
-              {orderData.orders.map((order) => (
-                <div key={order.order_id} className="order-item">
-                  {/* 주문 정보 헤더 */}
-                  <div className="order-header">
-                    <div className="order-info">
-                      <h3 className="order-id">주문번호: {order.order_id}</h3>
-                      <p className="order-date">{formatDate(order.order_date)}</p>
-                    </div>
-                    <div className={`order-status ${getOrderStatusClass(order.status)}`}>
-                      {getOrderStatusText(order.status)}
-                    </div>
-                  </div>
-
-                  {/* 주문 상품 목록 */}
-                  <div className="order-items">
-                    {order.items.map((item, index) => (
-                      <div key={`${order.order_id}-${index}`} className="order-item-product">
-                        <img 
-                          src={item.product_image} 
-                          alt={item.product_name} 
-                          className="product-image" 
-                        />
-                        <div className="product-info">
-                          <h4 className="product-name">{item.product_name}</h4>
-                          <p className="product-quantity">수량: {item.quantity}개</p>
-                          <p className="product-price">{formatPrice(item.price)}</p>
-                        </div>
+            // 주문번호별로 그룹화하여 렌더링합니다
+            (() => {
+              // 주문번호별로 상품들을 그룹화합니다
+              const groupedOrders = orderData.orders.reduce((groups, order) => {
+                if (!groups[order.order_id]) {
+                  groups[order.order_id] = [];
+                }
+                groups[order.order_id].push(order);
+                return groups;
+              }, {});
+              
+              // 각 그룹 내에서 상품들을 정렬하고, 전체 그룹을 날짜순으로 정렬합니다
+              const sortedOrders = Object.entries(groupedOrders)
+                .map(([orderId, orders]) => {
+                  // 각 주문 그룹 내에서 상품들을 정렬 (최근 구매 순)
+                  const sortedItems = orders.sort((a, b) => {
+                    // 주문 시간이 있다면 그것을 기준으로, 없다면 상품 ID로 정렬
+                    if (a.order_time && b.order_time) {
+                      return new Date(b.order_time) - new Date(a.order_time);
+                    }
+                    return b.items[0].product_id - a.items[0].product_id;
+                  });
+                  
+                  return [orderId, sortedItems];
+                })
+                .sort((a, b) => {
+                  // 전체 주문 그룹을 날짜순으로 정렬 (최근 날짜순)
+                  const dateA = new Date(a[1][0].order_date);
+                  const dateB = new Date(b[1][0].order_date);
+                  
+                  // 날짜가 같다면 주문번호로 정렬 (최근 주문번호가 먼저)
+                  if (dateA.getTime() === dateB.getTime()) {
+                    return b[0] - a[0];
+                  }
+                  
+                  return dateB - dateA; // 최근 날짜가 먼저 오도록 내림차순 정렬
+                });
+              
+              // 정렬된 주문들을 렌더링합니다
+              return sortedOrders.map(([orderId, orders]) => {
+                const firstOrder = orders[0]; // 첫 번째 상품의 정보를 사용
+                
+                return (
+                  <div key={orderId} className="order-item">
+                    {/* 주문 정보 헤더 - 회색 박스 밖에 위치 */}
+                    <div className="order-header">
+                      <div className="order-info">
+                        <p className="order-date">{formatDate(firstOrder.order_date)}</p>
                       </div>
-                    ))}
-                  </div>
-
-                  {/* 주문 총액 및 상세 보기 버튼 */}
-                  <div className="order-footer">
-                    <div className="order-total">
-                      <span className="total-label">총 주문 금액:</span>
-                      <span className="total-amount">{formatPrice(order.total_amount)}</span>
+                      <div className="order-number">
+                        주문번호 {orderId}
+                      </div>
                     </div>
-                    <button 
-                      className="order-detail-btn"
-                      onClick={() => handleOrderDetailClick(order.order_id)}
-                    >
-                      상세 보기
-                    </button>
+
+                    {/* 회색 박스 컨테이너 */}
+                    <div className="order-content-box">
+                      {/* 배송 상태 - 회색 박스 상단 왼쪽 */}
+                      <div className="delivery-status">
+                        <span className="delivery-status-text">배송완료</span>
+                        <span className="delivery-date">{formatDate(firstOrder.order_date)} 도착</span>
+                      </div>
+                      
+                      {/* 상품 정보들 - 같은 주문번호의 모든 상품을 표시합니다 */}
+                      {orders.map((order, index) => (
+                        <div key={`${orderId}-${index}`} className="product-info">
+                          {/* 상품 이미지를 표시합니다 */}
+                          <div className="product-image">
+                            <img src={order.items[0].product_image} alt={order.items[0].product_name} />
+                          </div>
+                          
+                          {/* 상품 상세 정보 */}
+                          <div className="product-details">
+                            {/* 상품명을 표시합니다 */}
+                            <div className="product-name" title={order.items[0].product_name}>
+                              {order.items[0].product_name.length > 20 
+                                ? `${order.items[0].product_name.substring(0, 20)}...`
+                                : order.items[0].product_name
+                              }
+                            </div>
+                            {/* 상품 설명을 표시합니다 */}
+                            <div className="product-description" title="상품 설명">
+                              {"동해물과백두산이마르고닳도록하느님이보우하사우리나라만세무궁화삼천리".length > 20 
+                                ? "동해물과백두산이마르고닳도록하느님이보우하사우리나라만세무궁화삼천리".substring(0, 20) + "..."
+                                : "동해물과백두산이마르고닳도록하느님이보우하사우리나라만세무궁화삼천리"
+                              }
+                            </div>
+                            {/* 가격과 수량을 표시합니다 */}
+                            <div className="product-price">{formatPrice(order.items[0].price)} · {order.items[0].quantity}개</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                );
+              });
+            })()
           )}
         </div>
       </main>

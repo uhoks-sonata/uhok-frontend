@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { HomeShoppingHeader } from '../../layout/HeaderNav';
 import KokProductSection from '../../components/KokProductSection';
 import BottomNav from '../../layout/BottomNav';
+import Loading from '../../components/Loading';
 import '../../styles/kok_main.css';
 import api from '../api';
 
@@ -105,16 +106,7 @@ const KokMain = () => {
       
       <main className="kok-main-content">
         {kokLoading ? (
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            height: '200px',
-            fontSize: '16px',
-            color: '#666'
-          }}>
-            데이터를 불러오는 중...
-          </div>
+          <Loading message="데이터를 불러오는 중 ..." />
         ) : (
           <>
             <KokProductSection 

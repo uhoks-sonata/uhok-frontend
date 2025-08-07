@@ -140,12 +140,21 @@ export const HomeShoppingHeader = ({ searchQuery, setSearchQuery, onSearch, onNo
 };
 
 // ===== 2. 쇼핑 헤더 컴포넌트 =====
-// 찜/콕쇼핑몰 상품 상세 페이지에서 사용하는 헤더 (검색 + 알림 + 장바구니 기능)
-export const ShoppingHeader = ({ searchQuery, setSearchQuery, onSearch, onNotificationClick, onCartClick }) => {
+// 찜/콕쇼핑몰 상품 상세 페이지에서 사용하는 헤더 (뒤로가기 + 검색 + 알림 + 장바구니 기능)
+export const ShoppingHeader = ({ searchQuery, setSearchQuery, onSearch, onNotificationClick, onCartClick, onBack }) => {
   // 전역 알림 및 장바구니 상태 가져오기
   const { notificationCount, cartCount } = useNotifications();
   // 페이지 이동을 위한 navigate 훅
   const navigate = useNavigate();
+
+  // 뒤로가기 버튼 클릭 핸들러
+  const handleBack = () => {
+    if (onBack) {
+      onBack(); // 부모 컴포넌트에서 전달받은 뒤로가기 함수 실행
+    } else {
+      window.history.back(); // 브라우저 히스토리 뒤로가기
+    }
+  };
 
   // 검색 실행 핸들러 함수
   const handleSearch = (e) => {
@@ -177,7 +186,10 @@ export const ShoppingHeader = ({ searchQuery, setSearchQuery, onSearch, onNotifi
   // 쇼핑 헤더 JSX 반환
   return (
     <div className="header shopping-product-header">
-      {/* 검색 컨테이너 영역 */}
+      {/* 뒤로가기 버튼 (왼쪽) */}
+      <button className="back-btn" onClick={handleBack}>←</button>
+      
+      {/* 검색 컨테이너 영역 (중앙) */}
       <div className="search-container">
         {/* 검색 입력 필드 */}
         <input

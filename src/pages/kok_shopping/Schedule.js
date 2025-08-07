@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { ScheduleHeader } from '../../layout/HeaderNav';
 // 하단 네비게이션 컴포넌트를 가져옵니다
 import BottomNav from '../../layout/BottomNav';
+// 로딩 컴포넌트를 가져옵니다
+import Loading from '../../components/Loading';
 // 편성표 페이지 스타일을 가져옵니다
 import '../../styles/schedule.css';
 // API 설정을 가져옵니다
@@ -204,8 +206,7 @@ const Schedule = () => {
         />
         {/* 메인 콘텐츠 영역 */}
         <div className="schedule-content">
-          {/* 로딩 메시지를 표시합니다 */}
-          <div className="loading">편성표를 불러오는 중...</div>
+          <Loading message="편성표를 불러오는 중 ..." />
         </div>
         {/* 하단 네비게이션을 렌더링합니다 */}
         <BottomNav />

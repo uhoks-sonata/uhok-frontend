@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ShoppingHeader } from '../../layout/HeaderNav';
 import { getProductDetail } from '../../data/products';
+import Loading from '../../components/Loading';
 import '../../styles/kok_product_detail.css';
 import emptyHeartIcon from '../../assets/heart_empty.png';
 import filledHeartIcon from '../../assets/heart_filled.png';
@@ -630,16 +631,10 @@ const KokProductDetail = () => {
 
   if (kokLoading) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh',
-        fontSize: '16px',
-        color: '#666'
-      }}>
-        로딩 중...
-      </div>
+      <Loading 
+        message="상품 정보를 불러오는 중 ..." 
+        containerStyle={{ height: '100vh' }}
+      />
     );
   }
 
