@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ShoppingHeader } from '../../layout/HeaderNav';
 import '../../styles/kok_product_list_page.css';
-import emptyHeartIcon from '../../assets/empty_heart.png';
-import filledHeartIcon from '../../assets/filled_heart.png';
+import emptyHeartIcon from '../../assets/heart_empty.png';
+import filledHeartIcon from '../../assets/heart_filled.png';
 
 // 상품 데이터 import
 import { 

@@ -4,8 +4,8 @@ import { ShoppingHeader } from '../../layout/HeaderNav';
 import { getProductDetail } from '../../data/products';
 import Loading from '../../components/Loading';
 import '../../styles/kok_product_detail.css';
-import emptyHeartIcon from '../../assets/empty_heart.png';
-import filledHeartIcon from '../../assets/filled_heart.png';
+import emptyHeartIcon from '../../assets/heart_empty.png';
+import filledHeartIcon from '../../assets/heart_filled.png';
 import cartIcon from '../../assets/icon-park-outline_weixin-market.png';
 
 const KokProductDetail = () => {
