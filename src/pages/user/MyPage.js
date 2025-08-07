@@ -6,12 +6,12 @@ import { MyPageHeader } from '../../layout/HeaderNav';
 import BottomNav from '../../layout/BottomNav';
 // 마이페이지 스타일을 가져옵니다
 import '../../styles/mypage.css';
+// API 설정을 가져옵니다
+import api from '../api';
 // 기본 사용자 아이콘 이미지를 가져옵니다
 import userIcon from '../../assets/user_icon.png';
 // 상품 없음 이미지를 가져옵니다
 import noItemsIcon from '../../assets/no_items.png';
-// API 설정을 가져옵니다
-import api from '../api';
 
 
 // 테스트용 상품 이미지들을 가져옵니다
@@ -67,17 +67,32 @@ const MyPage = () => {
         // 로딩 상태를 true로 설정합니다
         setLoading(true);
         
-        // 1. 사용자 정보 조회 (비동기 처리)
-        const userResponse = await api.get('/api/user/info', {
-          headers: {
-            'Authorization': 'Bearer <access_token>' // 실제 토큰으로 교체 필요
-          }
-        });
+        // FastAPI 서버의 사용자 정보와 주문 정보를 병렬로 가져옵니다
+        const [userResponse, ordersResponse] = await Promise.all([
+          api.get('/api/user/info', {
+            headers: {
+              'Authorization': 'Bearer <access_token>' // 실제 토큰으로 교체 필요 (API에서 받아옴)
+            }
+          }),
+          api.get('/api/orders/recent?days=7', {
+            headers: {
+              'Authorization': 'Bearer <access_token>' // 실제 토큰으로 교체 필요 (API에서 받아옴)
+            }
+          })
+        ]);
         
-        // 응답 데이터를 가져옵니다
+        // 응답 데이터를 추출합니다
         const userData = userResponse.data;
         
-        // 2. 주문 내역 개수 조회 (비동기 처리)
+        // 주문 조회 응답을 처리합니다
+        let ordersData = { orders: [] };
+        try {
+          ordersData = ordersResponse.data;
+        } catch (err) {
+          console.log('주문 정보를 가져오는데 실패했습니다.');
+        }
+        
+        // 주문 내역 개수 조회 (비동기 처리)
         const orderCountResponse = await api.get('/api/orders/count', {
           headers: {
             'Authorization': 'Bearer <access_token>'
@@ -86,17 +101,7 @@ const MyPage = () => {
         
         const orderCount = orderCountResponse.data.order_count || 0;
         
-        // 3. 최근 주문 조회 (비동기 처리)
-        const ordersResponse = await api.get('/api/orders/recent?days=7', {
-          headers: {
-            'Authorization': 'Bearer <access_token>'
-          }
-        });
-        
-        // 주문 조회 응답을 처리합니다
-        const ordersData = ordersResponse.data;
-        
-        // 4. 레시피 정보 조회 (비동기 처리)
+        // 레시피 정보 조회 (비동기 처리)
         const recipeResponse = await api.get('/api/recipes/user', {
           headers: {
             'Authorization': 'Bearer <access_token>'

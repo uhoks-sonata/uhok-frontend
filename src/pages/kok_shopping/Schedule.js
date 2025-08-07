@@ -65,7 +65,6 @@ const Schedule = () => {
         
         // FastAPI 서버의 편성표 엔드포인트에 GET 요청을 보냅니다 (API 명세서에 맞춰 수정)
         const response = await api.get(`/api/home-shopping/schedule?date=${date}&hour=${hour}`);
-        
         // 응답 데이터를 가져옵니다
         const data = response.data;
         // 파싱된 데이터를 상태에 저장합니다
