@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CartHeader } from '../layout/HeaderNav';
-import { useNotifications } from '../layout/HeaderNav';
-import Loading from '../components/Loading';
-import '../styles/cart.css';
-import api from './api';
+import { CartHeader } from '../../layout/HeaderNav';
+import { useNotifications } from '../../layout/HeaderNav';
+import Loading from '../../components/Loading';
+import '../../styles/cart.css';
+import api from '../api';
 
 const Cart = () => {
   const [cartItems, setCartItems] = useState([]);

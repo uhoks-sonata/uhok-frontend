@@ -18,17 +18,11 @@ import KokMain from './pages/kok_shopping/KokMain';
 import KokProductDetail from './pages/kok_shopping/KokProductDetail';
 import KokProductListPage from './pages/kok_shopping/KokProductListPage';
 
-// ===== 기능별 컴포넌트들 import =====
-
-// ===== 레이아웃 컴포넌트들 import =====
-
-// ===== 일반 컴포넌트들 import =====
-
 // ===== 전역 상태 관리 Provider import =====
 // 마이페이지 컴포넌트 import
 import MyPage from './pages/user/MyPage';
 // 장바구니 컴포넌트 import
-import Cart from './pages/Cart';
+import Cart from './pages/user/Cart';
 // 주문 내역 컴포넌트 import
 import OrderList from './pages/user/OrderList';
 // 찜한 상품 목록 컴포넌트 import
