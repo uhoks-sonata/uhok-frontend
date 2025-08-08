@@ -6,6 +6,7 @@ import '../../styles/kok_product_list_page.css';
 import emptyHeartIcon from '../../assets/heart_empty.png';
 import filledHeartIcon from '../../assets/heart_filled.png';
 import api from '../api';
+import { ensureToken } from '../../utils/authUtils';
 
 // 상품 데이터 import
 import { 
@@ -23,11 +24,21 @@ const KokProductListPage = () => {
   const [kokWishlistedProducts, setKokWishlistedProducts] = useState(new Set());
   const [loading, setLoading] = useState(true);
 
+
+
   // KOK API에서 할인 특가 상품 데이터를 가져오는 함수
   const fetchKokProducts = async () => {
     try {
       const response = await api.get('/api/kok/discounted');
-      return response.data.products || [];
+      console.log('할인 특가 상품 API 응답:', response.data);
+      
+      // API 응답 구조에 맞게 데이터 처리
+      if (response.data && response.data.products) {
+        return response.data.products;
+      } else {
+        console.log('API 응답에 products 필드가 없어 임시 데이터를 사용합니다.');
+        return discountProducts;
+      }
     } catch (err) {
       console.error('KOK 상품 데이터 로딩 실패:', err);
       console.log('임시 데이터를 사용합니다.');
@@ -39,7 +50,15 @@ const KokProductListPage = () => {
   const fetchKokTopSellingProducts = async () => {
     try {
       const response = await api.get('/api/kok/top-selling');
-      return response.data.products || [];
+      console.log('판매율 높은 상품 API 응답:', response.data);
+      
+      // API 응답 구조에 맞게 데이터 처리
+      if (response.data && response.data.products) {
+        return response.data.products;
+      } else {
+        console.log('API 응답에 products 필드가 없어 임시 데이터를 사용합니다.');
+        return highSellingProducts;
+      }
     } catch (err) {
       console.error('KOK 판매율 높은 상품 데이터 로딩 실패:', err);
       console.log('임시 데이터를 사용합니다.');
@@ -51,7 +70,15 @@ const KokProductListPage = () => {
   const fetchKokStoreBestItems = async () => {
     try {
       const response = await api.get('/api/kok/store-best-items');
-      return response.data.products || [];
+      console.log('스토어 베스트 상품 API 응답:', response.data);
+      
+      // API 응답 구조에 맞게 데이터 처리
+      if (response.data && response.data.products) {
+        return response.data.products;
+      } else {
+        console.log('API 응답에 products 필드가 없어 임시 데이터를 사용합니다.');
+        return nonDuplicatedProducts;
+      }
     } catch (err) {
       console.error('KOK 구매한 스토어 내 리뷰 많은 상품 데이터 로딩 실패:', err);
       console.log('임시 데이터를 사용합니다.');
@@ -63,6 +90,9 @@ const KokProductListPage = () => {
     const loadKokProducts = async () => {
       setLoading(true);
       try {
+        // 토큰이 없으면 임시 로그인 시도
+        await ensureToken();
+        
         switch (sectionType) {
           case 'discount':
             const kokProducts = await fetchKokProducts();

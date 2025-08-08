@@ -4,6 +4,8 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 // 앱 전체 스타일 CSS 파일 import
 import './styles/App.css';
+// 사용자 Context Provider import
+import { UserProvider } from './contexts/UserContext';
 
 // ===== 페이지 컴포넌트들 import =====
 // 사용자 관련 페이지
@@ -20,6 +22,7 @@ import KokProductListPage from './pages/kok_shopping/KokProductListPage';
 
 // 레시피 관련 페이지
 import RecipeRecommendation from './pages/recipes/RecipeRecommendation';
+import RecipeResult from './pages/recipes/RecipeResult';
 // 결제 관련 페이지
 import KokPayment from './pages/user/KokPayment';
 
@@ -40,16 +43,18 @@ import { NotificationProvider } from './layout/HeaderNav';
 function App() {
   // 앱 전체 JSX 반환
   return (
-    // 전역 알림 상태를 모든 하위 컴포넌트에서 사용할 수 있도록 Provider로 감싸기
-    <NotificationProvider>
-      {/* 앱 전체 래퍼 컨테이너 */}
-      <div className="wrapper">
-        {/* 메인 앱 컨테이너 */}
-        <div className="App">
-          {/* React Router 설정 - 브라우저 라우팅 활성화 */}
-          <Router>
-            {/* 라우트 정의 컨테이너 */}
-            <Routes>
+    // 사용자 정보를 모든 하위 컴포넌트에서 사용할 수 있도록 Provider로 감싸기
+    <UserProvider>
+      {/* 전역 알림 상태를 모든 하위 컴포넌트에서 사용할 수 있도록 Provider로 감싸기 */}
+      <NotificationProvider>
+        {/* 앱 전체 래퍼 컨테이너 */}
+        <div className="wrapper">
+          {/* 메인 앱 컨테이너 */}
+          <div className="App">
+            {/* React Router 설정 - 브라우저 라우팅 활성화 */}
+            <Router>
+              {/* 라우트 정의 컨테이너 */}
+              <Routes>
               {/* ===== 메인 페이지 라우트 ===== */}
               {/* 루트 경로 (/) - 로그인 페이지 */}
               <Route path="/" element={<Login />} />  
@@ -59,8 +64,8 @@ function App() {
               <Route path="/signup" element={<Signup />} />
               
               {/* ===== 기타 라우트 ===== */}
-              {/* 편성표 메인 경로 (/) - 편성표 페이지로 설정 */}
-              <Route path="/main" element={<Schedule />} />
+              {/* 메인 경로 (/main) - KOK 메인 페이지로 설정 */}
+              <Route path="/main" element={<KokMain />} />
               {/* 편성표 경로 (/schedule) - 편성표 페이지 */}
               <Route path="/schedule" element={<Schedule />} />
               {/* ===== KOK 라우트 ===== */}
@@ -71,8 +76,11 @@ function App() {
               {/* 제품 목록 경로 (/kok/products/:sectionType) - 제품 목록 페이지 */}
               <Route path="/kok/products/:sectionType" element={<KokProductListPage />} />
               
-              {/* 레시피 추천 경로 (/recipes) - 레시피 추천 페이지 */}
-              <Route path="/recipes" element={<RecipeRecommendation />} />
+                              {/* 레시피 추천 경로 (/recipes) - 레시피 추천 페이지 */}
+                <Route path="/recipes" element={<RecipeRecommendation />} />
+                
+                {/* 레시피 결과 경로 (/recipes/by-ingredients) - 레시피 추천 결과 페이지 */}
+                <Route path="/recipes/by-ingredients" element={<RecipeResult />} />
               
               {/* 마이페이지 경로 (/mypage) - 마이페이지 */}
               <Route path="/mypage" element={<MyPage />} />
@@ -88,7 +96,8 @@ function App() {
           </Router>
         </div>
       </div>
-    </NotificationProvider>
+      </NotificationProvider>
+    </UserProvider>
   );
 }
 

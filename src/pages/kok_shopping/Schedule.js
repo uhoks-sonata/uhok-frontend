@@ -67,6 +67,7 @@ const Schedule = () => {
         const hour = today.getHours(); // 현재 시간
         
         // api.js를 활용하여 편성표 데이터를 비동기로 가져옵니다
+        console.log('편성표 API 호출:', `/api/home-shopping/schedule?date=${date}&hour=${hour}`);
         const response = await api.get(`/api/home-shopping/schedule?date=${date}&hour=${hour}`);
         
         // 응답 데이터를 검증하고 상태에 저장합니다

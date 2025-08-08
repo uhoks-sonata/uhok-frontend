@@ -5,6 +5,8 @@ import BottomNav from '../../layout/BottomNav';
 import Loading from '../../components/Loading';
 import '../../styles/kok_main.css';
 import api from '../api';
+import { ensureToken } from '../../utils/authUtils';
+import { useUser } from '../../contexts/UserContext';
 
 // 상품 데이터 import
 import { 
@@ -21,12 +23,26 @@ const KokMain = () => {
   const [kokTopSellingProducts, setKokTopSellingProducts] = useState([]);
   const [kokStoreBestItems, setKokStoreBestItems] = useState([]);
   const [kokLoading, setKokLoading] = useState(true);
+  
+  // 사용자 정보 가져오기
+  const { user, isLoggedIn } = useUser();
+
+
 
   // KOK API에서 할인 특가 상품 데이터를 가져오는 함수
   const fetchKokProducts = async () => {
     try {
+      console.log('할인 특가 상품 API 호출 시작...');
       const response = await api.get('/api/kok/discounted');
-      setKokProducts(response.data.products || []);
+      console.log('할인 특가 상품 API 응답:', response.data);
+      
+      // API 응답 구조에 맞게 데이터 처리
+      if (response.data && response.data.products) {
+        setKokProducts(response.data.products);
+      } else {
+        console.log('API 응답에 products 필드가 없어 임시 데이터를 사용합니다.');
+        setKokProducts(discountProducts);
+      }
     } catch (err) {
       console.error('KOK 상품 데이터 로딩 실패:', err);
       console.log('임시 데이터를 사용합니다.');
@@ -38,8 +54,17 @@ const KokMain = () => {
   // KOK API에서 판매율 높은 상품 데이터를 가져오는 함수
   const fetchKokTopSellingProducts = async () => {
     try {
+      console.log('판매율 높은 상품 API 호출 시작...');
       const response = await api.get('/api/kok/top-selling');
-      setKokTopSellingProducts(response.data.products || []);
+      console.log('판매율 높은 상품 API 응답:', response.data);
+      
+      // API 응답 구조에 맞게 데이터 처리
+      if (response.data && response.data.products) {
+        setKokTopSellingProducts(response.data.products);
+      } else {
+        console.log('API 응답에 products 필드가 없어 임시 데이터를 사용합니다.');
+        setKokTopSellingProducts(highSellingProducts);
+      }
     } catch (err) {
       console.error('KOK 판매율 높은 상품 데이터 로딩 실패:', err);
       console.log('임시 데이터를 사용합니다.');
@@ -51,8 +76,17 @@ const KokMain = () => {
   // KOK API에서 구매한 스토어 내 리뷰 많은 상품 데이터를 가져오는 함수
   const fetchKokStoreBestItems = async () => {
     try {
+      console.log('스토어 베스트 상품 API 호출 시작...');
       const response = await api.get('/api/kok/store-best-items');
-      setKokStoreBestItems(response.data.products || []);
+      console.log('스토어 베스트 상품 API 응답:', response.data);
+      
+      // API 응답 구조에 맞게 데이터 처리
+      if (response.data && response.data.products) {
+        setKokStoreBestItems(response.data.products);
+      } else {
+        console.log('API 응답에 products 필드가 없어 임시 데이터를 사용합니다.');
+        setKokStoreBestItems(nonDuplicatedProducts);
+      }
     } catch (err) {
       console.error('KOK 구매한 스토어 내 리뷰 많은 상품 데이터 로딩 실패:', err);
       console.log('임시 데이터를 사용합니다.');
@@ -80,6 +114,10 @@ const KokMain = () => {
     const loadAllData = async () => {
       try {
         setKokLoading(true);
+        
+        // 토큰이 없으면 임시 로그인 시도
+        await ensureToken();
+        
         await Promise.all([
           fetchKokProducts(),
           fetchKokTopSellingProducts(),
@@ -94,9 +132,33 @@ const KokMain = () => {
     
     loadAllData();
   }, []);
+  
+  // 사용자 정보가 변경될 때마다 콘솔에 출력 (디버깅용)
+  useEffect(() => {
+    console.log('KokMain - 사용자 정보 상태:', {
+      user: user,
+      isLoggedIn: isLoggedIn,
+      hasUser: !!user,
+      userEmail: user?.email,
+      hasToken: !!user?.token
+    });
+  }, [user, isLoggedIn]);
 
   return (
     <div className={`kok-home-shopping-main ${kokFadeIn ? 'kok-fade-in' : ''}`}>
+      {/* 사용자 정보 디버깅용 표시 */}
+      {user && (
+        <div style={{ 
+          background: '#f0f0f0', 
+          padding: '10px', 
+          margin: '10px', 
+          borderRadius: '5px',
+          fontSize: '12px'
+        }}>
+          <strong>사용자 정보:</strong> {user.email} | 로그인: {isLoggedIn ? '예' : '아니오'} | 토큰: {user.token ? '있음' : '없음'}
+        </div>
+      )}
+      
       <HomeShoppingHeader 
         searchQuery={kokSearchQuery}
         setSearchQuery={setKokSearchQuery}

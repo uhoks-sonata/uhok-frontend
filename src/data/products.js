@@ -48,10 +48,11 @@ const getBaseProduct = (productId) => {
   return null;
 };
 
-// 각 섹션별로 동일한 제품을 여러 개 생성 (ID는 1, 2, 3으로 고정)
+// 각 섹션별로 동일한 제품을 여러 개 생성 (고유 ID 부여)
 const generateProducts = (baseProduct, count = 20) => {
-  return Array.from({ length: count }, () => ({
-    ...baseProduct
+  return Array.from({ length: count }, (_, index) => ({
+    ...baseProduct,
+    id: baseProduct.id + (index * 1000) // 섹션별로 고유한 ID 생성
   }));
 };
 
