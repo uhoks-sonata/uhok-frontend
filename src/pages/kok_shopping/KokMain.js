@@ -5,7 +5,6 @@ import BottomNav from '../../layout/BottomNav';
 import Loading from '../../components/Loading';
 import '../../styles/kok_main.css';
 import api from '../api';
-import { ensureToken } from '../../utils/authUtils';
 import { useUser } from '../../contexts/UserContext';
 
 // 상품 데이터 import
@@ -18,14 +17,17 @@ import {
 const KokMain = () => {
   const [kokFadeIn, setKokFadeIn] = useState(false);
   const [kokSearchQuery, setKokSearchQuery] = useState('');
-  // API 데이터를 저장할 상태 추가
-  const [kokProducts, setKokProducts] = useState([]);
-  const [kokTopSellingProducts, setKokTopSellingProducts] = useState([]);
-  const [kokStoreBestItems, setKokStoreBestItems] = useState([]);
+  // API 데이터를 저장할 상태 추가 (초기값을 더미 데이터로 설정)
+  const [kokProducts, setKokProducts] = useState(discountProducts);
+  const [kokTopSellingProducts, setKokTopSellingProducts] = useState(highSellingProducts);
+  const [kokStoreBestItems, setKokStoreBestItems] = useState(nonDuplicatedProducts);
   const [kokLoading, setKokLoading] = useState(true);
   
   // 사용자 정보 가져오기
   const { user, isLoggedIn } = useUser();
+  
+  // 토큰 상태 확인
+  const hasValidToken = user?.token && user.isLoggedIn;
 
 
 
@@ -115,14 +117,21 @@ const KokMain = () => {
       try {
         setKokLoading(true);
         
-        // 토큰이 없으면 임시 로그인 시도
-        await ensureToken();
-        
-        await Promise.all([
-          fetchKokProducts(),
-          fetchKokTopSellingProducts(),
-          fetchKokStoreBestItems()
-        ]);
+        // 사용자가 로그인되어 있고 유효한 토큰이 있을 때만 API 호출
+        if (hasValidToken) {
+          console.log('유효한 토큰이 있어 API 호출을 진행합니다.');
+          await Promise.all([
+            fetchKokProducts(),
+            fetchKokTopSellingProducts(),
+            fetchKokStoreBestItems()
+          ]);
+        } else {
+          console.log('유효한 토큰이 없어 더미 데이터를 사용합니다.');
+          // 더미 데이터 설정
+          setKokProducts(discountProducts);
+          setKokTopSellingProducts(highSellingProducts);
+          setKokStoreBestItems(nonDuplicatedProducts);
+        }
       } catch (error) {
         console.error('데이터 로딩 중 오류 발생:', error);
       } finally {
@@ -131,7 +140,7 @@ const KokMain = () => {
     };
     
     loadAllData();
-  }, []);
+  }, [hasValidToken]); // hasValidToken이 변경될 때마다 실행
   
   // 사용자 정보가 변경될 때마다 콘솔에 출력 (디버깅용)
   useEffect(() => {
@@ -147,17 +156,20 @@ const KokMain = () => {
   return (
     <div className={`kok-home-shopping-main ${kokFadeIn ? 'kok-fade-in' : ''}`}>
       {/* 사용자 정보 디버깅용 표시 */}
-      {user && (
-        <div style={{ 
-          background: '#f0f0f0', 
-          padding: '10px', 
-          margin: '10px', 
-          borderRadius: '5px',
-          fontSize: '12px'
-        }}>
-          <strong>사용자 정보:</strong> {user.email} | 로그인: {isLoggedIn ? '예' : '아니오'} | 토큰: {user.token ? '있음' : '없음'}
-        </div>
-      )}
+      <div style={{ 
+        background: '#f0f0f0', 
+        padding: '10px', 
+        margin: '10px', 
+        borderRadius: '5px',
+        fontSize: '12px'
+      }}>
+        <strong>사용자 정보:</strong> 
+        {user ? (
+          `${user.email} | 로그인: ${isLoggedIn ? '예' : '아니오'} | 토큰: ${user.token ? '있음' : '없음'} | 토큰길이: ${user.token?.length || 0}`
+        ) : (
+          '사용자 정보 없음'
+        )}
+      </div>
       
       <HomeShoppingHeader 
         searchQuery={kokSearchQuery}

@@ -10,6 +10,8 @@ import Loading from '../../components/Loading';
 import '../../styles/mypage.css';
 // API 설정을 가져옵니다
 import api from '../api';
+// 사용자 Context import
+import { useUser } from '../../contexts/UserContext';
 // 기본 사용자 아이콘 이미지를 가져옵니다
 import userIcon from '../../assets/user_icon.png';
 // 상품 없음 이미지를 가져옵니다
@@ -21,6 +23,9 @@ import testImage2 from '../../assets/test/test2.png';
 
 // 마이페이지 메인 컴포넌트를 정의합니다
 const MyPage = () => {
+  // 사용자 정보 가져오기
+  const { user, isLoggedIn } = useUser();
+  
   // 유저 정보를 저장할 상태를 초기화합니다 (API에서 받아옴)
   const [userData, setUserData] = useState({
     user_id: null, // 유저 ID (API에서 받아옴)
@@ -113,15 +118,22 @@ const MyPage = () => {
         let orderCount = 0;
         let recipeData = { purchasedRecipe: null, similarRecipes: [] };
         
-        // 사용자 정보 조회
+        // 사용자 정보 조회 (개발용 토큰으로 인한 서명 검증 실패 방지)
         try {
           console.log('사용자 정보 조회 중...');
           const userResponse = await api.get('/api/user/info');
           userData = userResponse.data;
           console.log('사용자 정보 조회 성공:', userData);
         } catch (err) {
-          console.error('사용자 정보 조회 실패:', err);
-          // 사용자 정보가 없으면 임시 데이터 사용
+          console.error('사용자 정보 조회 실패 (개발용 토큰으로 인한 서명 검증 실패):', err);
+          // 개발용 토큰으로 인한 401 에러인 경우 임시 데이터 사용
+          if (err.response?.status === 401) {
+            console.log('개발용 토큰으로 인한 인증 실패, 임시 데이터 사용');
+            setMockData();
+            setLoading(false);
+            return;
+          }
+          // 다른 에러인 경우에도 임시 데이터 사용
           setMockData();
           setLoading(false);
           return;
@@ -134,7 +146,7 @@ const MyPage = () => {
           ordersData = ordersResponse.data || { orders: [] };
           console.log('최근 주문 조회 성공:', ordersData);
         } catch (err) {
-          console.error('최근 주문 조회 실패:', err);
+          console.error('최근 주문 조회 실패 (개발용 토큰으로 인한 서명 검증 실패):', err);
           ordersData = { orders: [] };
         }
         
@@ -145,7 +157,7 @@ const MyPage = () => {
           orderCount = orderCountResponse.data?.order_count || 0;
           console.log('주문 개수 조회 성공:', orderCount);
         } catch (err) {
-          console.error('주문 개수 조회 실패:', err);
+          console.error('주문 개수 조회 실패 (개발용 토큰으로 인한 서명 검증 실패):', err);
           orderCount = 0;
         }
         
@@ -156,7 +168,7 @@ const MyPage = () => {
           recipeData = recipeResponse.data || { purchasedRecipe: null, similarRecipes: [] };
           console.log('레시피 정보 조회 성공:', recipeData);
         } catch (err) {
-          console.error('레시피 정보 조회 실패:', err);
+          console.error('레시피 정보 조회 실패 (개발용 토큰으로 인한 서명 검증 실패):', err);
           recipeData = { purchasedRecipe: null, similarRecipes: [] };
         }
         
@@ -255,6 +267,22 @@ const MyPage = () => {
   // 정상적인 마이페이지를 렌더링합니다
   return (
     <div className="mypage-page">
+      {/* 사용자 정보 디버깅용 표시 */}
+      <div style={{ 
+        background: '#f0f0f0', 
+        padding: '10px', 
+        margin: '10px', 
+        borderRadius: '5px',
+        fontSize: '12px'
+      }}>
+        <strong>MyPage - 사용자 정보:</strong> 
+        {user ? (
+          `${user.email} | 로그인: ${isLoggedIn ? '예' : '아니오'} | 토큰: ${user.token ? '있음' : '없음'} | 토큰길이: ${user.token?.length || 0}`
+        ) : (
+          '사용자 정보 없음'
+        )}
+      </div>
+      
       {/* 상단 네비게이션 */}
       <MyPageHeader />
       {/* 메인 콘텐츠 */}
