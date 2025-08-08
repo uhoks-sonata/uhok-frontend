@@ -54,12 +54,16 @@ const RecipeRecommendation = () => {
 
   const handleAddIngredient = () => {
     if (ingredientInput.trim()) {
-      const newIngredient = quantityInput ? `${ingredientInput} ${quantityInput}${quantityUnit}` : ingredientInput;
+      const newIngredient = {
+        name: ingredientInput.trim(),
+        amount: quantityInput ? parseFloat(quantityInput) : null,
+        unit: quantityInput ? quantityUnit : null
+      };
       
       // 중복 체크 (재료명만 비교)
       const ingredientName = ingredientInput.trim().toLowerCase();
       const isDuplicate = selectedIngredients.some(ingredient => 
-        ingredient.toLowerCase().includes(ingredientName)
+        ingredient.name.toLowerCase() === ingredientName
       );
       
       if (isDuplicate) {
@@ -84,13 +88,121 @@ const RecipeRecommendation = () => {
         
         console.log('소진 희망 재료로 레시피 추천 받기:', selectedIngredients);
         
-        // 임시로 API 호출 없이 바로 결과 페이지로 이동
-        const ingredientsParam = encodeURIComponent(JSON.stringify(selectedIngredients));
-        navigate(`/recipes/by-ingredients?ingredients=${ingredientsParam}`);
+        // 입력된 재료에 따라 다른 임시 데이터 반환
+        const ingredientNames = selectedIngredients.map(ing => ing.name.toLowerCase());
+        let tempRecipes = [];
         
-        // TODO: API 서버 연결 후 아래 코드 활성화
-        // const response = await recipeApi.getRecipesByIngredients(selectedIngredients);
-        // console.log('API 응답:', response);
+        if (ingredientNames.includes('감자')) {
+          tempRecipes = [
+            {
+              recipe_id: 6903507,
+              recipe_title: "감자닭볶음탕",
+              cooking_name: "탕",
+              scrap_count: 221,
+              cooking_case_name: "저녁메뉴",
+              cooking_category_name: "한식",
+              cooking_introduction: "감자와 닭이 푸짐한 매콤한 찜 요리",
+              number_of_serving: "4인분",
+              thumbnail_url: "https://via.placeholder.com/120x120/FFE4B5/000000?text=감자닭볶음탕",
+              recipe_url: "https://www.10000recipe.com/recipe/6903507",
+              matched_ingredient_count: 3
+            },
+            {
+              recipe_id: 7754201,
+              recipe_title: "감자볶음",
+              cooking_name: "볶음",
+              scrap_count: 155,
+              cooking_case_name: "반찬",
+              cooking_category_name: "한식",
+              cooking_introduction: "간단하고 맛있는 감자반찬",
+              number_of_serving: "2~3인분",
+              thumbnail_url: "https://via.placeholder.com/120x120/FFB6C1/000000?text=감자볶음",
+              recipe_url: "https://www.10000recipe.com/recipe/7754201",
+              matched_ingredient_count: 2
+            },
+            {
+              recipe_id: 1234567,
+              recipe_title: "감자카레",
+              cooking_name: "카레",
+              scrap_count: 89,
+              cooking_case_name: "저녁메뉴",
+              cooking_category_name: "양식",
+              cooking_introduction: "감자를 활용한 맛있는 카레 요리",
+              number_of_serving: "3인분",
+              thumbnail_url: "https://via.placeholder.com/120x120/FFD700/000000?text=감자카레",
+              recipe_url: "https://www.10000recipe.com/recipe/1234567",
+              matched_ingredient_count: 1
+            }
+          ];
+        } else if (ingredientNames.includes('닭고기') || ingredientNames.includes('닭')) {
+          tempRecipes = [
+            {
+              recipe_id: 8888888,
+              recipe_title: "닭볶음탕",
+              cooking_name: "볶음",
+              scrap_count: 312,
+              cooking_case_name: "저녁메뉴",
+              cooking_category_name: "한식",
+              cooking_introduction: "매콤달콤한 닭볶음탕",
+              number_of_serving: "4인분",
+              thumbnail_url: "https://via.placeholder.com/120x120/FF6B6B/000000?text=닭볶음탕",
+              recipe_url: "https://www.10000recipe.com/recipe/8888888",
+              matched_ingredient_count: 3
+            },
+            {
+              recipe_id: 9999999,
+              recipe_title: "닭가슴살 샐러드",
+              cooking_name: "샐러드",
+              scrap_count: 98,
+              cooking_case_name: "점심메뉴",
+              cooking_category_name: "양식",
+              cooking_introduction: "건강한 닭가슴살 샐러드",
+              number_of_serving: "1인분",
+              thumbnail_url: "https://via.placeholder.com/120x120/90EE90/000000?text=닭가슴살샐러드",
+              recipe_url: "https://www.10000recipe.com/recipe/9999999",
+              matched_ingredient_count: 2
+            }
+          ];
+        } else {
+          // 기본 레시피들
+          tempRecipes = [
+            {
+              recipe_id: 1111111,
+              recipe_title: "재료 활용 요리",
+              cooking_name: "볶음",
+              scrap_count: 67,
+              cooking_case_name: "반찬",
+              cooking_category_name: "한식",
+              cooking_introduction: "입력하신 재료들을 활용한 맛있는 요리",
+              number_of_serving: "2인분",
+              thumbnail_url: "https://via.placeholder.com/120x120/FFA500/000000?text=재료활용요리",
+              recipe_url: "https://www.10000recipe.com/recipe/1111111",
+              matched_ingredient_count: 3
+            },
+            {
+              recipe_id: 2222222,
+              recipe_title: "소진 재료 요리",
+              cooking_name: "찜",
+              scrap_count: 45,
+              cooking_case_name: "저녁메뉴",
+              cooking_category_name: "한식",
+              cooking_introduction: "소진하고 싶은 재료들로 만든 요리",
+              number_of_serving: "3인분",
+              thumbnail_url: "https://via.placeholder.com/120x120/FF69B4/000000?text=소진재료요리",
+              recipe_url: "https://www.10000recipe.com/recipe/2222222",
+              matched_ingredient_count: 2
+            }
+          ];
+        }
+        
+        navigate('/recipes/by-ingredients', { 
+          state: { 
+            recipes: tempRecipes,
+            total: tempRecipes.length + 10, // 임시로 더 많은 결과가 있다고 표시
+            page: 1,
+            ingredients: selectedIngredients
+          }
+        });
         
       } else if (isRecipeActive) {
         if (!recipeInput.trim()) {
@@ -99,12 +211,85 @@ const RecipeRecommendation = () => {
         }
         
         console.log('레시피명/식재료명으로 레시피 추천 받기:', recipeInput);
-        const response = await recipeApi.searchRecipes(recipeInput);
-        console.log('API 응답:', response);
-        // 여기에 응답 처리 로직 추가 예정
+        
+        // 검색어에 따라 다른 임시 데이터 반환
+        const searchTerm = recipeInput.toLowerCase();
+        let tempRecipes = [];
+        
+        if (searchTerm.includes('감자')) {
+          tempRecipes = [
+            {
+              recipe_id: 1234567,
+              recipe_title: "감자 요리 모음",
+              cooking_name: "볶음",
+              scrap_count: 100,
+              cooking_case_name: "반찬",
+              cooking_category_name: "한식",
+              cooking_introduction: "감자를 이용한 맛있는 요리입니다.",
+              number_of_serving: "2인분",
+              thumbnail_url: "https://via.placeholder.com/120x120/FFA07A/000000?text=감자요리",
+              recipe_url: "https://www.10000recipe.com/recipe/1234567",
+              matched_ingredient_count: 1
+            },
+            {
+              recipe_id: 2345678,
+              recipe_title: "감자 스프",
+              cooking_name: "스프",
+              scrap_count: 75,
+              cooking_case_name: "전채",
+              cooking_category_name: "양식",
+              cooking_introduction: "감자로 만든 따뜻한 스프입니다.",
+              number_of_serving: "1인분",
+              thumbnail_url: "https://via.placeholder.com/120x120/87CEEB/000000?text=감자스프",
+              recipe_url: "https://www.10000recipe.com/recipe/2345678",
+              matched_ingredient_count: 1
+            }
+          ];
+        } else if (searchTerm.includes('닭') || searchTerm.includes('치킨')) {
+          tempRecipes = [
+            {
+              recipe_id: 3456789,
+              recipe_title: "닭고기 요리",
+              cooking_name: "볶음",
+              scrap_count: 120,
+              cooking_case_name: "저녁메뉴",
+              cooking_category_name: "한식",
+              cooking_introduction: "닭고기를 이용한 맛있는 요리입니다.",
+              number_of_serving: "3인분",
+              thumbnail_url: "https://via.placeholder.com/120x120/FF6B6B/000000?text=닭고기요리",
+              recipe_url: "https://www.10000recipe.com/recipe/3456789",
+              matched_ingredient_count: 1
+            }
+          ];
+        } else {
+          tempRecipes = [
+            {
+              recipe_id: 4567890,
+              recipe_title: `${recipeInput} 요리`,
+              cooking_name: "볶음",
+              scrap_count: 80,
+              cooking_case_name: "반찬",
+              cooking_category_name: "한식",
+              cooking_introduction: `${recipeInput}을 이용한 맛있는 요리입니다.`,
+              number_of_serving: "2인분",
+              thumbnail_url: "https://via.placeholder.com/120x120/FFA07A/000000?text=요리",
+              recipe_url: "https://www.10000recipe.com/recipe/4567890",
+              matched_ingredient_count: 1
+            }
+          ];
+        }
+        
+        navigate('/recipes/by-ingredients', { 
+          state: { 
+            recipes: tempRecipes,
+            total: tempRecipes.length + 5,
+            page: 1,
+            ingredients: [{ name: recipeInput }]
+          }
+        });
       }
     } catch (error) {
-      console.error('API 호출 중 오류 발생:', error);
+      console.error('오류 발생:', error);
       alert('레시피 추천을 가져오는 중 오류가 발생했습니다.');
     }
   };
@@ -155,7 +340,10 @@ const RecipeRecommendation = () => {
             <div className="selected-ingredients-tags">
               {selectedIngredients.map((ingredient, index) => (
                 <div key={index} className="ingredient-tag">
-                  <span className="ingredient-name">{ingredient}</span>
+                  <span className="ingredient-name">
+                    {ingredient.name}
+                    {ingredient.amount && ` ${ingredient.amount}${ingredient.unit}`}
+                  </span>
                   <button 
                     className="remove-ingredient-btn"
                     onClick={() => handleRemoveIngredient(index)}
@@ -166,45 +354,47 @@ const RecipeRecommendation = () => {
               ))}
             </div>
 
-                         {/* 재료명 입력 필드 */}
-             <div className="input-field-container">
-               <div className="input-field">
-                 <img src={searchIcon} alt="검색" className="search-icon" />
-                 <input
-                   type="text"
-                   placeholder="소진하고 싶은 재료명을 입력해주세요 (3개 이상)"
-                   value={ingredientInput}
-                   onChange={(e) => setIngredientInput(e.target.value)}
-                 />
-               </div>
-             </div>
+            {/* 재료명 입력 필드 */}
+            <div className="input-field-container">
+              <div className="input-field">
+                <img src={searchIcon} alt="검색" className="search-icon" />
+                <input
+                  type="text"
+                  placeholder="소진하고 싶은 재료명을 입력해주세요 (3개 이상)"
+                  value={ingredientInput}
+                  onChange={(e) => setIngredientInput(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleAddIngredient()}
+                />
+              </div>
+            </div>
 
-                         {/* 분량 입력 필드 */}
-             <div className="input-field-container">
-               <div className="input-field quantity-input">
-                 <img src={searchIcon} alt="검색" className="search-icon" />
-                 <input
-                   type="text"
-                   placeholder="(선택) 식재료의 분량을 입력해주세요"
+            {/* 분량 입력 필드 */}
+            <div className="input-field-container">
+              <div className="input-field quantity-input">
+                <img src={searchIcon} alt="검색" className="search-icon" />
+                                 <input
+                   type="number"
+                   placeholder="식재료의 분량을 입력해주세요"
                    value={quantityInput}
                    onChange={(e) => setQuantityInput(e.target.value)}
+                   onKeyPress={(e) => e.key === 'Enter' && handleAddIngredient()}
                  />
-                 <div className="unit-buttons">
-                   <button 
-                     className={`unit-btn ${quantityUnit === 'g' ? 'active' : ''}`}
-                     onClick={() => setQuantityUnit('g')}
-                   >
-                     g
-                   </button>
-                   <button 
-                     className={`unit-btn ${quantityUnit === '개' ? 'active' : ''}`}
-                     onClick={() => setQuantityUnit('개')}
-                   >
-                     개
-                   </button>
-                 </div>
-               </div>
-             </div>
+                <div className="unit-buttons">
+                  <button 
+                    className={`unit-btn ${quantityUnit === 'g' ? 'active' : ''}`}
+                    onClick={() => setQuantityUnit('g')}
+                  >
+                    g
+                  </button>
+                  <button 
+                    className={`unit-btn ${quantityUnit === '개' ? 'active' : ''}`}
+                    onClick={() => setQuantityUnit('개')}
+                  >
+                    개
+                  </button>
+                </div>
+              </div>
+            </div>
 
             {/* 재료 등록 버튼 */}
             <button className="register-ingredient-btn" onClick={handleAddIngredient}>
@@ -213,22 +403,23 @@ const RecipeRecommendation = () => {
           </div>
         )}
 
-                 {/* 레시피명/식재료명 입력 영역 */}
-         {isRecipeActive && (
-           <div className="recipe-input-section">
-             <div className="input-field-container">
-               <div className="input-field">
-                 <img src={searchIcon} alt="검색" className="search-icon" />
-                 <input
-                   type="text"
-                   placeholder="레시피 입력"
-                   value={recipeInput}
-                   onChange={(e) => setRecipeInput(e.target.value)}
-                 />
-               </div>
-             </div>
-           </div>
-         )}
+        {/* 레시피명/식재료명 입력 영역 */}
+        {isRecipeActive && (
+          <div className="recipe-input-section">
+            <div className="input-field-container">
+              <div className="input-field">
+                <img src={searchIcon} alt="검색" className="search-icon" />
+                <input
+                  type="text"
+                  placeholder="레시피명 또는 식재료명을 입력해주세요"
+                  value={recipeInput}
+                  onChange={(e) => setRecipeInput(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleGetRecipeRecommendation()}
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 레시피 추천 받기 버튼 */}
         {(isIngredientActive || isRecipeActive) && (

@@ -146,18 +146,7 @@ const KokMain = () => {
 
   return (
     <div className={`kok-home-shopping-main ${kokFadeIn ? 'kok-fade-in' : ''}`}>
-      {/* 사용자 정보 디버깅용 표시 */}
-      {user && (
-        <div style={{ 
-          background: '#f0f0f0', 
-          padding: '10px', 
-          margin: '10px', 
-          borderRadius: '5px',
-          fontSize: '12px'
-        }}>
-          <strong>사용자 정보:</strong> {user.email} | 로그인: {isLoggedIn ? '예' : '아니오'} | 토큰: {user.token ? '있음' : '없음'}
-        </div>
-      )}
+
       
       <HomeShoppingHeader 
         searchQuery={kokSearchQuery}
