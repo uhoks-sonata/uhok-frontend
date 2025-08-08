@@ -5,6 +5,7 @@ import '../../styles/recipe_recommendation.css';
 import outOfStockIcon from '../../assets/out_of_stock_icon.png';
 import chefIcon from '../../assets/chef_icon.png';
 import searchIcon from '../../assets/search_icon.png';
+import { recipeApi } from '../../api/recipeApi';
 
 const RecipeRecommendation = () => {
   const navigate = useNavigate();
@@ -72,13 +73,39 @@ const RecipeRecommendation = () => {
     }
   };
 
-  const handleGetRecipeRecommendation = () => {
-    if (isIngredientActive) {
-      console.log('소진 희망 재료로 레시피 추천 받기:', selectedIngredients);
-      // 소진 희망 재료 기반 레시피 추천 로직
-    } else if (isRecipeActive) {
-      console.log('레시피명/식재료명으로 레시피 추천 받기:', recipeInput);
-      // 레시피명/식재료명 기반 레시피 추천 로직
+  const handleGetRecipeRecommendation = async () => {
+    try {
+      if (isIngredientActive) {
+        // 최소 3개 재료 검증
+        if (selectedIngredients.length < 3) {
+          alert('최소 3개 이상의 재료를 입력해주세요!');
+          return;
+        }
+        
+        console.log('소진 희망 재료로 레시피 추천 받기:', selectedIngredients);
+        
+        // 임시로 API 호출 없이 바로 결과 페이지로 이동
+        const ingredientsParam = encodeURIComponent(JSON.stringify(selectedIngredients));
+        navigate(`/recipes/by-ingredients?ingredients=${ingredientsParam}`);
+        
+        // TODO: API 서버 연결 후 아래 코드 활성화
+        // const response = await recipeApi.getRecipesByIngredients(selectedIngredients);
+        // console.log('API 응답:', response);
+        
+      } else if (isRecipeActive) {
+        if (!recipeInput.trim()) {
+          alert('레시피명을 입력해주세요!');
+          return;
+        }
+        
+        console.log('레시피명/식재료명으로 레시피 추천 받기:', recipeInput);
+        const response = await recipeApi.searchRecipes(recipeInput);
+        console.log('API 응답:', response);
+        // 여기에 응답 처리 로직 추가 예정
+      }
+    } catch (error) {
+      console.error('API 호출 중 오류 발생:', error);
+      alert('레시피 추천을 가져오는 중 오류가 발생했습니다.');
     }
   };
 

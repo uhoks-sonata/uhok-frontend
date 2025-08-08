@@ -9,6 +9,7 @@ import emptyHeartIcon from '../../assets/heart_empty.png';
 import filledHeartIcon from '../../assets/heart_filled.png';
 import cartIcon from '../../assets/icon-park-outline_weixin-market.png';
 import api from '../api';
+import { ensureToken } from '../../utils/authUtils';
 
 const KokProductDetail = () => {
   const { productId } = useParams();
@@ -24,11 +25,15 @@ const KokProductDetail = () => {
   const [kokSellerInfo, setKokSellerInfo] = useState(null);
   const [kokDetailInfo, setKokDetailInfo] = useState([]);
 
+
+
   // KOK API에서 상품 기본 정보를 가져오는 함수
   const fetchKokProductInfo = async (productId) => {
     try {
       setKokLoading(true);
+      console.log(`상품 기본 정보 API 호출: /api/kok/product/${productId}/info`);
       const response = await api.get(`/api/kok/product/${productId}/info`);
+      console.log('상품 기본 정보 API 응답:', response.data);
       return response.data;
     } catch (err) {
       console.error('KOK 상품 기본 정보 로딩 실패:', err);
@@ -42,19 +47,53 @@ const KokProductDetail = () => {
   // KOK API에서 상품 상세정보 탭 데이터를 가져오는 함수
   const fetchKokProductTabs = async (productId) => {
     try {
+      console.log(`상품 상세정보 탭 API 호출: /api/kok/product/${productId}/tabs`);
       const response = await api.get(`/api/kok/product/${productId}/tabs`);
-      return response.data;
+      console.log('KOK 상품 상세정보 탭 데이터 응답:', response.data);
+      
+      // API 응답 구조 확인
+      if (response.data && response.data.images) {
+        return response.data;
+      } else {
+        console.log('API 응답에 images 필드가 없어 기본 이미지를 사용합니다.');
+        return {
+          images: [
+            {
+              kok_img_id: 1,
+              kok_img_url: "https://via.placeholder.com/480x300/FFE4B5/000000?text=Product+Image+1"
+            },
+            {
+              kok_img_id: 2,
+              kok_img_url: "https://via.placeholder.com/480x300/FFB6C1/000000?text=Product+Image+2"
+            }
+          ]
+        };
+      }
     } catch (err) {
       console.error('KOK 상품 상세정보 탭 데이터 로딩 실패:', err);
       console.log('임시 데이터를 사용합니다.');
-      return null;
+      // API 실패 시 더미 데이터 반환
+      return {
+        images: [
+          {
+            kok_img_id: 1,
+            kok_img_url: "https://via.placeholder.com/480x300/FFE4B5/000000?text=Product+Image+1"
+          },
+          {
+            kok_img_id: 2,
+            kok_img_url: "https://via.placeholder.com/480x300/FFB6C1/000000?text=Product+Image+2"
+          }
+        ]
+      };
     }
   };
 
   // KOK API에서 상품 리뷰 데이터를 가져오는 함수
   const fetchKokProductReviews = async (productId) => {
     try {
+      console.log(`상품 리뷰 API 호출: /api/kok/product/${productId}/reviews`);
       const response = await api.get(`/api/kok/product/${productId}/reviews`);
+      console.log('상품 리뷰 API 응답:', response.data);
       return response.data;
     } catch (err) {
       console.error('KOK 상품 리뷰 데이터 로딩 실패:', err);
@@ -66,7 +105,9 @@ const KokProductDetail = () => {
   // KOK API에서 상품 상세 정보 데이터를 가져오는 함수
   const fetchKokProductDetails = async (productId) => {
     try {
+      console.log(`상품 상세 정보 API 호출: /api/kok/product/${productId}/details`);
       const response = await api.get(`/api/kok/product/${productId}/details`);
+      console.log('상품 상세 정보 API 응답:', response.data);
       return response.data;
     } catch (err) {
       console.error('KOK 상품 상세 정보 데이터 로딩 실패:', err);
@@ -78,7 +119,9 @@ const KokProductDetail = () => {
   // KOK API에서 상품 상세 데이터를 가져오는 함수
   const fetchKokProductDetail = async (productId) => {
     try {
+      console.log(`상품 상세 데이터 API 호출: /api/kok/product/${productId}`);
       const response = await api.get(`/api/kok/product/${productId}`);
+      console.log('상품 상세 데이터 API 응답:', response.data);
       return response.data;
     } catch (err) {
       console.error('KOK 상품 상세 데이터 로딩 실패:', err);
@@ -89,106 +132,27 @@ const KokProductDetail = () => {
 
   useEffect(() => {
     const loadKokProductData = async () => {
-      // 먼저 KOK API에서 기본 정보를 가져와보고, 실패하면 기존 데이터 사용
-      const kokProductInfo = await fetchKokProductInfo(productId);
-      
-      if (kokProductInfo) {
-        // KOK API 기본 정보를 기존 구조에 맞게 변환
-        const convertedKokProduct = {
-          id: kokProductInfo.kok_product_id,
-          name: kokProductInfo.kok_product_name,
-          originalPrice: kokProductInfo.kok_product_price,
-          discountPrice: kokProductInfo.kok_discounted_price,
-          discountRate: kokProductInfo.kok_discount_rate,
-          image: kokProductInfo.kok_thumbnail,
-          rating: 4.4, // 기본값 (API에서 제공되지 않는 경우)
-          reviewCount: kokProductInfo.kok_review_cnt,
-          description: "이 제품에 대한 상세한 설명입니다.", // 기본값
-          details: {
-            weight: "4kg (500g 8팩)",
-            origin: "국내산",
-            expiryDate: "제조일로부터 24개월",
-            storage: "서늘하고 건조한 곳에 보관"
-          },
-          seller: {
-            name: kokProductInfo.kok_store_name,
-            representative: "(주)컴퍼니와우",
-            businessNumber: "119-86-54463",
-            onlineSalesNumber: "제2012-서울금천-0325호",
-            phone: "02-2038-2966",
-            certifiedItems: "사업자 번호, 사업자 상호",
-            certificationDate: "2024-05-21",
-            businessLocation: "서울 금천구 가산디지털1로 70 (가산동) 407호",
-            returnAddress: "08590 서울 금천구 가산디지털1로 70 407호",
-            exchangeAddress: "08590 서울 금천구 가산디지털1로 70 407호"
-          },
-          reviews: [
-            {
-              id: 1,
-              user: "조**",
-              rating: 5,
-              date: "2025.08.01",
-              comment: "가격 적당해요 배송 괜찮네요 맛 먹을만해요."
-            }
-          ],
-          ratingDistribution: {
-            5: 80,
-            4: 0,
-            3: 0,
-            2: 0,
-            1: 0
-          },
-          feedback: {
-            "가격 저렴해요": 47,
-            "배송 빨라요": 37
-          }
-        };
-        setKokProduct(convertedKokProduct);
-
-        // 나머지 API 호출들을 병렬로 처리
-        try {
-          const [kokProductTabs, kokProductReviews, kokProductDetails] = await Promise.all([
-            fetchKokProductTabs(productId),
-            fetchKokProductReviews(productId),
-            fetchKokProductDetails(productId)
-          ]);
-
-          // 상품 상세정보 탭 데이터 처리
-          if (kokProductTabs && kokProductTabs.images) {
-            setKokProductImages(kokProductTabs.images);
-          }
-
-          // 상품 리뷰 데이터 처리
-          if (kokProductReviews) {
-            setKokReviewStats(kokProductReviews.stats);
-            setKokReviewList(kokProductReviews.reviews);
-          }
-
-          // 상품 상세 정보 데이터 처리
-          if (kokProductDetails) {
-            setKokSellerInfo(kokProductDetails.seller_info);
-            setKokDetailInfo(kokProductDetails.detail_info);
-          }
-        } catch (error) {
-          console.error('상세 데이터 로딩 중 오류 발생:', error);
-        }
-      } else {
-        // 기존 로직 사용
-        const productData = getProductDetail(productId);
-        if (productData) {
-          setKokProduct(productData);
-        } else {
-          // 제품을 찾지 못한 경우, 기본 제품 데이터를 생성
-          const defaultKokProduct = {
-            id: parseInt(productId),
-            name: `제품 ${productId}`,
-            originalPrice: 150000,
-            discountPrice: 124000,
-            discountRate: 17,
-            image: "/test1.png",
-            rating: 4.4,
-            reviewCount: 23,
-            description: "이 제품에 대한 상세한 설명입니다.",
+      try {
+        setKokLoading(true);
+        
+        // 토큰이 없으면 임시 로그인 시도
+        await ensureToken();
+        
+        // 먼저 KOK API에서 기본 정보를 가져와보고, 실패하면 기존 데이터 사용
+        const kokProductInfo = await fetchKokProductInfo(productId);
+        
+        if (kokProductInfo) {
+          // KOK API 기본 정보를 기존 구조에 맞게 변환
+          const convertedKokProduct = {
+            id: kokProductInfo.kok_product_id,
+            name: kokProductInfo.kok_product_name,
+            originalPrice: kokProductInfo.kok_product_price,
+            discountPrice: kokProductInfo.kok_discounted_price,
+            discountRate: kokProductInfo.kok_discount_rate,
+            image: kokProductInfo.kok_thumbnail,
+            rating: 4.4, // 기본값 (API에서 제공되지 않는 경우)
+            reviewCount: kokProductInfo.kok_review_cnt,
+            description: "이 제품에 대한 상세한 설명입니다.", // 기본값
             details: {
               weight: "4kg (500g 8팩)",
               origin: "국내산",
@@ -196,7 +160,7 @@ const KokProductDetail = () => {
               storage: "서늘하고 건조한 곳에 보관"
             },
             seller: {
-              name: "(주)컴퍼니와우",
+              name: kokProductInfo.kok_store_name,
               representative: "(주)컴퍼니와우",
               businessNumber: "119-86-54463",
               onlineSalesNumber: "제2012-서울금천-0325호",
@@ -228,8 +192,107 @@ const KokProductDetail = () => {
               "배송 빨라요": 37
             }
           };
-          setKokProduct(defaultKokProduct);
+          setKokProduct(convertedKokProduct);
+
+          // 나머지 API 호출들을 병렬로 처리
+          try {
+            const [kokProductTabs, kokProductReviews, kokProductDetails] = await Promise.all([
+              fetchKokProductTabs(productId),
+              fetchKokProductReviews(productId),
+              fetchKokProductDetails(productId)
+            ]);
+
+            // 상품 상세정보 탭 데이터 처리
+            if (kokProductTabs && kokProductTabs.images) {
+              console.log('상품 이미지 데이터 설정:', kokProductTabs.images);
+              setKokProductImages(kokProductTabs.images);
+            } else {
+              console.log('상품 이미지 데이터가 없어 기본 이미지를 사용합니다.');
+              setKokProductImages([
+                {
+                  kok_img_id: 1,
+                  kok_img_url: "https://via.placeholder.com/480x300/FFE4B5/000000?text=Default+Product+Image"
+                }
+              ]);
+            }
+
+            // 상품 리뷰 데이터 처리
+            if (kokProductReviews) {
+              setKokReviewStats(kokProductReviews.stats);
+              setKokReviewList(kokProductReviews.reviews);
+            }
+
+            // 상품 상세 정보 데이터 처리
+            if (kokProductDetails) {
+              setKokSellerInfo(kokProductDetails.seller_info);
+              setKokDetailInfo(kokProductDetails.detail_info);
+            }
+          } catch (error) {
+            console.error('상세 데이터 로딩 중 오류 발생:', error);
+          }
+        } else {
+          // 기존 로직 사용
+          const productData = getProductDetail(productId);
+          if (productData) {
+            setKokProduct(productData);
+          } else {
+            // 제품을 찾지 못한 경우, 기본 제품 데이터를 생성
+            const defaultKokProduct = {
+              id: parseInt(productId),
+              name: `제품 ${productId}`,
+              originalPrice: 150000,
+              discountPrice: 124000,
+              discountRate: 17,
+              image: "/test1.png",
+              rating: 4.4,
+              reviewCount: 23,
+              description: "이 제품에 대한 상세한 설명입니다.",
+              details: {
+                weight: "4kg (500g 8팩)",
+                origin: "국내산",
+                expiryDate: "제조일로부터 24개월",
+                storage: "서늘하고 건조한 곳에 보관"
+              },
+              seller: {
+                name: "(주)컴퍼니와우",
+                representative: "(주)컴퍼니와우",
+                businessNumber: "119-86-54463",
+                onlineSalesNumber: "제2012-서울금천-0325호",
+                phone: "02-2038-2966",
+                certifiedItems: "사업자 번호, 사업자 상호",
+                certificationDate: "2024-05-21",
+                businessLocation: "서울 금천구 가산디지털1로 70 (가산동) 407호",
+                returnAddress: "08590 서울 금천구 가산디지털1로 70 407호",
+                exchangeAddress: "08590 서울 금천구 가산디지털1로 70 407호"
+              },
+              reviews: [
+                {
+                  id: 1,
+                  user: "조**",
+                  rating: 5,
+                  date: "2025.08.01",
+                  comment: "가격 적당해요 배송 괜찮네요 맛 먹을만해요."
+                }
+              ],
+              ratingDistribution: {
+                5: 80,
+                4: 0,
+                3: 0,
+                2: 0,
+                1: 0
+              },
+              feedback: {
+                "가격 저렴해요": 47,
+                "배송 빨라요": 37
+              }
+            };
+            setKokProduct(defaultKokProduct);
+          }
         }
+      } catch (error) {
+        console.error('상품 데이터 로딩 중 오류 발생:', error);
+      } finally {
+        setKokLoading(false);
       }
     };
 
