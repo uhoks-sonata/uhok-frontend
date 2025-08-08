@@ -58,98 +58,75 @@ const Login = () => {
       // API 명세서에 맞춘 로그인 요청
       // POST /api/user/login
       // Body: { "email": "user@example.com", "password": "secure_password" }
-      const requestData = {
-        email: email,
-        password: password
-      };
+             const requestData = {
+         username: email,  // email을 username으로 변경
+         password: password,
+         grant_type: 'password'  // OAuth2 표준 필드 추가
+       };
       
       console.log('로그인 요청 데이터:', requestData);
       console.log('요청 URL:', '/api/user/login');
       
-      const response = await api.post('/api/user/login', requestData);
+             // OAuth2PasswordRequestForm 형식으로 요청 데이터 전송 (form-urlencoded)
+       const formData = new URLSearchParams();
+       formData.append('username', email);  // OAuth2 표준에서는 username 필드 사용
+       formData.append('password', password);
+       formData.append('grant_type', 'password');
+       
+       const response = await api.post('/api/user/login', formData, {
+         headers: {
+           'Content-Type': 'application/x-www-form-urlencoded',
+         },
+       });
       
       console.log('로그인 API 응답:', response.data);
 
       // API 명세서 응답 형식에 맞춘 처리
       // Response: { "access_token": "eyJhbGciOiJIUzI1...", "token_type": "bearer" }
       if (response.data.access_token) {
-        // 토큰을 로컬 스토리지에 저장
-        localStorage.setItem('access_token', response.data.access_token);
-        localStorage.setItem('token_type', response.data.token_type);
+        // 백엔드에서 생성한 JWT 토큰 저장
+        const accessToken = response.data.access_token;
+        const tokenType = response.data.token_type || 'bearer';
         
-        // 사용자 Context에 로그인 정보 저장
-        const userData = {
-          token: response.data.access_token,
-          tokenType: response.data.token_type,
-          email: email
-        };
-        login(userData);
-        
-        console.log('로그인 성공 - 토큰 저장 완료:', userData);
-        // 로그인 성공 시 메인 페이지로 이동
-        navigate('/main');
+        // 토큰 유효성 검증 (JWT 형식 확인)
+        if (accessToken.split('.').length === 3) {
+          localStorage.setItem('access_token', accessToken);
+          localStorage.setItem('token_type', tokenType);
+          
+          // 사용자 Context에 로그인 정보 저장
+          const userData = {
+            token: accessToken,
+            tokenType: tokenType,
+            email: email
+          };
+          login(userData);
+          
+          console.log('백엔드 JWT 토큰 저장 완료:', {
+            token: accessToken.substring(0, 20) + '...',
+            tokenType: tokenType,
+            email: email
+          });
+          
+          // 토큰 검증을 위한 간단한 API 호출 (선택적)
+          try {
+            const verifyResponse = await api.get('/api/user/me');
+            console.log('토큰 검증 성공:', verifyResponse.data);
+          } catch (verifyError) {
+            console.warn('토큰 검증 실패, 하지만 로그인은 진행:', verifyError);
+            // 토큰 검증 실패 시에도 로그인은 진행 (백엔드 문제일 수 있음)
+          }
+          
+          // 로그인 성공 시 메인 페이지로 이동
+          navigate('/schedule');
+        } else {
+          setError('잘못된 토큰 형식입니다. 다시 시도해주세요.');
+        }
       } else {
         // 토큰이 없는 경우 에러 처리
         setError('로그인에 실패했습니다. 토큰을 받지 못했습니다.');
       }
     } catch (err) {
       console.error('로그인 API 에러:', err);
-      
-      // API 서버 연결 실패 시 임시 로그인 처리 (개발용)
-      if (err.code === 'ERR_NETWORK' || err.message.includes('Network Error')) {
-        console.log('API 서버 연결 실패, 임시 로그인 처리 (개발용)');
-        
-        // 임시 토큰 생성 (더 실제적인 JWT 형식)
-        const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
-        const payload = btoa(JSON.stringify({
-          sub: 'dev_user',
-          exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // 24시간 후 만료
-          iat: Math.floor(Date.now() / 1000)
-        }));
-        const signature = btoa('dev_signature_' + Date.now());
-        const tempToken = `${header}.${payload}.${signature}`;
-        localStorage.setItem('access_token', tempToken);
-        localStorage.setItem('token_type', 'bearer');
-        
-        // 사용자 Context에 임시 로그인 정보 저장
-        login({
-          token: tempToken,
-          tokenType: 'bearer',
-          email: 'dev_user@example.com'
-        });
-        
-        console.log('임시 로그인 성공 (개발용)');
-        navigate('/main');
-        return;
-      }
-      
-      // 422 에러 시에도 임시 로그인 처리 (개발용)
-      if (err.response?.status === 422) {
-        console.log('422 에러 발생, 임시 로그인 처리 (개발용)');
-        
-        // 임시 토큰 생성 (더 실제적인 JWT 형식)
-        const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
-        const payload = btoa(JSON.stringify({
-          sub: 'dev_user',
-          exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // 24시간 후 만료
-          iat: Math.floor(Date.now() / 1000)
-        }));
-        const signature = btoa('dev_signature_' + Date.now());
-        const tempToken = `${header}.${payload}.${signature}`;
-        localStorage.setItem('access_token', tempToken);
-        localStorage.setItem('token_type', 'bearer');
-        
-        // 사용자 Context에 임시 로그인 정보 저장
-        login({
-          token: tempToken,
-          tokenType: 'bearer',
-          email: 'dev_user@example.com'
-        });
-        
-        console.log('임시 로그인 성공 (개발용)');
-        navigate('/main');
-        return;
-      }
       
       // 서버 에러 응답 처리
       if (err.response) {
@@ -160,15 +137,41 @@ const Login = () => {
           headers: err.response.headers
         });
         
-        // 422 에러 특별 처리
-        if (err.response.status === 422) {
-          const errorData = err.response.data;
-          console.error('422 에러 상세:', errorData);
+                 // 422 에러 특별 처리
+         if (err.response.status === 422) {
+           const errorData = err.response.data;
+           console.error('422 에러 상세:', errorData);
+           console.error('422 에러 detail 배열:', errorData.detail);
+           console.error('422 에러 detail 배열 길이:', errorData.detail?.length);
           
-          // 서버에서 전달하는 구체적인 에러 메시지 사용
-          if (errorData.detail) {
-            setError(`입력 데이터 오류: ${JSON.stringify(errorData.detail)}`);
-          } else if (errorData.message) {
+                     // 서버에서 전달하는 구체적인 에러 메시지 사용
+           if (errorData.detail) {
+             // detail이 배열인 경우 각 에러 메시지를 합쳐서 표시
+             if (Array.isArray(errorData.detail)) {
+                               const errorMessages = errorData.detail.map(item => {
+                  console.log('에러 아이템 상세:', item);
+                  console.log('에러 아이템 loc:', item.loc);
+                  
+                  if (typeof item === 'string') {
+                    return item;
+                  } else if (item.msg) {
+                    // loc 정보가 있으면 어떤 필드인지 표시
+                    if (item.loc && item.loc.length > 0) {
+                      const fieldName = item.loc[item.loc.length - 1];
+                      console.log('누락된 필드명:', fieldName);
+                      return `${fieldName}: ${item.msg}`;
+                    }
+                    return item.msg;
+                  } else if (item.message) {
+                    return item.message;
+                  }
+                  return JSON.stringify(item);
+                }).join(', ');
+               setError(`입력 데이터 오류: ${errorMessages}`);
+             } else {
+               setError(`입력 데이터 오류: ${JSON.stringify(errorData.detail)}`);
+             }
+           } else if (errorData.message) {
             setError(errorData.message);
           } else {
             setError('입력 데이터가 올바르지 않습니다. 이메일과 비밀번호를 확인해주세요.');

@@ -57,6 +57,32 @@ const Schedule = () => {
     // 비동기 함수로 편성표 데이터를 가져옵니다
     const fetchScheduleData = async () => {
       try {
+        // 토큰 확인 및 검증
+        const token = localStorage.getItem('access_token');
+        const tokenType = localStorage.getItem('token_type');
+        
+        console.log('Schedule - 토큰 정보 확인:', {
+          hasToken: !!token,
+          tokenType: tokenType,
+          tokenPreview: token ? token.substring(0, 20) + '...' : '없음'
+        });
+        
+        if (!token) {
+          console.log('토큰이 없어서 로그인 페이지로 이동');
+          window.location.href = '/';
+          return;
+        }
+        
+        // 토큰 유효성 검증 (JWT 형식 확인)
+        const tokenParts = token.split('.');
+        if (tokenParts.length !== 3) {
+          console.warn('잘못된 토큰 형식, 로그인 페이지로 이동');
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('token_type');
+          window.location.href = '/';
+          return;
+        }
+        
         // 로딩 상태를 true로 설정합니다
         setLoading(true);
         setError(null); // 에러 상태 초기화
@@ -80,7 +106,13 @@ const Schedule = () => {
       } catch (err) {
         // 에러가 발생하면 콘솔에 에러를 출력하고 에러 상태를 설정합니다
         console.error('편성표 데이터 로딩 실패:', err);
-        setError('편성표 데이터를 불러오는데 실패했습니다.');
+        
+        // 404 에러는 API 엔드포인트가 없음을 의미하므로 임시 데이터 사용
+        if (err.response?.status === 404) {
+          console.log('편성표 API 엔드포인트가 없습니다. 임시 데이터를 사용합니다.');
+        } else {
+          setError('편성표 데이터를 불러오는데 실패했습니다.');
+        }
         
         // API 연결 실패 시 에러 대신 임시 데이터를 사용한다는 로그를 출력합니다
         console.log('임시 데이터를 사용합니다.');
