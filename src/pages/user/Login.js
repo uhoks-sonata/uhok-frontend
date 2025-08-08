@@ -57,76 +57,90 @@ const Login = () => {
     try {
       // API 명세서에 맞춘 로그인 요청
       // POST /api/user/login
-      // Body: { "email": "user@example.com", "password": "secure_password" }
-             const requestData = {
-         username: email,  // email을 username으로 변경
-         password: password,
-         grant_type: 'password'  // OAuth2 표준 필드 추가
-       };
+      // 백엔드 요구사항: { "username": "user@example.com", "password": "secure_password" }
+      const requestData = {
+        username: email.trim(), // 백엔드가 username 필드를 요구함
+        password: password.trim() // 비밀번호도 공백 제거
+      };
       
       console.log('로그인 요청 데이터:', requestData);
       console.log('요청 URL:', '/api/user/login');
+      console.log('요청 헤더:', {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      });
+      console.log('백엔드 요구사항: username 필드 사용, 예시 계정: user@example.com / secure_password');
       
-             // OAuth2PasswordRequestForm 형식으로 요청 데이터 전송 (form-urlencoded)
-       const formData = new URLSearchParams();
-       formData.append('username', email);  // OAuth2 표준에서는 username 필드 사용
-       formData.append('password', password);
-       formData.append('grant_type', 'password');
-       
-       const response = await api.post('/api/user/login', formData, {
-         headers: {
-           'Content-Type': 'application/x-www-form-urlencoded',
-         },
-       });
+      // OAuth2PasswordRequestForm 형식으로 요청 데이터 전송 (form-urlencoded)
+      const formData = new URLSearchParams();
+      formData.append('username', email);  // OAuth2 표준에서는 username 필드 사용
+      formData.append('password', password);
+      formData.append('grant_type', 'password');
+      
+      const response = await api.post('/api/user/login', formData, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      });
       
       console.log('로그인 API 응답:', response.data);
 
       // API 명세서 응답 형식에 맞춘 처리
       // Response: { "access_token": "eyJhbGciOiJIUzI1...", "token_type": "bearer" }
-      if (response.data.access_token) {
-        // 백엔드에서 생성한 JWT 토큰 저장
-        const accessToken = response.data.access_token;
-        const tokenType = response.data.token_type || 'bearer';
+      if (response.data && response.data.access_token) {
+        console.log('백엔드에서 토큰을 성공적으로 받았습니다!');
         
-        // 토큰 유효성 검증 (JWT 형식 확인)
-        if (accessToken.split('.').length === 3) {
-          localStorage.setItem('access_token', accessToken);
-          localStorage.setItem('token_type', tokenType);
-          
-          // 사용자 Context에 로그인 정보 저장
-          const userData = {
-            token: accessToken,
-            tokenType: tokenType,
-            email: email
-          };
-          login(userData);
-          
-          console.log('백엔드 JWT 토큰 저장 완료:', {
-            token: accessToken.substring(0, 20) + '...',
-            tokenType: tokenType,
-            email: email
-          });
-          
-          // 토큰 검증을 위한 간단한 API 호출 (선택적)
-          try {
-            const verifyResponse = await api.get('/api/user/me');
-            console.log('토큰 검증 성공:', verifyResponse.data);
-          } catch (verifyError) {
-            console.warn('토큰 검증 실패, 하지만 로그인은 진행:', verifyError);
-            // 토큰 검증 실패 시에도 로그인은 진행 (백엔드 문제일 수 있음)
-          }
-          
-          // 로그인 성공 시 메인 페이지로 이동
-          navigate('/schedule');
-        } else {
-          setError('잘못된 토큰 형식입니다. 다시 시도해주세요.');
-        }
+        // 토큰을 로컬 스토리지에 저장
+        localStorage.setItem('access_token', response.data.access_token);
+        localStorage.setItem('token_type', response.data.token_type);
+        
+        // 사용자 Context에 로그인 정보 저장
+        const userData = {
+          token: response.data.access_token,
+          tokenType: response.data.token_type,
+          email: email
+        };
+        login(userData);
+        
+        console.log('로그인 성공 - 백엔드 토큰 저장 완료:', userData);
+        // 로그인 성공 시 스케줄 페이지로 이동
+        navigate('/schedule');
       } else {
         // 토큰이 없는 경우 에러 처리
+        console.error('백엔드 응답에 토큰이 없습니다:', response.data);
         setError('로그인에 실패했습니다. 토큰을 받지 못했습니다.');
       }
     } catch (err) {
       console.error('로그인 API 에러:', err);
+      
+      // API 서버 연결 실패 시 에러 처리
+      if (err.code === 'ERR_NETWORK' || err.message.includes('Network Error')) {
+        console.log('API 서버 연결 실패');
+        setError('백엔드 서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.');
+        return;
+      }
+      
+      // 422 에러 처리 - 임시 로그인 비활성화
+      if (err.response?.status === 422) {
+        console.log('422 에러 발생 - 백엔드 API 문제');
+        console.error('422 에러 상세 정보:', {
+          status: err.response.status,
+          data: err.response.data,
+          headers: err.response.headers
+        });
+        console.error('422 에러 데이터 상세:', JSON.stringify(err.response.data, null, 2));
+        
+        // 백엔드에서 전달하는 구체적인 에러 메시지 표시
+        const errorData = err.response.data;
+        if (errorData.detail) {
+          setError(`백엔드 API 오류: ${JSON.stringify(errorData.detail)}`);
+        } else if (errorData.message) {
+          setError(`백엔드 API 오류: ${errorData.message}`);
+        } else {
+          setError('백엔드 API에서 422 오류가 발생했습니다. 백엔드 개발자에게 문의하세요.');
+        }
+        return; // 임시 로그인 처리하지 않고 에러 메시지만 표시
+      }
       
       // 서버 에러 응답 처리
       if (err.response) {
@@ -137,46 +151,8 @@ const Login = () => {
           headers: err.response.headers
         });
         
-                 // 422 에러 특별 처리
-         if (err.response.status === 422) {
-           const errorData = err.response.data;
-           console.error('422 에러 상세:', errorData);
-           console.error('422 에러 detail 배열:', errorData.detail);
-           console.error('422 에러 detail 배열 길이:', errorData.detail?.length);
-          
-                     // 서버에서 전달하는 구체적인 에러 메시지 사용
-           if (errorData.detail) {
-             // detail이 배열인 경우 각 에러 메시지를 합쳐서 표시
-             if (Array.isArray(errorData.detail)) {
-                               const errorMessages = errorData.detail.map(item => {
-                  console.log('에러 아이템 상세:', item);
-                  console.log('에러 아이템 loc:', item.loc);
-                  
-                  if (typeof item === 'string') {
-                    return item;
-                  } else if (item.msg) {
-                    // loc 정보가 있으면 어떤 필드인지 표시
-                    if (item.loc && item.loc.length > 0) {
-                      const fieldName = item.loc[item.loc.length - 1];
-                      console.log('누락된 필드명:', fieldName);
-                      return `${fieldName}: ${item.msg}`;
-                    }
-                    return item.msg;
-                  } else if (item.message) {
-                    return item.message;
-                  }
-                  return JSON.stringify(item);
-                }).join(', ');
-               setError(`입력 데이터 오류: ${errorMessages}`);
-             } else {
-               setError(`입력 데이터 오류: ${JSON.stringify(errorData.detail)}`);
-             }
-           } else if (errorData.message) {
-            setError(errorData.message);
-          } else {
-            setError('입력 데이터가 올바르지 않습니다. 이메일과 비밀번호를 확인해주세요.');
-          }
-        } else {
+        // 422 에러는 이미 위에서 처리했으므로 다른 에러만 처리
+        if (err.response.status !== 422) {
           const errorMessage = err.response.data?.message || '로그인에 실패했습니다.';
           setError(errorMessage);
         }

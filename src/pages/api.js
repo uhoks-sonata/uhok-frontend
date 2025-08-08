@@ -31,9 +31,31 @@ console.log('API 설정:', {
   timeout: 10000
 });
 
-// 요청 인터셉터: 모든 요청에 자동으로 토큰 첨부
+// 요청 인터셉터: 인증이 필요한 요청에만 토큰 첨부
 api.interceptors.request.use(
   (config) => {
+    // 인증이 필요하지 않은 엔드포인트 목록
+    const publicEndpoints = [
+      '/api/user/login',
+      '/api/user/signup',
+      '/api/user/signup/email/check'
+    ];
+    
+    // 현재 요청이 공개 엔드포인트인지 확인
+    const isPublicEndpoint = publicEndpoints.some(endpoint => 
+      config.url === endpoint || config.url.endsWith(endpoint)
+    );
+    
+    if (isPublicEndpoint) {
+      // 공개 엔드포인트는 토큰 없이 요청
+      console.log('공개 엔드포인트 요청 - 토큰 제외:', {
+        url: config.url,
+        method: config.method
+      });
+      return config;
+    }
+    
+    // 인증이 필요한 엔드포인트는 토큰 추가
     const token = localStorage.getItem('access_token');
     if (token) {
       // 백엔드 JWT 토큰 형식 검증 (header.payload.signature)
@@ -72,6 +94,11 @@ api.interceptors.request.use(
         localStorage.removeItem('token_type');
         delete config.headers.Authorization;
       }
+    } else {
+      console.log('API 요청 - 토큰 없음:', {
+        url: config.url,
+        method: config.method
+      });
     }
     return config;
   },

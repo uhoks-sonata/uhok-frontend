@@ -92,6 +92,12 @@ export const validateToken = async () => {
 export const ensureToken = async () => {
   const token = localStorage.getItem('access_token');
   
+  console.log('ensureToken 호출 - 현재 토큰 상태:', {
+    hasToken: !!token,
+    tokenLength: token?.length,
+    tokenType: localStorage.getItem('token_type')
+  });
+  
   if (!token) {
     console.log('토큰이 없어 임시 로그인을 시도합니다...');
     return await tempLogin();

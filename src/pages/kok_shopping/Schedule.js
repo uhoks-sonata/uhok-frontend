@@ -11,6 +11,8 @@ import Loading from '../../components/Loading';
 import '../../styles/schedule.css';
 // API 설정을 가져옵니다
 import api from '../api';
+// 사용자 Context import
+import { useUser } from '../../contexts/UserContext';
 
 // 홈쇼핑 로고 이미지들을 가져옵니다
 import homeshopping_logo_publicshopping from '../../assets/homeshopping_logo_publicshopping.png'; // 공영홈쇼핑 로고
@@ -22,6 +24,9 @@ import homeshoppingLogoHomeandshopping from '../../assets/homeshopping_logo_home
 
 // 편성표 메인 컴포넌트를 정의합니다
 const Schedule = () => {
+  // 사용자 정보 가져오기
+  const { user, isLoggedIn, isLoading: userLoading } = useUser();
+  
   // 편성표 데이터를 저장할 상태를 초기화합니다 (API 명세서에 맞춰 수정)
   const [scheduleData, setScheduleData] = useState({
     date: '', // 날짜 정보 (API에서 받아옴)
@@ -52,8 +57,26 @@ const Schedule = () => {
     return brandLogos[brandKey] || brandLogos['publicshopping'];
   };
 
+  // 사용자 정보가 변경될 때마다 콘솔에 출력 (디버깅용)
+  useEffect(() => {
+    console.log('Schedule - 사용자 정보 상태:', {
+      user: user,
+      isLoggedIn: isLoggedIn,
+      hasUser: !!user,
+      userEmail: user?.email,
+      hasToken: !!user?.token,
+      userLoading: userLoading
+    });
+  }, [user, isLoggedIn, userLoading]);
+
   // 백엔드 API에서 편성표 데이터를 가져오는 useEffect를 정의합니다 (비동기 처리 개선)
   useEffect(() => {
+    // 사용자 정보 로딩이 완료될 때까지 기다림
+    if (userLoading) {
+      console.log('Schedule - 사용자 정보 로딩 중, 대기...');
+      return;
+    }
+    
     // 비동기 함수로 편성표 데이터를 가져옵니다
     const fetchScheduleData = async () => {
       try {
@@ -92,16 +115,9 @@ const Schedule = () => {
         const date = today.toISOString().split('T')[0]; // YYYY-MM-DD 형식
         const hour = today.getHours(); // 현재 시간
         
-        // api.js를 활용하여 편성표 데이터를 비동기로 가져옵니다
-        console.log('편성표 API 호출:', `/api/home-shopping/schedule?date=${date}&hour=${hour}`);
-        const response = await api.get(`/api/home-shopping/schedule?date=${date}&hour=${hour}`);
-        
-        // 응답 데이터를 검증하고 상태에 저장합니다
-        if (response.data) {
-          setScheduleData(response.data);
-        } else {
-          throw new Error('응답 데이터가 없습니다.');
-        }
+        // 현재 백엔드에 해당 API가 없으므로 임시 데이터를 사용
+        console.log('편성표 API 엔드포인트가 없어 임시 데이터를 사용합니다.');
+        throw new Error('API 엔드포인트가 존재하지 않습니다.');
         
       } catch (err) {
         // 에러가 발생하면 콘솔에 에러를 출력하고 에러 상태를 설정합니다
@@ -189,7 +205,7 @@ const Schedule = () => {
 
     // 컴포넌트가 마운트될 때 데이터를 가져오는 함수를 실행합니다
     fetchScheduleData();
-  }, []); // 빈 배열을 의존성으로 설정하여 컴포넌트 마운트 시에만 실행됩니다
+  }, [userLoading]); // userLoading이 변경될 때마다 실행
 
   // 편성표 버튼 클릭 시 실행되는 핸들러 함수를 정의합니다
   const handleScheduleClick = () => {
@@ -229,7 +245,7 @@ const Schedule = () => {
   const scheduledItems = scheduleData.schedule.filter(item => getBroadcastStatus(item.시작시간) === '방송예정');
 
   // 로딩 중일 때 표시할 UI를 렌더링합니다
-  if (loading) {
+  if (loading || userLoading) {
     return (
       <div className="kok-schedule-page">
         {/* 편성표 헤더 컴포넌트를 렌더링합니다 */}
@@ -270,6 +286,22 @@ const Schedule = () => {
   // 정상적인 편성표 페이지를 렌더링합니다
   return (
     <div className="schedule-page">
+      {/* 사용자 정보 디버깅용 표시 */}
+      <div style={{ 
+        background: '#f0f0f0', 
+        padding: '10px', 
+        margin: '10px', 
+        borderRadius: '5px',
+        fontSize: '12px'
+      }}>
+        <strong>Schedule - 사용자 정보:</strong> 
+        {user ? (
+          `${user.email} | 로그인: ${isLoggedIn ? '예' : '아니오'} | 토큰: ${user.token ? '있음' : '없음'} | 토큰길이: ${user.token?.length || 0}`
+        ) : (
+          '사용자 정보 없음'
+        )}
+      </div>
+      
       {/* 편성표 헤더 */}
       <ScheduleHeader
         onScheduleClick={handleScheduleClick}
