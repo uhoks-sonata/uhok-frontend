@@ -29,7 +29,7 @@
   border-radius: 4px;
   transition: background-color 0.2s ease;
   color: #FA5F8C;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
   gap: 4px;
 }
@@ -48,7 +48,7 @@
 /* 기존 hover 스타일 제거 - 새로운 hover 스타일로 대체됨 */
 
 .kok-arrow {
-  font-size: 12px;
+  font-size: 16px;
 }
 
 .kok-arrow-icon {
@@ -62,7 +62,7 @@
   overflow-y: hidden;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  padding-bottom: 8px;
+  padding-bottom: 20px;
   gap: px;
   white-space: nowrap;
   -webkit-overflow-scrolling: touch;
@@ -124,7 +124,7 @@
   background: white;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: none;
   width: 200px;
   height: fit-content;
 }
@@ -150,7 +150,7 @@
   background: white !important;
   border-radius: 12px !important;
   overflow: hidden !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  box-shadow: none !important;
   padding: 8px !important;
   min-width: 141px !important;
   max-width: 141px !important;
@@ -265,7 +265,7 @@
   scroll-snap-type: none;
   -webkit-overflow-scrolling: touch;
   white-space: nowrap;
-  padding: 0 0 8px 0px; /* 더 큰 왼쪽 패딩 */
+  padding: 0 0 20px 0px; /* 더 큰 왼쪽 패딩 */
   width: max-content;
   max-width: 100%;
   cursor: grab;
@@ -280,7 +280,7 @@
   background: white !important;
   border-radius: 8px !important;
   overflow: hidden !important;
-  box-shadow: 0 3px 10px rgba(250, 95, 140, 0.15) !important;
+  box-shadow: none !important;
   width: 337px !important;
   height: 120px !important;
 }
@@ -297,7 +297,7 @@
   scroll-snap-type: none;
   -webkit-overflow-scrolling: touch;
   white-space: nowrap;
-  padding: 0 0 8px 16px; /* 왼쪽 패딩 조정 */
+  padding: 0 0 20px 0px; /* 왼쪽 패딩 조정 */
   width: max-content;
   max-width: 100%;
   cursor: grab;
@@ -312,7 +312,7 @@
   background: white !important;
   border-radius: 16px !important;
   overflow: hidden !important;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08) !important;
+  box-shadow: none !important;
   width: 240px !important;
   height: 360px !important;
   display: flex !important;
