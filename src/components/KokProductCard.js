@@ -31,14 +31,14 @@ const KokProductCard = ({ product, type = 'default', style = {} }) => {
       </div>
       <div className="kok-product-info">
         <div className="kok-price-info">
-          <span className="kok-discount-rate">{discountRate}%</span>
-          <span className="kok-discount-price">{discountPrice.toLocaleString()}</span>
+          <span className="kok-discount-rate">{discountRate || 0}%</span>
+          <span className="kok-discount-price">{discountPrice?.toLocaleString() || '0'}</span>
         </div>
-        <h3 className="kok-product-name">{name}</h3>
+        <h3 className="kok-product-name">{name || '상품명 없음'}</h3>
         {(type === 'default' || type === 'special' || type === 'grid' || type === 'fixed' || type === 'non-duplicated-grid') && (
           <div className="kok-rating-info">
-            <span className="kok-stars">★ {rating.toFixed(1)}</span>
-            <span className="kok-review-count">({reviewCount})</span>
+            <span className="kok-stars">★ {rating?.toFixed(1) || '0.0'}</span>
+            <span className="kok-review-count">({reviewCount || 0})</span>
           </div>
         )}
       </div>

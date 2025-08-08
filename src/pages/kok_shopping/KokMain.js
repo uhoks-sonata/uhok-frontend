@@ -37,8 +37,26 @@ const KokMain = () => {
       console.log('할인 특가 상품 API 응답:', response.data);
       
       // API 응답 구조에 맞게 데이터 처리
+      console.log('할인 특가 상품 API 응답 구조:', response.data);
       if (response.data && response.data.products) {
-        setKokProducts(response.data.products);
+        console.log('할인 특가 상품 데이터 설정:', response.data.products.length);
+        // API 응답을 KokProductCard가 기대하는 형식으로 변환
+        const transformedProducts = response.data.products.map(product => ({
+          id: product.kok_product_id,
+          name: product.kok_product_name,
+          originalPrice: product.kok_discounted_price / (1 - product.kok_discount_rate / 100), // 할인율로 원가 계산
+          discountPrice: product.kok_discounted_price,
+          discountRate: product.kok_discount_rate,
+          image: product.kok_thumbnail,
+          rating: 4.5, // API에 없으므로 기본값
+          reviewCount: 128, // API에 없으므로 기본값
+          storeName: product.kok_store_name
+        }));
+        console.log('변환된 상품 데이터:', transformedProducts);
+        setKokProducts(transformedProducts);
+      } else if (response.data && Array.isArray(response.data)) {
+        console.log('API 응답이 배열 형태입니다.');
+        setKokProducts(response.data);
       } else {
         console.log('API 응답에 products 필드가 없어 임시 데이터를 사용합니다.');
         setKokProducts(discountProducts);
@@ -59,8 +77,26 @@ const KokMain = () => {
       console.log('판매율 높은 상품 API 응답:', response.data);
       
       // API 응답 구조에 맞게 데이터 처리
+      console.log('판매율 높은 상품 API 응답 구조:', response.data);
       if (response.data && response.data.products) {
-        setKokTopSellingProducts(response.data.products);
+        console.log('판매율 높은 상품 데이터 설정:', response.data.products.length);
+        // API 응답을 KokProductCard가 기대하는 형식으로 변환
+        const transformedProducts = response.data.products.map(product => ({
+          id: product.kok_product_id,
+          name: product.kok_product_name,
+          originalPrice: product.kok_discounted_price / (1 - product.kok_discount_rate / 100), // 할인율로 원가 계산
+          discountPrice: product.kok_discounted_price,
+          discountRate: product.kok_discount_rate,
+          image: product.kok_thumbnail,
+          rating: 4.5, // API에 없으므로 기본값
+          reviewCount: 128, // API에 없으므로 기본값
+          storeName: product.kok_store_name
+        }));
+        console.log('변환된 상품 데이터:', transformedProducts);
+        setKokTopSellingProducts(transformedProducts);
+      } else if (response.data && Array.isArray(response.data)) {
+        console.log('API 응답이 배열 형태입니다.');
+        setKokTopSellingProducts(response.data);
       } else {
         console.log('API 응답에 products 필드가 없어 임시 데이터를 사용합니다.');
         setKokTopSellingProducts(highSellingProducts);
@@ -73,24 +109,15 @@ const KokMain = () => {
     }
   };
 
-  // KOK API에서 구매한 스토어 내 리뷰 많은 상품 데이터를 가져오는 함수
+  // 구매한 스토어 내 리뷰 많은 상품 데이터 (더미 데이터 사용)
   const fetchKokStoreBestItems = async () => {
     try {
-      console.log('스토어 베스트 상품 API 호출 시작...');
-      const response = await api.get('/api/kok/store-best-items');
-      console.log('스토어 베스트 상품 API 응답:', response.data);
-      
-      // API 응답 구조에 맞게 데이터 처리
-      if (response.data && response.data.products) {
-        setKokStoreBestItems(response.data.products);
-      } else {
-        console.log('API 응답에 products 필드가 없어 임시 데이터를 사용합니다.');
-        setKokStoreBestItems(nonDuplicatedProducts);
-      }
+      console.log('스토어 베스트 상품 - 더미 데이터 사용');
+      // 더미 데이터 사용
+      setKokStoreBestItems(nonDuplicatedProducts);
     } catch (err) {
-      console.error('KOK 구매한 스토어 내 리뷰 많은 상품 데이터 로딩 실패:', err);
-      console.log('임시 데이터를 사용합니다.');
-      // API 연결 실패 시 기존 데이터 사용
+      console.error('스토어 베스트 상품 데이터 로딩 실패:', err);
+      console.log('더미 데이터를 사용합니다.');
       setKokStoreBestItems(nonDuplicatedProducts);
     }
   };
@@ -115,7 +142,33 @@ const KokMain = () => {
       try {
         setKokLoading(true);
         
-        // 토큰이 없으면 임시 로그인 시도
+        // 토큰 확인 및 검증
+        const token = localStorage.getItem('access_token');
+        const tokenType = localStorage.getItem('token_type');
+        
+        console.log('KokMain - 토큰 정보 확인:', {
+          hasToken: !!token,
+          tokenType: tokenType,
+          tokenPreview: token ? token.substring(0, 20) + '...' : '없음'
+        });
+        
+        if (!token) {
+          console.log('토큰이 없어서 로그인 페이지로 이동');
+          window.location.href = '/';
+          return;
+        }
+        
+        // 토큰 유효성 검증 (JWT 형식 확인)
+        const tokenParts = token.split('.');
+        if (tokenParts.length !== 3) {
+          console.warn('잘못된 토큰 형식, 로그인 페이지로 이동');
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('token_type');
+          window.location.href = '/';
+          return;
+        }
+        
+        // 토큰이 유효하면 API 호출
         await ensureToken();
         
         await Promise.all([
@@ -144,9 +197,30 @@ const KokMain = () => {
     });
   }, [user, isLoggedIn]);
 
+  // 데이터 상태 디버깅
+  useEffect(() => {
+    console.log('KokMain - 데이터 상태:', {
+      kokProducts: kokProducts.length,
+      kokTopSellingProducts: kokTopSellingProducts.length,
+      kokStoreBestItems: kokStoreBestItems.length,
+      kokLoading: kokLoading
+    });
+  }, [kokProducts, kokTopSellingProducts, kokStoreBestItems, kokLoading]);
+
   return (
     <div className={`kok-home-shopping-main ${kokFadeIn ? 'kok-fade-in' : ''}`}>
-
+      {/* 사용자 정보 디버깅용 표시 */}
+      {user && (
+        <div style={{ 
+          background: '#f0f0f0', 
+          padding: '10px', 
+          margin: '10px', 
+          borderRadius: '5px',
+          fontSize: '12px'
+        }}>
+          <strong>사용자 정보:</strong> {user.email} | 로그인: {isLoggedIn ? '예' : '아니오'} | 토큰: {user.token ? '있음' : '없음'}
+        </div>
+      )}
       
       <HomeShoppingHeader 
         searchQuery={kokSearchQuery}

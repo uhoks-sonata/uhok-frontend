@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import KokProductCard from './KokProductCard';
+import ErrorBoundary from './ErrorBoundary';
 import '../styles/kok_product_section.css';
 
 const KokProductSection = ({ 
@@ -141,13 +142,14 @@ const KokProductSection = ({
         className={`kok-products-container ${type}`}
         style={containerStyle}
       >
-        {products.map((product) => (
-          <KokProductCard 
-            key={product.id} 
-            product={product} 
-            type={type}
-            style={cardStyle}
-          />
+        {products.map((product, index) => (
+          <ErrorBoundary key={product.id || `product-${index}`}>
+            <KokProductCard 
+              product={product} 
+              type={type}
+              style={cardStyle}
+            />
+          </ErrorBoundary>
         ))}
       </div>
     </div>
