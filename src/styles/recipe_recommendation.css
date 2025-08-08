@@ -239,9 +239,21 @@
   gap: 12px;
 }
 
+/* 숫자 입력 필드의 스피너 컨트롤(위아래 화살표) 숨기기 */
+.quantity-input input[type="number"]::-webkit-outer-spin-button,
+.quantity-input input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.quantity-input input[type="number"] {
+  -moz-appearance: textfield; /* Firefox */
+}
+
 .unit-buttons {
   display: flex;
   gap: 4px;
+  flex-wrap: wrap;
 }
 
 .unit-btn {
@@ -253,6 +265,8 @@
   color: #666;
   cursor: pointer;
   transition: all 0.2s ease;
+  min-width: 30px;
+  text-align: center;
 }
 
 .unit-btn.active {
@@ -284,10 +298,9 @@
   padding: 20px;
   background-color: #ffffff;
   border-radius: 12px;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.5s ease;
-  animation: slideInUp 0.5s ease forwards;
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.3s ease;
 }
 
 /* 레시피 추천 받기 버튼 */
