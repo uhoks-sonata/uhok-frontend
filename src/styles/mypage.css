@@ -193,6 +193,7 @@
   border: 1px solid #e0e0e0;
   border-radius: 12px;
   padding: 20px;
+  gap: 10px;
 }
 
 .delivery-status {
@@ -263,6 +264,7 @@
   min-height: 100px;
   overflow: hidden;
   max-width: calc(100% - 140px);
+  padding-left: 10px;
 }
 
 .mypage-product-name {
