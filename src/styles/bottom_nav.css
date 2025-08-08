@@ -20,6 +20,7 @@ body {
   max-width: 480px;
   min-height: 982px;
   padding: 16px;
+  padding-bottom: 80px; /* 동그란 버튼을 위한 적당한 여백 */
 }
 
 /* 기존 bottom-nav 컨테이너 유지 */
@@ -28,7 +29,7 @@ body {
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  height: 80px;
+  height: 75px;
   width: 100%;
   max-width: 480px; /* 모바일 앱 최대 너비 */
   background-color: #ffffff; /* 배경색을 명확하게 설정 */
@@ -37,7 +38,8 @@ body {
   align-items: center;
   box-shadow: 0 -4px 10px rgba(109, 109, 109, 0.1);
   z-index: 9999;
-  overflow: hidden;
+  overflow: visible; /* 동그란 버튼이 넘치도록 변경 */
+  padding-top: 4px; /* 상단에 투명한 공간 추가 */
 }
 
 /* 하단 네비게이션 배경 이미지 */
@@ -60,7 +62,7 @@ body {
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  padding-top: 6px;
+  padding-top: 2px;
   position: relative;
   box-sizing: border-box;
   transition: all 0.3s ease;
@@ -88,8 +90,9 @@ body {
   font-weight: 900;
 }
 
+.bottom-nav a.active .nav-label,
 .bottom-nav a:hover .nav-label {
-  color: #000000;
+  color: #f68cb1;
   font-weight: 600;
 }
 
@@ -135,16 +138,16 @@ body {
 
 /* ===== 메인 이미지 버튼 ===== */
 .image-button-wrapper {
-  width: 100px; /* 버튼 크기 */
+  width: 100px; /* 버튼 크기 증가 */
   height: 100px;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: -13px; /* 네비게이션 바 위로 조금 올림 */
+  margin-top: -30px; /* 네비게이션 바 위로 올림 (살짝 내림) */
   position: relative;
   cursor: pointer;
   transition: all 0.3s ease;
-  z-index: 9999; /* 최상위 레이어로 설정 */
+  z-index: 10000; /* 최상위 레이어로 설정 */
 }
 
 .image-button-wrapper:hover {
@@ -170,7 +173,7 @@ body {
   justify-content: center;
   align-items: center;
   background: #ffffff;
-  border: 3px solid #f0f0f0;
+  border: 4px solid #ffffff;
   transition: all 0.3s ease;
   position: relative;
 }
@@ -191,13 +194,14 @@ body {
 .kok-text {
   color: #ffffff;
   font-weight: unset;
-  font-size: 18px;
+  font-size: 24px;
   user-select: none;
   transition: color 0.3s ease;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .image-button-wrapper:hover .kok-text {
-  color: #000000;
+  color: #ffffff;
 }
 
 
