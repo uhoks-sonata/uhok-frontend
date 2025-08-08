@@ -139,6 +139,37 @@ const BottomNav = () => {
                     className={`nav-item ${isActive ? 'active' : ''}`} // 활성 상태에 따른 CSS 클래스 적용
                     onClick={() => {
                       logNavigationClick(item.path, item.label); // 네비게이션 클릭 로그 기록
+                      
+                      // main 페이지로 이동할 때 토큰 확인
+                      if (item.path === '/main') {
+                        const token = localStorage.getItem('access_token');
+                        const tokenType = localStorage.getItem('token_type');
+                        
+                        console.log('main 페이지 이동 시도 - 토큰 정보:', {
+                          hasToken: !!token,
+                          tokenType: tokenType,
+                          tokenPreview: token ? token.substring(0, 20) + '...' : '없음'
+                        });
+                        
+                        if (!token) {
+                          console.log('토큰이 없어서 로그인 페이지로 이동');
+                          window.location.href = '/';
+                          return;
+                        }
+                        
+                        // 토큰 유효성 검증 (JWT 형식 확인)
+                        const tokenParts = token.split('.');
+                        if (tokenParts.length !== 3) {
+                          console.warn('잘못된 토큰 형식, 로그인 페이지로 이동');
+                          localStorage.removeItem('access_token');
+                          localStorage.removeItem('token_type');
+                          window.location.href = '/';
+                          return;
+                        }
+                        
+                        console.log('유효한 토큰으로 main 페이지 이동');
+                      }
+                      
                       // 현재 활성화된 아이콘을 클릭했을 때도 페이지 새로고침
                       if (isActive) {
                         window.location.href = item.path;
