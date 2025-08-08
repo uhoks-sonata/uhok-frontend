@@ -268,22 +268,6 @@ const MyPage = () => {
   // 정상적인 마이페이지를 렌더링합니다
   return (
     <div className="mypage-page">
-      {/* 사용자 정보 디버깅용 표시 */}
-      <div style={{ 
-        background: '#f0f0f0', 
-        padding: '10px', 
-        margin: '10px', 
-        borderRadius: '5px',
-        fontSize: '12px'
-      }}>
-        <strong>MyPage - 사용자 정보:</strong> 
-        {user ? (
-          `${user.email} | 로그인: ${isLoggedIn ? '예' : '아니오'} | 토큰: ${user.token ? '있음' : '없음'} | 토큰길이: ${user.token?.length || 0}`
-        ) : (
-          '사용자 정보 없음'
-        )}
-      </div>
-      
       {/* 상단 네비게이션 */}
       <MyPageHeader />
       {/* 메인 콘텐츠 */}
