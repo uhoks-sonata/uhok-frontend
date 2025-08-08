@@ -79,7 +79,10 @@ function App() {
                               {/* 레시피 추천 경로 (/recipes) - 레시피 추천 페이지 */}
                 <Route path="/recipes" element={<RecipeRecommendation />} />
                 
-                {/* 레시피 결과 경로 (/recipes/by-ingredients) - 레시피 추천 결과 페이지 */}
+                {/* 레시피 결과 경로 (/recipes/result) - 레시피 추천 결과 페이지 */}
+                <Route path="/recipes/result" element={<RecipeResult />} />
+                
+                {/* 레시피 결과 경로 (/recipes/by-ingredients) - 레시피 추천 결과 페이지 (이전 버전 호환) */}
                 <Route path="/recipes/by-ingredients" element={<RecipeResult />} />
               
               {/* 마이페이지 경로 (/mypage) - 마이페이지 */}
