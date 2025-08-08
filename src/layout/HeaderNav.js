@@ -355,7 +355,7 @@ export const MyPageHeader = ({ onBack }) => {
 };
 
 // ===== 5. 레시피 헤더 컴포넌트 (범용 헤더 사용) =====
-// 레시피 상세/결과 페이지에서 사용하는 헤더 (뒤로가기 + 제목)
+// 레시피 추천 페이지에서 사용하는 헤더 (뒤로가기 + 제목)
 export const RecipeHeader = ({ onBack }) => {
   return <BackTitleHeader title="레시피 추천" onBack={onBack} className="recipe-header" />;
 };

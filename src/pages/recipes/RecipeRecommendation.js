@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BottomNav from '../../layout/BottomNav';
+import { RecipeHeader } from '../../layout/HeaderNav';
 import '../../styles/recipe_recommendation.css';
 import outOfStockIcon from '../../assets/out_of_stock_icon.png';
 import chefIcon from '../../assets/chef_icon.png';
@@ -112,12 +113,9 @@ const RecipeRecommendation = () => {
   return (
     <div className="recipe-recommendation-page">
       {/* 헤더 */}
-      <header className="recipe-header">
-        <button className="back-button" onClick={handleBack}>
-          ←
-        </button>
-        <h1 className="recipe-title">레시피 추천</h1>
-      </header>
+      <RecipeHeader 
+        onBack={handleBack}
+      />
 
       {/* 메인 컨텐츠 */}
       <main className="recipe-main-content">
