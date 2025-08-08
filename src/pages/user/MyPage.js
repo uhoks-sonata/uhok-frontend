@@ -306,15 +306,15 @@ const MyPage = () => {
               return Object.entries(groupedOrders).map(([orderId, orders]) => {
                 const firstOrder = orders[0]; // 첫 번째 상품의 정보를 사용
                 
-                return (
-                  <div key={orderId} className="order-item">
-                    {/* 주문 정보 헤더 */}
-                    <div className="order-header">
-                      {/* 주문 날짜를 표시합니다 (API에서 받아옴) */}
-                      <span className="order-date">{firstOrder.order_date}</span>
-                      {/* 주문번호를 표시합니다 (API에서 받아옴) */}
-                      <span className="order-number">주문번호 {orderId}</span>
-                    </div>
+                              return (
+                <div key={orderId} className="mypage-order-item">
+                  {/* 주문 정보 헤더 */}
+                  <div className="mypage-order-header">
+                    {/* 주문 날짜를 표시합니다 (API에서 받아옴) */}
+                    <span className="mypage-order-date">{firstOrder.order_date}</span>
+                    {/* 주문번호를 표시합니다 (API에서 받아옴) */}
+                    <span className="mypage-order-number">주문번호 {orderId}</span>
+                  </div>
                     
                     {/* 배송 상태 카드 */}
                     <div className="delivery-status-card">
@@ -326,30 +326,30 @@ const MyPage = () => {
                       
                       {/* 상품 정보들 - 같은 주문번호의 모든 상품을 표시합니다 */}
                       {orders.map((order, index) => (
-                        <div key={`${orderId}-${index}`} className="product-info">
+                        <div key={`${orderId}-${index}`} className="mypage-product-info">
                           {/* 상품 이미지를 표시합니다 (API에서 받아옴) */}
-                          <div className="product-image">
+                          <div className="mypage-product-image">
                             <img src={order.product_image} alt={order.product_name} />
                           </div>
                           
                           {/* 상품 상세 정보 */}
-                          <div className="product-details">
+                          <div className="mypage-product-details">
                             {/* 브랜드명과 상품명을 표시합니다 (API에서 받아옴) */}
-                            <div className="product-name" title={`${order.brand_name} | ${order.product_name}`}>
+                            <div className="mypage-product-name" title={`${order.brand_name} | ${order.product_name}`}>
                               {`${order.brand_name} | ${order.product_name}`.length > 20 
                                 ? `${`${order.brand_name} | ${order.product_name}`.substring(0, 20)}...`
                                 : `${order.brand_name} | ${order.product_name}`
                               }
                             </div>
                             {/* 상품 설명을 표시합니다 (API에서 받아옴) */}
-                            <div className="product-description" title={order.product_description}>
+                            <div className="mypage-product-description" title={order.product_description}>
                               {order.product_description.length > 20 
                                 ? `${order.product_description.substring(0, 20)}...`
                                 : order.product_description
                               }
                             </div>
                             {/* 가격과 수량을 표시합니다 (API에서 받아옴) */}
-                            <div className="product-price">{formatPrice(order.product_price)} · {order.product_quantity}개</div>
+                            <div className="mypage-product-price">{formatPrice(order.product_price)} · {order.product_quantity}개</div>
                           </div>
                         </div>
                       ))}
