@@ -68,22 +68,16 @@ const RecipeResult = () => {
         <h1 className="recipe-result-title">레시피 추천</h1>
       </header>
 
-      {/* 선택된 재료 태그들 또는 키워드 표시 */}
+      {/* 선택된 재료 태그들 */}
       <div className="selected-ingredients-section">
         <div className="ingredients-tags">
-          {keywordResult?.mode === 'keyword' ? (
-            <div className="ingredient-tag">
-              <span className="ingredient-name">검색어: {keywordResult.keyword}</span>
+          {ingredients.map((ingredient, index) => (
+            <div key={index} className="ingredient-tag">
+              <span className="ingredient-name">{ingredient}</span>
             </div>
-          ) : (
-            ingredients.map((ingredient, index) => (
-              <div key={index} className="ingredient-tag">
-                <span className="ingredient-name">{ingredient}</span>
-              </div>
-            ))
-          )}
+          ))}
         </div>
-      )}
+      </div>
 
       {/* 결과 요약 */}
       <div className="result-summary">
@@ -102,38 +96,34 @@ const RecipeResult = () => {
             <div className="recipe-info"><h3>{error}</h3></div>
           </div>
         )}
-        {!loading && !error && recipes.map((recipe) => (
-          <div key={recipe.id} className="recipe-card" onClick={() => handleRecipeClick(recipe.id)}>
-            <div className="recipe-image">
-              <img src={recipe.image} alt={recipe.name} onError={(e)=>{ e.currentTarget.src = fallbackImg; }} />
-            </div>
-            <div className="recipe-info">
-              <h3 className="recipe-name">{recipe.name}</h3>
-              <div className="recipe-rating">
-                <span className="star">★</span>
-                <span className="rating">{recipe.rating}</span>
-                <span className="review-count">({recipe.reviewCount})</span>
-                <span className="scrap-count">스크랩 {recipe.scrapCount}</span>
+        {!loading && !error && recipes.length > 0 && (
+          recipes.map((recipe, idx) => (
+            <div key={recipe.recipe_id || recipe.id || idx} className="recipe-card" onClick={() => handleRecipeClick(recipe)}>
+              <div className="recipe-image">
+                <img src={recipe.thumbnail_url || recipe.image || fallbackImg} alt={recipe.recipe_title || recipe.name || '레시피'} onError={(e)=>{ e.currentTarget.src = fallbackImg; }} />
               </div>
               <div className="recipe-info">
-                <h3 className="recipe-name">{recipe.recipe_title}</h3>
+                <h3 className="recipe-name">{recipe.recipe_title || recipe.name}</h3>
                 <div className="recipe-meta">
                   <span className="cooking-name">{recipe.cooking_name}</span>
                   <span className="cooking-category">{recipe.cooking_category_name}</span>
                   <span className="cooking-case">{recipe.cooking_case_name}</span>
                 </div>
                 <div className="recipe-stats">
-                  <span className="scrap-count">스크랩 {recipe.scrap_count}</span>
-                  <span className="matched-ingredients">일치 재료 {recipe.matched_ingredient_count}개</span>
+                  <span className="scrap-count">스크랩 {recipe.scrap_count || recipe.scrapCount || 0}</span>
+                  {typeof recipe.matched_ingredient_count === 'number' && (
+                    <span className="matched-ingredients">일치 재료 {recipe.matched_ingredient_count}개</span>
+                  )}
                 </div>
-                <p className="recipe-description">{recipe.cooking_introduction}</p>
+                <p className="recipe-description">{recipe.cooking_introduction || ''}</p>
                 <div className="recipe-details">
                   <span className="serving">{recipe.number_of_serving}</span>
                 </div>
               </div>
             </div>
           ))
-        ) : (
+        )}
+        {!loading && !error && recipes.length === 0 && (
           <div className="no-results">
             <p>검색 결과가 없습니다.</p>
             <p>다른 재료로 다시 시도해보세요.</p>
