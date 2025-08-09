@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CartHeader } from '../../layout/HeaderNav';
-import { useNotifications } from '../../layout/HeaderNav';
+// Header removed
+// Notifications removed
 import BottomNav from '../../layout/BottomNav';
 import '../../styles/cart.css';
 import heartIcon from '../../assets/heart_empty.png';

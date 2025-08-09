@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 // 상단 네비게이션 컴포넌트를 가져옵니다
-import { OrderHistoryHeader } from '../../layout/HeaderNav';
+// Header removed
 // 하단 네비게이션 컴포넌트를 가져옵니다
 import BottomNav from '../../layout/BottomNav';
 // 로딩 컴포넌트를 가져옵니다

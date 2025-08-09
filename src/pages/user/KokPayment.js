@@ -6,7 +6,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShoppingHeader } from '../../layout/HeaderNav';
+// Header removed
 import BottomNav from '../../layout/BottomNav';
 import '../../styles/kok_payment.css';
 

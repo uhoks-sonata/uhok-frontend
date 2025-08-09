@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BottomNav from '../../layout/BottomNav';
-import { RecipeHeader } from '../../layout/HeaderNav';
+// Header removed
 import '../../styles/recipe_recommendation.css';
 import outOfStockIcon from '../../assets/out_of_stock_icon.png';
 import chefIcon from '../../assets/chef_icon.png';
@@ -239,10 +239,7 @@ const RecipeRecommendation = () => {
 
   return (
     <div className="recipe-recommendation-page">
-      {/* 헤더 */}
-      <RecipeHeader 
-        onBack={handleBack}
-      />
+      {/* header removed */}
 
       {/* 메인 컨텐츠 */}
       <main className="recipe-main-content">

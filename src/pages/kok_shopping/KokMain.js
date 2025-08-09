@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { HomeShoppingHeader } from '../../layout/HeaderNav';
+// Header removed
 import KokProductSection from '../../components/KokProductSection';
 import BottomNav from '../../layout/BottomNav';
 import Loading from '../../components/Loading';
@@ -211,12 +211,7 @@ const KokMain = () => {
 
   return (
     <div className={`kok-home-shopping-main ${kokFadeIn ? 'kok-fade-in' : ''}`}>
-      <HomeShoppingHeader 
-        searchQuery={kokSearchQuery}
-        setSearchQuery={setKokSearchQuery}
-        onSearch={handleKokSearch}
-        onNotificationClick={handleKokNotificationClick}
-      />
+      {/* header removed */}
       
       <main className="kok-main-content">
         {kokLoading ? (

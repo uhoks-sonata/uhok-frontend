@@ -13,8 +13,8 @@ import Login from './pages/user/Login';
 import Signup from './pages/user/Signup';
 import Notification from './pages/user/Notification';
 
-// 홈쇼핑 관련 페이지
-import Schedule from './pages/kok_shopping/Schedule';
+// 홈쇼핑 관련 페이지 (Schedule → main.js로 변경)
+import Main from './pages/kok_shopping/main';
 
 // KOK 쇼핑 관련 페이지
 import KokMain from './pages/kok_shopping/KokMain';
@@ -37,7 +37,7 @@ import OrderList from './pages/user/OrderList';
 // 찜한 상품 목록 컴포넌트 import
 import WishList from './pages/user/WishList';
 // 전역 알림 상태 관리 Provider import
-import { NotificationProvider } from './layout/HeaderNav';
+// Header/Notification removed
 
 // ===== 메인 앱 컴포넌트 =====
 // React 애플리케이션의 최상위 컴포넌트
@@ -46,8 +46,7 @@ function App() {
   return (
     // 사용자 정보를 모든 하위 컴포넌트에서 사용할 수 있도록 Provider로 감싸기
     <UserProvider>
-      {/* 전역 알림 상태를 모든 하위 컴포넌트에서 사용할 수 있도록 Provider로 감싸기 */}
-      <NotificationProvider>
+      {/* header/notification removed */}
         {/* 앱 전체 래퍼 컨테이너 */}
         <div className="wrapper">
           {/* 메인 앱 컨테이너 */}
@@ -67,8 +66,8 @@ function App() {
               {/* ===== 기타 라우트 ===== */}
               {/* 메인 경로 (/main) - KOK 메인 페이지로 설정 */}
               <Route path="/main" element={<KokMain />} />
-              {/* 편성표 경로 (/schedule) - 편성표 페이지 */}
-              <Route path="/schedule" element={<Schedule />} />
+              {/* 편성표 경로 (/schedule) - main.js로 연결 */}
+              <Route path="/schedule" element={<Main />} />
               {/* ===== KOK 라우트 ===== */}
               {/* KOK 메인 경로 (/kok) - KOK 메인 페이지 */}
               <Route path="/kok" element={<KokMain />} />
@@ -102,7 +101,7 @@ function App() {
           </Router>
         </div>
       </div>
-      </NotificationProvider>
+      
     </UserProvider>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BackTitleHeader } from '../../layout/HeaderNav';
+// Header removed
 import BottomNav from '../../layout/BottomNav';
 import '../../styles/notification.css';
 import api from '../api';

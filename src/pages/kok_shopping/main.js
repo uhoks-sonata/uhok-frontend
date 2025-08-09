@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 // 편성표 헤더 컴포넌트를 가져옵니다
-import { ScheduleHeader } from '../../layout/HeaderNav';
+// Header removed
 // 하단 네비게이션 컴포넌트를 가져옵니다
 import BottomNav from '../../layout/BottomNav';
 // 로딩 컴포넌트를 가져옵니다
@@ -251,10 +251,7 @@ const Schedule = () => {
     return (
       <div className="kok-schedule-page">
         {/* 편성표 헤더 컴포넌트를 렌더링합니다 */}
-        <ScheduleHeader
-          onScheduleClick={handleScheduleClick}
-          onNotificationClick={handleNotificationClick}
-        />
+        {/* header removed */}
         {/* 메인 콘텐츠 영역 */}
         <div className="schedule-content">
           <Loading message="편성표를 불러오는 중 ..." />
@@ -305,10 +302,7 @@ const Schedule = () => {
       </div>
       
       {/* 편성표 헤더 */}
-      <ScheduleHeader
-        onScheduleClick={handleScheduleClick}
-        onNotificationClick={handleNotificationClick}
-      />
+      {/* header removed */}
 
       {/* 메인 콘텐츠 */}
       <div className="schedule-content">
