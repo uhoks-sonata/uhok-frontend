@@ -502,7 +502,7 @@ const KokProductDetail = () => {
                         display: 'inline-block',
                         padding: '4px 8px',
                         margin: '2px',
-                        backgroundColor: '#f8f9fa',
+                        backgroundColor: '#ffffff',
                         borderRadius: '12px',
                         fontSize: '12px',
                         color: '#666'
@@ -513,7 +513,7 @@ const KokProductDetail = () => {
                         display: 'inline-block',
                         padding: '4px 8px',
                         margin: '2px',
-                        backgroundColor: '#f8f9fa',
+                        backgroundColor: '#ffffff',
                         borderRadius: '12px',
                         fontSize: '12px',
                         color: '#666'
@@ -524,7 +524,7 @@ const KokProductDetail = () => {
                         display: 'inline-block',
                         padding: '4px 8px',
                         margin: '2px',
-                        backgroundColor: '#f8f9fa',
+                        backgroundColor: '#ffffff',
                         borderRadius: '12px',
                         fontSize: '12px',
                         color: '#666'
@@ -538,7 +538,7 @@ const KokProductDetail = () => {
                         display: 'inline-block',
                         padding: '4px 8px',
                         margin: '2px',
-                        backgroundColor: '#f8f9fa',
+                        backgroundColor: '#ffffff',
                         borderRadius: '12px',
                         fontSize: '12px',
                         color: '#666'
@@ -722,7 +722,7 @@ const KokProductDetail = () => {
   }
 
   return (
-    <div className="kok-product-detail-page" style={{ backgroundColor: '#f8f9fa', height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div className="kok-product-detail-page" style={{ backgroundColor: '#ffffff', height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <ShoppingHeader 
         onBack={handleKokBack}
         searchQuery={kokSearchQuery}

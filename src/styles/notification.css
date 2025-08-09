@@ -2,7 +2,7 @@
 .notification-page {
   max-width: 480px;
   margin: 0 auto;
-  background-color: #f8f9fa;
+  background-color: #ffffff;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -115,11 +115,11 @@
 }
 
 .notification-item:hover {
-  background-color: #f8f9fa;
+  background-color: #ffffff;
 }
 
 .notification-item.unread {
-  background-color: #fff5f8;
+  background-color: #ffffff;
 }
 
 .notification-item.unread::before {

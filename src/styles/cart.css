@@ -133,7 +133,7 @@
 }
 
 .delete-selected-btn:hover:not(:disabled) {
-  background-color: #f5f5f5;
+  background-color: #ffffff;
 }
 
 .delete-selected-btn:disabled {
@@ -186,7 +186,7 @@
 }
 
 .remove-item-btn:hover {
-  background-color: #f5f5f5;
+  background-color: #ffffff;
 }
 
 .item-content {
@@ -317,7 +317,7 @@
 }
 
 .quantity-btn {
-  background-color: #f5f5f5;
+  background-color: #ffffff;
   border: none;
   padding: 6px 8px;
   cursor: pointer;
@@ -326,7 +326,7 @@
 }
 
 .quantity-btn:hover:not(:disabled) {
-  background-color: #e0e0e0;
+  background-color: #ffffff;
 }
 
 .quantity-btn:disabled {
@@ -347,7 +347,7 @@
 }
 
 .quantity:hover {
-  background-color: #f5f5f5;
+  background-color: #ffffff;
 }
 
 .buy-now-btn {
@@ -375,7 +375,7 @@
 }
 
 .wishlist-btn:hover {
-  background-color: #f5f5f5;
+  background-color: #ffffff;
 }
 
 .wishlist-btn img {
@@ -395,7 +395,7 @@
 
 /* 가격 요약 */
 .price-summary {
-  background-color: #f8f9fa;
+  background-color: #ffffff;
   padding: 20px;
   margin: 16px 20px;
   border-radius: 8px;
@@ -558,7 +558,7 @@
 }
 
 .close-btn:hover {
-  background-color: #f5f5f5;
+  background-color: #ffffff;
 }
 
 .quantity-options {

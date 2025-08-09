@@ -40,7 +40,7 @@
   border: 1px solid #e0e0e0;
   border-radius: 20px;
   font-size: 14px;
-  background-color: #f8f8f8;
+  background-color: #ffffff;
   color: #333;
   transition: border-color 0.2s ease, background-color 0.2s ease;
 }
@@ -157,7 +157,7 @@
 
 .back-btn:hover {
   color: #ff69b4;
-  background-color: #f8f8f8;
+  background-color: #ffffff;
 }
 
 /* 헤더 제목 */

@@ -57,7 +57,7 @@
 
 .kok-tab-button:hover {
   color: #333 !important;
-  background-color: #f8f8f8 !important;
+  background-color: #ffffff !important;
 }
 
 .kok-tab-button.active {
@@ -284,7 +284,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
-  background-color: #f8f9fa;
+  background-color: #ffffff;
   border-radius: 8px;
 }
 
@@ -348,7 +348,7 @@
 .bar-container {
   flex: 1;
   height: 8px;
-  background-color: #f0f0f0;
+  background-color: #ffffff;
   border-radius: 4px;
   overflow: hidden;
 }
@@ -388,7 +388,7 @@
 .feedback-bar-container {
   flex: 1;
   height: 6px;
-  background-color: #f0f0f0;
+  background-color: #ffffff;
   border-radius: 3px;
   overflow: hidden;
 }
@@ -482,7 +482,7 @@
 }
 
 .info-label {
-  background-color: #f8f9fa;
+  background-color: #ffffff;
   padding: 12px 16px;
   font-size: 14px;
   color: #666;
@@ -589,13 +589,13 @@
 }
 
 .kok-tab-content-container::-webkit-scrollbar-thumb {
-  background: #ccc; /* 스크롤바 색상 */
+  background: #e0e0e0; /* 스크롤바 색상 */
   border-radius: 3px;
   transition: background-color 0.2s;
 }
 
 .kok-tab-content-container::-webkit-scrollbar-thumb:hover {
-  background: #999; /* 호버 시 색상 */
+  background: #bbb; /* 호버 시 색상 */
 }
 
 /* Firefox 스크롤바 스타일 */
