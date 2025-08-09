@@ -1,0 +1,68 @@
+/* 메인 페이지 전용 Header Nav 내용 배치 (틀은 HeaderNavFrame) */
+.hn-main-left,
+.hn-main-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hn-main-left {
+  gap: 20px; /* back 버튼과 타이틀 간격 */
+}
+
+.hn-main-right {
+  padding-top: 7px;
+}
+
+.hn-main-center {
+  flex: 1;
+  display: flex;
+  align-items: center;    /* 헤더 높이 기준 수직 중앙 */
+  justify-content: center;/* 수평 중앙 */
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111;
+}
+
+.hn-main-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111;
+  line-height: 1;
+}
+
+.hn-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: #eaecef;
+}
+
+.hn-icon-btn {
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0;              /* 여백 최소화로 정렬 안정화 */
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;     /* 아이콘 수직 중앙 */
+  justify-content: center; /* 아이콘 수평 중앙 */
+}
+
+.hn-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  display: block;
+}
+
+.hn-icon-svg {
+  width: 24px;             /* 텍스트 라인과 균형 맞춘 크기 */
+  height: 24px;
+  color: #111;
+  display: block;
+}
+
+
