@@ -146,5 +146,5 @@ const RecipeResult = () => {
   );
 };
 
-export default RecipeResult;
+export default RecipeResult; 
 
