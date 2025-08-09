@@ -214,7 +214,6 @@ const RecipeRecommendation = () => {
         }
         
         console.log('레시피명/식재료명으로 레시피 추천 받기:', recipeInput);
-<<<<<<< HEAD
         const { recipes, page, total } = await recipeApi.searchRecipes({ recipe: recipeInput, page: 1, size: 10 });
         console.log('API 응답:', { recipes, page, total });
         // 결과 페이지로 이동하며 검색결과 전달
@@ -362,7 +361,6 @@ const RecipeRecommendation = () => {
           </div>
         )}
 
-<<<<<<< HEAD
                  {/* 레시피명/식재료명 입력 영역 */}
          {isRecipeActive && (
            <div className="recipe-input-section">
@@ -379,7 +377,6 @@ const RecipeRecommendation = () => {
              </div>
            </div>
          )}
-=======
         {/* 레시피명/식재료명 입력 영역 */}
         {isRecipeActive && (
           <div className="recipe-input-section">

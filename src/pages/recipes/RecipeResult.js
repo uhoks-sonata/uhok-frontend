@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 import React, { useEffect, useMemo, useState } from 'react';
-=======
-import React, { useState, useEffect } from 'react';
->>>>>>> f34ead31a41c49f4103eee28c27357e7d3ca79e3
 import { useNavigate, useLocation } from 'react-router-dom';
 import BottomNav from '../../layout/BottomNav';
 import '../../styles/recipe_result.css';
