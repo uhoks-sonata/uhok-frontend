@@ -124,10 +124,15 @@ const KokMain = () => {
     }
   };
 
-  // 검색 핸들러
+  // 검색 핸들러 (콕 쇼핑몰 타입으로 검색 페이지 이동)
   const handleKokSearch = (query) => {
-    console.log('검색어:', query);
-    // 여기에 실제 검색 로직을 구현할 수 있습니다
+    console.log('콕 쇼핑몰 검색어:', query);
+    // 콕 쇼핑몰 타입으로 검색 페이지로 이동
+    if (query && query.trim()) {
+      navigate(`/search?q=${encodeURIComponent(query.trim())}&type=kok`);
+    } else {
+      navigate('/search?type=kok');
+    }
   };
 
   // 알림 클릭 핸들러
@@ -216,6 +221,7 @@ const KokMain = () => {
         setSearchQuery={setKokSearchQuery}
         onSearch={handleKokSearch}
         onNotificationClick={handleKokNotificationClick}
+        searchType="kok"
       />
       
       <main className="kok-main-content">

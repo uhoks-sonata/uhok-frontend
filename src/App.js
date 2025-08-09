@@ -15,6 +15,8 @@ import Notification from './pages/user/Notification';
 
 // 홈쇼핑 관련 페이지
 import Main from './pages/home_shopping/main';
+import Schedule from './pages/home_shopping/Schedule';
+import Search from './pages/home_shopping/Search';
 
 // KOK 쇼핑 관련 페이지
 import KokMain from './pages/kok_shopping/KokMain';
@@ -67,6 +69,10 @@ function App() {
               {/* ===== 기타 라우트 ===== */}
               {/* 메인 경로 (/main) - Main 페이지로 설정 */}
               <Route path="/main" element={<Main />} />
+              {/* 편성표 경로 (/schedule) - Schedule 페이지로 설정 */}
+              <Route path="/schedule" element={<Schedule />} />
+              {/* 검색 경로 (/search) - Search 페이지로 설정 */}
+              <Route path="/search" element={<Search />} />
               {/* ===== KOK 라우트 ===== */}
               {/* KOK 메인 경로 (/kok) - KOK 메인 페이지 */}
               <Route path="/kok" element={<KokMain />} />

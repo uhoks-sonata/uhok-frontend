@@ -32,6 +32,41 @@
   display: flex;
   align-items: center;
   max-width: 480px;
+  cursor: pointer;
+}
+
+/* 검색 입력 버튼 스타일 */
+.search-input-button {
+  width: 100%;
+  padding: 10px 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  background-color: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+  gap: 10px; /* 텍스트와 아이콘 사이 간격 */
+}
+
+.search-input-button:hover {
+  border-color: #ff69b4;
+  background-color: #fff5f8;
+  box-shadow: 0 2px 8px rgba(255, 105, 180, 0.1);
+}
+
+.search-placeholder {
+  color: #999;
+  font-size: 14px;
+  user-select: none;
+  flex: 1; /* 텍스트가 남은 공간을 차지하도록 */
+  text-align: left; /* 텍스트 왼쪽 정렬 */
+}
+
+.search-input-button .search-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0; /* 아이콘 크기 고정 */
 }
 
 .search-input {

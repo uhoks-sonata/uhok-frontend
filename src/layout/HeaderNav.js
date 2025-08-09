@@ -74,7 +74,13 @@ export const useNotifications = () => {
 
 // ===== 1. 홈쇼핑 헤더 컴포넌트 =====
 // 홈쇼핑 메인 페이지에서 사용하는 헤더 (검색 + 알림 기능)
-export const HomeShoppingHeader = ({ searchQuery, setSearchQuery, onSearch, onNotificationClick }) => {
+export const HomeShoppingHeader = ({ 
+  searchQuery, 
+  setSearchQuery, 
+  onSearch, 
+  onNotificationClick,
+  searchType = 'homeshopping' // 검색 타입 (기본값: 홈쇼핑)
+}) => {
   // 전역 알림 상태 가져오기
   const { notificationCount } = useNotifications();
   // 검색 인터페이스 표시 여부 상태 관리
@@ -88,11 +94,16 @@ export const HomeShoppingHeader = ({ searchQuery, setSearchQuery, onSearch, onNo
     }
   };
 
-  // 검색 아이콘 클릭 시 검색 인터페이스 전환 핸들러
+  // 검색 아이콘 클릭 시 검색 페이지로 이동하는 핸들러
   const handleSearchIconClick = () => {
-    setShowSearchInterface(!showSearchInterface); // 검색 인터페이스 토글
-    // 여기에 검색 인터페이스 전환 로직 추가
-    console.log('검색 인터페이스 전환');
+    // 검색어가 있으면 쿼리 파라미터와 함께 이동
+    if (searchQuery.trim()) {
+      window.location.href = `/search?q=${encodeURIComponent(searchQuery.trim())}&type=${searchType}`;
+    } else {
+      // 검색어가 없으면 검색 페이지로 이동
+      window.location.href = `/search?type=${searchType}`;
+    }
+    console.log(`${searchType === 'kok' ? '콕 쇼핑몰' : '홈쇼핑'} 검색 페이지로 이동`);
   };
 
   // 알림 아이콘 클릭 시 알림창 인터페이스 전환 핸들러
@@ -108,20 +119,14 @@ export const HomeShoppingHeader = ({ searchQuery, setSearchQuery, onSearch, onNo
   return (
     <div className="header home-shopping-header">
       {/* 검색 컨테이너 영역 */}
-      <div className="search-container">
-        {/* 검색 입력 필드 */}
-        <input
-          type="text"
-          placeholder="홈쇼핑 검색" // 검색창 안내 텍스트
-          value={searchQuery} // 현재 검색어 상태
-          onChange={(e) => setSearchQuery(e.target.value)} // 검색어 변경 시 상태 업데이트
-          onKeyPress={(e) => e.key === 'Enter' && handleSearch(e)} // 엔터키 입력 시 검색 실행
-          className="search-input" // 검색 입력 필드 스타일 클래스
-        />
-        {/* 검색 버튼 */}
-        <button className="search-btn" onClick={handleSearchIconClick}>
+      <div className="search-container" onClick={handleSearchIconClick}>
+        {/* 검색 버튼화된 입력 필드 */}
+        <div className="search-input-button">
+          <span className="search-placeholder">
+            {searchType === 'kok' ? '콕 쇼핑몰 검색' : '홈쇼핑 검색'}
+          </span>
           <img src={searchIcon} alt="검색" className="search-icon" />
-        </button>
+        </div>
       </div>
       
       {/* 헤더 우측 아이콘 영역 */}
@@ -156,12 +161,17 @@ export const ShoppingHeader = ({ searchQuery, setSearchQuery, onSearch, onNotifi
     }
   };
 
-  // 검색 실행 핸들러 함수
+  // 검색 실행 핸들러 함수 (ShoppingHeader용 - 콕 쇼핑)
   const handleSearch = (e) => {
     e.preventDefault(); // 기본 폼 제출 동작 방지
-    if (onSearch) {
-      onSearch(searchQuery); // 부모 컴포넌트에서 전달받은 검색 함수 실행
+    // 검색어가 있으면 쿼리 파라미터와 함께 검색 페이지로 이동 (콕 타입)
+    if (searchQuery.trim()) {
+      window.location.href = `/search?q=${encodeURIComponent(searchQuery.trim())}&type=kok`;
+    } else {
+      // 검색어가 없으면 검색 페이지로 이동 (콕 타입)
+      window.location.href = '/search?type=kok';
     }
+    console.log('콕 쇼핑 검색 페이지로 이동 (ShoppingHeader)');
   };
 
   // 알림 아이콘 클릭 핸들러
@@ -189,21 +199,12 @@ export const ShoppingHeader = ({ searchQuery, setSearchQuery, onSearch, onNotifi
       {/* 뒤로가기 버튼 (왼쪽) */}
       <button className="back-btn" onClick={handleBack}>←</button>
       
-      {/* 검색 컨테이너 영역 (중앙) */}
-      <div className="search-container">
-        {/* 검색 입력 필드 */}
-        <input
-          type="text"
-          placeholder="상품 검색" // 검색창 안내 텍스트
-          value={searchQuery} // 현재 검색어 상태
-          onChange={(e) => setSearchQuery(e.target.value)} // 검색어 변경 시 상태 업데이트
-          onKeyPress={(e) => e.key === 'Enter' && handleSearch(e)} // 엔터키 입력 시 검색 실행
-          className="search-input" // 검색 입력 필드 스타일 클래스
-        />
-        {/* 검색 버튼 */}
-        <button className="search-btn" onClick={handleSearch}>
+      {/* 검색 컨테이너 영역 (중앙) - 클릭 가능한 버튼 */}
+      <div className="search-container" onClick={handleSearch}>
+        <div className="search-input-button">
+          <span className="search-placeholder">콕 상품 검색</span>
           <img src={searchIcon} alt="검색" className="search-icon" />
-        </button>
+        </div>
       </div>
       
       {/* 헤더 우측 아이콘 영역 */}
@@ -242,10 +243,12 @@ export const SearchHeader = ({ searchQuery, setSearchQuery, onSearch, onBack }) 
   };
 
   // 검색 실행 핸들러 함수
-  const handleSearch = (e) => {
-    e.preventDefault(); // 기본 폼 제출 동작 방지
+  const handleSearch = (e = null) => {
+    if (e && e.preventDefault) {
+      e.preventDefault(); // 기본 폼 제출 동작 방지
+    }
     if (onSearch) {
-      onSearch(searchQuery); // 부모 컴포넌트에서 전달받은 검색 함수 실행
+      onSearch(e, searchQuery); // 부모 컴포넌트에서 전달받은 검색 함수 실행
     }
   };
 
