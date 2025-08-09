@@ -27,6 +27,7 @@
 .kok-product-list-content {
   flex: 1;
   padding: 16px;
+  padding-bottom: 16px; /* 바텀네비 없으므로 일반 패딩으로 변경 */
   overflow-y: auto;
   overflow-x: hidden;
 }

@@ -11,6 +11,7 @@ import { UserProvider } from './contexts/UserContext';
 // 사용자 관련 페이지
 import Login from './pages/user/Login';
 import Signup from './pages/user/Signup';
+import Notification from './pages/user/Notification';
 
 // 홈쇼핑 관련 페이지
 import Schedule from './pages/kok_shopping/Schedule';
@@ -93,6 +94,8 @@ function App() {
               <Route path="/orderlist" element={<OrderList />} />
               {/* 찜한 상품 목록 경로 (/wishlist) - 찜한 상품 목록 페이지 */}
               <Route path="/wishlist" element={<WishList />} />
+              {/* 알림 경로 (/notifications) - 알림 페이지 */}
+              <Route path="/notifications" element={<Notification />} />
               {/* KOK 결제 경로 (/kok/payment) - 결제 페이지 */}
               <Route path="/kok/payment" element={<KokPayment />} />
             </Routes>

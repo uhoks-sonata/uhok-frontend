@@ -334,7 +334,7 @@ export const MyPageHeader = ({ onBack }) => {
       {/* 헤더 우측 아이콘 영역 */}
       <div className="header-icons">
         {/* 알림 버튼 */}
-        <button className="notification-btn">
+        <button className="notification-btn" onClick={() => navigate('/notifications')}>
           <img src={bellIcon} alt="알림" className="bell-icon" />
           {/* 알림 개수가 0보다 클 때만 알림 개수 표시 */}
           {notificationCount > 0 && (
@@ -461,7 +461,7 @@ export const BackTitleWithIconsHeader = ({ title, onBack, onNotificationClick, o
       {/* 헤더 우측 아이콘 영역 (오른쪽 고정) */}
       <div className="header-icons">
         {/* 알림 버튼 (카운트 없음 - 요구사항에 따라) */}
-        <button className="notification-btn" onClick={handleNotificationClick}>
+        <button className="notification-btn" onClick={onNotificationClick || (() => navigate('/notifications'))}>
           <img src={bellIcon} alt="알림" className="bell-icon" />
         </button>
         {/* 장바구니 버튼 (카운트 표시 포함) */}
@@ -523,6 +523,7 @@ export const RecipeDetailHeader = ({ onBack, onNotificationClick, onCartClick })
 // 뒤로가기 + 제목 + 알림 형태의 모든 헤더에서 재사용 가능한 범용 컴포넌트
 // 장바구니 등에서 사용 (장바구니 아이콘 없음)
 export const BackTitleWithNotificationHeader = ({ title, onBack, onNotificationClick, className = "" }) => {
+  const navigate = useNavigate();
   // 뒤로가기 버튼 클릭 핸들러 (비동기)
   const handleBack = async () => {
     try {
@@ -573,7 +574,7 @@ export const BackTitleWithNotificationHeader = ({ title, onBack, onNotificationC
       {/* 헤더 우측 아이콘 영역 (오른쪽 고정) */}
       <div className="header-icons">
         {/* 알림 버튼 (카운트 없음 - 요구사항에 따라) */}
-        <button className="notification-btn" onClick={handleNotificationClick}>
+        <button className="notification-btn" onClick={onNotificationClick || (() => navigate('/notifications'))}>
           <img src={bellIcon} alt="알림" className="bell-icon" />
         </button>
       </div>
@@ -597,6 +598,7 @@ export const CartHeader = ({ onBack, onNotificationClick }) => {
 // ===== 14. 편성표 헤더 컴포넌트 =====
 // 편성표 페이지에서 사용하는 헤더 (편성표 버튼 + 알림)
 export const ScheduleHeader = ({ onScheduleClick, onNotificationClick, className = "" }) => {
+  const navigate = useNavigate();
   // 편성표 버튼 클릭 핸들러
   const handleScheduleClick = async () => {
     try {
@@ -658,7 +660,7 @@ export const ScheduleHeader = ({ onScheduleClick, onNotificationClick, className
       {/* 헤더 우측 아이콘 영역 (오른쪽) */}
       <div className="header-icons">
         {/* 알림 버튼 */}
-        <button className="notification-btn" onClick={handleNotificationClick}>
+        <button className="notification-btn" onClick={onNotificationClick || (() => navigate('/notifications'))}>
           <img src={bellIcon} alt="알림" className="bell-icon" />
         </button>
       </div>

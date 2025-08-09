@@ -153,6 +153,7 @@ const WishList = () => {
   // 알림 클릭 핸들러
   const handleNotificationClick = () => {
     console.log('알림 클릭됨');
+    navigate('/notifications');
   };
 
   // 장바구니 클릭 핸들러

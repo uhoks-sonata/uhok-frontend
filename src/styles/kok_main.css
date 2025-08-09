@@ -31,9 +31,8 @@
 
 .kok-main-content {
   padding-top: 8px;/* Header 높이만큼 상단 패딩 */
-  padding-bottom: 20px;
   padding-right: 8px; /* 스크롤바 공간 확보 */
-  overflow-x: scroll; /* 가로 스크롤 방지 */
+  overflow-x: hidden; /* 가로 스크롤바 제거 */
   height: 100%; /* 부모 컨테이너의 전체 높이 사용 */
   max-height: calc(100vh - 155px); /* 헤더 + 바텀네비 + 여백 고려 */
 }

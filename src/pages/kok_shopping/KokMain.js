@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { HomeShoppingHeader } from '../../layout/HeaderNav';
 import KokProductSection from '../../components/KokProductSection';
 import BottomNav from '../../layout/BottomNav';
@@ -16,6 +17,7 @@ import {
 } from '../../data/products';
 
 const KokMain = () => {
+  const navigate = useNavigate();
   const [kokFadeIn, setKokFadeIn] = useState(false);
   const [kokSearchQuery, setKokSearchQuery] = useState('');
   // API 데이터를 저장할 상태 추가
@@ -131,7 +133,7 @@ const KokMain = () => {
   // 알림 클릭 핸들러
   const handleKokNotificationClick = () => {
     console.log('알림 클릭됨');
-    // 여기에 알림 관련 로직을 구현할 수 있습니다
+    navigate('/notifications');
   };
 
   useEffect(() => {
