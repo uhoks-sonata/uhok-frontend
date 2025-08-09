@@ -35,6 +35,7 @@ const KokPayment = () => {
 
   const handleNotificationClick = () => {
     console.log('알림 클릭됨');
+    navigate('/notifications');
   };
 
   const handleCartClick = () => {

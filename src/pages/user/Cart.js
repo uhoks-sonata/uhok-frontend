@@ -70,6 +70,7 @@ const Cart = () => {
 
   const handleNotificationClick = () => {
     console.log('알림 버튼 클릭');
+    navigate('/notifications');
   };
 
   const handleSelectAll = () => {

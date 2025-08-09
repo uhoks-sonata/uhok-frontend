@@ -8,12 +8,12 @@
   scrollbar-color: #ccc transparent; /* Firefox 스크롤바 색상 */
   position: relative; /* 스크롤바 위치 기준 */
   width: 100%; /* 전체 너비 */
-  height: 100vh; /* 전체 높이 */
+  height: calc(100vh - 115px); /* 헤더(40px) + 바텀네비(75px) = 115px 빼기 */
 }
 
 /* Webkit 브라우저 스크롤바 스타일링 */
 .kok-home-shopping-main::-webkit-scrollbar {
-  width: 8px; /* 스크롤바 너비 */
+  width: 4px; /* 스크롤바 너비 */
 }
 
 .kok-home-shopping-main::-webkit-scrollbar-track {
@@ -21,19 +21,20 @@
 }
 
 .kok-home-shopping-main::-webkit-scrollbar-thumb {
-  background: #ccc; /* 스크롤바 썸 색상 */
+  background: #e0e0e0; /* 스크롤바 썸 색상 */
   border-radius: 4px; /* 스크롤바 모서리 둥글게 */
 }
 
 .kok-home-shopping-main::-webkit-scrollbar-thumb:hover {
-  background: #999; /* 호버 시 스크롤바 색상 */
+  background: #bbb; /* 호버 시 스크롤바 색상 */
 }
 
 .kok-main-content {
   padding-top: 8px;/* Header 높이만큼 상단 패딩 */
-  padding-bottom: 20px;
   padding-right: 8px; /* 스크롤바 공간 확보 */
-  overflow-x: scroll; /* 가로 스크롤 방지 */
+  overflow-x: hidden; /* 가로 스크롤바 제거 */
+  height: 100%; /* 부모 컨테이너의 전체 높이 사용 */
+  max-height: calc(100vh - 155px); /* 헤더 + 바텀네비 + 여백 고려 */
 }
 
 /* 섹션 내부 스크롤 방지 */
@@ -70,12 +71,12 @@
   }
   
   .kok-main-content {
-    padding-top: 11px;
+    padding-top: 5px;
   }
   
   /* 모바일에서 스크롤바 너비 조정 */
   .kok-home-shopping-main::-webkit-scrollbar {
-    width: 6px;
+    width: 3px;
   }
   
   .kok-product-section {

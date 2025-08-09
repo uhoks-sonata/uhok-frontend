@@ -24,6 +24,8 @@ import homeshoppingLogoHomeandshopping from '../../assets/homeshopping_logo_home
 
 // 편성표 메인 컴포넌트를 정의합니다
 const Schedule = () => {
+  // 페이지 이동을 위한 navigate 훅
+  const navigate = useNavigate();
   // 사용자 정보 가져오기
   const { user, isLoggedIn, isLoading: userLoading } = useUser();
   
@@ -218,7 +220,7 @@ const Schedule = () => {
   const handleNotificationClick = () => {
     // 콘솔에 클릭 로그를 출력합니다
     console.log('알림 버튼 클릭');
-    // 알림 관련 기능을 구현할 예정입니다
+    navigate('/notifications');
   };
 
   // 상품 카드 클릭 시 실행되는 핸들러 함수를 정의합니다
