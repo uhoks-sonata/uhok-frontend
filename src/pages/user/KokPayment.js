@@ -44,12 +44,7 @@ const KokPayment = () => {
 
   return (
     <div className="payment-page">
-      <ShoppingHeader 
-        onBack={handleBack}
-        onSearch={handleSearch}
-        onNotificationClick={handleNotificationClick}
-        onCartClick={handleCartClick}
-      />
+      {/* header removed */}
       
       <div className="payment-content">
         <h1 className="payment-title">결제하기</h1>

@@ -266,11 +266,7 @@ const Schedule = () => {
   if (error) {
     return (
       <div className="schedule-page">
-        {/* 편성표 헤더 컴포넌트를 렌더링합니다 */}
-        <ScheduleHeader
-          onScheduleClick={handleScheduleClick}
-          onNotificationClick={handleNotificationClick}
-        />
+        {/* header removed */}
         {/* 메인 콘텐츠 영역 */}
         <div className="schedule-content">
           {/* 에러 메시지를 표시합니다 */}
