@@ -269,31 +269,6 @@ const RecipeRecommendation = () => {
           </button>
         </div>
 
-        {isRecipeActive && (
-          <div className="recipe-search-type">
-            <label className="recipe-radio-option">
-              <input
-                type="radio"
-                name="recipeSearchType"
-                value="name"
-                checked={recipeSearchType === 'name'}
-                onChange={() => setRecipeSearchType('name')}
-              />
-              <span>레시피명</span>
-            </label>
-            <label className="recipe-radio-option">
-              <input
-                type="radio"
-                name="recipeSearchType"
-                value="ingredient"
-                checked={recipeSearchType === 'ingredient'}
-                onChange={() => setRecipeSearchType('ingredient')}
-              />
-              <span>식재료명</span>
-            </label>
-          </div>
-        )}
-
         {/* 소진 희망 재료 입력 영역 */}
         {isIngredientActive && (
           <div className="ingredient-input-section">
@@ -368,22 +343,44 @@ const RecipeRecommendation = () => {
           </div>
         )}
 
-                 {/* 레시피명/식재료명 입력 영역 */}
-         {isRecipeActive && (
-           <div className="recipe-input-section">
-             <div className="input-field-container">
-               <div className="input-field">
-                 <img src={searchIcon} alt="검색" className="search-icon" />
-                 <input
-                   type="text"
-                    placeholder={recipeSearchType === 'name' ? '레시피명을 입력해주세요' : '식재료명을 입력해주세요'}
-                   value={recipeInput}
-                   onChange={(e) => setRecipeInput(e.target.value)}
-                 />
-               </div>
-             </div>
-           </div>
-         )}
+        {/* 레시피명/식재료명 입력 영역 (소진 희망 재료 배치 참고) */}
+        {isRecipeActive && (
+          <div className="recipe-search-section">
+            <div className="recipe-search-type">
+              <label className="recipe-radio-option">
+                <input
+                  type="radio"
+                  name="recipeSearchType"
+                  value="name"
+                  checked={recipeSearchType === 'name'}
+                  onChange={() => setRecipeSearchType('name')}
+                />
+                <span>레시피명</span>
+              </label>
+              <label className="recipe-radio-option">
+                <input
+                  type="radio"
+                  name="recipeSearchType"
+                  value="ingredient"
+                  checked={recipeSearchType === 'ingredient'}
+                  onChange={() => setRecipeSearchType('ingredient')}
+                />
+                <span>식재료명</span>
+              </label>
+            </div>
+            <div className="input-field-container">
+              <div className="input-field">
+                <img src={searchIcon} alt="검색" className="search-icon" />
+                <input
+                  type="text"
+                  placeholder={recipeSearchType === 'name' ? '레시피명을 입력해주세요' : '식재료명을 입력해주세요'}
+                  value={recipeInput}
+                  onChange={(e) => setRecipeInput(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+        )}
         
 
         {/* 레시피 추천 받기 버튼 */}
