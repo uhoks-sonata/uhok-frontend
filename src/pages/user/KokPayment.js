@@ -6,7 +6,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShoppingHeader } from '../../layout/HeaderNav';
+// Header removed
 import BottomNav from '../../layout/BottomNav';
 import '../../styles/kok_payment.css';
 
@@ -44,12 +44,7 @@ const KokPayment = () => {
 
   return (
     <div className="payment-page">
-      <ShoppingHeader 
-        onBack={handleBack}
-        onSearch={handleSearch}
-        onNotificationClick={handleNotificationClick}
-        onCartClick={handleCartClick}
-      />
+      {/* header removed */}
       
       <div className="payment-content">
         <h1 className="payment-title">결제하기</h1>

@@ -1,7 +1,7 @@
 // React와 필요한 훅들을 가져옵니다
 import React, { useState, useEffect } from 'react';
 // 상단 네비게이션 컴포넌트를 가져옵니다
-import { MyPageHeader } from '../../layout/HeaderNav';
+// Header removed
 // 하단 네비게이션 컴포넌트를 가져옵니다
 import BottomNav from '../../layout/BottomNav';
 // 로딩 컴포넌트를 가져옵니다
@@ -253,8 +253,7 @@ const MyPage = () => {
   if (loading) {
     return (
       <div className="mypage-page">
-        {/* 상단 네비게이션 */}
-        <MyPageHeader />
+        {/* header removed */}
         {/* 메인 콘텐츠 영역 */}
         <div className="mypage-content">
           <Loading message="마이페이지를 불러오는 중 ..." />
@@ -268,8 +267,7 @@ const MyPage = () => {
   // 정상적인 마이페이지를 렌더링합니다
   return (
     <div className="mypage-page">
-      {/* 상단 네비게이션 */}
-      <MyPageHeader />
+      {/* header removed */}
       {/* 메인 콘텐츠 */}
       <div className="mypage-content">
         {/* 유저 정보 카드 */}
