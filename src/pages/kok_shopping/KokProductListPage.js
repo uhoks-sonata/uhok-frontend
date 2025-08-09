@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 // Header removed
 
 import '../../styles/kok_product_list_page.css';
+import HeaderNavProductList from '../../layout/HeaderNavProductList';
 import emptyHeartIcon from '../../assets/heart_empty.png';
 import filledHeartIcon from '../../assets/heart_filled.png';
 import api from '../api';
@@ -159,7 +160,7 @@ const KokProductListPage = () => {
   if (loading) {
     return (
       <div className="kok-product-list-page">
-        {/* header removed */}
+        <HeaderNavProductList title={kokSectionTitle || '상품 리스트'} onBackClick={handleKokBack} onNotificationsClick={handleKokNotificationClick} />
         <div className="kok-content">
           <div className="loading">상품을 불러오는 중...</div>
         </div>
@@ -169,7 +170,7 @@ const KokProductListPage = () => {
 
   return (
     <div className="kok-product-list-page">
-      {/* header removed */}
+      <HeaderNavProductList title={kokSectionTitle || '상품 리스트'} onBackClick={handleKokBack} onNotificationsClick={handleKokNotificationClick} />
       
       <div className="kok-content">
         <div className="kok-section-header">

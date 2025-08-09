@@ -8,7 +8,7 @@ import '../styles/header_nav_Icon_bell.css';
 const HeaderNavIconBell = ({
   onClick,
   ariaLabel = 'notifications',
-  size = 24,
+  size = 30,
   strokeWidth = 2,
   className = '',
   style = {},

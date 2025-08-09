@@ -1,0 +1,31 @@
+/* 공용 장바구니(쇼핑백) 아이콘 버튼 스타일 */
+.hn-bucket-btn {
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+
+  /* padding-top: 2px; */
+}
+
+.hn-bucket-btn:hover,
+.hn-bucket-btn:active,
+.hn-bucket-btn:focus,
+.hn-bucket-btn:focus-visible {
+  background: transparent;
+  outline: none;
+  box-shadow: none;
+}
+
+.hn-bucket-svg {
+  display: block;
+  color: #111; /* stroke color */
+}
+
+
