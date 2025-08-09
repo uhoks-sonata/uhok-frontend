@@ -40,9 +40,11 @@ export const recipeApi = {
     for (const s of sizesToTry) {
       try {
         const qs = buildQuery({ recipe, page, size: s, method });
+        const baseTimeoutMs = s >= 5 ? 15000 : 8000;
+        const timeoutMs = method === 'recipe' ? baseTimeoutMs * 3 : baseTimeoutMs;
         const response = await api.get(`/api/recipes/search?${qs}`, {
           baseURL: '',
-          timeout: s >= 5 ? 15000 : 8000,
+          timeout: timeoutMs,
           signal,
         });
         return response.data;
