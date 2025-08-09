@@ -353,7 +353,8 @@ const KokProductDetail = () => {
         return (
           <div className="kok-tab-content" style={{ 
             padding: '16px',
-            width: '480px',
+            width: '100%',
+            maxWidth: '448px',
             height: '855px',
             overflowY: 'auto'
           }}>
@@ -456,7 +457,8 @@ const KokProductDetail = () => {
         return (
           <div className="kok-tab-content" style={{ 
             padding: '16px',
-            width: '480px',
+            width: '100%',
+            maxWidth: '448px',
             height: '855px',
             overflowY: 'auto'
           }}>
@@ -580,7 +582,8 @@ const KokProductDetail = () => {
         return (
           <div className="kok-tab-content" style={{ 
             padding: '16px',
-            width: '480px',
+            width: '100%',
+            maxWidth: '448px',
             height: '855px',
             overflowY: 'auto'
           }}>
@@ -728,11 +731,12 @@ const KokProductDetail = () => {
         onCartClick={handleKokCartClick}
       />
       
-      <div className="product-content" style={{ padding: '16px', flex: 1, overflowY: 'auto', minHeight: 0 }}>
+      <div className="product-content">
         {/* 제품 이미지 */}
         <div className="product-image-section" style={{ 
           marginBottom: '24px',
-          width: '480px'
+          width: '100%',
+          maxWidth: '448px'
         }}>
           <img 
             src={kokProduct.image} 
@@ -747,7 +751,11 @@ const KokProductDetail = () => {
         </div>
 
         {/* 제품 정보 */}
-        <div className="product-info" style={{ marginBottom: '24px' }}>
+        <div className="product-info" style={{ 
+          marginBottom: '24px',
+          width: '100%',
+          maxWidth: '448px'
+        }}>
           <h1 className="product-name" style={{ 
             fontSize: '18px', 
             fontWeight: 'bold', 
@@ -793,8 +801,8 @@ const KokProductDetail = () => {
                 alt="찜"
                 className="heart-button"
                 style={{ 
-                  width: '23px', 
-                  height: '23px', 
+                  width: '38px', 
+                  height: '38px', 
                   marginLeft: '8px',
                   cursor: 'pointer',
                   transition: 'transform 0.15s ease-in-out'
@@ -806,8 +814,8 @@ const KokProductDetail = () => {
                 alt="장바구니"
                 className="cart-button"
                 style={{ 
-                  width: '23px', 
-                  height: '23px', 
+                  width: '30px', 
+                  height: '30px', 
                   marginLeft: '0px',
                   cursor: 'pointer',
                   transition: 'transform 0.15s ease-in-out'
