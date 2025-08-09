@@ -32,11 +32,11 @@
 }
 
 .kok-section-header {
-  margin-bottom: 24px;
-  padding: 16px;
+  margin-bottom: 0px;
+  padding: 8px;
   background-color: white;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: none;
 }
 
 .kok-page-title {
@@ -88,7 +88,7 @@
   border-radius: 12px;
   overflow: hidden;
   background: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: none;
   display: flex;
   flex-direction: column;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -97,7 +97,7 @@
 
 .kok-products-grid .kok-product-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: none;
 }
 
 /* 제품 카드 내부 스타일 */

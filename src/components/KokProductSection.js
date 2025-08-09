@@ -65,7 +65,7 @@ const KokProductSection = ({
 
       const handleKokTouchMove = (e) => {
         if (!isDown) return;
-        e.preventDefault();
+        if (e.cancelable) e.preventDefault();
         const x = e.touches[0].pageX - container.offsetLeft;
         const walk = (x - startX) * 1.5;
         container.scrollLeft = scrollLeft - walk;
@@ -84,7 +84,7 @@ const KokProductSection = ({
 
       // 휠 이벤트 추가
       const handleKokWheel = (e) => {
-        e.preventDefault();
+        if (e.cancelable) e.preventDefault();
         container.scrollLeft += e.deltaY;
       };
       container.addEventListener('wheel', handleKokWheel, { passive: false });

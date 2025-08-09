@@ -168,7 +168,8 @@ const MyPage = () => {
           recipeData = recipeResponse.data || { purchasedRecipe: null, similarRecipes: [] };
           console.log('레시피 정보 조회 성공:', recipeData);
         } catch (err) {
-          console.error('레시피 정보 조회 실패 (개발용 토큰으로 인한 서명 검증 실패):', err);
+          console.error('레시피 정보 조회 실패:', err);
+          // 422 에러나 다른 에러가 발생해도 기본값으로 설정
           recipeData = { purchasedRecipe: null, similarRecipes: [] };
         }
         
@@ -179,7 +180,7 @@ const MyPage = () => {
           email: userData.email,
           created_at: userData.created_at,
           orderCount: orderCount,
-          recentOrders: ordersData.orders
+          recentOrders: ordersData.orders || []
         });
         
         setRecipeData(recipeData);
@@ -267,22 +268,6 @@ const MyPage = () => {
   // 정상적인 마이페이지를 렌더링합니다
   return (
     <div className="mypage-page">
-      {/* 사용자 정보 디버깅용 표시 */}
-      <div style={{ 
-        background: '#f0f0f0', 
-        padding: '10px', 
-        margin: '10px', 
-        borderRadius: '5px',
-        fontSize: '12px'
-      }}>
-        <strong>MyPage - 사용자 정보:</strong> 
-        {user ? (
-          `${user.email} | 로그인: ${isLoggedIn ? '예' : '아니오'} | 토큰: ${user.token ? '있음' : '없음'} | 토큰길이: ${user.token?.length || 0}`
-        ) : (
-          '사용자 정보 없음'
-        )}
-      </div>
-      
       {/* 상단 네비게이션 */}
       <MyPageHeader />
       {/* 메인 콘텐츠 */}
@@ -318,7 +303,7 @@ const MyPage = () => {
           <h3 className="section-title">최근 7일 동안 주문한 상품</h3>
           
           {/* 주문이 있을 때와 없을 때를 구분하여 렌더링합니다 */}
-          {userData.recentOrders.length > 0 ? (
+          {userData.recentOrders && userData.recentOrders.length > 0 ? (
             // 주문번호별로 그룹화하여 렌더링합니다
             (() => {
               // 주문번호별로 상품들을 그룹화합니다
