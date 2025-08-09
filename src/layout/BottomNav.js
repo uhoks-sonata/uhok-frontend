@@ -70,7 +70,7 @@ const BottomNav = () => {
   // 각 아이템은 경로, 아이콘, 라벨, 활성/비활성 아이콘 정보를 포함
   const navItems = [
     {
-      path: "/main", // 메인 페이지 경로 (KOK 메인으로 변경)
+      path: "/kok", // 콕 쇼핑몰 페이지 경로
       icon: bottomIconKokBlack, // 활성 상태 아이콘 (검은색)
       blackIcon: bottomIconKok, // 비활성 상태 아이콘 (일반)
       label: "콕 쇼핑몰" // 네비게이션 라벨
@@ -190,9 +190,9 @@ const BottomNav = () => {
                   {index === 1 && (
                     <div className="image-button-wrapper">
                     <Link 
-                      to="/schedule" 
+                      to="/main" 
                       className="main-button-link"
-                      onClick={() => logNavigationClick('/schedule', '혹')} // 혹 버튼 클릭 로그 기록
+                      onClick={() => logNavigationClick('/main', '혹')} // 혹 버튼 클릭 로그 기록
                     >
                       <div className="image-button">
                         <div className="image-text">
