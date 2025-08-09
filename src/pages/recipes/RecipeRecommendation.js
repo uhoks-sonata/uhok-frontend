@@ -17,6 +17,7 @@ const RecipeRecommendation = () => {
   const [quantityInput, setQuantityInput] = useState('');
   const [quantityUnit, setQuantityUnit] = useState('g');
   const [recipeInput, setRecipeInput] = useState('');
+  const [recipeSearchType, setRecipeSearchType] = useState('name');
 
   const handleBack = () => {
     navigate(-1);
@@ -44,6 +45,7 @@ const RecipeRecommendation = () => {
       // 비활성화된 상태면 활성화하고 다른 버튼은 비활성화
       setIsRecipeActive(true);
       setIsIngredientActive(false);
+      setRecipeSearchType('name');
       console.log('레시피명/식재료명 검색 클릭: 활성화');
     }
   };
@@ -100,13 +102,19 @@ const RecipeRecommendation = () => {
         }
         
         console.log('레시피명/식재료명으로 레시피 추천 받기:', recipeInput);
-        const response = await recipeApi.searchRecipes(recipeInput);
-        console.log('API 응답:', response);
-        // 여기에 응답 처리 로직 추가 예정
+        const { recipes, page, total } = await recipeApi.searchRecipes({ recipe: recipeInput, page: 1, size: 10 });
+        console.log('API 응답:', { recipes, page, total });
+        // 결과 페이지로 이동하며 검색결과 전달
+        const payload = encodeURIComponent(JSON.stringify({ mode: 'keyword', keyword: recipeInput, result: { recipes, page, total } }));
+        navigate(`/recipes/by-ingredients?keywordResult=${payload}`);
       }
     } catch (error) {
       console.error('API 호출 중 오류 발생:', error);
-      alert('레시피 추천을 가져오는 중 오류가 발생했습니다.');
+      // 504/타임아웃 시에도 결과 화면으로 이동해 안내 메시지 표시
+      const payload = encodeURIComponent(
+        JSON.stringify({ mode: 'keyword', keyword: recipeInput, result: { recipes: [], page: 1, total: 0 }, timeout: true })
+      );
+      navigate(`/recipes/by-ingredients?keywordResult=${payload}`);
     }
   };
 
@@ -141,6 +149,31 @@ const RecipeRecommendation = () => {
             </div>
           </button>
         </div>
+
+        {isRecipeActive && (
+          <div className="recipe-search-type">
+            <label className="recipe-radio-option">
+              <input
+                type="radio"
+                name="recipeSearchType"
+                value="name"
+                checked={recipeSearchType === 'name'}
+                onChange={() => setRecipeSearchType('name')}
+              />
+              <span>레시피명</span>
+            </label>
+            <label className="recipe-radio-option">
+              <input
+                type="radio"
+                name="recipeSearchType"
+                value="ingredient"
+                checked={recipeSearchType === 'ingredient'}
+                onChange={() => setRecipeSearchType('ingredient')}
+              />
+              <span>식재료명</span>
+            </label>
+          </div>
+        )}
 
         {/* 소진 희망 재료 입력 영역 */}
         {isIngredientActive && (
@@ -219,7 +252,7 @@ const RecipeRecommendation = () => {
                  <img src={searchIcon} alt="검색" className="search-icon" />
                  <input
                    type="text"
-                   placeholder="레시피 입력"
+                    placeholder={recipeSearchType === 'name' ? '레시피명을 입력해주세요' : '식재료명을 입력해주세요'}
                    value={recipeInput}
                    onChange={(e) => setRecipeInput(e.target.value)}
                  />
