@@ -80,5 +80,6 @@ export const recipeApi = {
   postRecipeRating: async (recipeId, rating) => {
     const response = await api.post(`/api/recipes/${recipeId}/rating`, { rating }, { baseURL: '' });
     return response.data;
+
   },
 };

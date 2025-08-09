@@ -2,20 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CartHeader } from '../../layout/HeaderNav';
 import { useNotifications } from '../../layout/HeaderNav';
-import Loading from '../../components/Loading';
+import BottomNav from '../../layout/BottomNav';
 import '../../styles/cart.css';
-import api from '../api';
+import heartIcon from '../../assets/heart_empty.png';
+import heartFilledIcon from '../../assets/heart_filled.png';
+import test1Image from '../../assets/test/test1.png';
 
 const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
+  const [selectedItems, setSelectedItems] = useState(new Set());
   const [loading, setLoading] = useState(true);
-  const [fadeIn, setFadeIn] = useState(false);
+  const [showQuantityModal, setShowQuantityModal] = useState(false);
+  const [selectedCartItemId, setSelectedCartItemId] = useState(null);
   const navigate = useNavigate();
   const { cartCount, clearCart } = useNotifications();
 
   useEffect(() => {
-    setFadeIn(true);
-    // 실제로는 API에서 장바구니 데이터를 가져와야 함
     loadCartItems();
   }, []);
 
@@ -23,40 +25,39 @@ const Cart = () => {
     try {
       setLoading(true);
       
-      // api.js를 활용하여 장바구니 데이터를 비동기로 가져옵니다
-      const response = await api.get('/api/cart');
+      // 임시 데이터 사용 (API 연결 전까지)
+      const mockCartItems = [
+        {
+          kok_cart_id: 1,
+          kok_product_id: 10046186,
+          kok_product_name: "[맛춤상회] 배터지는 소고기 모듬세트",
+          kok_thumbnail: test1Image,
+          kok_product_price: 600000,
+          kok_discount_rate: 47,
+          kok_discounted_price: 319000,
+          kok_store_name: "맛춤상회",
+          kok_quantity: 1,
+          kok_option: "04.온가족 세트 총 1.1kg (갈비+등심추리+토시+부채+차돌박이)"
+        },
+        {
+          kok_cart_id: 2,
+          kok_product_id: 10046187,
+          kok_product_name: "[맛춤상회] 배터지는 소고기 모듬세트",
+          kok_thumbnail: test1Image,
+          kok_product_price: 600000,
+          kok_discount_rate: 47,
+          kok_discounted_price: 319000,
+          kok_store_name: "맛춤상회",
+          kok_quantity: 1,
+          kok_option: "04.온가족 세트 총 1.1kg (갈비+등심추리+토시+부채+차돌박이)"
+        }
+      ];
       
-      if (response.data && response.data.items) {
-        setCartItems(response.data.items);
-      } else {
-        // API 응답이 없거나 실패한 경우 임시 데이터 사용
-        const mockCartItems = [
-          {
-            id: 1,
-            name: "구운계란 30구+핑크솔트 증정",
-            brand: "산지명인",
-            price: 11900,
-            originalPrice: 15000,
-            quantity: 1,
-            image: "/test1.png",
-            discountRate: 21
-          },
-          {
-            id: 2,
-            name: "초코파이 12개입",
-            brand: "오리온",
-            price: 8500,
-            originalPrice: 12000,
-            quantity: 2,
-            image: "/test2.png",
-            discountRate: 29
-          }
-        ];
-        setCartItems(mockCartItems);
-      }
+      setCartItems(mockCartItems);
+      // 모든 아이템을 기본적으로 선택
+      setSelectedItems(new Set(mockCartItems.map(item => item.kok_cart_id)));
     } catch (error) {
       console.error('장바구니 데이터 로딩 실패:', error);
-      // 에러 발생 시 빈 배열로 설정
       setCartItems([]);
     } finally {
       setLoading(false);
@@ -69,74 +70,117 @@ const Cart = () => {
 
   const handleNotificationClick = () => {
     console.log('알림 버튼 클릭');
-    // 알림 페이지로 이동하거나 알림 모달 표시
   };
 
-  const handleQuantityChange = async (itemId, newQuantity) => {
+  const handleSelectAll = () => {
+    if (selectedItems.size === cartItems.length) {
+      // 모든 아이템이 선택된 경우, 모두 해제
+      setSelectedItems(new Set());
+    } else {
+      // 모든 아이템 선택
+      setSelectedItems(new Set(cartItems.map(item => item.kok_cart_id)));
+    }
+  };
+
+  const handleSelectItem = (cartItemId) => {
+    const newSelectedItems = new Set(selectedItems);
+    if (newSelectedItems.has(cartItemId)) {
+      newSelectedItems.delete(cartItemId);
+    } else {
+      newSelectedItems.add(cartItemId);
+    }
+    setSelectedItems(newSelectedItems);
+  };
+
+  const handleQuantityChange = async (cartItemId, newQuantity) => {
     if (newQuantity < 1) return;
     
     try {
-      // api.js를 활용하여 수량 변경을 비동기로 처리합니다
-      await api.put(`/api/cart/items/${itemId}`, { quantity: newQuantity });
-      
-      // 성공 시 로컬 상태 업데이트
+      // API 호출 (임시로 로컬 상태만 업데이트)
       setCartItems(prev => 
         prev.map(item => 
-          item.id === itemId 
-            ? { ...item, quantity: newQuantity }
+          item.kok_cart_id === cartItemId 
+            ? { ...item, kok_quantity: newQuantity }
             : item
         )
       );
     } catch (error) {
       console.error('수량 변경 실패:', error);
-      // 에러 발생 시에도 로컬 상태 업데이트 (사용자 경험 개선)
-      setCartItems(prev => 
-        prev.map(item => 
-          item.id === itemId 
-            ? { ...item, quantity: newQuantity }
-            : item
-        )
-      );
     }
   };
 
-  const handleRemoveItem = async (itemId) => {
+  const handleRemoveItem = async (cartItemId) => {
     try {
-      // api.js를 활용하여 상품 삭제를 비동기로 처리합니다
-      await api.delete(`/api/cart/items/${itemId}`);
-      
-      // 성공 시 로컬 상태 업데이트
-      setCartItems(prev => prev.filter(item => item.id !== itemId));
+      // API 호출 (임시로 로컬 상태만 업데이트)
+      setCartItems(prev => prev.filter(item => item.kok_cart_id !== cartItemId));
+      setSelectedItems(prev => {
+        const newSelected = new Set(prev);
+        newSelected.delete(cartItemId);
+        return newSelected;
+      });
     } catch (error) {
       console.error('상품 삭제 실패:', error);
-      // 에러 발생 시에도 로컬 상태 업데이트 (사용자 경험 개선)
-      setCartItems(prev => prev.filter(item => item.id !== itemId));
     }
   };
 
-  const handleCheckout = () => {
-    console.log('결제 페이지로 이동');
-    // 결제 페이지로 이동
-    navigate('/payment');
+  const handleRemoveSelected = () => {
+    const selectedIds = Array.from(selectedItems);
+    setCartItems(prev => prev.filter(item => !selectedIds.includes(item.kok_cart_id)));
+    setSelectedItems(new Set());
   };
 
-  const totalPrice = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const totalOriginalPrice = cartItems.reduce((sum, item) => sum + (item.originalPrice * item.quantity), 0);
-  const totalDiscount = totalOriginalPrice - totalPrice;
+  const handleOrder = () => {
+    console.log('주문하기 클릭');
+    navigate('/kok/payment');
+  };
+
+  const handleBuyNow = (cartItemId) => {
+    console.log('구매하기 클릭:', cartItemId);
+    navigate('/kok/payment');
+  };
+
+  const handleWishlist = (cartItemId) => {
+    console.log('찜하기 클릭:', cartItemId);
+  };
+
+  const handleQuantityClick = (cartItemId) => {
+    setSelectedCartItemId(cartItemId);
+    setShowQuantityModal(true);
+  };
+
+  const handleQuantitySelect = (quantity) => {
+    if (selectedCartItemId) {
+      handleQuantityChange(selectedCartItemId, quantity);
+    }
+    setShowQuantityModal(false);
+    setSelectedCartItemId(null);
+  };
+
+  const closeQuantityModal = () => {
+    setShowQuantityModal(false);
+    setSelectedCartItemId(null);
+  };
+
+  // 선택된 상품들의 총 금액 계산
+  const selectedItemsData = cartItems.filter(item => selectedItems.has(item.kok_cart_id));
+  const totalProductPrice = selectedItemsData.reduce((sum, item) => sum + (item.kok_product_price * item.kok_quantity), 0);
+  const totalDiscountedPrice = selectedItemsData.reduce((sum, item) => sum + (item.kok_discounted_price * item.kok_quantity), 0);
+  const totalDiscount = totalProductPrice - totalDiscountedPrice;
 
   if (loading) {
     return (
-      <div className={`cart-page ${fadeIn ? 'fade-in' : ''}`}>
+      <div className="cart-page">
         <CartHeader onBack={handleBack} onNotificationClick={handleNotificationClick} />
         <div className="cart-content">
-          <Loading message="장바구니를 불러오는 중 ..." />
+          <div className="loading">장바구니를 불러오는 중...</div>
         </div>
+        <BottomNav />
       </div>
     );
   }
 
   return (
-    <div className={`cart-page ${fadeIn ? 'fade-in' : ''}`}>
+    <div className="cart-page">
       <CartHeader onBack={handleBack} onNotificationClick={handleNotificationClick} />
       
       <div className="cart-content">
@@ -154,76 +198,175 @@ const Cart = () => {
           </div>
         ) : (
           <>
-            <div className="cart-items">
-              {cartItems.map((item) => (
-                <div key={item.id} className="cart-item">
-                  <div className="item-image">
-                    <img src={item.image} alt={item.name} />
-                  </div>
-                  <div className="item-info">
-                    <div className="item-brand">{item.brand}</div>
-                    <div className="item-name">{item.name}</div>
-                    <div className="item-price">
-                      <span className="current-price">{item.price.toLocaleString()}원</span>
-                      <span className="original-price">{item.originalPrice.toLocaleString()}원</span>
-                      <span className="discount-rate">{item.discountRate}% 할인</span>
-                    </div>
-                  </div>
-                  <div className="item-actions">
-                    <div className="quantity-controls">
-                      <button 
-                        onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                        disabled={item.quantity <= 1}
-                      >
-                        -
-                      </button>
-                      <span className="quantity">{item.quantity}</span>
-                      <button 
-                        onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                      >
-                        +
-                      </button>
-                    </div>
-                    <button 
-                      className="remove-btn"
-                      onClick={() => handleRemoveItem(item.id)}
-                    >
-                      삭제
-                    </button>
-                  </div>
-                </div>
-              ))}
+            {/* 선택 및 액션 바 */}
+            <div className="cart-action-bar">
+              <div className="select-all-section">
+                <label className="select-all-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={selectedItems.size === cartItems.length && cartItems.length > 0}
+                    onChange={handleSelectAll}
+                  />
+                  <span className="checkmark"></span>
+                  전체 선택
+                </label>
+                <span className="selection-count">
+                  {selectedItems.size} | {cartItems.length}
+                </span>
+              </div>
+              <button 
+                className="delete-selected-btn"
+                onClick={handleRemoveSelected}
+                disabled={selectedItems.size === 0}
+              >
+                삭제
+              </button>
             </div>
-            
-            <div className="cart-summary">
+
+                         {/* 상품 목록 */}
+             <div className="cart-items">
+               {cartItems.map((item) => (
+                 <div key={item.kok_cart_id} className="cart-item">
+                   <div className="item-header">
+                     <span className="store-name">{item.kok_store_name}</span>
+                     <span className="free-shipping">무료배송</span>
+                     <button 
+                       className="remove-item-btn"
+                       onClick={() => handleRemoveItem(item.kok_cart_id)}
+                     >
+                       ×
+                     </button>
+                   </div>
+                   
+                   <div className="item-content">
+                     <div className="item-top-section">
+                       <label className="item-checkbox">
+                         <input
+                           type="checkbox"
+                           checked={selectedItems.has(item.kok_cart_id)}
+                           onChange={() => handleSelectItem(item.kok_cart_id)}
+                         />
+                         <span className="checkmark"></span>
+                       </label>
+                       
+                       <div className="item-name">{item.kok_product_name}</div>
+                     </div>
+                     
+                     <div className="item-main-section">
+                       <div className="item-image">
+                         <img src={item.kok_thumbnail} alt={item.kok_product_name} />
+                       </div>
+                       
+                       <div className="item-details">
+                         <div className="item-option">옵션 : {item.kok_option}</div>
+                         <div className="item-price">
+                           <span className="discounted-price">{item.kok_discounted_price.toLocaleString()}원</span>
+                           <span className="original-price">{item.kok_product_price.toLocaleString()}원</span>
+                         </div>
+                       </div>
+                       
+                       <div className="item-actions">
+                         <div className="quantity-section">
+                           <div className="quantity-control">
+                             <button 
+                               className="quantity-btn"
+                               onClick={() => handleQuantityChange(item.kok_cart_id, item.kok_quantity - 1)}
+                               disabled={item.kok_quantity <= 1}
+                             >
+                               ▼
+                             </button>
+                             <span 
+                               className="quantity"
+                               onClick={() => handleQuantityClick(item.kok_cart_id)}
+                             >
+                               {item.kok_quantity}
+                             </span>
+                           </div>
+                           <button 
+                             className="buy-now-btn"
+                             onClick={() => handleBuyNow(item.kok_cart_id)}
+                           >
+                             구매
+                           </button>
+                         </div>
+                         <button 
+                           className="wishlist-btn"
+                           onClick={() => handleWishlist(item.kok_cart_id)}
+                         >
+                           <img src={heartIcon} alt="찜하기" />
+                         </button>
+                       </div>
+                     </div>
+                   </div>
+                 </div>
+               ))}
+             </div>
+
+            {/* 레시피 추천 바 */}
+            {cartItems.length >= 2 && (
+              <div className="recipe-recommendation-bar">
+                두 개 이상 담으셨네요! 레시피 추천드려요
+              </div>
+            )}
+
+            {/* 가격 요약 */}
+            <div className="price-summary">
               <div className="summary-item">
                 <span>상품 금액</span>
-                <span>{totalOriginalPrice.toLocaleString()}원</span>
+                <span>{totalProductPrice.toLocaleString()}원</span>
               </div>
               <div className="summary-item discount">
-                <span>할인 금액</span>
+                <span>상품 할인금액</span>
                 <span>-{totalDiscount.toLocaleString()}원</span>
               </div>
               <div className="summary-item total">
-                <span>결제 예정 금액</span>
-                <span>{totalPrice.toLocaleString()}원</span>
+                <span>총 결제예정금액 (총 {selectedItems.size}건)</span>
+                <span>{totalDiscountedPrice.toLocaleString()}원</span>
               </div>
-            </div>
-            
-            <div className="cart-actions">
-              <button 
-                className="checkout-btn"
-                onClick={handleCheckout}
-                disabled={cartItems.length === 0}
-              >
-                {totalPrice.toLocaleString()}원 주문하기
-              </button>
             </div>
           </>
         )}
       </div>
-    </div>
-  );
-};
+
+      {/* 주문하기 버튼 */}
+      {cartItems.length > 0 && (
+        <div className="order-section">
+          <button 
+            className="order-btn"
+            onClick={handleOrder}
+            disabled={selectedItems.size === 0}
+          >
+            주문하기
+          </button>
+        </div>
+      )}
+
+             <BottomNav />
+
+       {/* 수량 선택 모달 */}
+       {showQuantityModal && (
+         <div className="quantity-modal-overlay" onClick={closeQuantityModal}>
+           <div className="quantity-modal" onClick={(e) => e.stopPropagation()}>
+             <div className="modal-header">
+               <h3>수량 선택</h3>
+               <button className="close-btn" onClick={closeQuantityModal}>×</button>
+             </div>
+             <div className="quantity-options">
+               {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((quantity) => (
+                 <button
+                   key={quantity}
+                   className="quantity-option"
+                   onClick={() => handleQuantitySelect(quantity)}
+                 >
+                   {quantity}개
+                 </button>
+               ))}
+             </div>
+           </div>
+         </div>
+       )}
+     </div>
+   );
+ };
 
 export default Cart;

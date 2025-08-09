@@ -234,7 +234,7 @@ const KokMain = () => {
                 gap: '12px'
               }}
               cardStyle={{
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                boxShadow: 'none'
               }}
             />
         
@@ -251,7 +251,7 @@ const KokMain = () => {
             gap: '4px'
           }}
           cardStyle={{
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+            boxShadow: 'none'
           }}
         />
         
@@ -268,7 +268,7 @@ const KokMain = () => {
             gap: '14px'
           }}
           cardStyle={{
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+            boxShadow: 'none'
           }}
         />
           </>
