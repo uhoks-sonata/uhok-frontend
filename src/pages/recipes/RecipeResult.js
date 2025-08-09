@@ -1,7 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import BottomNav from '../../layout/BottomNav';
 import '../../styles/recipe_result.css';
+// 로컬 더미 이미지로 교체 (외부 placeholder 차단/오류 대비)
+import img1 from '../../assets/test/test1.png';
+import img2 from '../../assets/test/test2.png';
+import img3 from '../../assets/test/test3.png';
+import fallbackImg from '../../assets/no_items.png';
+import { recipeApi } from '../../api/recipeApi';
 
 const RecipeResult = () => {
   const navigate = useNavigate();
@@ -13,6 +19,8 @@ const RecipeResult = () => {
   const [total, setTotal] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  // 렌더 조건에서 참조하는 error 변수를 정의 (기본 공백)
+  const [error] = useState('');
 
   useEffect(() => {
     if (location.state) {
@@ -63,20 +71,15 @@ const RecipeResult = () => {
       </header>
 
       {/* 선택된 재료 태그들 */}
-      {ingredients.length > 0 && (
-        <div className="selected-ingredients-section">
-          <div className="ingredients-tags">
-            {ingredients.map((ingredient, index) => (
-              <div key={index} className="ingredient-tag">
-                <span className="ingredient-name">
-                  {ingredient.name}
-                  {ingredient.amount && ` ${ingredient.amount}${ingredient.unit}`}
-                </span>
-              </div>
-            ))}
-          </div>
+      <div className="selected-ingredients-section">
+        <div className="ingredients-tags">
+          {ingredients.map((ingredient, index) => (
+            <div key={index} className="ingredient-tag">
+              <span className="ingredient-name">{ingredient}</span>
+            </div>
+          ))}
         </div>
-      )}
+      </div>
 
       {/* 결과 요약 */}
       <div className="result-summary">
@@ -85,31 +88,44 @@ const RecipeResult = () => {
 
       {/* 레시피 목록 */}
       <main className="recipe-list">
-        {recipes.length > 0 ? (
-          recipes.map((recipe) => (
-            <div key={recipe.recipe_id} className="recipe-card" onClick={() => handleRecipeClick(recipe)}>
+        {loading && (
+          <div className="recipe-card">
+            <div className="recipe-info"><h3>불러오는 중...</h3></div>
+          </div>
+        )}
+        {!loading && error && (
+          <div className="recipe-card">
+            <div className="recipe-info"><h3>{error}</h3></div>
+          </div>
+        )}
+        {!loading && !error && recipes.length > 0 && (
+          recipes.map((recipe, idx) => (
+            <div key={recipe.recipe_id || recipe.id || idx} className="recipe-card" onClick={() => handleRecipeClick(recipe)}>
               <div className="recipe-image">
-                <img src={recipe.thumbnail_url} alt={recipe.recipe_title} />
+                <img src={recipe.thumbnail_url || recipe.image || fallbackImg} alt={recipe.recipe_title || recipe.name || '레시피'} onError={(e)=>{ e.currentTarget.src = fallbackImg; }} />
               </div>
               <div className="recipe-info">
-                <h3 className="recipe-name">{recipe.recipe_title}</h3>
+                <h3 className="recipe-name">{recipe.recipe_title || recipe.name}</h3>
                 <div className="recipe-meta">
                   <span className="cooking-name">{recipe.cooking_name}</span>
                   <span className="cooking-category">{recipe.cooking_category_name}</span>
                   <span className="cooking-case">{recipe.cooking_case_name}</span>
                 </div>
                 <div className="recipe-stats">
-                  <span className="scrap-count">스크랩 {recipe.scrap_count}</span>
-                  <span className="matched-ingredients">일치 재료 {recipe.matched_ingredient_count}개</span>
+                  <span className="scrap-count">스크랩 {recipe.scrap_count || recipe.scrapCount || 0}</span>
+                  {typeof recipe.matched_ingredient_count === 'number' && (
+                    <span className="matched-ingredients">일치 재료 {recipe.matched_ingredient_count}개</span>
+                  )}
                 </div>
-                <p className="recipe-description">{recipe.cooking_introduction}</p>
+                <p className="recipe-description">{recipe.cooking_introduction || ''}</p>
                 <div className="recipe-details">
                   <span className="serving">{recipe.number_of_serving}</span>
                 </div>
               </div>
             </div>
           ))
-        ) : (
+        )}
+        {!loading && !error && recipes.length === 0 && (
           <div className="no-results">
             <p>검색 결과가 없습니다.</p>
             <p>다른 재료로 다시 시도해보세요.</p>
@@ -132,5 +148,5 @@ const RecipeResult = () => {
   );
 };
 
-export default RecipeResult;
+export default RecipeResult; 
 
