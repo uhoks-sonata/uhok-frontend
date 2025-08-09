@@ -213,12 +213,19 @@ const RecipeRecommendation = () => {
           return;
         }
         
-        console.log('레시피명/식재료명으로 레시피 추천 받기:', recipeInput);
-        const { recipes, page, total } = await recipeApi.searchRecipes({ recipe: recipeInput, page: 1, size: 10 });
+        console.log('레시피명/식재료명으로 레시피 추천 받기:', recipeInput, recipeSearchType);
+        const method = recipeSearchType === 'ingredient' ? 'ingredient' : 'recipe';
+        const { recipes, page, total } = await recipeApi.searchRecipes({ recipe: recipeInput, page: 1, size: 10, method });
         console.log('API 응답:', { recipes, page, total });
-        // 결과 페이지로 이동하며 검색결과 전달
-        const payload = encodeURIComponent(JSON.stringify({ mode: 'keyword', keyword: recipeInput, result: { recipes, page, total } }));
-        navigate(`/recipes/by-ingredients?keywordResult=${payload}`);
+        // 결과 페이지로 이동하며 검색결과 전달 (state 기반)
+        navigate('/recipes/result', {
+          state: {
+            recipes,
+            total,
+            page,
+            ingredients: [],
+          },
+        });
       }
     } catch (error) {
       console.error('API 호출 중 오류 발생:', error);
@@ -377,23 +384,7 @@ const RecipeRecommendation = () => {
              </div>
            </div>
          )}
-        {/* 레시피명/식재료명 입력 영역 */}
-        {isRecipeActive && (
-          <div className="recipe-input-section">
-            <div className="input-field-container">
-              <div className="input-field">
-                <img src={searchIcon} alt="검색" className="search-icon" />
-                <input
-                  type="text"
-                  placeholder="레시피명 또는 식재료명을 입력해주세요"
-                  value={recipeInput}
-                  onChange={(e) => setRecipeInput(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleGetRecipeRecommendation()}
-                />
-              </div>
-            </div>
-          </div>
-        )}
+        
 
         {/* 레시피 추천 받기 버튼 */}
         {(isIngredientActive || isRecipeActive) && (

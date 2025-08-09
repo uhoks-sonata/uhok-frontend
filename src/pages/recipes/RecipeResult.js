@@ -19,6 +19,8 @@ const RecipeResult = () => {
   const [total, setTotal] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  // 렌더 조건에서 참조하는 error 변수를 정의 (기본 공백)
+  const [error] = useState('');
 
   useEffect(() => {
     if (location.state) {

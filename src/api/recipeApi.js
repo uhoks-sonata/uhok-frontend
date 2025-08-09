@@ -30,16 +30,16 @@ export const recipeApi = {
   },
 
   // 레시피명/식재료명으로 레시피 검색 (GET /api/recipes/search)
-  // params: { recipe: string, page?: number, size?: number, signal?: AbortSignal } 또는 문자열(recipe)
+  // params: { recipe: string, page?: number, size?: number, method?: 'recipe'|'ingredient', signal?: AbortSignal } 또는 문자열(recipe)
   searchRecipes: async (params) => {
-    const { recipe, page = 1, size = 10, signal } =
-      typeof params === 'string' ? { recipe: params, page: 1, size: 10 } : params || {};
+    const { recipe, page = 1, size = 10, method = 'recipe', signal } =
+      typeof params === 'string' ? { recipe: params, page: 1, size: 10, method: 'recipe' } : params || {};
 
     const sizesToTry = [size || 10, 5, 3, 1];
     let lastError;
     for (const s of sizesToTry) {
       try {
-        const qs = buildQuery({ recipe, page, size: s });
+        const qs = buildQuery({ recipe, page, size: s, method });
         const response = await api.get(`/api/recipes/search?${qs}`, {
           baseURL: '',
           timeout: s >= 5 ? 15000 : 8000,
