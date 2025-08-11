@@ -235,7 +235,7 @@
 }
 
 .kok-products-container.fixed .kok-product-card .kok-rating-info {
-  width: 57px;
+  width: 70px;
   height: 16px;
   display: flex;
   align-items: center;
@@ -244,13 +244,20 @@
 }
 
 .kok-products-container.fixed .kok-product-card .kok-stars {
-  font-size: 12px;
+  font-size: 13px;
   color: #FA5F8C;
 }
 
 .kok-products-container.fixed .kok-product-card .kok-review-count {
-  font-size: 10px;
+  font-size: 11px;
   color: #666;
+}
+
+/* 별점과 리뷰수를 한 줄로 강제 */
+.kok-products-container.fixed .kok-product-card .kok-product-rating {
+  white-space: nowrap; /* 한 줄로 강제 */
+  overflow: hidden; /* 넘치는 텍스트 숨김 */
+  text-overflow: ellipsis; /* 넘치는 텍스트를 ...으로 표시 */
 }
 
 /* 할인 특가 상품 전용 그리드 */
