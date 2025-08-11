@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BottomNav from '../../layout/BottomNav';
+import HeaderNavSchedule from '../../layout/HeaderNavSchedule';
 import { useUser } from '../../contexts/UserContext';
 import '../../styles/schedule.css';
 
@@ -67,16 +68,11 @@ const Schedule = () => {
     console.log(`위시리스트 토글: ${itemId}`);
   };
 
+
+
   // 검색 핸들러
-  const handleSearch = (e = null) => {
-    if (e) {
-      e.preventDefault();
-    }
-    if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}&type=homeshopping`);
-    } else {
-      navigate('/search?type=homeshopping');
-    }
+  const handleSearch = () => {
+    navigate('/search?type=homeshopping');
   };
 
   // 알림 핸들러
@@ -86,20 +82,12 @@ const Schedule = () => {
 
   return (
     <div className="schedule-page">
-      {/* 검색 헤더 */}
-      <div className="schedule-search-header">
-        <div className="search-container">
-          <div className="search-input-wrapper" onClick={handleSearch}>
-            <div className="schedule-search-button">
-              <span className="search-placeholder">홈쇼핑 검색</span>
-              <span className="search-icon">🔍</span>
-            </div>
-          </div>
-          <button className="notification-btn" onClick={handleNotification}>
-            🔔
-          </button>
-        </div>
-      </div>
+      {/* 편성표 헤더 네비게이션 */}
+      <HeaderNavSchedule 
+        onBackClick={() => navigate(-1)}
+        onSearchClick={handleSearch}
+        onNotificationClick={handleNotification}
+      />
 
       <div className="schedule-content">
         {/* 날짜 선택 캘린더 */}

@@ -21,7 +21,7 @@
 
 /* 편성표 버튼 */
 .schedule-btn {
-  background-color: #007bff;
+  background-color: #ff69b4;
   color: #ffffff;
   border: none;
   border-radius: 8px;
@@ -35,11 +35,11 @@
 }
 
 .schedule-btn:hover {
-  background-color: #0056b3;
+  background-color: #b81e6b;
 }
 
 .schedule-btn:active {
-  background-color: #004085;
+  background-color: #b81e6b;
 }
 
 /* 검색 입력 래퍼 */
