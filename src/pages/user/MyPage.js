@@ -8,6 +8,7 @@ import BottomNav from '../../layout/BottomNav';
 import Loading from '../../components/Loading';
 // 마이페이지 스타일을 가져옵니다
 import '../../styles/mypage.css';
+import '../../styles/logout.css';
 // API 설정을 가져옵니다
 import api from '../api';
 // 사용자 Context import
@@ -261,6 +262,53 @@ const MyPage = () => {
     window.location.href = '/cart';
   };
 
+  // 로그아웃 핸들러 함수를 정의합니다
+  const handleLogout = async () => {
+    try {
+      console.log('로그아웃 시작');
+      
+      // 현재 access token 가져오기
+      const accessToken = localStorage.getItem('access_token');
+      if (!accessToken) {
+        console.log('토큰이 없어서 바로 홈페이지로 이동');
+        window.location.href = '/';
+        return;
+      }
+
+      // 백엔드 로그아웃 API 호출
+      const response = await api.post('/api/user/logout', {}, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      });
+
+      console.log('로그아웃 API 응답:', response.data);
+      
+      // 로컬 스토리지에서 토큰 제거
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      
+      // 성공 메시지 표시 (선택사항)
+      alert('로그아웃이 완료되었습니다.');
+      
+      // 홈페이지로 이동
+      window.location.href = '/';
+      
+    } catch (error) {
+      console.error('로그아웃 실패:', error);
+      
+      // API 호출 실패 시에도 로컬 토큰은 제거
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      
+      // 에러 메시지 표시
+      alert('로그아웃 중 오류가 발생했습니다. 다시 시도해주세요.');
+      
+      // 홈페이지로 이동
+      window.location.href = '/';
+    }
+  };
+
   // 로딩 중일 때 표시할 UI를 렌더링합니다
   if (loading) {
     return (
@@ -497,6 +545,13 @@ const MyPage = () => {
             LG U+는 통신판매중개자로서 통신판매의 당사자가 아니며, U+콕 사이트의 상품, 거래정보 및 거래에 대하여 책임을 지지 않습니다. 
             서비스 운영은 (주)지니웍스가 대행하고 있습니다.
           </p>
+        </div>
+
+        {/* 로그아웃 섹션 - legal-disclaimer 바로 아래 */}
+        <div className="logout-section">
+          <button className="logout-button" onClick={handleLogout}>
+            로그아웃
+          </button>
         </div>
       </div>
 
