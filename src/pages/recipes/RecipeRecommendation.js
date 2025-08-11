@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BottomNav from '../../layout/BottomNav';
 import HeaderNavRecipeRecommendation from '../../layout/HeaderNavRecipeRecommendation';
+import Loading from '../../components/Loading';
 import '../../styles/recipe_recommendation.css';
 import outOfStockIcon from '../../assets/out_of_stock_icon.png';
 import chefIcon from '../../assets/chef_icon.png';
