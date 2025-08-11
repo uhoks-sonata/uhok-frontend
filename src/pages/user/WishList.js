@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-// Header removed
+import HeaderNavWishList from '../../layout/HeaderNavWishList';
 import BottomNav from '../../layout/BottomNav';
 import Loading from '../../components/Loading';
 import api from '../api';
@@ -215,7 +215,13 @@ const WishList = () => {
   if (loading) {
     return (
       <div className="wishlist-page">
-        {/* header removed */}
+        {/* 위시리스트 헤더 네비게이션 */}
+        <HeaderNavWishList 
+          onBackClick={handleBack}
+          onSearchClick={handleSearch}
+          onNotificationClick={handleNotificationClick}
+          onCartClick={handleCartClick}
+        />
         <div className="wishlist-content">
           <Loading message="찜한 상품을 불러오는 중 ..." />
         </div>
@@ -227,7 +233,13 @@ const WishList = () => {
   if (error) {
     return (
       <div className="wishlist-page">
-        {/* header removed */}
+        {/* 위시리스트 헤더 네비게이션 */}
+        <HeaderNavWishList 
+          onBackClick={handleBack}
+          onSearchClick={handleSearch}
+          onNotificationClick={handleNotificationClick}
+          onCartClick={handleCartClick}
+        />
         <div className="wishlist-content">
           <div className="error">오류: {error}</div>
         </div>
@@ -238,7 +250,13 @@ const WishList = () => {
 
   return (
     <div className="wishlist-page">
-      {/* header removed */}
+      {/* 위시리스트 헤더 네비게이션 */}
+      <HeaderNavWishList 
+        onBackClick={handleBack}
+        onSearchClick={handleSearch}
+        onNotificationClick={handleNotificationClick}
+        onCartClick={handleCartClick}
+      />
       
       <div className="wishlist-content">
         {/* 탭 네비게이션 */}
