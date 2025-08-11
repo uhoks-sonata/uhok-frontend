@@ -24,8 +24,25 @@ export const recipeApi = {
   // params: { ingredient: string[], amount?: string[], unit?: string[], consume_count?: number, page?: number, size?: number }
   getRecipesByIngredients: async ({ ingredient, amount, unit, consume_count, page = 1, size = 5, signal } = {}) => {
     const qs = buildQuery({ ingredient, amount, unit, consume_count, page, size });
+    const url = `/api/recipes/by-ingredients?${qs}`;
+    
+    // API 요청 로깅
+    console.log('🔍 소진희망재료 API 요청:', {
+      url,
+      params: { ingredient, amount, unit, consume_count, page, size },
+      queryString: qs
+    });
+    
     // baseURL를 비워 프록시(/api -> 9000)를 타도록 함
-    const response = await api.get(`/api/recipes/by-ingredients?${qs}` , { baseURL: '', timeout: 30000, signal });
+    const response = await api.get(url, { baseURL: '', timeout: 30000, signal });
+    
+    // API 응답 로깅
+    console.log('✅ 소진희망재료 API 응답:', {
+      status: response.status,
+      data: response.data,
+      headers: response.headers
+    });
+    
     return response.data;
   },
 
