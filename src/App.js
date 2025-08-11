@@ -13,7 +13,7 @@ import Login from './pages/user/Login';
 import Signup from './pages/user/Signup';
 import Notification from './pages/user/Notification';
 // 홈쇼핑 관련 페이지 (Schedule → main.js로 변경)
-import Main from './pages/kok_shopping/main';
+import Main from './pages/home_shopping/main';
 
 // KOK 쇼핑 관련 페이지
 import KokMain from './pages/kok_shopping/KokMain';
