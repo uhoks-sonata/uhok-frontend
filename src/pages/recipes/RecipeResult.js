@@ -52,6 +52,8 @@ const RecipeResult = () => {
     });
   }, [ingredients]);
 
+
+
   // 정렬: matched_ingredient_count가 있을 경우 내림차순 정렬하여 표시
   const sortedRecipes = useMemo(() => {
     if (!Array.isArray(recipes)) return [];
@@ -62,6 +64,8 @@ const RecipeResult = () => {
 
   useEffect(() => {
     if (location.state) {
+      console.log('Location state received:', location.state);
+      console.log('Recipes from state:', location.state.recipes);
       setRecipes(location.state.recipes || []);
       setIngredients(location.state.ingredients || []);
       setTotal(location.state.total || 0);
@@ -137,31 +141,75 @@ const RecipeResult = () => {
           </div>
         )}
         {!loading && !error && recipes.length > 0 && (
-          sortedRecipes.map((recipe, idx) => (
-            <div key={recipe.recipe_id || recipe.id || idx} className="recipe-card" onClick={() => handleRecipeClick(recipe)}>
-              <div className="recipe-image">
-                <img src={getRecipeImageSrc(recipe, idx)} alt={recipe.recipe_title || recipe.name || '레시피'} onError={(e)=>{ e.currentTarget.src = fallbackImg; }} />
+          sortedRecipes.map((recipe, idx) => {
+            // 배열 형태의 데이터를 객체로 변환
+            let recipeObj = recipe;
+            if (Array.isArray(recipe)) {
+              recipeObj = {
+                recipe_id: recipe[0],
+                recipe_title: recipe[1],
+                cooking_name: recipe[2],
+                scrap_count: recipe[3],
+                cooking_case_name: recipe[4],
+                cooking_category_name: recipe[5],
+                cooking_introduction: recipe[6],
+                number_of_serving: recipe[7],
+                thumbnail_url: recipe[8],
+                recipe_url: recipe[9],
+                matched_ingredient_count: recipe[10],
+                used_ingredients: recipe[11] || []
+              };
+            }
+            
+            // 실제 일치하는 재료 수 계산
+            const actualMatchedCount = recipeObj.used_ingredients ? 
+              recipeObj.used_ingredients.filter(usedIng => 
+                displayIngredients.some(displayIng => {
+                  const displayName = typeof displayIng === 'string' ? displayIng : displayIng.name || '';
+                  return displayName.toLowerCase().includes(usedIng.material_name.toLowerCase()) ||
+                         usedIng.material_name.toLowerCase().includes(displayName.toLowerCase());
+                })
+              ).length : 0;
+            
+            // 디버깅을 위한 콘솔 로그
+            console.log('Recipe object:', recipeObj);
+            console.log('matched_ingredient_count:', recipeObj.matched_ingredient_count);
+            console.log('total_ingredients_count:', recipeObj.total_ingredients_count);
+            console.log('used_ingredients:', recipeObj.used_ingredients);
+            console.log('Actual matched count:', actualMatchedCount);
+            
+            return (
+              <div key={recipeObj.recipe_id || recipeObj.id || idx} className="recipe-card" onClick={() => handleRecipeClick(recipeObj)}>
+                <div className="recipe-image">
+                  <img src={getRecipeImageSrc(recipeObj, idx)} alt={recipeObj.recipe_title || recipeObj.name || '레시피'} onError={(e)=>{ e.currentTarget.src = fallbackImg; }} />
+                </div>
+                <div className="recipe-info">
+                  <h3 className="recipe-name">{recipeObj.recipe_title || recipeObj.name}</h3>
+                  <div className="recipe-meta">
+                    <span className="cooking-name">{recipeObj.cooking_name}</span>
+                    <span className="cooking-category">{recipeObj.cooking_category_name}</span>
+                    <span className="cooking-case">{recipeObj.cooking_case_name}</span>
+                  </div>
+                  <div className="recipe-stats">
+                    <span className="scrap-count">스크랩 {recipeObj.scrap_count || recipeObj.scrapCount || 0}</span>
+                    {typeof recipeObj.matched_ingredient_count === 'number' && (
+                      <span className="matched-ingredients">
+                        <span className="matched-count">{actualMatchedCount}개 재료 일치</span>
+                        <span className="separator"> | </span>
+                        <span className="total-ingredients">재료 총 {recipeObj.total_ingredients_count || (recipeObj.used_ingredients ? recipeObj.used_ingredients.length : 0)}개</span>
+                      </span>
+                    )}
+                  </div>
+                  
+
+                  <p className="recipe-description">{recipeObj.cooking_introduction || ''}</p>
+                  <div className="recipe-details">
+                    <span className="serving">{recipeObj.number_of_serving}</span>
+                  </div>
+                </div>
               </div>
-              <div className="recipe-info">
-                <h3 className="recipe-name">{recipe.recipe_title || recipe.name}</h3>
-                <div className="recipe-meta">
-                  <span className="cooking-name">{recipe.cooking_name}</span>
-                  <span className="cooking-category">{recipe.cooking_category_name}</span>
-                  <span className="cooking-case">{recipe.cooking_case_name}</span>
-                </div>
-                <div className="recipe-stats">
-                  <span className="scrap-count">스크랩 {recipe.scrap_count || recipe.scrapCount || 0}</span>
-                  {typeof recipe.matched_ingredient_count === 'number' && (
-                    <span className="matched-ingredients">일치 재료 {recipe.matched_ingredient_count}개</span>
-                  )}
-                </div>
-                <p className="recipe-description">{recipe.cooking_introduction || ''}</p>
-                <div className="recipe-details">
-                  <span className="serving">{recipe.number_of_serving}</span>
-                </div>
-              </div>
-            </div>
-          ))
+            );
+          })
         )}
         {!loading && !error && recipes.length === 0 && (
           <div className="no-results">
