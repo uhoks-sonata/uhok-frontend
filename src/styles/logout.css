@@ -1,0 +1,31 @@
+/* 로그아웃 섹션 스타일 */
+.logout-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.logout-button {
+  background: none;
+  border: none;
+  color: #666666;
+  font-size: 12px;
+  font-weight: 400;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  text-decoration: underline;
+  min-width: 80px;
+  height: 36px;
+}
+/* 
+.logout-button:hover {
+  color: #333333;
+  background-color: #f0f0f0;
+} */
+
+.logout-button:active {
+  color: #333333;
+  /* background-color: #e0e0e0; */
+}
