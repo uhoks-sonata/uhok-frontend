@@ -133,6 +133,7 @@ const KokProductListPage = () => {
 
   const handleKokNotificationClick = () => {
     console.log('알림 클릭');
+    navigate('/notifications');
   };
 
   const handleKokCartClick = () => {

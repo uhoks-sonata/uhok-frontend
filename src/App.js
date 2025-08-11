@@ -72,6 +72,7 @@ function App() {
               {/* 검색 경로 (/search) - Search 페이지로 설정 */}
               <Route path="/search" element={<Search />} />
               {/* ===== KOK 라우트 ===== */}
+
               {/* KOK 메인 경로 (/kok) - KOK 메인 페이지 */}
               <Route path="/kok" element={<KokMain />} />
               {/* 제품 상세 경로 (/kok/product/:productId) - 제품 상세 페이지 */}
