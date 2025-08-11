@@ -340,17 +340,49 @@ const KokProductDetail = () => {
     }
   };
 
-  const handleKokWishlistClick = () => {
-    setKokIsWishlisted(!kokIsWishlisted);
-    console.log('찜 버튼 클릭:', !kokIsWishlisted ? '찜 추가' : '찜 해제');
-    
-    // 애니메이션 효과를 위한 DOM 조작
-    const heartButton = document.querySelector('.heart-button');
-    if (heartButton) {
-      heartButton.style.transform = 'scale(1.2)';
-      setTimeout(() => {
-        heartButton.style.transform = 'scale(1)';
-      }, 150);
+  const handleKokWishlistClick = async () => {
+    try {
+      // API 호출을 위한 토큰 확인
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        console.log('토큰이 없어서 로그인 페이지로 이동');
+        window.location.href = '/';
+        return;
+      }
+
+      // API 호출
+      const response = await api.post('/api/kok/likes/toggle', {
+        kok_product_id: productId
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      console.log('찜 API 응답:', response.data);
+      
+      // 찜 상태 토글
+      setKokIsWishlisted(!kokIsWishlisted);
+      console.log('찜 버튼 클릭:', !kokIsWishlisted ? '찜 추가' : '찜 해제');
+      
+      // 애니메이션 효과를 위한 DOM 조작
+      const heartButton = document.querySelector('.heart-button');
+      if (heartButton) {
+        heartButton.style.transform = 'scale(1.2)';
+        setTimeout(() => {
+          heartButton.style.transform = 'scale(1)';
+        }, 150);
+      }
+    } catch (error) {
+      console.error('찜 API 호출 실패:', error);
+      
+      // 에러 발생 시 사용자에게 알림
+      if (error.response?.status === 401) {
+        alert('로그인이 필요합니다.');
+        window.location.href = '/';
+      } else {
+        alert('찜 기능을 사용할 수 없습니다. 다시 시도해주세요.');
+      }
     }
   };
 
@@ -839,7 +871,10 @@ const KokProductDetail = () => {
         }}>
           {[
             { key: 'description', label: '상품정보' },
-            { key: 'reviews', label: '리뷰' },
+            { 
+              key: 'reviews', 
+              label: `리뷰(${(kokReviewStats?.kok_review_cnt ?? kokProduct?.reviewCount ?? 0)}개)` 
+            },
             { key: 'details', label: '상세정보' }
           ].map(tab => (
             <button

@@ -31,14 +31,31 @@ const WishList = () => {
   const fetchWishlistData = async () => {
     try {
       setLoading(true);
+      
+      // 토큰 확인
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        console.log('토큰이 없어서 로그인 페이지로 이동');
+        window.location.href = '/';
+        return;
+      }
+
       const response = await api.get('/api/kok/likes', {
         headers: {
-          'Authorization': 'Bearer <access_token>' // 실제 토큰으로 교체 필요
+          'Authorization': `Bearer ${token}`
         }
       });
       setWishlistData(response.data);
     } catch (err) {
       console.error('찜한 상품 목록 로딩 실패:', err);
+      
+      // 401 에러 (인증 실패) 시 로그인 페이지로 이동
+      if (err.response?.status === 401) {
+        alert('로그인이 필요합니다.');
+        window.location.href = '/';
+        return;
+      }
+      
       // API 연결 실패 시 더미 데이터 사용
       setWishlistData({
         liked_products: [
@@ -94,11 +111,19 @@ const WishList = () => {
     const isCurrentlyUnliked = unlikedProducts.has(productId);
     
     try {
+      // 토큰 확인
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        console.log('토큰이 없어서 로그인 페이지로 이동');
+        window.location.href = '/';
+        return;
+      }
+
       const response = await api.post('/api/kok/likes/toggle', {
         kok_product_id: productId
       }, {
         headers: {
-          'Authorization': 'Bearer <access_token>'
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -119,6 +144,13 @@ const WishList = () => {
         });
       }
     } catch (err) {
+      // 401 에러 (인증 실패) 시 로그인 페이지로 이동
+      if (err.response?.status === 401) {
+        alert('로그인이 필요합니다.');
+        window.location.href = '/';
+        return;
+      }
+      
       // 네트워크 에러나 API 연결 실패 시에도 하트 아이콘 토글
       if (err.code === 'ERR_NETWORK' || err.message === 'Network Error') {
         setUnlikedProducts(prev => {
