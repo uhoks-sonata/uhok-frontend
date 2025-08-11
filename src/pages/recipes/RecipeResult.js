@@ -22,6 +22,44 @@ const RecipeResult = () => {
   // 렌더 조건에서 참조하는 error 변수를 정의 (기본 공백)
   const [error] = useState('');
 
+  // 백엔드 응답의 이미지 키 다양성 대응 및 로컬 폴백 사용
+  const localImgs = useMemo(() => [img1, img2, img3], []);
+  const getRecipeImageSrc = (recipe, idx) => {
+    const candidates = [
+      recipe?.thumbnail_url,
+      recipe?.thumbnailUrl,
+      recipe?.image_url,
+      recipe?.img_url,
+      recipe?.main_image_url,
+      recipe?.image,
+      recipe?.thumbnail,
+    ].filter((v) => typeof v === 'string' && v.length > 0);
+    if (candidates.length > 0) return candidates[0];
+    return localImgs[idx % localImgs.length] || fallbackImg;
+  };
+
+  // 재료 표기를 문자열로 정규화 (객체/문자열 둘 다 처리)
+  const displayIngredients = useMemo(() => {
+    if (!Array.isArray(ingredients)) return [];
+    return ingredients.map((ing) => {
+      if (typeof ing === 'string') return ing;
+      const name = ing?.name ?? '';
+      const amount = ing?.amount;
+      const unit = ing?.unit;
+      const amountPart = amount != null && amount !== '' ? ` ${amount}` : '';
+      const unitPart = unit ? `${unit}` : '';
+      return `${name}${amountPart}${unitPart}`.trim();
+    });
+  }, [ingredients]);
+
+  // 정렬: matched_ingredient_count가 있을 경우 내림차순 정렬하여 표시
+  const sortedRecipes = useMemo(() => {
+    if (!Array.isArray(recipes)) return [];
+    const hasMatched = recipes.some(r => typeof r?.matched_ingredient_count === 'number');
+    if (!hasMatched) return recipes;
+    return [...recipes].sort((a, b) => (b?.matched_ingredient_count || 0) - (a?.matched_ingredient_count || 0));
+  }, [recipes]);
+
   useEffect(() => {
     if (location.state) {
       setRecipes(location.state.recipes || []);
@@ -73,7 +111,7 @@ const RecipeResult = () => {
       {/* 선택된 재료 태그들 */}
       <div className="selected-ingredients-section">
         <div className="ingredients-tags">
-          {ingredients.map((ingredient, index) => (
+          {displayIngredients.map((ingredient, index) => (
             <div key={index} className="ingredient-tag">
               <span className="ingredient-name">{ingredient}</span>
             </div>
@@ -99,10 +137,10 @@ const RecipeResult = () => {
           </div>
         )}
         {!loading && !error && recipes.length > 0 && (
-          recipes.map((recipe, idx) => (
+          sortedRecipes.map((recipe, idx) => (
             <div key={recipe.recipe_id || recipe.id || idx} className="recipe-card" onClick={() => handleRecipeClick(recipe)}>
               <div className="recipe-image">
-                <img src={recipe.thumbnail_url || recipe.image || fallbackImg} alt={recipe.recipe_title || recipe.name || '레시피'} onError={(e)=>{ e.currentTarget.src = fallbackImg; }} />
+                <img src={getRecipeImageSrc(recipe, idx)} alt={recipe.recipe_title || recipe.name || '레시피'} onError={(e)=>{ e.currentTarget.src = fallbackImg; }} />
               </div>
               <div className="recipe-info">
                 <h3 className="recipe-name">{recipe.recipe_title || recipe.name}</h3>
