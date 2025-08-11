@@ -4,19 +4,26 @@
   padding-bottom: 80px;
 }
 
+/* Header Nav 위치 설정 */
+.hn-payment-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .payment-content {
   padding: 20px;
   max-width: 480px;
   margin: 0 auto;
 }
 
-.payment-title {
+/* .payment-title {
   font-size: 24px;
   font-weight: 700;
   color: #333;
   margin-bottom: 20px;
   text-align: center;
-}
+} */
 
 .order-summary {
   background: white;

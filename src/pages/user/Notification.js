@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-// Header removed
+import { useNavigate } from 'react-router-dom';
+import HeaderNavNoti from '../../layout/HeaderNavNoti';
 import BottomNav from '../../layout/BottomNav';
 import '../../styles/notification.css';
 import api from '../api';
 import { ensureToken } from '../../utils/authUtils';
 
 const Notification = () => {
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
@@ -164,7 +166,10 @@ const Notification = () => {
   if (loading) {
     return (
       <div className="notification-page">
-        {/* header removed */}
+        {/* 알림 헤더 네비게이션 */}
+        <HeaderNavNoti 
+          onBackClick={() => navigate(-1)}
+        />
         <div className="notification-loading">
           <div className="loading-spinner"></div>
           <p>알림을 불러오는 중...</p>
@@ -176,7 +181,10 @@ const Notification = () => {
 
   return (
     <div className="notification-page">
-      {/* header removed */}
+      {/* 알림 헤더 네비게이션 */}
+      <HeaderNavNoti 
+        onBackClick={() => navigate(-1)}
+      />
       
       <div className="notification-content">
         {/* 에러 메시지 */}

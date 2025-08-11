@@ -6,7 +6,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-// Header removed
+import HeaderNavPayment from '../../layout/HeaderNavPayment';
 import BottomNav from '../../layout/BottomNav';
 import '../../styles/kok_payment.css';
 
@@ -29,26 +29,16 @@ const KokPayment = () => {
     navigate(-1);
   };
 
-  const handleSearch = (query) => {
-    console.log('검색어:', query);
-  };
 
-  const handleNotificationClick = () => {
-    console.log('알림 클릭됨');
-    navigate('/notifications');
-  };
-
-  const handleCartClick = () => {
-    navigate('/cart');
-  };
 
   return (
     <div className="payment-page">
-      {/* header removed */}
+      {/* 주문 결제 헤더 네비게이션 */}
+      <HeaderNavPayment 
+        onBackClick={handleBack}
+      />
       
-      <div className="payment-content">
-        <h1 className="payment-title">결제하기</h1>
-        
+      <div className="payment-content">        
         <div className="order-summary">
           <h2>주문 요약</h2>
           <div className="order-item">
