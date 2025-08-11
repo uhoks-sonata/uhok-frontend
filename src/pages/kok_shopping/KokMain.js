@@ -217,6 +217,10 @@ const KokMain = () => {
 
   return (
     <div className={`kok-home-shopping-main ${kokFadeIn ? 'kok-fade-in' : ''}`}>
+      <HeaderNavMain 
+        title="콕 쇼핑몰" 
+        onNotificationsClick={handleKokNotificationClick}
+      />
       <main className="kok-main-content">
         {kokLoading ? (
           <Loading message="데이터를 불러오는 중 ..." />

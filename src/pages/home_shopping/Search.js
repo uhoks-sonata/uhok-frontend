@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 // 검색 헤더 컴포넌트를 가져옵니다
-import { SearchHeader } from '../../layout/HeaderNav';
+import HeaderNavMain from '../../layout/HeaderNavMain';
 // 하단 네비게이션 컴포넌트를 가져옵니다
 import BottomNav from '../../layout/BottomNav';
 // 로딩 컴포넌트를 가져옵니다
@@ -326,12 +326,20 @@ const Search = () => {
   if (userLoading) {
     return (
       <div className="search-page">
-        <SearchHeader
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          onSearch={handleSearch}
-          onBack={handleBack}
-        />
+        <HeaderNavMain title="검색" onBackClick={handleBack} />
+        <div className="search-input-container">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSearch(e)}
+            placeholder="검색어를 입력하세요"
+            className="search-input"
+          />
+          <button onClick={() => handleSearch()} className="search-button">
+            검색
+          </button>
+        </div>
         <div className="search-content">
           <Loading message="검색 페이지를 불러오는 중..." />
         </div>
@@ -346,12 +354,22 @@ const Search = () => {
 
       
       {/* 검색 헤더 */}
-      <SearchHeader
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        onSearch={handleSearch}
-        onBack={handleBack}
-      />
+      <HeaderNavMain title="검색" onBackClick={handleBack} />
+      
+      {/* 검색 입력 필드 */}
+      <div className="search-input-container">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && handleSearch(e)}
+          placeholder="검색어를 입력하세요"
+          className="search-input"
+        />
+        <button onClick={() => handleSearch()} className="search-button">
+          검색
+        </button>
+      </div>
 
       {/* 메인 콘텐츠 */}
       <div className="search-content">
