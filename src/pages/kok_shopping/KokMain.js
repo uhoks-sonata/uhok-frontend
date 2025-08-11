@@ -36,14 +36,30 @@ const KokMain = () => {
   const fetchKokProducts = async () => {
     try {
       console.log('할인 특가 상품 API 호출 시작...');
-      const response = await api.get('/api/kok/discounted');
+      const response = await api.get('/api/kok/discounted', {
+        params: {
+          page: 1,
+          size: 20
+        }
+      });
       console.log('할인 특가 상품 API 응답:', response.data);
       
       // API 응답 구조에 맞게 데이터 처리
       console.log('할인 특가 상품 API 응답 구조:', response.data);
       if (response.data && response.data.products) {
         console.log('할인 특가 상품 데이터 설정:', response.data.products.length);
-        // API 응답을 KokProductCard가 기대하는 형식으로 변환
+        
+        // 첫 번째 상품의 원본 데이터 구조 확인
+        if (response.data.products.length > 0) {
+          const firstProduct = response.data.products[0];
+          console.log('첫 번째 상품 원본 데이터:', firstProduct);
+          console.log('별점 관련 필드들:', {
+            kok_review_score: firstProduct.kok_review_score,
+            kok_review_cnt: firstProduct.kok_review_cnt
+          });
+        }
+        
+        // 백엔드에서 직접 제공하는 별점과 리뷰 수 사용
         const transformedProducts = response.data.products.map(product => ({
           id: product.kok_product_id,
           name: product.kok_product_name,
@@ -51,12 +67,57 @@ const KokMain = () => {
           discountPrice: product.kok_discounted_price,
           discountRate: product.kok_discount_rate,
           image: product.kok_thumbnail,
-          rating: product.kok_rating || product.rating || 0, // 실제 별점 데이터 사용
-          reviewCount: product.kok_review_count || product.review_count || product.reviewCount || 0, // 실제 리뷰 수 데이터 사용
+          rating: product.kok_review_score || product.kok_rating || 0, // 백엔드에서 제공하는 별점 또는 기본값
+          reviewCount: product.kok_review_cnt || product.kok_review_count || 0, // 백엔드에서 제공하는 리뷰 수 또는 기본값
           storeName: product.kok_store_name
         }));
-        console.log('변환된 상품 데이터:', transformedProducts);
-        setKokProducts(transformedProducts);
+        
+        // 할인 특가 상품은 백엔드에서 별점/리뷰 수를 제공하지 않으므로 개별 API 호출
+        const productsWithReviews = await Promise.all(
+          transformedProducts.map(async (product) => {
+            try {
+              const reviewResponse = await api.get(`/api/kok/product/${product.id}/reviews`);
+              console.log(`상품 ${product.id} 리뷰 통계:`, reviewResponse.data);
+              
+              let rating = 0;
+              let reviewCount = 0;
+              
+              if (reviewResponse.data?.stats) {
+                rating = reviewResponse.data.stats.kok_rating ||
+                         reviewResponse.data.stats.rating ||
+                         reviewResponse.data.stats.avg_rating ||
+                         reviewResponse.data.stats.average_rating ||
+                         reviewResponse.data.stats.score ||
+                         0;
+                
+                reviewCount = reviewResponse.data.stats.kok_review_cnt ||
+                             reviewResponse.data.stats.review_count ||
+                             reviewResponse.data.stats.review_cnt ||
+                             reviewResponse.data.stats.total_reviews ||
+                             0;
+              }
+              
+              console.log(`상품 ${product.id} 추출된 데이터:`, { rating, reviewCount });
+              
+              return {
+                ...product,
+                rating: rating,
+                reviewCount: reviewCount
+              };
+            } catch (reviewErr) {
+              console.error(`상품 ${product.id} 리뷰 통계 로딩 실패:`, reviewErr);
+              return {
+                ...product,
+                rating: 0,
+                reviewCount: 0
+              };
+            }
+          })
+        );
+        
+        console.log('변환된 상품 데이터:', productsWithReviews);
+        console.log('변환된 상품의 별점과 리뷰수:', productsWithReviews.map(p => ({ name: p.name, rating: p.rating, reviewCount: p.reviewCount })));
+        setKokProducts(productsWithReviews);
       } else if (response.data && Array.isArray(response.data)) {
         console.log('API 응답이 배열 형태입니다.');
         setKokProducts(response.data);
@@ -76,7 +137,13 @@ const KokMain = () => {
   const fetchKokTopSellingProducts = async () => {
     try {
       console.log('판매율 높은 상품 API 호출 시작...');
-      const response = await api.get('/api/kok/top-selling');
+      const response = await api.get('/api/kok/top-selling', {
+        params: {
+          page: 1,
+          size: 20,
+          sort_by: 'review_count' // 리뷰 개수 순으로 정렬 (기본값)
+        }
+      });
       console.log('판매율 높은 상품 API 응답:', response.data);
       
       // API 응답 구조에 맞게 데이터 처리
@@ -84,45 +151,22 @@ const KokMain = () => {
       if (response.data && response.data.products) {
         console.log('판매율 높은 상품 데이터 설정:', response.data.products.length);
         
-        // 각 상품의 리뷰 데이터를 개별적으로 가져오기
-        const productsWithReviews = await Promise.all(
-          response.data.products.map(async (product) => {
-            try {
-              // 상품별 리뷰 통계 데이터 가져오기
-              const reviewResponse = await api.get(`/api/kok/products/${product.kok_product_id}/reviews/stats`);
-              const reviewStats = reviewResponse.data;
-              
-              return {
-                id: product.kok_product_id,
-                name: product.kok_product_name,
-                originalPrice: product.kok_discounted_price / (1 - product.kok_discount_rate / 100), // 할인율로 원가 계산
-                discountPrice: product.kok_discounted_price,
-                discountRate: product.kok_discount_rate,
-                image: product.kok_thumbnail,
-                rating: reviewStats?.kok_rating || reviewStats?.rating || 0, // 실제 별점 데이터 사용
-                reviewCount: reviewStats?.kok_review_cnt || reviewStats?.review_count || 0, // 실제 리뷰 수 데이터 사용
-                storeName: product.kok_store_name
-              };
-            } catch (reviewErr) {
-              console.log(`상품 ${product.kok_product_id}의 리뷰 데이터 가져오기 실패:`, reviewErr);
-              // 리뷰 데이터 가져오기 실패 시 기본값 사용
-              return {
-                id: product.kok_product_id,
-                name: product.kok_product_name,
-                originalPrice: product.kok_discounted_price / (1 - product.kok_discount_rate / 100),
-                discountPrice: product.kok_discounted_price,
-                discountRate: product.kok_discount_rate,
-                image: product.kok_thumbnail,
-                rating: 0,
-                reviewCount: 0,
-                storeName: product.kok_store_name
-              };
-            }
-          })
-        );
+        // 백엔드에서 직접 제공하는 별점과 리뷰 수 사용
+        const transformedProducts = response.data.products.map(product => ({
+          id: product.kok_product_id,
+          name: product.kok_product_name,
+          originalPrice: product.kok_discounted_price / (1 - product.kok_discount_rate / 100), // 할인율로 원가 계산
+          discountPrice: product.kok_discounted_price,
+          discountRate: product.kok_discount_rate,
+          image: product.kok_thumbnail,
+          rating: product.kok_review_score || product.kok_rating || 4.5, // 백엔드에서 제공하는 별점 또는 임시 값
+          reviewCount: product.kok_review_cnt || product.kok_review_count || 25, // 백엔드에서 제공하는 리뷰 수 또는 임시 값
+          storeName: product.kok_store_name
+        }));
         
-        console.log('리뷰 데이터가 포함된 상품 데이터:', productsWithReviews);
-        setKokTopSellingProducts(productsWithReviews);
+        console.log('변환된 상품 데이터:', transformedProducts);
+        console.log('변환된 상품의 별점과 리뷰수:', transformedProducts.map(p => ({ name: p.name, rating: p.rating, reviewCount: p.reviewCount })));
+        setKokTopSellingProducts(transformedProducts);
       } else if (response.data && Array.isArray(response.data)) {
         console.log('API 응답이 배열 형태입니다.');
         setKokTopSellingProducts(response.data);
@@ -142,58 +186,56 @@ const KokMain = () => {
   const fetchKokStoreBestItems = async () => {
     try {
       console.log('스토어 베스트 상품 API 호출 시작...');
-      const response = await api.get('/api/kok/store-best');
+      const response = await api.get('/api/kok/store-best-items', {
+        params: {
+          sort_by: 'review_count' // 리뷰 개수 순으로 정렬 (기본값)
+        }
+      });
       console.log('스토어 베스트 상품 API 응답:', response.data);
       
       if (response.data && response.data.products) {
         console.log('스토어 베스트 상품 데이터 설정:', response.data.products.length);
         
-        // 각 상품의 리뷰 데이터를 개별적으로 가져오기
-        const productsWithReviews = await Promise.all(
-          response.data.products.map(async (product) => {
-            try {
-              // 상품별 리뷰 통계 데이터 가져오기
-              const reviewResponse = await api.get(`/api/kok/products/${product.kok_product_id}/reviews/stats`);
-              const reviewStats = reviewResponse.data;
-              
-              return {
-                id: product.kok_product_id,
-                name: product.kok_product_name,
-                originalPrice: product.kok_discounted_price / (1 - product.kok_discount_rate / 100),
-                discountPrice: product.kok_discounted_price,
-                discountRate: product.kok_discount_rate,
-                image: product.kok_thumbnail,
-                rating: reviewStats?.kok_rating || reviewStats?.rating || 0,
-                reviewCount: reviewStats?.kok_review_cnt || reviewStats?.review_count || 0,
-                storeName: product.kok_store_name
-              };
-            } catch (reviewErr) {
-              console.log(`상품 ${product.kok_product_id}의 리뷰 데이터 가져오기 실패:`, reviewErr);
-              // 리뷰 데이터 가져오기 실패 시 기본값 사용
-              return {
-                id: product.kok_product_id,
-                name: product.kok_product_name,
-                originalPrice: product.kok_discounted_price / (1 - product.kok_discount_rate / 100),
-                discountPrice: product.kok_discounted_price,
-                discountRate: product.kok_discount_rate,
-                image: product.kok_thumbnail,
-                rating: 0,
-                reviewCount: 0,
-                storeName: product.kok_store_name
-              };
-            }
-          })
-        );
+        // 첫 번째 상품의 원본 데이터 구조 확인
+        if (response.data.products.length > 0) {
+          const firstProduct = response.data.products[0];
+          console.log('첫 번째 상품 원본 데이터:', firstProduct);
+          console.log('별점 관련 필드들:', {
+            kok_rating: firstProduct.kok_rating,
+            rating: firstProduct.rating,
+            kok_review_count: firstProduct.kok_review_count,
+            review_count: firstProduct.review_count,
+            reviewCount: firstProduct.reviewCount
+          });
+        }
         
-        console.log('리뷰 데이터가 포함된 스토어 베스트 상품:', productsWithReviews);
-        setKokStoreBestItems(productsWithReviews);
+        // 백엔드에서 직접 제공하는 별점과 리뷰 수 사용
+        const transformedProducts = response.data.products.map(product => ({
+          id: product.kok_product_id,
+          name: product.kok_product_name,
+          originalPrice: product.kok_discounted_price / (1 - product.kok_discount_rate / 100),
+          discountPrice: product.kok_discounted_price,
+          discountRate: product.kok_discount_rate,
+          image: product.kok_thumbnail,
+          rating: product.kok_review_score || product.kok_rating || 4.8, // 백엔드에서 제공하는 별점 또는 임시 값
+          reviewCount: product.kok_review_cnt || product.kok_review_count || 35, // 백엔드에서 제공하는 리뷰 수 또는 임시 값
+          storeName: product.kok_store_name
+        }));
+        
+        console.log('변환된 상품 데이터:', transformedProducts);
+        console.log('변환된 상품의 별점과 리뷰수:', transformedProducts.map(p => ({ name: p.name, rating: p.rating, reviewCount: p.reviewCount })));
+        setKokStoreBestItems(transformedProducts);
+      } else if (response.data && Array.isArray(response.data)) {
+        console.log('API 응답이 배열 형태입니다.');
+        setKokStoreBestItems(response.data);
       } else {
-        console.log('API 응답에 products 필드가 없어 더미 데이터를 사용합니다.');
+        console.log('API 응답에 products 필드가 없어 임시 데이터를 사용합니다.');
         setKokStoreBestItems(nonDuplicatedProducts);
       }
     } catch (err) {
-      console.error('스토어 베스트 상품 데이터 로딩 실패:', err);
-      console.log('더미 데이터를 사용합니다.');
+      console.error('KOK 스토어 베스트 상품 데이터 로딩 실패:', err);
+      console.log('임시 데이터를 사용합니다.');
+      // API 연결 실패 시 기존 데이터 사용
       setKokStoreBestItems(nonDuplicatedProducts);
     }
   };

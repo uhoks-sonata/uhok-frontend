@@ -106,9 +106,9 @@ const KokProductDetail = () => {
   // KOK API에서 상품 상세 정보 데이터를 가져오는 함수
   const fetchKokProductDetails = async (productId) => {
     try {
-      console.log(`상품 상세 정보 API 호출: /api/kok/product/${productId}/details`);
-      const response = await api.get(`/api/kok/product/${productId}/details`);
-      console.log('상품 상세 정보 API 응답:', response.data);
+      console.log(`상품 상세 정보 API 호출: /api/kok/product/${productId}/seller-details`);
+      const response = await api.get(`/api/kok/product/${productId}/seller-details`);
+      console.log('KOK 상품 상세 정보 데이터 응답:', response.data);
       return response.data;
     } catch (err) {
       console.error('KOK 상품 상세 정보 데이터 로딩 실패:', err);
@@ -127,6 +127,20 @@ const KokProductDetail = () => {
     } catch (err) {
       console.error('KOK 상품 상세 데이터 로딩 실패:', err);
       console.log('임시 데이터를 사용합니다.');
+      return null;
+    }
+  };
+
+  // KOK API에서 상품 전체 상세 정보를 가져오는 함수 (API 명세서 기반)
+  const fetchKokProductFullDetail = async (productId) => {
+    try {
+      console.log(`상품 전체 상세 정보 API 호출: /api/kok/product/${productId}/full-detail`);
+      const response = await api.get(`/api/kok/product/${productId}/full-detail`);
+      console.log('KOK 상품 전체 상세 정보 API 응답:', response.data);
+      return response.data;
+    } catch (err) {
+      console.error('KOK 상품 전체 상세 정보 로딩 실패:', err);
+      console.log('개별 API를 사용합니다.');
       return null;
     }
   };
@@ -151,85 +165,109 @@ const KokProductDetail = () => {
             discountPrice: kokProductInfo.kok_discounted_price,
             discountRate: kokProductInfo.kok_discount_rate,
             image: kokProductInfo.kok_thumbnail,
-            rating: 4.4, // 기본값 (API에서 제공되지 않는 경우)
-            reviewCount: kokProductInfo.kok_review_cnt,
-            description: "이 제품에 대한 상세한 설명입니다.", // 기본값
-            details: {
-              weight: "4kg (500g 8팩)",
-              origin: "국내산",
-              expiryDate: "제조일로부터 24개월",
-              storage: "서늘하고 건조한 곳에 보관"
-            },
-            seller: {
-              name: kokProductInfo.kok_store_name,
-              representative: "(주)컴퍼니와우",
-              businessNumber: "119-86-54463",
-              onlineSalesNumber: "제2012-서울금천-0325호",
-              phone: "02-2038-2966",
-              certifiedItems: "사업자 번호, 사업자 상호",
-              certificationDate: "2024-05-21",
-              businessLocation: "서울 금천구 가산디지털1로 70 (가산동) 407호",
-              returnAddress: "08590 서울 금천구 가산디지털1로 70 407호",
-              exchangeAddress: "08590 서울 금천구 가산디지털1로 70 407호"
-            },
-            reviews: [
-              {
-                id: 1,
-                user: "조**",
-                rating: 5,
-                date: "2025.08.01",
-                comment: "가격 적당해요 배송 괜찮네요 맛 먹을만해요."
-              }
-            ],
-            ratingDistribution: {
-              5: 80,
-              4: 0,
-              3: 0,
-              2: 0,
-              1: 0
-            },
-            feedback: {
-              "가격 저렴해요": 47,
-              "배송 빨라요": 37
-            }
+            rating: kokProductInfo.kok_review_score || 0,
+            reviewCount: kokProductInfo.kok_review_cnt || 0
           };
           setKokProduct(convertedKokProduct);
+          
+          // 백엔드에서 제공하는 찜 상태 설정
+          if (kokProductInfo.is_liked !== undefined) {
+            setKokIsWishlisted(kokProductInfo.is_liked);
+            console.log('백엔드에서 찜 상태 확인:', kokProductInfo.is_liked);
+          }
 
-          // 나머지 API 호출들을 병렬로 처리
-          try {
-            const [kokProductTabs, kokProductReviews, kokProductDetails] = await Promise.all([
-              fetchKokProductTabs(productId),
-              fetchKokProductReviews(productId),
-              fetchKokProductDetails(productId)
-            ]);
-
-            // 상품 상세정보 탭 데이터 처리
-            if (kokProductTabs && kokProductTabs.images) {
-              console.log('상품 이미지 데이터 설정:', kokProductTabs.images);
-              setKokProductImages(kokProductTabs.images);
-            } else {
-              console.log('상품 이미지 데이터가 없어 기본 이미지를 사용합니다.');
-              setKokProductImages([
-                {
-                  kok_img_id: 1,
-                  kok_img_url: "https://via.placeholder.com/480x300/FFE4B5/000000?text=Default+Product+Image"
-                }
+          // 전체 상세 정보 API를 먼저 시도
+          const fullDetailData = await fetchKokProductFullDetail(productId);
+          
+          if (fullDetailData) {
+            // 전체 상세 정보 API 성공 시
+            console.log('전체 상세 정보 API 사용');
+            
+            // 상품 이미지 설정
+            if (fullDetailData.images && fullDetailData.images.length > 0) {
+              setKokProductImages(fullDetailData.images);
+            }
+            
+            // 리뷰 통계 및 목록 설정
+            if (fullDetailData.review_examples && fullDetailData.review_examples.length > 0) {
+              setKokReviewList(fullDetailData.review_examples);
+              
+              // 리뷰 통계 생성
+              const stats = {
+                kok_review_score: fullDetailData.kok_review_score || 0,
+                kok_review_cnt: fullDetailData.kok_review_cnt || 0,
+                kok_5_ratio: fullDetailData.kok_5_ratio || 0,
+                kok_4_ratio: fullDetailData.kok_4_ratio || 0,
+                kok_3_ratio: fullDetailData.kok_3_ratio || 0,
+                kok_2_ratio: fullDetailData.kok_2_ratio || 0,
+                kok_1_ratio: fullDetailData.kok_1_ratio || 0,
+                kok_aspect_price: fullDetailData.kok_aspect_price || 0,
+                kok_aspect_price_ratio: fullDetailData.kok_aspect_price_ratio || 0,
+                kok_aspect_delivery: fullDetailData.kok_aspect_delivery || 0,
+                kok_aspect_delivery_ratio: fullDetailData.kok_aspect_delivery_ratio || 0,
+                kok_aspect_quality: fullDetailData.kok_aspect_quality || 0,
+                kok_aspect_quality_ratio: fullDetailData.kok_aspect_quality_ratio || 0
+              };
+              setKokReviewStats(stats);
+            }
+            
+            // 판매자 정보 및 상세 정보 설정
+            if (fullDetailData.detail_infos && fullDetailData.detail_infos.length > 0) {
+              setKokDetailInfo(fullDetailData.detail_infos);
+            }
+            
+            // 판매자 정보 설정
+            if (fullDetailData.kok_co_ceo) {
+              const sellerInfo = {
+                kok_co_ceo: fullDetailData.kok_co_ceo,
+                kok_co_reg_no: fullDetailData.kok_co_reg_no,
+                kok_co_ec_reg: fullDetailData.kok_co_ec_reg,
+                kok_tell: fullDetailData.kok_tell,
+                kok_ver_item: fullDetailData.kok_ver_item,
+                kok_ver_date: fullDetailData.kok_ver_date,
+                kok_co_addr: fullDetailData.kok_co_addr,
+                kok_return_addr: fullDetailData.kok_return_addr
+              };
+              setKokSellerInfo(sellerInfo);
+            }
+          } else {
+            // 전체 상세 정보 API 실패 시 개별 API 사용
+            console.log('개별 API 사용');
+            try {
+              const [kokProductTabs, kokProductReviews, kokProductDetails] = await Promise.all([
+                fetchKokProductTabs(productId),
+                fetchKokProductReviews(productId),
+                fetchKokProductDetails(productId)
               ]);
-            }
 
-            // 상품 리뷰 데이터 처리
-            if (kokProductReviews) {
-              setKokReviewStats(kokProductReviews.stats);
-              setKokReviewList(kokProductReviews.reviews);
-            }
+              // 상품 상세정보 탭 데이터 처리
+              if (kokProductTabs && kokProductTabs.images) {
+                console.log('상품 이미지 데이터 설정:', kokProductTabs.images);
+                setKokProductImages(kokProductTabs.images);
+              } else {
+                console.log('상품 이미지 데이터가 없어 기본 이미지를 사용합니다.');
+                setKokProductImages([
+                  {
+                    kok_img_id: 1,
+                    kok_img_url: "https://via.placeholder.com/480x300/FFE4B5/000000?text=Default+Product+Image"
+                  }
+                ]);
+              }
 
-            // 상품 상세 정보 데이터 처리
-            if (kokProductDetails) {
-              setKokSellerInfo(kokProductDetails.seller_info);
-              setKokDetailInfo(kokProductDetails.detail_info);
+              // 상품 리뷰 데이터 처리
+              if (kokProductReviews) {
+                setKokReviewStats(kokProductReviews.stats);
+                setKokReviewList(kokProductReviews.reviews);
+              }
+
+              // 상품 상세 정보 데이터 처리
+              if (kokProductDetails) {
+                setKokSellerInfo(kokProductDetails.seller_info);
+                setKokDetailInfo(kokProductDetails.detail_info);
+              }
+            } catch (error) {
+              console.error('상세 데이터 로딩 중 오류 발생:', error);
             }
-          } catch (error) {
-            console.error('상세 데이터 로딩 중 오류 발생:', error);
           }
         } else {
           // 기존 로직 사용
@@ -241,51 +279,12 @@ const KokProductDetail = () => {
             const defaultKokProduct = {
               id: parseInt(productId),
               name: `제품 ${productId}`,
-              originalPrice: 150000,
-              discountPrice: 124000,
-              discountRate: 17,
-              image: "/test1.png",
-              rating: 4.4,
-              reviewCount: 23,
-              description: "이 제품에 대한 상세한 설명입니다.",
-              details: {
-                weight: "4kg (500g 8팩)",
-                origin: "국내산",
-                expiryDate: "제조일로부터 24개월",
-                storage: "서늘하고 건조한 곳에 보관"
-              },
-              seller: {
-                name: "(주)컴퍼니와우",
-                representative: "(주)컴퍼니와우",
-                businessNumber: "119-86-54463",
-                onlineSalesNumber: "제2012-서울금천-0325호",
-                phone: "02-2038-2966",
-                certifiedItems: "사업자 번호, 사업자 상호",
-                certificationDate: "2024-05-21",
-                businessLocation: "서울 금천구 가산디지털1로 70 (가산동) 407호",
-                returnAddress: "08590 서울 금천구 가산디지털1로 70 407호",
-                exchangeAddress: "08590 서울 금천구 가산디지털1로 70 407호"
-              },
-              reviews: [
-                {
-                  id: 1,
-                  user: "조**",
-                  rating: 5,
-                  date: "2025.08.01",
-                  comment: "가격 적당해요 배송 괜찮네요 맛 먹을만해요."
-                }
-              ],
-              ratingDistribution: {
-                5: 80,
-                4: 0,
-                3: 0,
-                2: 0,
-                1: 0
-              },
-              feedback: {
-                "가격 저렴해요": 47,
-                "배송 빨라요": 37
-              }
+              originalPrice: 0,
+              discountPrice: 0,
+              discountRate: 0,
+              image: "",
+              rating: 0,
+              reviewCount: 0
             };
             setKokProduct(defaultKokProduct);
           }
@@ -402,77 +401,6 @@ const KokProductDetail = () => {
             height: '855px',
             overflowY: 'auto'
           }}>
-            {/* 브랜드 섹션 */}
-            <div className="brand-section" style={{ marginBottom: '24px' }}>
-              <div className="brand-logos" style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
-                <div className="brand-logo red" style={{
-                  width: '80px',
-                  height: '80px',
-                  borderRadius: '50%',
-                  backgroundColor: '#FA5F8C',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'white',
-                  fontSize: '12px',
-                  textAlign: 'center'
-                }}>
-                  <div className="logo-text" style={{ fontWeight: 'bold', marginBottom: '2px' }}>궁류나라</div>
-                  <div className="logo-subtext" style={{ fontSize: '10px' }}>맘스 쇼핑몰 KING</div>
-                </div>
-                <div className="brand-logo black" style={{
-                  width: '80px',
-                  height: '80px',
-                  borderRadius: '50%',
-                  backgroundColor: '#333',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'white',
-                  fontSize: '12px',
-                  textAlign: 'center'
-                }}>
-                  <div className="logo-text" style={{ fontWeight: 'bold', marginBottom: '2px' }}>고자미</div>
-                  <div className="logo-subtext" style={{ fontSize: '10px' }}>옛부터 사랑받는 맛!</div>
-                </div>
-              </div>
-              <div className="brand-info">
-                <h3 className="brand-name" style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '4px' }}>고자미</h3>
-                <p className="brand-tagline" style={{ fontSize: '14px', color: '#666' }}>맛부터 사랑받는 맛!</p>
-              </div>
-            </div>
-
-            {/* 제품 설명 */}
-            <div className="product-description-content" style={{ marginBottom: '24px' }}>
-              <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '12px' }}>제품 설명</h3>
-              <p style={{ fontSize: '14px', lineHeight: '1.6', color: '#333' }}>{kokProduct.description}</p>
-            </div>
-
-            {/* 제품 상세 정보 */}
-            <div className="product-details-summary">
-              <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '12px' }}>제품 상세</h3>
-              <div className="details-grid" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div className="detail-item" style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
-                  <span className="detail-label" style={{ fontSize: '14px', color: '#666' }}>중량</span>
-                  <span className="detail-value" style={{ fontSize: '14px', fontWeight: '500' }}>{kokProduct.details.weight}</span>
-                </div>
-                <div className="detail-item" style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
-                  <span className="detail-label" style={{ fontSize: '14px', color: '#666' }}>원산지</span>
-                  <span className="detail-value" style={{ fontSize: '14px', fontWeight: '500' }}>{kokProduct.details.origin}</span>
-                </div>
-                <div className="detail-item" style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
-                  <span className="detail-label" style={{ fontSize: '14px', color: '#666' }}>유통기한</span>
-                  <span className="detail-value" style={{ fontSize: '14px', fontWeight: '500' }}>{kokProduct.details.expiryDate}</span>
-                </div>
-                <div className="detail-item" style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0' }}>
-                  <span className="detail-label" style={{ fontSize: '14px', color: '#666' }}>보관방법</span>
-                  <span className="detail-value" style={{ fontSize: '14px', fontWeight: '500' }}>{kokProduct.details.storage}</span>
-                </div>
-              </div>
-            </div>
-
             {/* KOK API에서 가져온 상품 이미지들 */}
             {kokProductImages.length > 0 && (
               <div className="product-images-section" style={{ marginTop: '24px' }}>
@@ -517,107 +445,109 @@ const KokProductDetail = () => {
               </div>
             </div>
             
-            {(kokReviewStats || kokProduct.reviewCount > 0) && (
-              <>
-                <div className="rating-distribution" style={{ marginBottom: '20px' }}>
-                  {[5, 4, 3, 2, 1].map(star => (
-                    <div key={star} className="rating-bar" style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                      <span className="star-label" style={{ width: '40px', fontSize: '12px' }}>{star}점</span>
-                      <div className="bar-container" style={{ flex: 1, height: '8px', backgroundColor: '#f0f0f0', borderRadius: '4px', marginLeft: '8px' }}>
-                        <div 
-                          className="bar-fill" 
-                          style={{ 
-                            width: `${kokReviewStats ? kokReviewStats[`kok_${star}_ratio`] : kokProduct.ratingDistribution[star]}%`,
-                            height: '100%',
-                            backgroundColor: '#FA5F8C',
-                            borderRadius: '4px'
-                          }}
-                        ></div>
-                      </div>
+            {/* 평가 항목 표시 */}
+            {kokReviewStats && (
+              <div className="feedback-tags" style={{ marginBottom: '20px' }}>
+                <span style={{
+                  display: 'inline-block',
+                  padding: '4px 8px',
+                  margin: '2px',
+                  backgroundColor: '#ffffff',
+                  borderRadius: '12px',
+                  fontSize: '12px',
+                  color: '#666',
+                  border: '1px solid #f0f0f0'
+                }}>
+                  가격 {kokReviewStats.kok_aspect_price} {kokReviewStats.kok_aspect_price_ratio}%
+                </span>
+                <span style={{
+                  display: 'inline-block',
+                  padding: '4px 8px',
+                  margin: '2px',
+                  backgroundColor: '#ffffff',
+                  borderRadius: '12px',
+                  fontSize: '12px',
+                  color: '#666',
+                  border: '1px solid #f0f0f0'
+                }}>
+                  배송 {kokReviewStats.kok_aspect_delivery} {kokReviewStats.kok_aspect_delivery_ratio}%
+                </span>
+                <span style={{
+                  display: 'inline-block',
+                  padding: '4px 8px',
+                  margin: '2px',
+                  backgroundColor: '#ffffff',
+                  borderRadius: '12px',
+                  fontSize: '12px',
+                  color: '#666',
+                  border: '1px solid #f0f0f0'
+                }}>
+                  품질 {kokReviewStats.kok_aspect_quality} {kokReviewStats.kok_aspect_quality_ratio}%
+                </span>
+              </div>
+            )}
+            
+            {/* 별점 분포 표시 */}
+            {kokReviewStats && (
+              <div className="rating-distribution" style={{ marginBottom: '20px' }}>
+                {[5, 4, 3, 2, 1].map(star => (
+                  <div key={star} className="rating-bar" style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                    <span className="star-label" style={{ width: '40px', fontSize: '12px' }}>{star}점</span>
+                    <div className="bar-container" style={{ flex: 1, height: '8px', backgroundColor: '#f0f0f0', borderRadius: '4px', marginLeft: '8px' }}>
+                      <div 
+                        className="bar-fill" 
+                        style={{ 
+                          width: `${kokReviewStats[`kok_${star}_ratio`] || 0}%`,
+                          height: '100%',
+                          backgroundColor: '#FA5F8C',
+                          borderRadius: '4px'
+                        }}
+                      ></div>
                     </div>
-                  ))}
-                </div>
-
-                <div className="feedback-tags" style={{ marginBottom: '20px' }}>
-                  {kokReviewStats ? (
-                    <>
-                      <span style={{
-                        display: 'inline-block',
-                        padding: '4px 8px',
-                        margin: '2px',
-                        backgroundColor: '#ffffff',
-                        borderRadius: '12px',
-                        fontSize: '12px',
-                        color: '#666'
-                      }}>
-                        가격 {kokReviewStats.kok_aspect_price} {kokReviewStats.kok_aspect_price_ratio}%
-                      </span>
-                      <span style={{
-                        display: 'inline-block',
-                        padding: '4px 8px',
-                        margin: '2px',
-                        backgroundColor: '#ffffff',
-                        borderRadius: '12px',
-                        fontSize: '12px',
-                        color: '#666'
-                      }}>
-                        배송 {kokReviewStats.kok_aspect_delivery} {kokReviewStats.kok_aspect_delivery_ratio}%
-                      </span>
-                      <span style={{
-                        display: 'inline-block',
-                        padding: '4px 8px',
-                        margin: '2px',
-                        backgroundColor: '#ffffff',
-                        borderRadius: '12px',
-                        fontSize: '12px',
-                        color: '#666'
-                      }}>
-                        맛 {kokReviewStats.kok_aspect_taste} {kokReviewStats.kok_aspect_taste_ratio}%
-                      </span>
-                    </>
-                  ) : (
-                    Object.entries(kokProduct.feedback).map(([tag, count]) => (
-                      <span key={tag} style={{
-                        display: 'inline-block',
-                        padding: '4px 8px',
-                        margin: '2px',
-                        backgroundColor: '#ffffff',
-                        borderRadius: '12px',
-                        fontSize: '12px',
-                        color: '#666'
-                      }}>
-                        {tag} {count}
-                      </span>
-                    ))
-                  )}
-                </div>
-
-                <div className="reviews-list">
-                  {(kokReviewList.length > 0 ? kokReviewList : kokProduct.reviews).map(review => (
-                    <div key={review.kok_review_id || review.id} style={{ marginBottom: '16px', padding: '12px', border: '1px solid #f0f0f0', borderRadius: '8px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                        <span style={{ fontSize: '14px', fontWeight: '500' }}>{review.kok_nickname || review.user}</span>
-                        <span style={{ fontSize: '12px', color: '#666' }}>{review.kok_review_date || review.date}</span>
-                      </div>
-                      <div style={{ marginBottom: '8px' }}>
-                        <span style={{ color: '#FA5F8C', fontSize: '14px' }}>
-                          {renderKokStars(review.kok_review_score || review.rating)}
-                        </span>
-                      </div>
-                      <p style={{ fontSize: '14px', lineHeight: '1.5', color: '#333' }}>
-                        {review.kok_review_text || review.comment}
-                      </p>
-                      {review.kok_price_eval && (
-                        <div style={{ marginTop: '8px', fontSize: '12px', color: '#666' }}>
-                          <span style={{ marginRight: '8px' }}>가격: {review.kok_price_eval}</span>
-                          <span style={{ marginRight: '8px' }}>배송: {review.kok_delivery_eval}</span>
-                          <span>맛: {review.kok_taste_eval}</span>
-                        </div>
-                      )}
+                    <span style={{ marginLeft: '8px', fontSize: '12px', color: '#666', width: '30px' }}>
+                      {kokReviewStats[`kok_${star}_ratio`] || 0}%
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {/* API에서 실제 리뷰 데이터가 있을 때만 표시 */}
+            {kokReviewList.length > 0 ? (
+              <div className="reviews-list">
+                {kokReviewList.map(review => (
+                  <div key={review.kok_review_id} style={{ marginBottom: '16px', padding: '12px', border: '1px solid #f0f0f0', borderRadius: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '14px', fontWeight: '500' }}>{review.kok_review_user}</span>
+                      <span style={{ fontSize: '12px', color: '#666' }}>{review.kok_review_date}</span>
                     </div>
-                  ))}
-                </div>
-              </>
+                    <div style={{ marginBottom: '8px' }}>
+                      <span style={{ color: '#FA5F8C', fontSize: '14px' }}>
+                        {renderKokStars(review.kok_review_score)}
+                      </span>
+                    </div>
+                    <p style={{ fontSize: '14px', lineHeight: '1.5', color: '#333' }}>
+                      {review.kok_review_text}
+                    </p>
+                    {review.kok_price_eval && (
+                      <div style={{ marginTop: '8px', fontSize: '12px', color: '#666' }}>
+                        <span style={{ marginRight: '8px' }}>가격: {review.kok_price_eval}</span>
+                        <span style={{ marginRight: '8px' }}>배송: {review.kok_delivery_eval}</span>
+                        <span>맛: {review.kok_taste_eval}</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ 
+                textAlign: 'center', 
+                padding: '40px 20px',
+                color: '#999',
+                fontSize: '14px'
+              }}>
+                아직 리뷰가 없습니다.
+              </div>
             )}
           </div>
         );
@@ -690,45 +620,15 @@ const KokProductDetail = () => {
                 </div>
               )}
 
-              {/* 기존 데이터 사용 (API 데이터가 없는 경우) */}
+              {/* API 데이터가 없는 경우 안내 메시지 */}
               {!kokSellerInfo && !kokDetailInfo.length && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
-                    <span style={{ fontSize: '14px', color: '#666' }}>상호명</span>
-                    <span style={{ fontSize: '14px', fontWeight: '500' }}>{kokProduct.seller.name}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
-                    <span style={{ fontSize: '14px', color: '#666' }}>대표자</span>
-                    <span style={{ fontSize: '14px', fontWeight: '500' }}>{kokProduct.seller.representative}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
-                    <span style={{ fontSize: '14px', color: '#666' }}>사업자등록번호</span>
-                    <span style={{ fontSize: '14px', fontWeight: '500' }}>{kokProduct.seller.businessNumber}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
-                    <span style={{ fontSize: '14px', color: '#666' }}>통신판매업번호</span>
-                    <span style={{ fontSize: '14px', fontWeight: '500' }}>{kokProduct.seller.onlineSalesNumber}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
-                    <span style={{ fontSize: '14px', color: '#666' }}>연락처</span>
-                    <span style={{ fontSize: '14px', fontWeight: '500' }}>{kokProduct.seller.phone}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
-                    <span style={{ fontSize: '14px', color: '#666' }}>인증항목</span>
-                    <span style={{ fontSize: '14px', fontWeight: '500' }}>{kokProduct.seller.certifiedItems}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
-                    <span style={{ fontSize: '14px', color: '#666' }}>인증일</span>
-                    <span style={{ fontSize: '14px', fontWeight: '500' }}>{kokProduct.seller.certificationDate}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
-                    <span style={{ fontSize: '14px', color: '#666' }}>사업장소재지</span>
-                    <span style={{ fontSize: '14px', fontWeight: '500' }}>{kokProduct.seller.businessLocation}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
-                    <span style={{ fontSize: '14px', color: '#666' }}>반품/교환주소</span>
-                    <span style={{ fontSize: '14px', fontWeight: '500' }}>{kokProduct.seller.returnAddress}</span>
-                  </div>
+                <div style={{ 
+                  textAlign: 'center', 
+                  padding: '40px 20px',
+                  color: '#999',
+                  fontSize: '14px'
+                }}>
+                  상세 정보가 없습니다.
                 </div>
               )}
             </div>

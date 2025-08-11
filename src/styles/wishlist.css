@@ -81,6 +81,124 @@
   gap: 16px;
 }
 
+/* 쇼핑몰 탭 전용 스타일 */
+.shopping-product-info {
+  display: flex;
+  flex-direction: column;
+  padding-top: 15px;
+  gap: 15px;
+  width: 280px; /* 고정 너비 설정 */
+  flex: none; /* flex: 1 제거 */
+  min-width: 0; /* flex 아이템이 부모를 넘지 않도록 */
+  overflow: hidden; /* 넘치는 내용 숨김 */
+  max-width: 280px; /* 최대 너비 제한 */
+}
+
+.shopping-price-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.shopping-price-info {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+
+.shopping-discount-rate {
+  color: #FA5F8C;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.shopping-discounted-price {
+  color: #2f3542;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.shopping-heart-button {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease-in-out;
+}
+
+.shopping-heart-icon {
+  width: 30px;
+  height: 30px;
+}
+
+/* 상품명 스타일 */
+.wishlist-product-name {
+  font-size: 14px;
+  line-height: 1.4;
+  color: #333;
+  margin-top: 8px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  /* 텍스트가 길 경우 말줄임표 처리 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-clamp: 2;
+}
+
+.wishlist-product-name:hover {
+  color: #007bff;
+}
+
+/* 쇼핑몰 상품 상세 정보 */
+.shopping-product-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.shopping-product-details:hover {
+  color: #007bff;
+}
+
+.shopping-product-name {
+  font-size: 15px;
+  line-height: 1.4;
+  /* 텍스트가 길 경우 말줄임표 처리 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-clamp: 2;
+}
+
+.shopping-brand-name {
+  color: #2f3542;
+  font-weight: 700;
+}
+
+.shopping-product-name {
+  color: #2f3542;
+  flex: 1;
+  min-width: 0; /* flex 아이템이 부모를 넘지 않도록 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.4;
+}
+
 .wishlist-product-container {
   display: flex;
   flex-direction: column;
@@ -98,18 +216,33 @@
 .wishlist-product {
   display: flex;
   gap: 12px;
-  padding: 16px;
+  padding: 0px;
   background-color: #ffffff;
   border-radius: 8px;
   padding-top: 0px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
 }
 
+.wishlist-product:hover {
+  border-color: #e0e0e0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+/* 상품 이미지 스타일 */
 .product-image {
   width: 120px;
   height: 120px;
   border-radius: 8px;
   overflow: hidden;
   flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.product-image:hover {
+  transform: scale(1.02);
 }
 
 .product-image img {
@@ -126,20 +259,6 @@
   gap: 8px;
   align-items: flex-start;
   position: relative;
-}
-
-.wishlist-product-name {
-  font-size: 14px;
-  font-weight: 500;
-  color: #333;
-  line-height: 1.4;
-  /* 텍스트가 길 경우 말줄임표 처리 */
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  line-clamp: 2;
 }
 
 .wishlist-brand-name {
@@ -178,6 +297,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: transform 0.15s ease-in-out;
 }
 
 .heart-icon {
