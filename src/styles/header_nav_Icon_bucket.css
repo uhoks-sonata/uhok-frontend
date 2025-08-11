@@ -12,6 +12,7 @@
   -webkit-tap-highlight-color: transparent;
 
   /* padding-top: 2px; */
+  padding-top: 1px;
 }
 
 .hn-bucket-btn:hover,
