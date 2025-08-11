@@ -2,7 +2,7 @@ import React from 'react';
 import HeaderNavFrame from './HeaderNavFrame';
 import HeaderNavBackBtn from '../components/HeaderNavBackBtn';
 import HeaderNavIconBell from '../components/HeaderNavIconBell';
-import HeaderSearchBar from '../components/HeaderSearchBar';
+import HeaderNavInput from '../components/HeaderNavInput';
 import '../styles/header_nav_Schedule.css';
 
 // 편성표 페이지 전용 Header Nav (틀은 HeaderNavFrame 사용)
@@ -15,9 +15,10 @@ const HeaderNavSchedule = ({ onBackClick, onSearchClick, onNotificationClick }) 
       </div>
       
       <div className="hn-schedule-center">
-        <HeaderSearchBar 
-          onClick={onSearchClick}
+        <HeaderNavInput 
+          onSearch={onSearchClick}
           placeholder="홈쇼핑 검색"
+          className="schedule-search"
         />
       </div>
       

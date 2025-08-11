@@ -68,13 +68,6 @@ const Schedule = () => {
     console.log(`위시리스트 토글: ${itemId}`);
   };
 
-
-
-  // 검색 핸들러
-  const handleSearch = () => {
-    navigate('/search?type=homeshopping');
-  };
-
   // 알림 핸들러
   const handleNotification = () => {
     navigate('/notifications');
@@ -85,7 +78,7 @@ const Schedule = () => {
       {/* 편성표 헤더 네비게이션 */}
       <HeaderNavSchedule 
         onBackClick={() => navigate(-1)}
-        onSearchClick={handleSearch}
+        onSearchClick={(searchTerm) => navigate('/search?type=homeshopping')}
         onNotificationClick={handleNotification}
       />
 
