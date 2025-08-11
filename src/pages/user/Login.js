@@ -103,8 +103,8 @@ const Login = () => {
         login(userData);
         
         console.log('로그인 성공 - 백엔드 토큰 저장 완료:', userData);
-        // 로그인 성공 시 스케줄 페이지로 이동
-        navigate('/schedule');
+        // 로그인 성공 시 메인 페이지로 이동
+        navigate('/main');
       } else {
         // 토큰이 없는 경우 에러 처리
         console.error('백엔드 응답에 토큰이 없습니다:', response.data);

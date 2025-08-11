@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShoppingHeader } from '../../layout/HeaderNav';
+// Header removed
 import BottomNav from '../../layout/BottomNav';
 import Loading from '../../components/Loading';
 import api from '../api';
@@ -31,14 +31,31 @@ const WishList = () => {
   const fetchWishlistData = async () => {
     try {
       setLoading(true);
+      
+      // 토큰 확인
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        console.log('토큰이 없어서 로그인 페이지로 이동');
+        window.location.href = '/';
+        return;
+      }
+
       const response = await api.get('/api/kok/likes', {
         headers: {
-          'Authorization': 'Bearer <access_token>' // 실제 토큰으로 교체 필요
+          'Authorization': `Bearer ${token}`
         }
       });
       setWishlistData(response.data);
     } catch (err) {
       console.error('찜한 상품 목록 로딩 실패:', err);
+      
+      // 401 에러 (인증 실패) 시 로그인 페이지로 이동
+      if (err.response?.status === 401) {
+        alert('로그인이 필요합니다.');
+        window.location.href = '/';
+        return;
+      }
+      
       // API 연결 실패 시 더미 데이터 사용
       setWishlistData({
         liked_products: [
@@ -94,11 +111,19 @@ const WishList = () => {
     const isCurrentlyUnliked = unlikedProducts.has(productId);
     
     try {
+      // 토큰 확인
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        console.log('토큰이 없어서 로그인 페이지로 이동');
+        window.location.href = '/';
+        return;
+      }
+
       const response = await api.post('/api/kok/likes/toggle', {
         kok_product_id: productId
       }, {
         headers: {
-          'Authorization': 'Bearer <access_token>'
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -119,6 +144,13 @@ const WishList = () => {
         });
       }
     } catch (err) {
+      // 401 에러 (인증 실패) 시 로그인 페이지로 이동
+      if (err.response?.status === 401) {
+        alert('로그인이 필요합니다.');
+        window.location.href = '/';
+        return;
+      }
+      
       // 네트워크 에러나 API 연결 실패 시에도 하트 아이콘 토글
       if (err.code === 'ERR_NETWORK' || err.message === 'Network Error') {
         setUnlikedProducts(prev => {
@@ -153,6 +185,7 @@ const WishList = () => {
   // 알림 클릭 핸들러
   const handleNotificationClick = () => {
     console.log('알림 클릭됨');
+    navigate('/notifications');
   };
 
   // 장바구니 클릭 핸들러
@@ -182,14 +215,7 @@ const WishList = () => {
   if (loading) {
     return (
       <div className="wishlist-page">
-        <ShoppingHeader 
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          onSearch={handleSearch}
-          onNotificationClick={handleNotificationClick}
-          onCartClick={handleCartClick}
-          onBack={handleBack}
-        />
+        {/* header removed */}
         <div className="wishlist-content">
           <Loading message="찜한 상품을 불러오는 중 ..." />
         </div>
@@ -201,14 +227,7 @@ const WishList = () => {
   if (error) {
     return (
       <div className="wishlist-page">
-        <ShoppingHeader 
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          onSearch={handleSearch}
-          onNotificationClick={handleNotificationClick}
-          onCartClick={handleCartClick}
-          onBack={handleBack}
-        />
+        {/* header removed */}
         <div className="wishlist-content">
           <div className="error">오류: {error}</div>
         </div>
@@ -219,14 +238,7 @@ const WishList = () => {
 
   return (
     <div className="wishlist-page">
-      <ShoppingHeader 
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        onSearch={handleSearch}
-        onNotificationClick={handleNotificationClick}
-        onCartClick={handleCartClick}
-        onBack={handleBack}
-      />
+      {/* header removed */}
       
       <div className="wishlist-content">
         {/* 탭 네비게이션 */}

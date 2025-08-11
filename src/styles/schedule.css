@@ -1,181 +1,262 @@
-/* 편성표 페이지 스타일 */
+/* 편성표 페이지 기본 스타일 */
 .schedule-page {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
+  min-height: 100vh;
   background-color: #ffffff;
-}
-
-/* 메인 콘텐츠 영역 */
-.schedule-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-  padding-bottom: 80px; /* 하단 네비게이션 공간 확보 */
-}
-
-/* 로딩 및 에러 상태 */
-.loading, .error {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 200px;
-  font-size: 16px;
-  color: #666;
+  flex-direction: column;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.error {
-  color: #ff4444;
-}
-
-/* 날짜 및 방송 상태 */
-.schedule-header-info {
-  padding: 15px 0;
-}
-
-.date {
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 5px;
-}
-
-.broadcast-status {
-  font-size: 14px;
-  color: #ff4444;
-  font-weight: 500;
-}
-
-/* 섹션 제목 */
-.schedule-section {
-  margin-bottom: 30px;
-}
-
-.section-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 15px;
-  padding: 10px 0;
-}
-
-/* 방송 중 섹션에 상품 이미지 추가 */
-.schedule-section.on-air {
-  position: relative;
-}
-
-.schedule-section.on-air::before {
-  content: '';
-  position: absolute;
+/* 검색 헤더 */
+.schedule-search-header {
+  background: #ffffff;
+  padding: 10px 16px;
+  border-bottom: 1px solid #e5e5e5;
+  position: sticky;
   top: 0;
-  right: 0;
-  width: 60px;
-  height: 60px;
-  background-image: var(--on-air-image);
-  background-size: cover;
-  background-position: center;
-  border-radius: 8px;
-  z-index: 1;
+  z-index: 100;
 }
 
-/* 상품 카드 컨테이너 */
-.product-cards {
+.search-container {
   display: flex;
-  flex-direction: column;
-  gap: 15px;
+  align-items: center;
+  gap: 12px;
 }
 
-/* 상품 카드 */
-.product-card {
-  background-color: #F5F6F8;
-  border-radius: 18px;
-  padding: 15px;
+.search-input-wrapper {
+  flex: 1;
+  position: relative;
   cursor: pointer;
+}
+
+.schedule-search-button {
+  width: 100%;
+  height: 44px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 22px;
+  background-color: #f5f5f5;
+  font-size: 16px;
+  color: #333;
+  outline: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   transition: all 0.2s ease;
+  gap: 12px; /* 텍스트와 아이콘 사이 간격 */
 }
 
-.product-card:hover {
-  transform: translateY(-2px);
-  border-color: #ff69b4;
+.schedule-search-button:hover {
+  background-color: #e8e8e8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* 카드 레이아웃 */
-.card-layout {
-  display: flex;
-  align-items: center;
-  gap: 7px;
+.schedule-search-button .search-placeholder {
+  color: #999;
+  user-select: none;
+  flex: 1; /* 텍스트가 남은 공간을 차지하도록 */
+  text-align: left; /* 텍스트 왼쪽 정렬 */
 }
 
-/* 왼쪽: 방송 상태 정보 */
-.status-info {
-  flex-shrink: 0;
-  width: 80px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.status-info .broadcast-status {
-  font-size: 12px;
-  font-weight: 600;
-  color: #ff4444;
-  padding: 4px 8px;
-  background-color: #fff5f5;
-  border-radius: 4px;
+.schedule-search-button .search-icon {
+  font-size: 16px;
+  color: #999;
+  flex-shrink: 0; /* 아이콘 크기 고정 */
+  width: 20px;
   text-align: center;
 }
 
-/* 방송예정 상태도 빨간색으로 스타일링 */
-.status-info .broadcast-status.scheduled {
-  color: #ff4444;
-  background-color: #fff5f5;
+.notification-btn {
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: none;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
 }
 
-/* 중앙: 상품 정보 */
-.product-info {
+.notification-btn:hover {
+  background-color: #f5f5f5;
+}
+
+/* 메인 콘텐츠 */
+.schedule-content {
   flex: 1;
+  overflow-y: auto;
+  padding-bottom: 80px; /* 하단 네비게이션 공간 */
+}
+
+/* 날짜 캘린더 */
+.date-calendar {
+  background: #ffffff;
+  padding: 16px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.calendar-dates {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.calendar-date {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 44px;
 }
 
-/* 상품 상세 정보 */
-.product-details {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.calendar-date:hover {
+  background-color: #f5f5f5;
 }
 
-/* 오른쪽: 상품 이미지 컨테이너 */
-.product-image-container {
-  flex-shrink: 0;
-  position: relative;
-  width: 80px;
-  height: 80px;
-}
-
-/* 시간 오버레이 */
-.time-overlay {
-  position: absolute;
-  top: -8px;
-  left: -8px;
-  background-color: #333;
+.calendar-date.selected {
+  background-color: #007AFF;
   color: white;
+}
+
+.calendar-date.today {
+  background-color: #FF3B30;
+  color: white;
+}
+
+.date-number {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.date-day {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* 시간대 표시 */
+.time-slots {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 8px;
+}
+
+.time-slot {
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+  min-width: 44px;
+}
+
+/* 편성표 타임라인 */
+.schedule-timeline {
+  padding: 16px;
+}
+
+.schedule-program {
+  margin-bottom: 24px;
+}
+
+/* 시간 표시 */
+.program-time {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.time-start {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.live-indicator {
+  background: #FF3B30;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
   font-size: 12px;
   font-weight: 600;
-  padding: 4px 8px;
+}
+
+.upcoming-indicator {
+  background: #666;
+  color: white;
+  padding: 2px 8px;
   border-radius: 4px;
-  z-index: 2;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* 프로그램 카드 */
+.program-card {
+  display: flex;
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.program-left {
+  width: 60px;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px;
+}
+
+.channel-logos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+}
+
+.channel-logo {
+  font-size: 8px;
+  color: #8e44ad;
+  font-weight: 600;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  line-height: 1;
+  padding: 1px 2px;
+}
+
+.program-content {
+  flex: 1;
+  padding: 16px;
+  position: relative;
+}
+
+/* 연령 제한 */
+.age-rating {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #8e44ad;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 50px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 /* 상품 이미지 */
 .product-image {
-  width: 100%;
-  height: 100%;
-  border-radius: 6px;
+  width: 120px;
+  height: 80px;
+  border-radius: 8px;
   overflow: hidden;
-  background-color: #f5f5f5;
+  margin-bottom: 12px;
+  background: #f5f5f5;
 }
 
 .product-image img {
@@ -184,96 +265,134 @@
   object-fit: cover;
 }
 
-/* 상품 상세 정보 */
-.product-details {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+/* 상품 정보 */
+.product-info {
+  max-width: calc(100% - 140px);
+}
+
+.product-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 4px 0;
+}
+
+.product-description {
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 12px 0;
+  line-height: 1.4;
 }
 
 /* 가격 정보 */
-.price-info {
+.price-section {
+  margin-bottom: 12px;
+}
+
+.original-price {
+  font-size: 12px;
+  color: #999;
+  text-decoration: line-through;
+  margin-bottom: 4px;
+}
+
+.sale-info {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.discount {
-  font-size: 16px;
-  font-weight: 700;
-  color: #ff4444;
+.discount-rate {
+  background: #FF3B30;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
-.price {
+.sale-price {
   font-size: 16px;
   font-weight: 600;
   color: #333;
 }
 
-/* 브랜드 정보 */
-.brand-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.brand-logo {
-  display: flex;
-  align-items: center;
-}
-
-.brand-image {
-  height: 20px;
-  width: auto;
-  object-fit: contain;
-}
-
-.channel {
-  font-size: 14px;
+/* 위시리스트 버튼 */
+.wishlist-btn {
+  background: #f5f5f5;
+  border: 1px solid #ddd;
   color: #666;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-/* 상품명 */
-.product-name {
-  font-size: 14px;
-  color: #333;
-  line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.wishlist-btn:hover {
+  background: #e5e5e5;
+}
+
+.wishlist-btn.active {
+  background: #FF3B30;
+  color: white;
+  border-color: #FF3B30;
 }
 
 /* 반응형 디자인 */
-@media (max-width: 480px) {
-  .schedule-content {
-    padding: 15px;
+@media (max-width: 768px) {
+  .schedule-search-header {
+    padding: 8px 12px;
   }
   
-  .card-layout {
-    gap: 12px;
+  .date-calendar {
+    padding: 12px;
   }
   
-  .status-info {
-    width: 70px;
+  .calendar-date {
+    padding: 6px 8px;
+    min-width: 36px;
   }
   
-  .product-image-container {
-    width: 70px;
+  .date-number {
+    font-size: 14px;
+  }
+  
+  .schedule-timeline {
+    padding: 12px;
+  }
+  
+  .program-content {
+    padding: 12px;
+  }
+  
+  .product-image {
+    width: 100px;
     height: 70px;
   }
   
-  .time-overlay {
-    font-size: 11px;
-    padding: 3px 6px;
+  .product-info {
+    max-width: calc(100% - 120px);
   }
-  
-  .discount, .price {
-    font-size: 15px;
-  }
-  
-  .product-name {
-    font-size: 13px;
-  }
-} 
+}
+
+/* 스크롤바 스타일링 */
+.schedule-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.schedule-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.schedule-content::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 2px;
+}
+
+.schedule-content::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}

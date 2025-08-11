@@ -1,7 +1,7 @@
 .kok-product-section {
   margin-bottom: 24px;
   padding: 0 16px; /* 좌우 패딩만 16px */
-  border-bottom: 8px solid #D9D9D9; /* 8픽셀 두께 분리선 추가 */
+  border-bottom: 1px solid #D9D9D9; /* 8픽셀 두께 분리선 추가 */
 }
 
 .kok-section-header {
@@ -142,7 +142,7 @@
 
 .kok-products-container.fixed .kok-product-card {
   width: 141px !important;
-  height: 220px !important;
+  height: 230px !important;
   flex: none !important;
   display: flex !important;
   flex-direction: column !important;
@@ -184,7 +184,7 @@
 .kok-products-container.fixed .kok-product-card .kok-product-name {
   width: 125px;
   height: 25px;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   color: #333;
   margin: 0;
@@ -209,7 +209,7 @@
 }
 
 .kok-products-container.fixed .kok-product-card .kok-discount-rate {
-  font-size: 16px;
+  font-size: 13px;
   font-weight: bold;
   color: #FA5F8C;
   background: transparent;
@@ -222,7 +222,7 @@
 }
 
 .kok-products-container.fixed .kok-product-card .kok-discount-price {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: bold;
   color: #333;
 }
@@ -244,7 +244,7 @@
 }
 
 .kok-products-container.fixed .kok-product-card .kok-stars {
-  font-size: 13px;
+  font-size: 12px;
   color: #FA5F8C;
 }
 

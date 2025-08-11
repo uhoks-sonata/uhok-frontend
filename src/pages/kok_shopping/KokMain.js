@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { HomeShoppingHeader } from '../../layout/HeaderNav';
+import { useNavigate } from 'react-router-dom';
+// Header removed
 import KokProductSection from '../../components/KokProductSection';
 import BottomNav from '../../layout/BottomNav';
 import Loading from '../../components/Loading';
+import HeaderNavMain from '../../layout/HeaderNavKokMain';
 import '../../styles/kok_main.css';
 import api from '../api';
 import { ensureToken } from '../../utils/authUtils';
@@ -16,6 +18,7 @@ import {
 } from '../../data/products';
 
 const KokMain = () => {
+  const navigate = useNavigate();
   const [kokFadeIn, setKokFadeIn] = useState(false);
   const [kokSearchQuery, setKokSearchQuery] = useState('');
   // API 데이터를 저장할 상태 추가
@@ -48,8 +51,8 @@ const KokMain = () => {
           discountPrice: product.kok_discounted_price,
           discountRate: product.kok_discount_rate,
           image: product.kok_thumbnail,
-          rating: 4.5, // API에 없으므로 기본값
-          reviewCount: 128, // API에 없으므로 기본값
+          rating: product.kok_rating || product.rating || 0, // 실제 별점 데이터 사용
+          reviewCount: product.kok_review_count || product.review_count || product.reviewCount || 0, // 실제 리뷰 수 데이터 사용
           storeName: product.kok_store_name
         }));
         console.log('변환된 상품 데이터:', transformedProducts);
@@ -80,20 +83,46 @@ const KokMain = () => {
       console.log('판매율 높은 상품 API 응답 구조:', response.data);
       if (response.data && response.data.products) {
         console.log('판매율 높은 상품 데이터 설정:', response.data.products.length);
-        // API 응답을 KokProductCard가 기대하는 형식으로 변환
-        const transformedProducts = response.data.products.map(product => ({
-          id: product.kok_product_id,
-          name: product.kok_product_name,
-          originalPrice: product.kok_discounted_price / (1 - product.kok_discount_rate / 100), // 할인율로 원가 계산
-          discountPrice: product.kok_discounted_price,
-          discountRate: product.kok_discount_rate,
-          image: product.kok_thumbnail,
-          rating: 4.5, // API에 없으므로 기본값
-          reviewCount: 128, // API에 없으므로 기본값
-          storeName: product.kok_store_name
-        }));
-        console.log('변환된 상품 데이터:', transformedProducts);
-        setKokTopSellingProducts(transformedProducts);
+        
+        // 각 상품의 리뷰 데이터를 개별적으로 가져오기
+        const productsWithReviews = await Promise.all(
+          response.data.products.map(async (product) => {
+            try {
+              // 상품별 리뷰 통계 데이터 가져오기
+              const reviewResponse = await api.get(`/api/kok/products/${product.kok_product_id}/reviews/stats`);
+              const reviewStats = reviewResponse.data;
+              
+              return {
+                id: product.kok_product_id,
+                name: product.kok_product_name,
+                originalPrice: product.kok_discounted_price / (1 - product.kok_discount_rate / 100), // 할인율로 원가 계산
+                discountPrice: product.kok_discounted_price,
+                discountRate: product.kok_discount_rate,
+                image: product.kok_thumbnail,
+                rating: reviewStats?.kok_rating || reviewStats?.rating || 0, // 실제 별점 데이터 사용
+                reviewCount: reviewStats?.kok_review_cnt || reviewStats?.review_count || 0, // 실제 리뷰 수 데이터 사용
+                storeName: product.kok_store_name
+              };
+            } catch (reviewErr) {
+              console.log(`상품 ${product.kok_product_id}의 리뷰 데이터 가져오기 실패:`, reviewErr);
+              // 리뷰 데이터 가져오기 실패 시 기본값 사용
+              return {
+                id: product.kok_product_id,
+                name: product.kok_product_name,
+                originalPrice: product.kok_discounted_price / (1 - product.kok_discount_rate / 100),
+                discountPrice: product.kok_discounted_price,
+                discountRate: product.kok_discount_rate,
+                image: product.kok_thumbnail,
+                rating: 0,
+                reviewCount: 0,
+                storeName: product.kok_store_name
+              };
+            }
+          })
+        );
+        
+        console.log('리뷰 데이터가 포함된 상품 데이터:', productsWithReviews);
+        setKokTopSellingProducts(productsWithReviews);
       } else if (response.data && Array.isArray(response.data)) {
         console.log('API 응답이 배열 형태입니다.');
         setKokTopSellingProducts(response.data);
@@ -109,12 +138,59 @@ const KokMain = () => {
     }
   };
 
-  // 구매한 스토어 내 리뷰 많은 상품 데이터 (더미 데이터 사용)
+  // 구매한 스토어 내 리뷰 많은 상품 데이터를 가져오는 함수
   const fetchKokStoreBestItems = async () => {
     try {
-      console.log('스토어 베스트 상품 - 더미 데이터 사용');
-      // 더미 데이터 사용
-      setKokStoreBestItems(nonDuplicatedProducts);
+      console.log('스토어 베스트 상품 API 호출 시작...');
+      const response = await api.get('/api/kok/store-best');
+      console.log('스토어 베스트 상품 API 응답:', response.data);
+      
+      if (response.data && response.data.products) {
+        console.log('스토어 베스트 상품 데이터 설정:', response.data.products.length);
+        
+        // 각 상품의 리뷰 데이터를 개별적으로 가져오기
+        const productsWithReviews = await Promise.all(
+          response.data.products.map(async (product) => {
+            try {
+              // 상품별 리뷰 통계 데이터 가져오기
+              const reviewResponse = await api.get(`/api/kok/products/${product.kok_product_id}/reviews/stats`);
+              const reviewStats = reviewResponse.data;
+              
+              return {
+                id: product.kok_product_id,
+                name: product.kok_product_name,
+                originalPrice: product.kok_discounted_price / (1 - product.kok_discount_rate / 100),
+                discountPrice: product.kok_discounted_price,
+                discountRate: product.kok_discount_rate,
+                image: product.kok_thumbnail,
+                rating: reviewStats?.kok_rating || reviewStats?.rating || 0,
+                reviewCount: reviewStats?.kok_review_cnt || reviewStats?.review_count || 0,
+                storeName: product.kok_store_name
+              };
+            } catch (reviewErr) {
+              console.log(`상품 ${product.kok_product_id}의 리뷰 데이터 가져오기 실패:`, reviewErr);
+              // 리뷰 데이터 가져오기 실패 시 기본값 사용
+              return {
+                id: product.kok_product_id,
+                name: product.kok_product_name,
+                originalPrice: product.kok_discounted_price / (1 - product.kok_discount_rate / 100),
+                discountPrice: product.kok_discounted_price,
+                discountRate: product.kok_discount_rate,
+                image: product.kok_thumbnail,
+                rating: 0,
+                reviewCount: 0,
+                storeName: product.kok_store_name
+              };
+            }
+          })
+        );
+        
+        console.log('리뷰 데이터가 포함된 스토어 베스트 상품:', productsWithReviews);
+        setKokStoreBestItems(productsWithReviews);
+      } else {
+        console.log('API 응답에 products 필드가 없어 더미 데이터를 사용합니다.');
+        setKokStoreBestItems(nonDuplicatedProducts);
+      }
     } catch (err) {
       console.error('스토어 베스트 상품 데이터 로딩 실패:', err);
       console.log('더미 데이터를 사용합니다.');
@@ -122,16 +198,21 @@ const KokMain = () => {
     }
   };
 
-  // 검색 핸들러
+  // 검색 핸들러 (콕 쇼핑몰 타입으로 검색 페이지 이동)
   const handleKokSearch = (query) => {
-    console.log('검색어:', query);
-    // 여기에 실제 검색 로직을 구현할 수 있습니다
+    console.log('콕 쇼핑몰 검색어:', query);
+    // 콕 쇼핑몰 타입으로 검색 페이지로 이동
+    if (query && query.trim()) {
+      navigate(`/search?q=${encodeURIComponent(query.trim())}&type=kok`);
+    } else {
+      navigate('/search?type=kok');
+    }
   };
 
   // 알림 클릭 핸들러
   const handleKokNotificationClick = () => {
     console.log('알림 클릭됨');
-    // 여기에 알림 관련 로직을 구현할 수 있습니다
+    navigate('/notifications');
   };
 
   useEffect(() => {
@@ -209,13 +290,10 @@ const KokMain = () => {
 
   return (
     <div className={`kok-home-shopping-main ${kokFadeIn ? 'kok-fade-in' : ''}`}>
-      <HomeShoppingHeader 
-        searchQuery={kokSearchQuery}
-        setSearchQuery={setKokSearchQuery}
-        onSearch={handleKokSearch}
-        onNotificationClick={handleKokNotificationClick}
+      <HeaderNavMain 
+        title="콕 쇼핑몰" 
+        onNotificationsClick={handleKokNotificationClick}
       />
-      
       <main className="kok-main-content">
         {kokLoading ? (
           <Loading message="데이터를 불러오는 중 ..." />

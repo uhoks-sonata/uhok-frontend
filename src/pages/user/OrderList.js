@@ -1,7 +1,8 @@
 // React와 필요한 훅들을 가져옵니다
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 // 상단 네비게이션 컴포넌트를 가져옵니다
-import { OrderHistoryHeader } from '../../layout/HeaderNav';
+// Header removed
 // 하단 네비게이션 컴포넌트를 가져옵니다
 import BottomNav from '../../layout/BottomNav';
 // 로딩 컴포넌트를 가져옵니다
@@ -21,6 +22,8 @@ import testImage3 from '../../assets/test/test3.png';
 
 // 주문 내역 페이지 메인 컴포넌트를 정의합니다
 const OrderList = () => {
+  // 페이지 이동을 위한 navigate 훅
+  const navigate = useNavigate();
   // 주문 내역 데이터를 저장할 상태를 초기화합니다 (API에서 받아옴)
   const [orderData, setOrderData] = useState({
     orders: [], // 주문 목록 (API에서 받아옴)
@@ -279,7 +282,7 @@ const OrderList = () => {
   // 알림 클릭 핸들러를 정의합니다
   const handleNotificationClick = () => {
     console.log('알림 클릭');
-    // 알림 페이지로 이동하는 기능을 구현할 예정입니다
+    navigate('/notifications');
   };
 
   // 장바구니 클릭 핸들러를 정의합니다
@@ -315,11 +318,7 @@ const OrderList = () => {
   if (loading) {
     return (
       <div className="order-list-container">
-        <OrderHistoryHeader 
-          onBack={handleBack}
-          onNotificationClick={handleNotificationClick}
-          onCartClick={handleCartClick}
-        />
+        {/* header removed */}
         <Loading message="주문 내역을 불러오는 중 ..." />
         <BottomNav />
       </div>
@@ -330,11 +329,7 @@ const OrderList = () => {
   if (error) {
     return (
       <div className="order-list-container">
-        <OrderHistoryHeader 
-          onBack={handleBack}
-          onNotificationClick={handleNotificationClick}
-          onCartClick={handleCartClick}
-        />
+        {/* header removed */}
         <div className="error-container">
           <p className="error-message">주문 내역을 불러오는데 실패했습니다.</p>
           <p className="error-details">{error}</p>
@@ -347,12 +342,7 @@ const OrderList = () => {
   // 주문 내역 페이지 JSX 반환
   return (
     <div className="order-list-container">
-      {/* 주문내역 헤더 컴포넌트 */}
-      <OrderHistoryHeader 
-        onBack={handleBack}
-        onNotificationClick={handleNotificationClick}
-        onCartClick={handleCartClick}
-      />
+      {/* header removed */}
       
       {/* 주문 내역 메인 콘텐츠 */}
       <main className="order-list-main">

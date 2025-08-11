@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ShoppingHeader } from '../../layout/HeaderNav';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import BottomNav from '../../layout/BottomNav';
+import HeaderNavKokProductDetail from '../../layout/HeadernavkokProductDetail';
 import { getProductDetail } from '../../data/products';
 import Loading from '../../components/Loading';
 import '../../styles/kok_product_detail.css';
@@ -14,6 +14,7 @@ import { ensureToken } from '../../utils/authUtils';
 const KokProductDetail = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [kokProduct, setKokProduct] = useState(null);
   const [kokActiveTab, setKokActiveTab] = useState('description');
   const [kokLoading, setKokLoading] = useState(true);
@@ -300,7 +301,17 @@ const KokProductDetail = () => {
   }, [productId]);
 
   const handleKokBack = () => {
-    navigate(-1);
+    // 검색 페이지에서 온 경우 검색 페이지로 돌아가기
+    const fromState = location.state;
+    
+    if (fromState && fromState.from === 'search' && fromState.backUrl) {
+      console.log('검색 페이지로 돌아가기:', fromState.backUrl);
+      navigate(fromState.backUrl);
+    } else {
+      // 일반적인 뒤로가기
+      console.log('일반 뒤로가기');
+      navigate(-1);
+    }
   };
 
   const handleKokSearch = (query) => {
@@ -309,6 +320,7 @@ const KokProductDetail = () => {
 
   const handleKokNotificationClick = () => {
     console.log('알림 클릭');
+    navigate('/notifications');
   };
 
   const handleKokCartClick = () => {
@@ -329,17 +341,49 @@ const KokProductDetail = () => {
     }
   };
 
-  const handleKokWishlistClick = () => {
-    setKokIsWishlisted(!kokIsWishlisted);
-    console.log('찜 버튼 클릭:', !kokIsWishlisted ? '찜 추가' : '찜 해제');
-    
-    // 애니메이션 효과를 위한 DOM 조작
-    const heartButton = document.querySelector('.heart-button');
-    if (heartButton) {
-      heartButton.style.transform = 'scale(1.2)';
-      setTimeout(() => {
-        heartButton.style.transform = 'scale(1)';
-      }, 150);
+  const handleKokWishlistClick = async () => {
+    try {
+      // API 호출을 위한 토큰 확인
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        console.log('토큰이 없어서 로그인 페이지로 이동');
+        window.location.href = '/';
+        return;
+      }
+
+      // API 호출
+      const response = await api.post('/api/kok/likes/toggle', {
+        kok_product_id: productId
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      console.log('찜 API 응답:', response.data);
+      
+      // 찜 상태 토글
+      setKokIsWishlisted(!kokIsWishlisted);
+      console.log('찜 버튼 클릭:', !kokIsWishlisted ? '찜 추가' : '찜 해제');
+      
+      // 애니메이션 효과를 위한 DOM 조작
+      const heartButton = document.querySelector('.heart-button');
+      if (heartButton) {
+        heartButton.style.transform = 'scale(1.2)';
+        setTimeout(() => {
+          heartButton.style.transform = 'scale(1)';
+        }, 150);
+      }
+    } catch (error) {
+      console.error('찜 API 호출 실패:', error);
+      
+      // 에러 발생 시 사용자에게 알림
+      if (error.response?.status === 401) {
+        alert('로그인이 필요합니다.');
+        window.location.href = '/';
+      } else {
+        alert('찜 기능을 사용할 수 없습니다. 다시 시도해주세요.');
+      }
     }
   };
 
@@ -353,7 +397,8 @@ const KokProductDetail = () => {
         return (
           <div className="kok-tab-content" style={{ 
             padding: '16px',
-            width: '480px',
+            width: '100%',
+            maxWidth: '448px',
             height: '855px',
             overflowY: 'auto'
           }}>
@@ -456,7 +501,8 @@ const KokProductDetail = () => {
         return (
           <div className="kok-tab-content" style={{ 
             padding: '16px',
-            width: '480px',
+            width: '100%',
+            maxWidth: '448px',
             height: '855px',
             overflowY: 'auto'
           }}>
@@ -499,7 +545,7 @@ const KokProductDetail = () => {
                         display: 'inline-block',
                         padding: '4px 8px',
                         margin: '2px',
-                        backgroundColor: '#f8f9fa',
+                        backgroundColor: '#ffffff',
                         borderRadius: '12px',
                         fontSize: '12px',
                         color: '#666'
@@ -510,7 +556,7 @@ const KokProductDetail = () => {
                         display: 'inline-block',
                         padding: '4px 8px',
                         margin: '2px',
-                        backgroundColor: '#f8f9fa',
+                        backgroundColor: '#ffffff',
                         borderRadius: '12px',
                         fontSize: '12px',
                         color: '#666'
@@ -521,7 +567,7 @@ const KokProductDetail = () => {
                         display: 'inline-block',
                         padding: '4px 8px',
                         margin: '2px',
-                        backgroundColor: '#f8f9fa',
+                        backgroundColor: '#ffffff',
                         borderRadius: '12px',
                         fontSize: '12px',
                         color: '#666'
@@ -535,7 +581,7 @@ const KokProductDetail = () => {
                         display: 'inline-block',
                         padding: '4px 8px',
                         margin: '2px',
-                        backgroundColor: '#f8f9fa',
+                        backgroundColor: '#ffffff',
                         borderRadius: '12px',
                         fontSize: '12px',
                         color: '#666'
@@ -580,7 +626,8 @@ const KokProductDetail = () => {
         return (
           <div className="kok-tab-content" style={{ 
             padding: '16px',
-            width: '480px',
+            width: '100%',
+            maxWidth: '448px',
             height: '855px',
             overflowY: 'auto'
           }}>
@@ -718,21 +765,19 @@ const KokProductDetail = () => {
   }
 
   return (
-    <div className="kok-product-detail-page" style={{ backgroundColor: '#f8f9fa', height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <ShoppingHeader 
-        onBack={handleKokBack}
-        searchQuery={kokSearchQuery}
-        setSearchQuery={setKokSearchQuery}
-        onSearch={handleKokSearch}
-        onNotificationClick={handleKokNotificationClick}
+    <div className="kok-product-detail-page" style={{ backgroundColor: '#ffffff', height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <HeaderNavKokProductDetail 
+        onBackClick={handleKokBack}
+        onNotificationsClick={handleKokNotificationClick}
         onCartClick={handleKokCartClick}
       />
       
-      <div className="product-content" style={{ padding: '16px', flex: 1, overflowY: 'auto', minHeight: 0 }}>
+      <div className="product-content">
         {/* 제품 이미지 */}
         <div className="product-image-section" style={{ 
           marginBottom: '24px',
-          width: '480px'
+          width: '100%',
+          maxWidth: '448px'
         }}>
           <img 
             src={kokProduct.image} 
@@ -747,7 +792,11 @@ const KokProductDetail = () => {
         </div>
 
         {/* 제품 정보 */}
-        <div className="product-info" style={{ marginBottom: '24px' }}>
+        <div className="product-info" style={{ 
+          marginBottom: '24px',
+          width: '100%',
+          maxWidth: '448px'
+        }}>
           <h1 className="product-name" style={{ 
             fontSize: '18px', 
             fontWeight: 'bold', 
@@ -793,8 +842,8 @@ const KokProductDetail = () => {
                 alt="찜"
                 className="heart-button"
                 style={{ 
-                  width: '23px', 
-                  height: '23px', 
+                  width: '38px', 
+                  height: '38px', 
                   marginLeft: '8px',
                   cursor: 'pointer',
                   transition: 'transform 0.15s ease-in-out'
@@ -806,8 +855,8 @@ const KokProductDetail = () => {
                 alt="장바구니"
                 className="cart-button"
                 style={{ 
-                  width: '23px', 
-                  height: '23px', 
+                  width: '30px', 
+                  height: '30px', 
                   marginLeft: '0px',
                   cursor: 'pointer',
                   transition: 'transform 0.15s ease-in-out'
@@ -827,7 +876,10 @@ const KokProductDetail = () => {
         }}>
           {[
             { key: 'description', label: '상품정보' },
-            { key: 'reviews', label: '리뷰' },
+            { 
+              key: 'reviews', 
+              label: `리뷰(${(kokReviewStats?.kok_review_cnt ?? kokProduct?.reviewCount ?? 0)}개)` 
+            },
             { key: 'details', label: '상세정보' }
           ].map(tab => (
             <button

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 // 편성표 헤더 컴포넌트를 가져옵니다
-import { ScheduleHeader } from '../../layout/HeaderNav';
+// Header removed
 // 하단 네비게이션 컴포넌트를 가져옵니다
 import BottomNav from '../../layout/BottomNav';
 // 로딩 컴포넌트를 가져옵니다
@@ -22,8 +22,10 @@ import homeshoppingLogoNs from '../../assets/homeshopping_logo_ns.png'; // NS홈
 import homeshoppingLogoHyundai from '../../assets/homeshopping_logo_hyundai.png'; // 현대홈쇼핑 로고
 import homeshoppingLogoHomeandshopping from '../../assets/homeshopping_logo_homeandshopping.png'; // 홈앤쇼핑 로고
 
-// 편성표 메인 컴포넌트를 정의합니다
-const Schedule = () => {
+// 메인 컴포넌트를 정의합니다
+const Main = () => {
+  // 페이지 이동을 위한 navigate 훅
+  const navigate = useNavigate();
   // 사용자 정보 가져오기
   const { user, isLoggedIn, isLoading: userLoading } = useUser();
   
@@ -59,7 +61,7 @@ const Schedule = () => {
 
   // 사용자 정보가 변경될 때마다 콘솔에 출력 (디버깅용)
   useEffect(() => {
-    console.log('Schedule - 사용자 정보 상태:', {
+    console.log('Main - 사용자 정보 상태:', {
       user: user,
       isLoggedIn: isLoggedIn,
       hasUser: !!user,
@@ -73,7 +75,7 @@ const Schedule = () => {
   useEffect(() => {
     // 사용자 정보 로딩이 완료될 때까지 기다림
     if (userLoading) {
-      console.log('Schedule - 사용자 정보 로딩 중, 대기...');
+      console.log('Main - 사용자 정보 로딩 중, 대기...');
       return;
     }
     
@@ -84,7 +86,7 @@ const Schedule = () => {
         const token = localStorage.getItem('access_token');
         const tokenType = localStorage.getItem('token_type');
         
-        console.log('Schedule - 토큰 정보 확인:', {
+        console.log('Main - 토큰 정보 확인:', {
           hasToken: !!token,
           tokenType: tokenType,
           tokenPreview: token ? token.substring(0, 20) + '...' : '없음'
@@ -211,14 +213,15 @@ const Schedule = () => {
   const handleScheduleClick = () => {
     // 콘솔에 클릭 로그를 출력합니다
     console.log('편성표 버튼 클릭');
-    // 편성표 관련 기능을 구현할 예정입니다
+    // 편성표 페이지로 이동합니다
+    navigate('/schedule');
   };
 
   // 알림 버튼 클릭 시 실행되는 핸들러 함수를 정의합니다
   const handleNotificationClick = () => {
     // 콘솔에 클릭 로그를 출력합니다
     console.log('알림 버튼 클릭');
-    // 알림 관련 기능을 구현할 예정입니다
+    navigate('/notifications');
   };
 
   // 상품 카드 클릭 시 실행되는 핸들러 함수를 정의합니다
@@ -249,10 +252,7 @@ const Schedule = () => {
     return (
       <div className="kok-schedule-page">
         {/* 편성표 헤더 컴포넌트를 렌더링합니다 */}
-        <ScheduleHeader
-          onScheduleClick={handleScheduleClick}
-          onNotificationClick={handleNotificationClick}
-        />
+        {/* header removed */}
         {/* 메인 콘텐츠 영역 */}
         <div className="schedule-content">
           <Loading message="편성표를 불러오는 중 ..." />
@@ -267,11 +267,7 @@ const Schedule = () => {
   if (error) {
     return (
       <div className="schedule-page">
-        {/* 편성표 헤더 컴포넌트를 렌더링합니다 */}
-        <ScheduleHeader
-          onScheduleClick={handleScheduleClick}
-          onNotificationClick={handleNotificationClick}
-        />
+        {/* header removed */}
         {/* 메인 콘텐츠 영역 */}
         <div className="schedule-content">
           {/* 에러 메시지를 표시합니다 */}
@@ -286,27 +282,10 @@ const Schedule = () => {
   // 정상적인 편성표 페이지를 렌더링합니다
   return (
     <div className="schedule-page">
-      {/* 사용자 정보 디버깅용 표시 */}
-      <div style={{ 
-        background: '#f0f0f0', 
-        padding: '10px', 
-        margin: '10px', 
-        borderRadius: '5px',
-        fontSize: '12px'
-      }}>
-        <strong>Schedule - 사용자 정보:</strong> 
-        {user ? (
-          `${user.email} | 로그인: ${isLoggedIn ? '예' : '아니오'} | 토큰: ${user.token ? '있음' : '없음'} | 토큰길이: ${user.token?.length || 0}`
-        ) : (
-          '사용자 정보 없음'
-        )}
-      </div>
+
       
       {/* 편성표 헤더 */}
-      <ScheduleHeader
-        onScheduleClick={handleScheduleClick}
-        onNotificationClick={handleNotificationClick}
-      />
+      {/* header removed */}
 
       {/* 메인 콘텐츠 */}
       <div className="schedule-content">
@@ -469,5 +448,5 @@ const Schedule = () => {
   );
 };
 
-// Schedule 컴포넌트를 기본 내보내기로 설정합니다
-export default Schedule; 
+// Main 컴포넌트를 기본 내보내기로 설정합니다
+export default Main;

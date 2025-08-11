@@ -1,20 +1,23 @@
 /* 상품 상세 페이지 전체 스타일 */
 .kok-product-detail-page {
+  background-color: #fff;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  width: 100%;
   max-width: 480px;
+  min-height: calc(100vh - 75px); /* 바텀네비(75px) 제외 */
+  padding: 16px;
+  padding-bottom: 75px; /* 바텀네비(75px) + 여백(20px) */
   margin: 0 auto;
-  background-color: #ffffff;
-  min-height: 100vh;
-  position: relative;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   display: flex;
   flex-direction: column;
   overflow: hidden; /* 전체 페이지 스크롤 제거 */
-  height: 100vh; /* 명시적으로 높이 설정 */
+  height: calc(100vh - 75px); /* 바텀네비 공간 확보 */
   position: fixed; /* 고정 위치로 설정 */
   top: 0;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 1000;
+  z-index: 100; /* 바텀네비보다 낮은 z-index */
 }
 
 /* 탭 네비게이션 */
@@ -25,10 +28,10 @@
   flex-shrink: 0 !important;
   position: relative !important;
   z-index: 10 !important;
-  width: 100% !important;
+  width: 448px !important; /* 가로길이 448px로 설정 */
   min-height: 48px !important;
   box-shadow: none !important;
-  margin: 0 !important;
+  margin: 0 auto !important; /* 중앙 정렬 */
   padding: 0 !important;
 }
 
@@ -54,7 +57,7 @@
 
 .kok-tab-button:hover {
   color: #333 !important;
-  background-color: #f8f8f8 !important;
+  background-color: #ffffff !important;
 }
 
 .kok-tab-button.active {
@@ -84,18 +87,19 @@
   z-index: 1 !important;
   display: block !important;
   width: 100% !important;
-  height: 0 !important; /* flex 아이템에서 높이를 0으로 설정 */
+  height: calc(100vh - 198px) !important; /* 바텀네비(75px) + 헤더영역(60px) + 탭네비(48px) + 구매버튼(15px) = 198px 빼기 */
   min-height: 0 !important; /* flex 아이템에서 최소 높이도 0으로 설정 */
+  max-height: calc(100vh - 198px) !important; /* 최대 높이도 제한 */
 }
 
 .kok-tab-content {
-  padding: 16px !important;
+  padding: 0px !important;
   animation: kokFadeIn 0.3s ease-in-out !important;
   min-height: 100% !important;
   display: block !important;
   width: 100% !important;
   background-color: #ffffff !important;
-  overflow-y: auto !important;
+  overflow-y: visible !important;
 }
 
 @keyframes fadeIn {
@@ -280,7 +284,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
-  background-color: #f8f9fa;
+  background-color: #ffffff;
   border-radius: 8px;
 }
 
@@ -344,7 +348,7 @@
 .bar-container {
   flex: 1;
   height: 8px;
-  background-color: #f0f0f0;
+  background-color: #ffffff;
   border-radius: 4px;
   overflow: hidden;
 }
@@ -384,7 +388,7 @@
 .feedback-bar-container {
   flex: 1;
   height: 6px;
-  background-color: #f0f0f0;
+  background-color: #ffffff;
   border-radius: 3px;
   overflow: hidden;
 }
@@ -478,7 +482,7 @@
 }
 
 .info-label {
-  background-color: #f8f9fa;
+  background-color: #ffffff;
   padding: 12px 16px;
   font-size: 14px;
   color: #666;
@@ -498,7 +502,7 @@
 /* 구매 버튼 */
 .purchase-button-container {
   position: fixed;
-  bottom: 0;
+  bottom: 75px; /* 바텀네비(75px) 위에 위치 */
   left: 50%;
   transform: translateX(-50%);
   width: 100%;
@@ -531,9 +535,15 @@
 .product-content {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
-  height: 0; /* flex 아이템에서 높이를 0으로 설정하여 스크롤이 제대로 작동하도록 함 */
+  overflow-x: hidden; /* 횡스크롤 제거 */
+  height: calc(100vh - 130px); /* 바텀네비와 겹치지 않는 높이 */
+  max-height: calc(100vh - 137px); /* 최대 높이 제한 */
   min-height: 0; /* flex 아이템에서 최소 높이도 0으로 설정 */
+  box-sizing: border-box; /* padding 포함 계산 */
+  width: 100%; /* 전체 너비 사용 */
+  display: flex; /* flexbox 사용 */
+  flex-direction: column; /* 세로 배치 */
+  align-items: center; /* 가로 중앙 정렬 */
 }
 
 /* 반응형 디자인 */
@@ -569,38 +579,32 @@
 }
 
 /* 스크롤바 스타일 - 더 명확하게 표시 */
-.tab-content-container::-webkit-scrollbar {
-  width: 8px; /* 6px에서 8px로 증가 */
+.kok-tab-content-container::-webkit-scrollbar {
+  width: 6px; /* 스크롤바 너비 */
 }
 
-.tab-content-container::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
-  margin: 2px 0;
+.kok-tab-content-container::-webkit-scrollbar-track {
+  background: transparent; /* 투명 트랙 */
+  border-radius: 3px;
 }
 
-.tab-content-container::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
+.kok-tab-content-container::-webkit-scrollbar-thumb {
+  background: #e0e0e0; /* 스크롤바 색상 */
+  border-radius: 3px;
   transition: background-color 0.2s;
-  border: 1px solid #f1f1f1;
 }
 
-.tab-content-container::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
-}
-
-.tab-content-container::-webkit-scrollbar-thumb:active {
-  background: #999;
+.kok-tab-content-container::-webkit-scrollbar-thumb:hover {
+  background: #bbb; /* 호버 시 색상 */
 }
 
 /* Firefox 스크롤바 스타일 */
-.tab-content-container {
+.kok-tab-content-container {
   scrollbar-width: thin;
-  scrollbar-color: #c1c1c1 #f1f1f1;
+  scrollbar-color: #ccc transparent;
 }
 
 /* 스크롤바가 항상 표시되도록 강제 */
-.tab-content-container {
+.kok-tab-content-container {
   scrollbar-gutter: stable;
 } 

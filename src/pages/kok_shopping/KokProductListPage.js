@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ShoppingHeader } from '../../layout/HeaderNav';
-import BottomNav from '../../layout/BottomNav';
+// Header removed
+
 import '../../styles/kok_product_list_page.css';
+import HeaderNavProductList from '../../layout/HeaderNavProductList';
 import emptyHeartIcon from '../../assets/heart_empty.png';
 import filledHeartIcon from '../../assets/heart_filled.png';
 import api from '../api';
@@ -132,6 +133,7 @@ const KokProductListPage = () => {
 
   const handleKokNotificationClick = () => {
     console.log('알림 클릭');
+    navigate('/notifications');
   };
 
   const handleKokCartClick = () => {
@@ -159,14 +161,7 @@ const KokProductListPage = () => {
   if (loading) {
     return (
       <div className="kok-product-list-page">
-        <ShoppingHeader 
-          onBack={handleKokBack}
-          searchQuery={kokSearchQuery}
-          setSearchQuery={setKokSearchQuery}
-          onSearch={handleKokSearch}
-          onNotificationClick={handleKokNotificationClick}
-          onCartClick={handleKokCartClick}
-        />
+        <HeaderNavProductList title={kokSectionTitle || '상품 리스트'} onBackClick={handleKokBack} onNotificationsClick={handleKokNotificationClick} />
         <div className="kok-content">
           <div className="loading">상품을 불러오는 중...</div>
         </div>
@@ -176,14 +171,7 @@ const KokProductListPage = () => {
 
   return (
     <div className="kok-product-list-page">
-      <ShoppingHeader 
-        onBack={handleKokBack}
-        searchQuery={kokSearchQuery}
-        setSearchQuery={setKokSearchQuery}
-        onSearch={handleKokSearch}
-        onNotificationClick={handleKokNotificationClick}
-        onCartClick={handleKokCartClick}
-      />
+      <HeaderNavProductList title={kokSectionTitle || '상품 리스트'} onBackClick={handleKokBack} onNotificationsClick={handleKokNotificationClick} />
       
       <div className="kok-content">
         <div className="kok-section-header">
@@ -227,8 +215,6 @@ const KokProductListPage = () => {
           </div>
         </div>
       </div>
-      
-      <BottomNav />
     </div>
   );
 };
