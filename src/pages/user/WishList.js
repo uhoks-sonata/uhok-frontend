@@ -179,7 +179,26 @@ const WishList = () => {
 
   // 검색 핸들러
   const handleSearch = (query) => {
+    console.log('=== 검색 핸들러 호출됨 ===');
     console.log('검색어:', query);
+    console.log('검색어 타입:', typeof query);
+    console.log('검색어 길이:', query ? query.length : 0);
+    
+    if (query && query.trim()) {
+      const searchUrl = `/search?q=${encodeURIComponent(query.trim())}&type=wishlist`;
+      console.log('이동할 URL:', searchUrl);
+      
+      try {
+        navigate(searchUrl);
+        console.log('페이지 이동 성공');
+      } catch (error) {
+        console.error('페이지 이동 실패:', error);
+        // fallback으로 window.location.href 사용
+        window.location.href = searchUrl;
+      }
+    } else {
+      console.log('검색어가 비어있음');
+    }
   };
 
   // 알림 클릭 핸들러
