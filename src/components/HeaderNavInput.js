@@ -36,7 +36,10 @@ const HeaderNavInput = ({
 
   return (
     <form className={`header-nav-input ${className}`.trim()} onSubmit={handleSubmit}>
-      <div className="input-wrapper">
+      <div className="input-wrapper" onClick={() => {
+        const input = document.querySelector('.search-input');
+        if (input) input.focus();
+      }}>
         <svg
           className="search-icon"
           viewBox="0 0 24 24"

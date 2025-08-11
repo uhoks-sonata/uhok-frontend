@@ -7,6 +7,36 @@
   background-color: #ffffff;
 }
 
+/* 검색 페이지 헤더 스타일 */
+.search-header-left,
+.search-header-center,
+.search-header-right {
+  display: flex;
+  align-items: center;
+}
+
+.search-header-left {
+  gap: 0;
+}
+
+.search-header-center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.search-header-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.search-header-right {
+  gap: 8px;
+}
+
 /* 검색 입력 컨테이너 */
 .search-input-container {
   display: flex;
@@ -19,19 +49,6 @@
 
 .search-input {
   flex: 1;
-  padding-left: 30px;
-  padding-right: 14px;
-  padding-top: 16px;
-  padding-bottom: 20px;
-  border: 2px solid #e5e7eb;
-  border-radius: 8px;
-  font-size: 16px;
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-.search-input:focus {
-  border-color: #3b82f6;
 }
 
 .search-button {

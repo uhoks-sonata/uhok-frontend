@@ -5,7 +5,7 @@ import '../styles/header_nav_KokMain.css';
 import HeaderNavIconBell from '../components/HeaderNavIconBell';
 import HeaderNavBackBtn from '../components/HeaderNavBackBtn';
 import HeaderNavIconBucket from '../components/HeaderNavIconBucket';
-import HeaderSearchBar from '../components/HeaderSearchBar';
+import HeaderNavInput from '../components/HeaderNavInput';
 
 // 메인 페이지 전용 Header Nav (내용만 구성, 틀은 HeaderNavFrame 사용)
 // - 내부 구성: 좌측(뒤로가기), 중앙(검색창), 우측(알림, 장바구니)
@@ -20,9 +20,13 @@ const HeaderNavKokMain = ({ onNotificationsClick, onBackClick, onCartClick, onSe
     navigate(`/search?q=${encodeURIComponent(searchTerm)}`);
   });
 
-  // 검색창 클릭 시 검색 페이지로 이동
+  // 검색창 클릭 시 입력 모드로 전환
   const handleSearchBarClick = () => {
-    navigate('/search');
+    // 검색창에 포커스를 주어 입력 모드로 전환
+    const searchInput = document.querySelector('.search-input');
+    if (searchInput) {
+      searchInput.focus();
+    }
   };
 
   return (
@@ -31,7 +35,11 @@ const HeaderNavKokMain = ({ onNotificationsClick, onBackClick, onCartClick, onSe
         <HeaderNavBackBtn onClick={handleBackClick} />
       </div>
       <div className="hn-main-center">
-        <HeaderSearchBar onSearch={handleSearch} onClick={handleSearchBarClick} />
+        <HeaderNavInput 
+          onSearch={handleSearch} 
+          placeholder="상품 검색"
+          className="kok-main-search"
+        />
       </div>
       <div className="hn-main-right">
         <HeaderNavIconBell onClick={handleNotificationsClick} />
