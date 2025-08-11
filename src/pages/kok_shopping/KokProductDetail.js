@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { ShoppingHeader } from '../../layout/HeaderNav';
+import { useParams, useNavigate } from 'react-router-dom';
 import BottomNav from '../../layout/BottomNav';
 import { getProductDetail } from '../../data/products';
 import Loading from '../../components/Loading';
@@ -734,14 +733,7 @@ const KokProductDetail = () => {
 
   return (
     <div className="kok-product-detail-page" style={{ backgroundColor: '#ffffff', height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <ShoppingHeader 
-        onBack={handleKokBack}
-        searchQuery={kokSearchQuery}
-        setSearchQuery={setKokSearchQuery}
-        onSearch={handleKokSearch}
-        onNotificationClick={handleKokNotificationClick}
-        onCartClick={handleKokCartClick}
-      />
+      {/* header removed */}
       
       <div className="product-content">
         {/* 제품 이미지 */}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CartHeader } from '../../layout/HeaderNav';
-import { useNotifications } from '../../layout/HeaderNav';
+// Header removed
+// Notifications removed
 import BottomNav from '../../layout/BottomNav';
 import '../../styles/cart.css';
 import heartIcon from '../../assets/heart_empty.png';
@@ -15,7 +15,7 @@ const Cart = () => {
   const [showQuantityModal, setShowQuantityModal] = useState(false);
   const [selectedCartItemId, setSelectedCartItemId] = useState(null);
   const navigate = useNavigate();
-  const { cartCount, clearCart } = useNotifications();
+  // notifications removed
 
   useEffect(() => {
     loadCartItems();
@@ -171,7 +171,7 @@ const Cart = () => {
   if (loading) {
     return (
       <div className="cart-page">
-        <CartHeader onBack={handleBack} onNotificationClick={handleNotificationClick} />
+        {/* header removed */}
         <div className="cart-content">
           <div className="loading">장바구니를 불러오는 중...</div>
         </div>
@@ -182,7 +182,7 @@ const Cart = () => {
 
   return (
     <div className="cart-page">
-      <CartHeader onBack={handleBack} onNotificationClick={handleNotificationClick} />
+      {/* header removed */}
       
       <div className="cart-content">
         {cartItems.length === 0 ? (

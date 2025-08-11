@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BackTitleHeader } from '../../layout/HeaderNav';
+// Header removed
 import BottomNav from '../../layout/BottomNav';
 import '../../styles/notification.css';
 import api from '../api';
@@ -164,7 +164,7 @@ const Notification = () => {
   if (loading) {
     return (
       <div className="notification-page">
-        <BackTitleHeader title="알림" />
+        {/* header removed */}
         <div className="notification-loading">
           <div className="loading-spinner"></div>
           <p>알림을 불러오는 중...</p>
@@ -176,7 +176,7 @@ const Notification = () => {
 
   return (
     <div className="notification-page">
-      <BackTitleHeader title="알림" />
+      {/* header removed */}
       
       <div className="notification-content">
         {/* 에러 메시지 */}

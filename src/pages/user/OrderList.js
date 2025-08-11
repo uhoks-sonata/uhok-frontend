@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 // 상단 네비게이션 컴포넌트를 가져옵니다
-import { OrderHistoryHeader } from '../../layout/HeaderNav';
+// Header removed
 // 하단 네비게이션 컴포넌트를 가져옵니다
 import BottomNav from '../../layout/BottomNav';
 // 로딩 컴포넌트를 가져옵니다
@@ -318,11 +318,7 @@ const OrderList = () => {
   if (loading) {
     return (
       <div className="order-list-container">
-        <OrderHistoryHeader 
-          onBack={handleBack}
-          onNotificationClick={handleNotificationClick}
-          onCartClick={handleCartClick}
-        />
+        {/* header removed */}
         <Loading message="주문 내역을 불러오는 중 ..." />
         <BottomNav />
       </div>
@@ -333,11 +329,7 @@ const OrderList = () => {
   if (error) {
     return (
       <div className="order-list-container">
-        <OrderHistoryHeader 
-          onBack={handleBack}
-          onNotificationClick={handleNotificationClick}
-          onCartClick={handleCartClick}
-        />
+        {/* header removed */}
         <div className="error-container">
           <p className="error-message">주문 내역을 불러오는데 실패했습니다.</p>
           <p className="error-details">{error}</p>
@@ -350,12 +342,7 @@ const OrderList = () => {
   // 주문 내역 페이지 JSX 반환
   return (
     <div className="order-list-container">
-      {/* 주문내역 헤더 컴포넌트 */}
-      <OrderHistoryHeader 
-        onBack={handleBack}
-        onNotificationClick={handleNotificationClick}
-        onCartClick={handleCartClick}
-      />
+      {/* header removed */}
       
       {/* 주문 내역 메인 콘텐츠 */}
       <main className="order-list-main">

@@ -12,7 +12,6 @@ import { UserProvider } from './contexts/UserContext';
 import Login from './pages/user/Login';
 import Signup from './pages/user/Signup';
 import Notification from './pages/user/Notification';
-
 // 홈쇼핑 관련 페이지
 import Main from './pages/home_shopping/main';
 import Schedule from './pages/home_shopping/Schedule';
@@ -39,7 +38,7 @@ import OrderList from './pages/user/OrderList';
 // 찜한 상품 목록 컴포넌트 import
 import WishList from './pages/user/WishList';
 // 전역 알림 상태 관리 Provider import
-import { NotificationProvider } from './layout/HeaderNav';
+// Header/Notification removed
 
 // ===== 메인 앱 컴포넌트 =====
 // React 애플리케이션의 최상위 컴포넌트
@@ -48,8 +47,7 @@ function App() {
   return (
     // 사용자 정보를 모든 하위 컴포넌트에서 사용할 수 있도록 Provider로 감싸기
     <UserProvider>
-      {/* 전역 알림 상태를 모든 하위 컴포넌트에서 사용할 수 있도록 Provider로 감싸기 */}
-      <NotificationProvider>
+      {/* header/notification removed */}
         {/* 앱 전체 래퍼 컨테이너 */}
         <div className="wrapper">
           {/* 메인 앱 컨테이너 */}
@@ -106,7 +104,7 @@ function App() {
           </Router>
         </div>
       </div>
-      </NotificationProvider>
+      
     </UserProvider>
   );
 }
