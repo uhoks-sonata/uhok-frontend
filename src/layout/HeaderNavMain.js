@@ -3,7 +3,7 @@ import HeaderNavFrame from './HeaderNavFrame';
 import HeaderNavIconBell from '../components/HeaderNavIconBell';
 import '../styles/header_nav_Main.css';
 
-const HeaderNavMain = ({ onSearchClick, onNotificationClick, onScheduleClick }) => {
+const HeaderNavMain = ({ onNotificationClick, onScheduleClick }) => {
   return (
     <HeaderNavFrame>
       <div className="hn-main-left">
@@ -12,14 +12,7 @@ const HeaderNavMain = ({ onSearchClick, onNotificationClick, onScheduleClick }) 
         </button>
       </div>
       
-      <div className="hn-main-center">
-        <div className="search-input-wrapper" onClick={onSearchClick}>
-          <div className="main-search-button">
-            <span className="search-placeholder">홈쇼핑 검색</span>
-            <span className="search-icon">🔍</span>
-          </div>
-        </div>
-      </div>
+      <div className="hn-main-center" aria-hidden="true" />
       
       <div className="hn-main-right">
         <HeaderNavIconBell onClick={onNotificationClick} />

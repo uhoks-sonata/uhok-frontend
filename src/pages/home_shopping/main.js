@@ -261,7 +261,6 @@ const Main = () => {
       <div className="main-page">
         {/* 메인 헤더 네비게이션 */}
         <HeaderNavMain 
-          onSearchClick={handleSearch}
           onNotificationClick={handleNotificationClick}
           onScheduleClick={handleScheduleClick}
         />
@@ -282,7 +281,6 @@ const Main = () => {
       <div className="main-page">
         {/* 메인 헤더 네비게이션 */}
         <HeaderNavMain 
-          onSearchClick={handleSearch}
           onNotificationClick={handleNotificationClick}
           onScheduleClick={handleScheduleClick}
         />
@@ -303,7 +301,6 @@ const Main = () => {
     <div className="main-page">
       {/* 메인 헤더 네비게이션 */}
       <HeaderNavMain 
-        onSearchClick={handleSearch}
         onNotificationClick={handleNotificationClick}
         onScheduleClick={handleScheduleClick}
       />
