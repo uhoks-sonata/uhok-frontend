@@ -1,7 +1,7 @@
 // React와 필요한 훅들을 가져옵니다
 import React, { useState, useEffect } from 'react';
 // 상단 네비게이션 컴포넌트를 가져옵니다
-// Header removed
+import HeaderNavMypage from '../../layout/HeaderNavMypage';
 // 하단 네비게이션 컴포넌트를 가져옵니다
 import BottomNav from '../../layout/BottomNav';
 // 로딩 컴포넌트를 가져옵니다
@@ -249,11 +249,28 @@ const MyPage = () => {
     }
   };
 
+  // 알림 클릭 시 실행되는 핸들러 함수를 정의합니다
+  const handleNotificationClick = () => {
+    console.log('알림 클릭');
+    window.location.href = '/notifications';
+  };
+
+  // 장바구니 클릭 시 실행되는 핸들러 함수를 정의합니다
+  const handleCartClick = () => {
+    console.log('장바구니 클릭');
+    window.location.href = '/cart';
+  };
+
   // 로딩 중일 때 표시할 UI를 렌더링합니다
   if (loading) {
     return (
       <div className="mypage-page">
-        {/* header removed */}
+        {/* 마이페이지 헤더 네비게이션 */}
+        <HeaderNavMypage 
+          onBackClick={() => window.history.back()}
+          onNotificationClick={handleNotificationClick}
+          onCartClick={handleCartClick}
+        />
         {/* 메인 콘텐츠 영역 */}
         <div className="mypage-content">
           <Loading message="마이페이지를 불러오는 중 ..." />
@@ -267,7 +284,12 @@ const MyPage = () => {
   // 정상적인 마이페이지를 렌더링합니다
   return (
     <div className="mypage-page">
-      {/* header removed */}
+              {/* 마이페이지 헤더 네비게이션 */}
+        <HeaderNavMypage 
+          onBackClick={() => window.history.back()}
+          onNotificationClick={handleNotificationClick}
+          onCartClick={handleCartClick}
+        />
       {/* 메인 콘텐츠 */}
       <div className="mypage-content">
         {/* 유저 정보 카드 */}

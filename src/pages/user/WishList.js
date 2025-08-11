@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-// Header removed
+import HeaderNavWishList from '../../layout/HeaderNavWishList';
 import BottomNav from '../../layout/BottomNav';
 import Loading from '../../components/Loading';
 import api from '../api';
@@ -199,7 +199,26 @@ const WishList = () => {
 
   // 검색 핸들러
   const handleSearch = (query) => {
+    console.log('=== 검색 핸들러 호출됨 ===');
     console.log('검색어:', query);
+    console.log('검색어 타입:', typeof query);
+    console.log('검색어 길이:', query ? query.length : 0);
+    
+    if (query && query.trim()) {
+      const searchUrl = `/search?q=${encodeURIComponent(query.trim())}&type=wishlist`;
+      console.log('이동할 URL:', searchUrl);
+      
+      try {
+        navigate(searchUrl);
+        console.log('페이지 이동 성공');
+      } catch (error) {
+        console.error('페이지 이동 실패:', error);
+        // fallback으로 window.location.href 사용
+        window.location.href = searchUrl;
+      }
+    } else {
+      console.log('검색어가 비어있음');
+    }
   };
 
   // 알림 클릭 핸들러
@@ -242,7 +261,13 @@ const WishList = () => {
   if (loading) {
     return (
       <div className="wishlist-page">
-        {/* header removed */}
+        {/* 위시리스트 헤더 네비게이션 */}
+        <HeaderNavWishList 
+          onBackClick={handleBack}
+          onSearchClick={handleSearch}
+          onNotificationClick={handleNotificationClick}
+          onCartClick={handleCartClick}
+        />
         <div className="wishlist-content">
           <Loading message="찜한 상품을 불러오는 중 ..." />
         </div>
@@ -254,7 +279,13 @@ const WishList = () => {
   if (error) {
     return (
       <div className="wishlist-page">
-        {/* header removed */}
+        {/* 위시리스트 헤더 네비게이션 */}
+        <HeaderNavWishList 
+          onBackClick={handleBack}
+          onSearchClick={handleSearch}
+          onNotificationClick={handleNotificationClick}
+          onCartClick={handleCartClick}
+        />
         <div className="wishlist-content">
           <div className="error">오류: {error}</div>
         </div>
@@ -265,7 +296,13 @@ const WishList = () => {
 
   return (
     <div className="wishlist-page">
-      {/* header removed */}
+      {/* 위시리스트 헤더 네비게이션 */}
+      <HeaderNavWishList 
+        onBackClick={handleBack}
+        onSearchClick={handleSearch}
+        onNotificationClick={handleNotificationClick}
+        onCartClick={handleCartClick}
+      />
       
       <div className="wishlist-content">
         {/* 탭 네비게이션 */}

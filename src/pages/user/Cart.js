@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-// Header removed
-// Notifications removed
+import HeaderNavCart from '../../layout/HeaderNavCart';
 import BottomNav from '../../layout/BottomNav';
 import '../../styles/cart.css';
 import heartIcon from '../../assets/heart_empty.png';
@@ -171,7 +170,11 @@ const Cart = () => {
   if (loading) {
     return (
       <div className="cart-page">
-        {/* header removed */}
+        {/* 장바구니 헤더 네비게이션 */}
+        <HeaderNavCart 
+          onBackClick={handleBack}
+          onNotificationClick={handleNotificationClick}
+        />
         <div className="cart-content">
           <div className="loading">장바구니를 불러오는 중...</div>
         </div>
@@ -182,7 +185,11 @@ const Cart = () => {
 
   return (
     <div className="cart-page">
-      {/* header removed */}
+      {/* 장바구니 헤더 네비게이션 */}
+      <HeaderNavCart 
+        onBackClick={handleBack}
+        onNotificationClick={handleNotificationClick}
+      />
       
       <div className="cart-content">
         {cartItems.length === 0 ? (

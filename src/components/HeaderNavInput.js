@@ -15,10 +15,17 @@ const HeaderNavInput = ({
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    console.log('=== HeaderNavInput handleSubmit 호출됨 ===');
+    console.log('searchTerm:', searchTerm);
+    console.log('onSearch 존재:', !!onSearch);
+    console.log('onSubmit 존재:', !!onSubmit);
+    
     if (searchTerm.trim() && onSearch) {
+      console.log('onSearch 호출:', searchTerm.trim());
       onSearch(searchTerm.trim());
     }
     if (onSubmit) {
+      console.log('onSubmit 호출:', searchTerm.trim());
       onSubmit(searchTerm.trim());
     }
   };
