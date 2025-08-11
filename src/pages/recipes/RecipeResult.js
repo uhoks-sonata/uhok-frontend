@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import BottomNav from '../../layout/BottomNav';
+import HeaderNavRecipeRecommendation from '../../layout/HeaderNavRecipeRecommendation';
 import '../../styles/recipe_result.css';
 // 로컬 더미 이미지로 교체 (외부 placeholder 차단/오류 대비)
 import img1 from '../../assets/test/test1.png';
@@ -105,12 +106,7 @@ const RecipeResult = () => {
   return (
     <div className="recipe-result-page">
       {/* 헤더 */}
-      <header className="recipe-result-header">
-        <button className="back-button" onClick={handleBack}>
-          ←
-        </button>
-        <h1 className="recipe-result-title">레시피 추천</h1>
-      </header>
+      <HeaderNavRecipeRecommendation onBackClick={handleBack} />
 
       {/* 선택된 재료 태그들 */}
       <div className="selected-ingredients-section">

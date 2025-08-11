@@ -95,6 +95,26 @@
   padding: 16px 20px;
   background-color: #ffffff;
   overflow-y: auto;
+  height: calc(100vh - 280px); /* 헤더 + 선택된 재료 + 결과 요약 + 바텀네비 + 패딩 고려 */
+  max-height: calc(100vh - 280px); /* 최대 높이 제한 */
+}
+
+/* Webkit 브라우저 스크롤바 스타일링 */
+.recipe-list::-webkit-scrollbar {
+  width: 4px; /* 스크롤바 너비 */
+}
+
+.recipe-list::-webkit-scrollbar-track {
+  background: transparent; /* 스크롤바 트랙 배경 */
+}
+
+.recipe-list::-webkit-scrollbar-thumb {
+  background: #e0e0e0; /* 스크롤바 썸 색상 */
+  border-radius: 4px; /* 스크롤바 모서리 둥글게 */
+}
+
+.recipe-list::-webkit-scrollbar-thumb:hover {
+  background: #bbb; /* 호버 시 스크롤바 색상 */
 }
 
 .recipe-card {
@@ -266,7 +286,7 @@
 
 /* 하단 네비게이션과의 간격 조정 */
 .recipe-list {
-  padding-bottom: 80px;
+  padding-bottom: 10px; 
 }
 
 /* 반응형 디자인 */

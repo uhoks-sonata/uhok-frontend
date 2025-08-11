@@ -16,9 +16,9 @@ export const cartApi = {
   },
 
   // 장바구니 상품 조회
-  getCartItems: async () => {
+  getCartItems: async (limit = 50) => {
     try {
-      const response = await api.get('/api/kok/carts');
+      const response = await api.get(`/api/kok/carts?limit=${limit}`);
       return response.data;
     } catch (error) {
       console.error('장바구니 목록 조회 실패:', error);
@@ -30,7 +30,7 @@ export const cartApi = {
   updateCartItemQuantity: async (cartItemId, quantity) => {
     try {
       const response = await api.patch(`/api/kok/carts/${cartItemId}`, {
-        quantity: quantity
+        kok_quantity: quantity
       });
       return response.data;
     } catch (error) {

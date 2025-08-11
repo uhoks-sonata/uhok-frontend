@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HeaderNavCart from '../../layout/HeaderNavCart';
 import BottomNav from '../../layout/BottomNav';
+import { cartApi } from '../../api/cartApi';
 import '../../styles/cart.css';
 import heartIcon from '../../assets/heart_empty.png';
 import heartFilledIcon from '../../assets/heart_filled.png';
@@ -14,7 +15,6 @@ const Cart = () => {
   const [showQuantityModal, setShowQuantityModal] = useState(false);
   const [selectedCartItemId, setSelectedCartItemId] = useState(null);
   const navigate = useNavigate();
-  // notifications removed
 
   useEffect(() => {
     loadCartItems();
@@ -24,37 +24,13 @@ const Cart = () => {
     try {
       setLoading(true);
       
-      // 임시 데이터 사용 (API 연결 전까지)
-      const mockCartItems = [
-        {
-          kok_cart_id: 1,
-          kok_product_id: 10046186,
-          kok_product_name: "[맛춤상회] 배터지는 소고기 모듬세트",
-          kok_thumbnail: test1Image,
-          kok_product_price: 600000,
-          kok_discount_rate: 47,
-          kok_discounted_price: 319000,
-          kok_store_name: "맛춤상회",
-          kok_quantity: 1,
-          kok_option: "04.온가족 세트 총 1.1kg (갈비+등심추리+토시+부채+차돌박이)"
-        },
-        {
-          kok_cart_id: 2,
-          kok_product_id: 10046187,
-          kok_product_name: "[맛춤상회] 배터지는 소고기 모듬세트",
-          kok_thumbnail: test1Image,
-          kok_product_price: 600000,
-          kok_discount_rate: 47,
-          kok_discounted_price: 319000,
-          kok_store_name: "맛춤상회",
-          kok_quantity: 1,
-          kok_option: "04.온가족 세트 총 1.1kg (갈비+등심추리+토시+부채+차돌박이)"
-        }
-      ];
+      // 실제 API 호출
+      const response = await cartApi.getCartItems();
+      const items = response.cart_items || [];
       
-      setCartItems(mockCartItems);
+      setCartItems(items);
       // 모든 아이템을 기본적으로 선택
-      setSelectedItems(new Set(mockCartItems.map(item => item.kok_cart_id)));
+      setSelectedItems(new Set(items.map(item => item.kok_cart_id)));
     } catch (error) {
       console.error('장바구니 데이터 로딩 실패:', error);
       setCartItems([]);
@@ -93,10 +69,13 @@ const Cart = () => {
   };
 
   const handleQuantityChange = async (cartItemId, newQuantity) => {
-    if (newQuantity < 1) return;
+    if (newQuantity < 1 || newQuantity > 10) return;
     
     try {
-      // API 호출 (임시로 로컬 상태만 업데이트)
+      // API 호출
+      await cartApi.updateCartItemQuantity(cartItemId, newQuantity);
+      
+      // 성공 시 로컬 상태 업데이트
       setCartItems(prev => 
         prev.map(item => 
           item.kok_cart_id === cartItemId 
@@ -106,12 +85,16 @@ const Cart = () => {
       );
     } catch (error) {
       console.error('수량 변경 실패:', error);
+      // 에러 처리 (사용자에게 알림 등)
     }
   };
 
   const handleRemoveItem = async (cartItemId) => {
     try {
-      // API 호출 (임시로 로컬 상태만 업데이트)
+      // API 호출
+      await cartApi.removeFromCart(cartItemId);
+      
+      // 성공 시 로컬 상태 업데이트
       setCartItems(prev => prev.filter(item => item.kok_cart_id !== cartItemId));
       setSelectedItems(prev => {
         const newSelected = new Set(prev);
@@ -120,13 +103,24 @@ const Cart = () => {
       });
     } catch (error) {
       console.error('상품 삭제 실패:', error);
+      // 에러 처리 (사용자에게 알림 등)
     }
   };
 
-  const handleRemoveSelected = () => {
+  const handleRemoveSelected = async () => {
     const selectedIds = Array.from(selectedItems);
-    setCartItems(prev => prev.filter(item => !selectedIds.includes(item.kok_cart_id)));
-    setSelectedItems(new Set());
+    
+    try {
+      // 선택된 모든 상품 삭제
+      await Promise.all(selectedIds.map(id => cartApi.removeFromCart(id)));
+      
+      // 성공 시 로컬 상태 업데이트
+      setCartItems(prev => prev.filter(item => !selectedIds.includes(item.kok_cart_id)));
+      setSelectedItems(new Set());
+    } catch (error) {
+      console.error('선택된 상품 삭제 실패:', error);
+      // 에러 처리 (사용자에게 알림 등)
+    }
   };
 
   const handleOrder = () => {
@@ -231,84 +225,86 @@ const Cart = () => {
               </button>
             </div>
 
-                         {/* 상품 목록 */}
-             <div className="cart-items">
-               {cartItems.map((item) => (
-                 <div key={item.kok_cart_id} className="cart-item">
-                   <div className="item-header">
-                     <span className="store-name">{item.kok_store_name}</span>
-                     <span className="free-shipping">무료배송</span>
-                     <button 
-                       className="remove-item-btn"
-                       onClick={() => handleRemoveItem(item.kok_cart_id)}
-                     >
-                       ×
-                     </button>
-                   </div>
-                   
-                   <div className="item-content">
-                     <div className="item-top-section">
-                       <label className="item-checkbox">
-                         <input
-                           type="checkbox"
-                           checked={selectedItems.has(item.kok_cart_id)}
-                           onChange={() => handleSelectItem(item.kok_cart_id)}
-                         />
-                         <span className="checkmark"></span>
-                       </label>
-                       
-                       <div className="item-name">{item.kok_product_name}</div>
-                     </div>
-                     
-                     <div className="item-main-section">
-                       <div className="item-image">
-                         <img src={item.kok_thumbnail} alt={item.kok_product_name} />
-                       </div>
-                       
-                       <div className="item-details">
-                         <div className="item-option">옵션 : {item.kok_option}</div>
-                         <div className="item-price">
-                           <span className="discounted-price">{item.kok_discounted_price.toLocaleString()}원</span>
-                           <span className="original-price">{item.kok_product_price.toLocaleString()}원</span>
-                         </div>
-                       </div>
-                       
-                       <div className="item-actions">
-                         <div className="quantity-section">
-                           <div className="quantity-control">
-                             <button 
-                               className="quantity-btn"
-                               onClick={() => handleQuantityChange(item.kok_cart_id, item.kok_quantity - 1)}
-                               disabled={item.kok_quantity <= 1}
-                             >
-                               ▼
-                             </button>
-                             <span 
-                               className="quantity"
-                               onClick={() => handleQuantityClick(item.kok_cart_id)}
-                             >
-                               {item.kok_quantity}
-                             </span>
-                           </div>
-                           <button 
-                             className="buy-now-btn"
-                             onClick={() => handleBuyNow(item.kok_cart_id)}
-                           >
-                             구매
-                           </button>
-                         </div>
-                         <button 
-                           className="wishlist-btn"
-                           onClick={() => handleWishlist(item.kok_cart_id)}
-                         >
-                           <img src={heartIcon} alt="찜하기" />
-                         </button>
-                       </div>
-                     </div>
-                   </div>
-                 </div>
-               ))}
-             </div>
+            {/* 상품 목록 */}
+            <div className="cart-items">
+              {cartItems.map((item) => (
+                <div key={item.kok_cart_id} className="cart-item">
+                  <div className="item-header">
+                    <span className="store-name">{item.kok_store_name}</span>
+                    <span className="free-shipping">무료배송</span>
+                    <button 
+                      className="remove-item-btn"
+                      onClick={() => handleRemoveItem(item.kok_cart_id)}
+                    >
+                      ×
+                    </button>
+                  </div>
+                  
+                  <div className="item-content">
+                    <div className="item-top-section">
+                      <label className="item-checkbox">
+                        <input
+                          type="checkbox"
+                          checked={selectedItems.has(item.kok_cart_id)}
+                          onChange={() => handleSelectItem(item.kok_cart_id)}
+                        />
+                        <span className="checkmark"></span>
+                      </label>
+                      
+                      <div className="item-name">{item.kok_product_name}</div>
+                    </div>
+                    
+                    <div className="item-main-section">
+                      <div className="item-image">
+                        <img src={item.kok_thumbnail || test1Image} alt={item.kok_product_name} />
+                      </div>
+                      
+                      <div className="item-details">
+                        <div className="item-option">
+                          {item.recipe_id ? `레시피 ID: ${item.recipe_id}` : '옵션 없음'}
+                        </div>
+                        <div className="item-price">
+                          <span className="discounted-price">{item.kok_discounted_price.toLocaleString()}원</span>
+                          <span className="original-price">{item.kok_product_price.toLocaleString()}원</span>
+                        </div>
+                      </div>
+                      
+                      <div className="item-actions">
+                        <div className="quantity-section">
+                          <div className="quantity-control">
+                            <button 
+                              className="quantity-btn"
+                              onClick={() => handleQuantityChange(item.kok_cart_id, item.kok_quantity - 1)}
+                              disabled={item.kok_quantity <= 1}
+                            >
+                              ▼
+                            </button>
+                            <span 
+                              className="quantity"
+                              onClick={() => handleQuantityClick(item.kok_cart_id)}
+                            >
+                              {item.kok_quantity}
+                            </span>
+                          </div>
+                          <button 
+                            className="buy-now-btn"
+                            onClick={() => handleBuyNow(item.kok_cart_id)}
+                          >
+                            구매
+                          </button>
+                        </div>
+                        <button 
+                          className="wishlist-btn"
+                          onClick={() => handleWishlist(item.kok_cart_id)}
+                        >
+                          <img src={heartIcon} alt="찜하기" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
 
             {/* 레시피 추천 바 */}
             {cartItems.length >= 2 && (
@@ -349,32 +345,32 @@ const Cart = () => {
         </div>
       )}
 
-             <BottomNav />
+      <BottomNav />
 
-       {/* 수량 선택 모달 */}
-       {showQuantityModal && (
-         <div className="quantity-modal-overlay" onClick={closeQuantityModal}>
-           <div className="quantity-modal" onClick={(e) => e.stopPropagation()}>
-             <div className="modal-header">
-               <h3>수량 선택</h3>
-               <button className="close-btn" onClick={closeQuantityModal}>×</button>
-             </div>
-             <div className="quantity-options">
-               {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((quantity) => (
-                 <button
-                   key={quantity}
-                   className="quantity-option"
-                   onClick={() => handleQuantitySelect(quantity)}
-                 >
-                   {quantity}개
-                 </button>
-               ))}
-             </div>
-           </div>
-         </div>
-       )}
-     </div>
-   );
- };
+      {/* 수량 선택 모달 */}
+      {showQuantityModal && (
+        <div className="quantity-modal-overlay" onClick={closeQuantityModal}>
+          <div className="quantity-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>수량 선택</h3>
+              <button className="close-btn" onClick={closeQuantityModal}>×</button>
+            </div>
+            <div className="quantity-options">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((quantity) => (
+                <button
+                  key={quantity}
+                  className="quantity-option"
+                  onClick={() => handleQuantitySelect(quantity)}
+                >
+                  {quantity}개
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default Cart;
