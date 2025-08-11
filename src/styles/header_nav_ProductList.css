@@ -37,7 +37,9 @@
 }
 
 .hn-pl-right {
-  gap: 10px; /* 벨과 카트 간격 */
+  gap: 3px; /* 벨과 카트 간격 */
+  justify-content: center; /* 중앙 정렬 추가 */
+  padding-top: 7px;
 }
 
 .hn-pl-icon-svg {
