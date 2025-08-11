@@ -213,7 +213,8 @@ const Main = () => {
   const handleScheduleClick = () => {
     // 콘솔에 클릭 로그를 출력합니다
     console.log('편성표 버튼 클릭');
-    // 편성표 관련 기능을 구현할 예정입니다
+    // 편성표 페이지로 이동합니다
+    navigate('/schedule');
   };
 
   // 알림 버튼 클릭 시 실행되는 핸들러 함수를 정의합니다
@@ -281,21 +282,7 @@ const Main = () => {
   // 정상적인 편성표 페이지를 렌더링합니다
   return (
     <div className="schedule-page">
-      {/* 사용자 정보 디버깅용 표시 */}
-      <div style={{ 
-        background: '#f0f0f0', 
-        padding: '10px', 
-        margin: '10px', 
-        borderRadius: '5px',
-        fontSize: '12px'
-      }}>
-        <strong>Main - 사용자 정보:</strong> 
-        {user ? (
-          `${user.email} | 로그인: ${isLoggedIn ? '예' : '아니오'} | 토큰: ${user.token ? '있음' : '없음'} | 토큰길이: ${user.token?.length || 0}`
-        ) : (
-          '사용자 정보 없음'
-        )}
-      </div>
+
       
       {/* 편성표 헤더 */}
       {/* header removed */}

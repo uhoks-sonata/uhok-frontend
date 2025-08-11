@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-// Header removed
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import BottomNav from '../../layout/BottomNav';
 import { getProductDetail } from '../../data/products';
 import Loading from '../../components/Loading';
@@ -14,6 +13,7 @@ import { ensureToken } from '../../utils/authUtils';
 const KokProductDetail = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [kokProduct, setKokProduct] = useState(null);
   const [kokActiveTab, setKokActiveTab] = useState('description');
   const [kokLoading, setKokLoading] = useState(true);
@@ -300,7 +300,17 @@ const KokProductDetail = () => {
   }, [productId]);
 
   const handleKokBack = () => {
-    navigate(-1);
+    // 검색 페이지에서 온 경우 검색 페이지로 돌아가기
+    const fromState = location.state;
+    
+    if (fromState && fromState.from === 'search' && fromState.backUrl) {
+      console.log('검색 페이지로 돌아가기:', fromState.backUrl);
+      navigate(fromState.backUrl);
+    } else {
+      // 일반적인 뒤로가기
+      console.log('일반 뒤로가기');
+      navigate(-1);
+    }
   };
 
   const handleKokSearch = (query) => {
