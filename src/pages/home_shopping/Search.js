@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 // 검색 헤더 컴포넌트를 가져옵니다
-import HeaderNavMain from '../../layout/HeaderNavMain';
+import HeaderNavMain from '../../layout/HeaderNavKokMain';
 // 하단 네비게이션 컴포넌트를 가져옵니다
 import BottomNav from '../../layout/BottomNav';
 // 로딩 컴포넌트를 가져옵니다
