@@ -26,6 +26,7 @@
 .hn-bucket-svg {
   display: block;
   color: #111; /* stroke color */
+  margin: 0 auto; /* 중앙 정렬 */
 }
 
 

@@ -7,11 +7,13 @@
 }
 
 .hn-main-left {
-  gap: 20px; /* back 버튼과 타이틀 간격 */
+  gap: 0; /* 뒤로가기 버튼만 있음 */
 }
 
 .hn-main-right {
   padding-top: 7px;
+  gap: 6px; /* 알림과 장바구니 아이콘 간격 */
+  justify-content: center; /* 중앙 정렬 추가 */
 }
 
 .hn-main-center {
@@ -20,16 +22,11 @@
   align-items: center;    /* 헤더 높이 기준 수직 중앙 */
   justify-content: center;/* 수평 중앙 */
   text-align: center;
-  font-size: 18px;
-  font-weight: 600;
-  color: #111;
 }
 
+/* 기존 타이틀 스타일 제거 (검색창으로 대체됨) */
 .hn-main-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #111;
-  line-height: 1;
+  display: none;
 }
 
 .hn-logo {
@@ -59,8 +56,8 @@
 }
 
 .hn-icon-svg {
-  width: 24px;             /* 텍스트 라인과 균형 맞춘 크기 */
-  height: 24px;
+  width: 28px;             /* 텍스트 라인과 균형 맞춘 크기 */
+  height: 30px;
   color: #111;
   display: block;
 }
