@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 // 상단 네비게이션 컴포넌트를 가져옵니다
-// Header removed
+import HeaderNavOrder from '../../layout/HeaderNavOrder';
 // 하단 네비게이션 컴포넌트를 가져옵니다
 import BottomNav from '../../layout/BottomNav';
 // 로딩 컴포넌트를 가져옵니다
@@ -279,17 +279,7 @@ const OrderList = () => {
     window.history.back();
   };
 
-  // 알림 클릭 핸들러를 정의합니다
-  const handleNotificationClick = () => {
-    console.log('알림 클릭');
-    navigate('/notifications');
-  };
 
-  // 장바구니 클릭 핸들러를 정의합니다
-  const handleCartClick = () => {
-    console.log('장바구니 클릭');
-    // 장바구니 페이지로 이동하는 기능을 구현할 예정입니다
-  };
 
   // 주문 상세 보기 핸들러를 정의합니다 (비동기 처리 개선)
   const handleOrderDetailClick = async (orderId) => {
@@ -318,7 +308,10 @@ const OrderList = () => {
   if (loading) {
     return (
       <div className="order-list-container">
-        {/* header removed */}
+        {/* 주문 내역 헤더 네비게이션 */}
+        <HeaderNavOrder 
+          onBackClick={handleBack}
+        />
         <Loading message="주문 내역을 불러오는 중 ..." />
         <BottomNav />
       </div>
@@ -329,7 +322,10 @@ const OrderList = () => {
   if (error) {
     return (
       <div className="order-list-container">
-        {/* header removed */}
+        {/* 주문 내역 헤더 네비게이션 */}
+        <HeaderNavOrder 
+          onBackClick={handleBack}
+        />
         <div className="error-container">
           <p className="error-message">주문 내역을 불러오는데 실패했습니다.</p>
           <p className="error-details">{error}</p>
@@ -342,7 +338,10 @@ const OrderList = () => {
   // 주문 내역 페이지 JSX 반환
   return (
     <div className="order-list-container">
-      {/* header removed */}
+      {/* 주문 내역 헤더 네비게이션 */}
+      <HeaderNavOrder 
+        onBackClick={handleBack}
+      />
       
       {/* 주문 내역 메인 콘텐츠 */}
       <main className="order-list-main">
