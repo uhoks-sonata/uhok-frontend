@@ -9,6 +9,12 @@
   gap: 20px;
 }
 
+.payment-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333333;
+}
+
 .hn-main-center {
   flex: 1;
 }
