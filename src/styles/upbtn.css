@@ -1,0 +1,42 @@
+.up-btn {
+  position: absolute; /* fixed에서 absolute로 변경 */
+  bottom: 40px;
+  /* right: 20px; */
+  margin-left: 400px;
+  width: 43px;
+  height: 43px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  color: rgb(0, 0, 0);
+  border: none;
+  cursor: pointer;
+  font-size: 22px;
+  font-weight: normal;
+  /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); */
+  transition: all 0.3s ease;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.up-btn:hover {
+  background-color: #FA5F8C;
+  transform: translateY(-2px);
+  /* box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2); */
+}
+
+.up-btn:active {
+  transform: translateY(0);
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+  .up-btn {
+    bottom: 15px;
+    right: 15px;
+    width: 45px;
+    height: 45px;
+    font-size: 20px;
+  }
+}
