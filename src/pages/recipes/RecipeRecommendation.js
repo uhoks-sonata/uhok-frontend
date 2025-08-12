@@ -187,7 +187,7 @@ const RecipeRecommendation = () => {
         
         console.log('레시피명/식재료명으로 레시피 추천 받기:', recipeInput, recipeSearchType);
         const method = recipeSearchType === 'ingredient' ? 'ingredient' : 'recipe';
-                 const { recipes, page, total } = await recipeApi.searchRecipes({ recipe: recipeInput, page: 1, size: 10, method });
+                 const { recipes, page, total } = await recipeApi.searchRecipes({ recipe: recipeInput, page: 1, size: 15, method });
         console.log('API 응답:', { recipes, page, total });
         // 결과 페이지로 이동하며 검색결과 전달 (state 기반)
         navigate('/recipes/result', {
@@ -267,7 +267,11 @@ const RecipeRecommendation = () => {
             {/* 선택된 재료 태그들 */}
             <div className="selected-ingredients-tags">
               {selectedIngredients.map((ingredient, index) => (
-                <div key={index} className="ingredient-tag">
+                <div 
+                  key={index} 
+                  className="ingredient-tag"
+                  id={`ingredient-tag-${index}`}
+                >
                   <span className="ingredient-name">
                     {ingredient.name}
                     {ingredient.amount && ` ${ingredient.amount}${ingredient.unit}`}
@@ -275,6 +279,14 @@ const RecipeRecommendation = () => {
                   <button 
                     className="remove-ingredient-btn"
                     onClick={() => handleRemoveIngredient(index)}
+                    onMouseEnter={() => {
+                      // X 버튼에 마우스를 올렸을 때 태그 전체에 효과 적용
+                      document.getElementById(`ingredient-tag-${index}`).classList.add('x-button-hover');
+                    }}
+                    onMouseLeave={() => {
+                      // X 버튼에서 마우스가 벗어났을 때 효과 제거
+                      document.getElementById(`ingredient-tag-${index}`).classList.remove('x-button-hover');
+                    }}
                   >
                     ×
                   </button>
