@@ -109,8 +109,12 @@ const BottomNav = () => {
                 if (location.pathname.startsWith('/kok/payment')) {
                   // 결제 페이지에서는 현재 페이지 유지 (결제 처리)
                   console.log('결제 처리 중...');
+                } else if (location.pathname.startsWith('/kok/product')) {
+                  // 상품 상세 페이지에서는 수량 선택 모달 열기
+                  const event = new CustomEvent('openQuantityModal');
+                  window.dispatchEvent(event);
                 } else {
-                  // 상품 상세 페이지나 장바구니에서는 결제 페이지로 이동
+                  // 장바구니에서는 결제 페이지로 이동
                   window.location.href = '/kok/payment';
                 }
               }}
