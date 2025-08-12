@@ -20,6 +20,11 @@
   z-index: 100; /* 바텀네비보다 낮은 z-index */
 }
 
+/* 찜 버튼 애니메이션 */
+.heart-button {
+  transition: transform 0.15s ease-in-out;
+}
+
 /* 탭 네비게이션 */
 .kok-tab-navigation {
   display: flex !important;

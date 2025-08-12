@@ -1,0 +1,515 @@
+/* 레시피 상세 페이지 전체 스타일 */
+.recipe-detail-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow: hidden;
+}
+
+/* 스크롤 가능한 컨텐츠 영역 */
+.recipe-content-scrollable {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0px;
+  padding-bottom: 90px; /* 하단 네비게이션 공간 증가 */
+  margin-right: 8px; /* 스크롤바 공간 확보 */
+}
+
+/* 스크롤바 스타일링 */
+.recipe-content-scrollable::-webkit-scrollbar {
+  width: 8px;
+  margin-right: 4px;
+}
+
+.recipe-content-scrollable::-webkit-scrollbar-track {
+  background: #f8f9fa;
+  border-radius: 4px;
+  margin: 4px 0 86px 0;
+}
+
+.recipe-content-scrollable::-webkit-scrollbar-thumb {
+  background: #dee2e6;
+  border-radius: 4px;
+  border: 1px solid #f8f9fa;
+}
+
+.recipe-content-scrollbar-thumb:hover {
+  background: #adb5bd;
+}
+
+/* 로딩 상태 */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  font-size: 16px;
+  color: #666;
+}
+
+/* 에러 메시지 */
+.error-message {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+}
+
+.error-message p {
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.error-message button {
+  background-color: #FA5F8C;
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* 레시피 헤더 */
+.recipe-header {
+  margin-bottom: 0; /* 24px → 0으로 변경하여 하단 패딩 제거 */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding-bottom: 0px; /* 하단 여백 추가 */
+}
+
+.recipe-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #000000;
+  margin: 0 0 14px 0; /* 12px → 16px로 늘려서 적절한 간격 */
+  line-height: 1.3;
+  width: 100%; /* 전체 너비 사용 */
+  /* 자동 폰트 사이즈 조정을 위한 설정 */
+  white-space: nowrap; /* 줄바꿈 방지 */
+  overflow: hidden; /* 넘치는 텍스트 숨김 */
+  text-overflow: ellipsis; /* 넘칠 때 ... 표시 */
+  /* CSS clamp로 반응형 폰트 사이즈 설정 */
+  font-size: clamp(16px, 4vw, 24px); /* 최소 16px, 최대 24px, 뷰포트에 따라 자동 조정 */
+}
+
+/* 태그와 북마크를 담는 컨테이너 */
+.recipe-tags-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 5px;
+}
+
+/* 태그들만 담는 컨테이너 */
+.recipe-tags {
+  display: flex;
+  gap: 5px;
+  flex-wrap: nowrap; /* 줄바꿈 방지 */
+  align-items: center; /* 세로 중앙 정렬 */
+}
+
+.recipe-tag {
+  background-color: #FA5F8C;
+  color: #ffffff;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* 북마크 컨테이너 */
+.recipe-bookmark {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0; /* 북마크가 줄어들지 않도록 */
+  padding: 2px 6px; /* 내부 여백 추가 */
+  border: 1px solid #e0e0e0; /* 옅은 회색 테두리 */
+  border-radius: 10px; /* 둥근 모서리 */
+  background-color: #ffffff; /* 배경색 */
+}
+
+.bookmark-icon {
+  width: 13px;
+  height: 13px;
+  object-fit: contain;
+}
+
+.bookmark-count {
+  font-size: 14px;
+  font-weight: 300;
+  color: #807f7f;
+}
+
+/* 레시피 이미지 */
+.recipe-image-section {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.recipe-image-section img {
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 레시피 소개 */
+.recipe-introduction {
+  margin-bottom: 32px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.recipe-introduction p {
+  font-size: 15px;
+  color: #000000;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* 별점 섹션 */
+.rating-section {
+  margin-bottom: 32px;
+}
+
+.rating-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.rating-star {
+  font-size: 32px;
+  color: #FA5F8C;
+}
+
+.rating-score {
+  font-size: 28px;
+  font-weight: 700;
+  color: #000000;
+}
+
+/* 별점 분포 그래프 */
+.rating-distribution {
+  margin-bottom: 24px;
+}
+
+.rating-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.rating-label {
+  min-width: 30px;
+  font-size: 14px;
+  color: #666;
+}
+
+.rating-bar-bg {
+  flex: 1;
+  height: 8px;
+  background-color: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.rating-bar-fill {
+  height: 100%;
+  background-color: #FA5F8C;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* 내 별점 입력 */
+.my-rating-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.my-rating-label {
+  font-size: 14px;
+  color: #666;
+}
+
+.star-input {
+  display: flex;
+  gap: 8px;
+}
+
+.star-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px;
+  transition: transform 0.2s ease;
+  color: #ddd;
+}
+
+.star-btn:hover {
+  transform: scale(1.1);
+}
+
+.star-btn.active {
+  color: #FA5F8C;
+}
+
+/* 재료 섹션 */
+.ingredients-section {
+  margin-bottom: 24px;
+}
+
+.ingredients-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.ingredients-info-icon {
+  font-size: 16px;
+  color: #666;
+  cursor: pointer;
+}
+
+.ingredients-description {
+  font-size: 13px;
+  color: #999;
+  margin: 0 0 16px 0;
+  line-height: 1.4;
+}
+
+.ingredients-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ingredient-item {
+  padding: 16px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.ingredient-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ingredient-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #000000;
+}
+
+.ingredient-amount {
+  font-size: 14px;
+  color: #666;
+}
+
+.ingredient-status {
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.ingredient-status.owned {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.ingredient-status.not-owned {
+  background-color: #FA5F8C;
+  color: #ffffff;
+}
+
+/* 구분선 */
+.section-divider {
+  height: 1px;
+  background-color: #e9ecef;
+  margin: 24px 0;
+}
+
+/* 섹션 제목 공통 스타일 */
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #000000;
+  margin: 0 0 16px 0;
+}
+
+/* 콕 쇼핑몰 상품 추천 */
+.kok-recommendation-section {
+  margin-bottom: 32px;
+}
+
+.kok-products-carousel {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 8px 0;
+}
+
+.kok-products-carousel::-webkit-scrollbar {
+  height: 4px;
+}
+
+.kok-products-carousel::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 2px;
+}
+
+.kok-products-carousel::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 2px;
+}
+
+.kok-product-card {
+  min-width: 200px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.product-image {
+  width: 100%;
+  height: 120px;
+  margin-bottom: 12px;
+}
+
+.product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.product-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.product-name {
+  font-size: 13px;
+  color: #000000;
+  margin: 0;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-weight: 500;
+}
+
+.product-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.discount-rate {
+  background-color: #FA5F8C;
+  color: #ffffff;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.product-price {
+  font-size: 14px;
+  font-weight: 600;
+  color: #000000;
+}
+
+.product-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stars {
+  color: #FA5F8C;
+  font-size: 12px;
+}
+
+.review-count {
+  color: #666;
+  font-size: 11px;
+}
+
+.store-name {
+  color: #666;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* 만드는 방법 섹션 */
+.instructions-section {
+  margin-bottom: 32px;
+}
+
+.instructions-text {
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+}
+
+.instructions-btn {
+  width: 100%;
+  padding: 16px;
+  background-color: #000000;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.instructions-btn:hover {
+  background-color: #333333;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 480px) {
+  .recipe-title {
+    font-size: 19px;
+  }
+  
+  .recipe-image-section img {
+    max-width: 100%;
+  }
+  
+  .ingredient-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .kok-products-list {
+    gap: 8px;
+  }
+  
+  .kok-product-item {
+    min-width: 100px;
+  }
+}

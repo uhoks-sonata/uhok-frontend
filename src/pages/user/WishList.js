@@ -41,11 +41,29 @@ const WishList = () => {
       }
 
       const response = await api.get('/api/kok/likes', {
+        params: {
+          limit: 50 // API 명세서에 따른 기본값
+        },
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-      setWishlistData(response.data);
+      
+             // API 응답의 liked_products를 직접 사용하여 쇼핑몰 탭용으로 설정
+       if (response.data && response.data.liked_products) {
+         console.log('API 응답 데이터:', response.data);
+         console.log('찜한 상품 목록:', response.data.liked_products);
+         
+         // 모든 찜한 상품을 쇼핑몰 탭용으로 설정
+         setWishlistData({
+           liked_products: response.data.liked_products.map(product => ({
+             ...product,
+             type: 'shopping' // 모든 찜한 상품을 쇼핑몰 탭으로 설정
+           }))
+         });
+       } else {
+         setWishlistData(response.data);
+       }
     } catch (err) {
       console.error('찜한 상품 목록 로딩 실패:', err);
       
@@ -108,8 +126,6 @@ const WishList = () => {
 
   // 찜 토글 함수
   const handleHeartToggle = async (productId) => {
-    const isCurrentlyUnliked = unlikedProducts.has(productId);
-    
     try {
       // 토큰 확인
       const token = localStorage.getItem('access_token');
@@ -119,6 +135,7 @@ const WishList = () => {
         return;
       }
 
+      // 찜 토글 API 호출
       const response = await api.post('/api/kok/likes/toggle', {
         kok_product_id: productId
       }, {
@@ -127,23 +144,42 @@ const WishList = () => {
         }
       });
 
-      if (response.data.liked === !isCurrentlyUnliked) {
-        // 찜 상태가 변경되었으면 하트 아이콘 토글
+      console.log('찜 토글 응답:', response.data);
+
+      // 찜 토글 성공 후 하트 아이콘만 즉시 변경 (위시리스트 데이터는 동기화하지 않음)
+      if (response.data) {
+        console.log('찜 토글 성공! 하트 아이콘 상태만 변경합니다.');
+        
+        // 하트 아이콘 상태만 토글 (즉시 피드백)
         setUnlikedProducts(prev => {
           const newSet = new Set(prev);
-          if (isCurrentlyUnliked) {
-            // 빈 하트에서 채워진 하트로 (찜 추가)
+          if (newSet.has(productId)) {
+            // 찜 해제된 상태에서 찜 추가
             newSet.delete(productId);
             console.log('찜이 추가되었습니다. 채워진 하트로 변경됩니다.');
           } else {
-            // 채워진 하트에서 빈 하트로 (찜 해제)
+            // 찜된 상태에서 찜 해제
             newSet.add(productId);
             console.log('찜이 해제되었습니다. 빈 하트로 변경됩니다.');
           }
           return newSet;
         });
+        
+        // 애니메이션 효과 추가
+        const heartButton = document.querySelector(`[data-product-id="${productId}"]`);
+        if (heartButton) {
+          heartButton.style.transform = 'scale(1.2)';
+          setTimeout(() => {
+            heartButton.style.transform = 'scale(1)';
+          }, 150);
+        }
+        
+        // 위시리스트 데이터는 즉시 동기화하지 않음
+        // 페이지 벗어나거나 새로고침할 때 동기화됨
       }
     } catch (err) {
+      console.error('찜 토글 실패:', err);
+      
       // 401 에러 (인증 실패) 시 로그인 페이지로 이동
       if (err.response?.status === 401) {
         alert('로그인이 필요합니다.');
@@ -151,30 +187,14 @@ const WishList = () => {
         return;
       }
       
-      // 네트워크 에러나 API 연결 실패 시에도 하트 아이콘 토글
-      if (err.code === 'ERR_NETWORK' || err.message === 'Network Error') {
-        setUnlikedProducts(prev => {
-          const newSet = new Set(prev);
-          if (isCurrentlyUnliked) {
-            // 빈 하트에서 채워진 하트로 (찜 추가)
-            newSet.delete(productId);
-            console.log('API 서버 연결 실패. 찜 추가 요청은 실패했지만 채워진 하트로 변경됩니다.');
-          } else {
-            // 채워진 하트에서 빈 하트로 (찜 해제)
-            newSet.add(productId);
-            console.log('API 서버 연결 실패. 찜 해제 요청은 실패했지만 빈 하트로 변경됩니다.');
-          }
-          return newSet;
-        });
-      } else {
-        console.error('찜 토글 실패:', err);
-      }
+      // 다른 에러의 경우 사용자에게 알림
+      alert('찜 상태 변경에 실패했습니다. 다시 시도해주세요.');
     }
   };
 
   // 상품 클릭 핸들러
   const handleProductClick = (productId) => {
-    navigate(`/kok-product/${productId}`);
+    navigate(`/kok/product/${productId}`);
   };
 
   // 검색 핸들러
@@ -229,6 +249,13 @@ const WishList = () => {
 
   useEffect(() => {
     fetchWishlistData();
+    
+    // 페이지를 벗어날 때 찜 상태 동기화
+    return () => {
+      // 위시리스트 데이터를 백엔드와 동기화
+      console.log('위시리스트 페이지를 벗어납니다. 찜 상태를 동기화합니다.');
+      // 여기서 필요한 정리 작업을 수행할 수 있습니다
+    };
   }, []);
 
   if (loading) {
@@ -318,7 +345,7 @@ const WishList = () => {
                     <div className="broadcast-time">{product.broadcast_time}</div>
                   </div>
                 )}
-                <div className="wishlist-product">
+                <div className="wishlist-product" onClick={() => handleProductClick(product.kok_product_id)}>
                   <div className="product-image">
                     <img 
                       src={product.kok_thumbnail} 
@@ -340,7 +367,11 @@ const WishList = () => {
                           </div>
                           <button 
                             className="heart-button"
-                            onClick={() => handleHeartToggle(product.kok_product_id)}>
+                            data-product-id={product.kok_product_id}
+                            onClick={(e) => {
+                              e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
+                              handleHeartToggle(product.kok_product_id);
+                            }}>
                             <img 
                               src={unlikedProducts.has(product.kok_product_id) ? emptyHeartIcon : filledHeartIcon} 
                               alt="찜 토글" 
@@ -361,33 +392,39 @@ const WishList = () => {
                           <span className="wishlist-brand-name">{product.kok_store_name}</span> | {product.kok_product_name}
                         </div>
                       </div>
-                   ) : (
-                     // 쇼핑몰 탭 레이아웃
-                     <>
-                       <div className="price-section">
-                         <div className="price-info">
-                           {product.kok_discount_rate > 0 && (
-                             <span className="discount-rate">{product.kok_discount_rate}%</span>
-                           )}
-                           <span className="discounted-price">
-                             {formatPrice(product.kok_discounted_price)}
-                           </span>
-                         </div>
-                         <button 
-                           className="heart-button"
-                           onClick={() => handleHeartToggle(product.kok_product_id)}>
-                           <img 
-                             src={unlikedProducts.has(product.kok_product_id) ? emptyHeartIcon : filledHeartIcon} 
-                             alt="찜 토글" 
-                             className="heart-icon"
-                           />
-                         </button>
-                       </div>
-                       <div className="wishlist-product-name">
-                         <span className="wishlist-brand-name">{product.kok_store_name}</span> | {product.kok_product_name}
-                       </div>
-                     </>
-                   )}
+                                       ) : (
+                      // 쇼핑몰 탭 레이아웃 - 이미지 참고하여 개선
+                      <div className="shopping-product-info">
+                        <div className="shopping-price-section">
+                          <div className="shopping-price-info">
+                            {product.kok_discount_rate > 0 && (
+                              <span className="shopping-discount-rate">{product.kok_discount_rate}%</span>
+                            )}
+                            <span className="shopping-discounted-price">
+                              {formatPrice(product.kok_discounted_price)}
+                            </span>
+                          </div>
+                          <button 
+                            className="shopping-heart-button"
+                            data-product-id={product.kok_product_id}
+                            onClick={(e) => {
+                              e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
+                              handleHeartToggle(product.kok_product_id);
+                            }}>
+                            <img 
+                              src={unlikedProducts.has(product.kok_product_id) ? emptyHeartIcon : filledHeartIcon} 
+                              alt="찜 토글" 
+                              className="shopping-heart-icon"
+                            />
+                          </button>
+                        </div>
+                        <div className="shopping-product-details">
+                          <span className="shopping-product-name">
+                            <span className="shopping-brand-name">{product.kok_store_name}</span> | {product.kok_product_name}
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

@@ -84,9 +84,10 @@ const RecipeResult = () => {
 
   const handleRecipeClick = (recipe) => {
     console.log('레시피 클릭:', recipe);
-    // 레시피 상세 페이지로 이동 (recipe_url 사용)
-    if (recipe.recipe_url) {
-      window.open(recipe.recipe_url, '_blank');
+    // 레시피 상세 페이지로 이동
+    const recipeId = recipe.recipe_id || recipe.id;
+    if (recipeId) {
+      navigate(`/recipes/${recipeId}`);
     }
   };
 
@@ -153,17 +154,17 @@ const RecipeResult = () => {
                 thumbnail_url: recipe[8],
                 recipe_url: recipe[9],
                 matched_ingredient_count: recipe[10],
-                used_ingredients: recipe[11] || []
+                used_ingredients: Array.isArray(recipe[11]) ? recipe[11] : []
               };
             }
             
             // 실제 일치하는 재료 수 계산
-            const actualMatchedCount = recipeObj.used_ingredients ? 
+            const actualMatchedCount = Array.isArray(recipeObj.used_ingredients) ? 
               recipeObj.used_ingredients.filter(usedIng => 
                 displayIngredients.some(displayIng => {
                   const displayName = typeof displayIng === 'string' ? displayIng : displayIng.name || '';
-                  return displayName.toLowerCase().includes(usedIng.material_name.toLowerCase()) ||
-                         usedIng.material_name.toLowerCase().includes(displayName.toLowerCase());
+                  return usedIng && usedIng.material_name && displayName.toLowerCase().includes(usedIng.material_name.toLowerCase()) ||
+                         usedIng && usedIng.material_name && usedIng.material_name.toLowerCase().includes(displayName.toLowerCase());
                 })
               ).length : 0;
             
@@ -172,6 +173,8 @@ const RecipeResult = () => {
             console.log('matched_ingredient_count:', recipeObj.matched_ingredient_count);
             console.log('total_ingredients_count:', recipeObj.total_ingredients_count);
             console.log('used_ingredients:', recipeObj.used_ingredients);
+            console.log('used_ingredients type:', typeof recipeObj.used_ingredients);
+            console.log('used_ingredients isArray:', Array.isArray(recipeObj.used_ingredients));
             console.log('Actual matched count:', actualMatchedCount);
             
             return (
@@ -192,7 +195,7 @@ const RecipeResult = () => {
                       <span className="matched-ingredients">
                         <span className="matched-count">{actualMatchedCount}개 재료 일치</span>
                         <span className="separator"> | </span>
-                        <span className="total-ingredients">재료 총 {recipeObj.total_ingredients_count || (recipeObj.used_ingredients ? recipeObj.used_ingredients.length : 0)}개</span>
+                        <span className="total-ingredients">재료 총 {recipeObj.total_ingredients_count || (Array.isArray(recipeObj.used_ingredients) ? recipeObj.used_ingredients.length : 0)}개</span>
                       </span>
                     )}
                   </div>
