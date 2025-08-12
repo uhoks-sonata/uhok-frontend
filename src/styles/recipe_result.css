@@ -73,7 +73,15 @@
   transition: all 0.2s ease;
 }
 
-.ingredient-tag:hover {
+/* 태그 전체에 대한 호버 효과 제거 - X 버튼에만 효과 적용 */
+/* .ingredient-tag:hover {
+  background-color: #e8e8e8;
+  border-color: #d0d0d0;
+  transform: scale(1.02);
+} */
+
+/* X 버튼에 마우스를 올렸을 때 태그 전체에 효과 적용 */
+.ingredient-tag.x-button-hover {
   background-color: #e8e8e8;
   border-color: #d0d0d0;
   transform: scale(1.02);

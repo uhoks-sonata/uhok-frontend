@@ -35,8 +35,9 @@
 }
 
 .kok-more-button:hover {
-  background-color: rgba(250, 95, 140, 0.1);
-  color: #e04a7a;
+  background-color: transparent;
+  color: #FA5F8C;
+  font-weight: 800;
 }
 
 .kok-arrow-image {
