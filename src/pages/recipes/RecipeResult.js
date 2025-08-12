@@ -84,9 +84,10 @@ const RecipeResult = () => {
 
   const handleRecipeClick = (recipe) => {
     console.log('레시피 클릭:', recipe);
-    // 레시피 상세 페이지로 이동 (recipe_url 사용)
-    if (recipe.recipe_url) {
-      window.open(recipe.recipe_url, '_blank');
+    // 레시피 상세 페이지로 이동
+    const recipeId = recipe.recipe_id || recipe.id;
+    if (recipeId) {
+      navigate(`/recipes/${recipeId}`);
     }
   };
 

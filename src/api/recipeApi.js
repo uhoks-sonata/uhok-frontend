@@ -99,6 +99,11 @@ export const recipeApi = {
   postRecipeRating: async (recipeId, rating) => {
     const response = await api.post(`/api/recipes/${recipeId}/rating`, { rating }, { baseURL: '' });
     return response.data;
+  },
 
+  // 콕 쇼핑몰 내 ingredient 관련 상품 정보 조회
+  getKokProducts: async (ingredient) => {
+    const response = await api.get(`/api/recipes/kok?ingredient=${encodeURIComponent(ingredient)}`, { baseURL: '' });
+    return response.data;
   },
 };
