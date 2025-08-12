@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 
 import '../../styles/kok_product_list_page.css';
 import HeaderNavProductList from '../../layout/HeaderNavProductList';
+import UpBtn from '../../components/UpBtn';
 import emptyHeartIcon from '../../assets/heart_empty.png';
 import filledHeartIcon from '../../assets/heart_filled.png';
 import api from '../api';
@@ -389,6 +390,11 @@ const KokProductListPage = () => {
               더 이상 로드할 상품이 없습니다
             </div>
           )}
+        </div>
+        
+        {/* 맨 위로 가기 버튼 */}
+        <div style={{ position: 'relative' }}>
+          <UpBtn />
         </div>
       </div>
     </div>
