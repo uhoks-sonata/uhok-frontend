@@ -1,23 +1,22 @@
 /* 상품 상세 페이지 전체 스타일 */
 .kok-product-detail-page {
   background-color: #fff;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 480px;
-  min-height: calc(100vh - 75px); /* 바텀네비(75px) 제외 */
-  padding: 16px;
-  padding-bottom: 75px; /* 바텀네비(75px) + 여백(20px) */
   margin: 0 auto;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* 전체 페이지 스크롤 제거 */
-  height: calc(100vh - 75px); /* 바텀네비 공간 확보 */
-  position: fixed; /* 고정 위치로 설정 */
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 100; /* 바텀네비보다 낮은 z-index */
+  min-height: 100vh;
+  position: relative; /* UpBtn 위치 기준 */
+}
+
+/* UpBtn 위치 관리 */
+.kok-product-detail-page .up-btn {
+  position: fixed; /* 뷰포트 기준으로 고정 */
+  bottom: 100px;
+  right: 260px;
+  z-index: 1000; /* 다른 요소들 위에 표시 */
 }
 
 /* 찜 버튼 애니메이션 */
@@ -87,14 +86,11 @@
   flex: 1 !important;
   overflow-y: auto !important;
   background-color: #ffffff !important;
-  padding-bottom: 100px !important;
+  padding-bottom: 20px !important;
   position: relative !important;
   z-index: 1 !important;
   display: block !important;
   width: 100% !important;
-  height: calc(100vh - 198px) !important; /* 바텀네비(75px) + 헤더영역(60px) + 탭네비(48px) + 구매버튼(15px) = 198px 빼기 */
-  min-height: 0 !important; /* flex 아이템에서 최소 높이도 0으로 설정 */
-  max-height: calc(100vh - 198px) !important; /* 최대 높이도 제한 */
 }
 
 .kok-tab-content {
@@ -506,17 +502,13 @@
 
 /* 구매 버튼 */
 .purchase-button-container {
-  position: fixed;
-  bottom: 75px; /* 바텀네비(75px) 위에 위치 */
-  left: 50%;
-  transform: translateX(-50%);
   width: 100%;
   max-width: 480px;
   padding: 16px;
   background-color: #ffffff;
   border-top: 1px solid #f0f0f0;
-  z-index: 1000;
   flex-shrink: 0;
+  margin: 0 auto;
 }
 
 .purchase-button {
@@ -541,9 +533,7 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden; /* 횡스크롤 제거 */
-  height: calc(100vh - 130px); /* 바텀네비와 겹치지 않는 높이 */
-  max-height: calc(100vh - 137px); /* 최대 높이 제한 */
-  min-height: 0; /* flex 아이템에서 최소 높이도 0으로 설정 */
+  padding: 16px;
   box-sizing: border-box; /* padding 포함 계산 */
   width: 100%; /* 전체 너비 사용 */
   display: flex; /* flexbox 사용 */

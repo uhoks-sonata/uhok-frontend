@@ -6,8 +6,6 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './styles/App.css';
 // 사용자 Context Provider import
 import { UserProvider } from './contexts/UserContext';
-// UpBtn 컴포넌트 import
-import UpBtn from './components/UpBtn';
 
 // ===== 페이지 컴포넌트들 import =====
 // 사용자 관련 페이지
@@ -105,9 +103,6 @@ function App() {
               <Route path="/kok/payment" element={<KokPayment />} />
             </Routes>
           </Router>
-          
-          {/* 전역 맨 위로 가기 버튼 */}
-          <UpBtn />
         </div>
       </div>
       

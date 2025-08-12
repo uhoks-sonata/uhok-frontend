@@ -53,12 +53,29 @@ const UpBtn = () => {
     // window 스크롤 이벤트 리스너
     window.addEventListener('scroll', toggleVisibility);
     
-    // 컨테이너 스크롤 이벤트 리스너
-    const container = document.querySelector('.kok-product-list-content');
-    if (container) {
-      containerRef.current = container;
-      container.addEventListener('scroll', toggleVisibility);
-    }
+    // // 컨테이너 스크롤 이벤트 리스너
+    // const container = document.querySelector('.kok-product-list-content');
+    // if (container) {
+    //   containerRef.current = container;
+    //   container.addEventListener('scroll', toggleVisibility);
+    // }
+
+    // 컨테이너 스크롤 이벤트 리스너 (여러 컨테이너 감지)
+    const containers = [
+      '.kok-product-list-content',  // KokProductListPage용
+      '.product-content'            // KokProductDetail용
+    ];
+    
+    containers.forEach(selector => {
+      const container = document.querySelector(selector);
+      if (container) {
+        container.addEventListener('scroll', toggleVisibility);
+        // 첫 번째 발견된 컨테이너를 기본값으로 설정
+        if (!containerRef.current) {
+          containerRef.current = container;
+        }
+      }
+    });
     
     // 초기 상태 확인
     toggleVisibility();
