@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import HeaderNavCart from '../../layout/HeaderNavCart';
 import BottomNav from '../../layout/BottomNav';
 import { cartApi } from '../../api/cartApi';
+import api from '../api';
 import '../../styles/cart.css';
 import heartIcon from '../../assets/heart_empty.png';
 import heartFilledIcon from '../../assets/heart_filled.png';
@@ -15,11 +16,101 @@ const Cart = () => {
   const [showRecipeRecommendation, setShowRecipeRecommendation] = useState(false);
   const [showQuantityModal, setShowQuantityModal] = useState(false);
   const [selectedCartItemId, setSelectedCartItemId] = useState(null);
+  const [likedProducts, setLikedProducts] = useState(new Set()); // 찜한 상품 ID들을 저장
   const navigate = useNavigate();
 
   useEffect(() => {
     loadCartItems();
+    loadLikedProducts();
   }, []);
+
+  // 찜한 상품 목록을 가져오는 함수
+  const loadLikedProducts = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+
+      const response = await api.get('/api/kok/likes', {
+        params: {
+          limit: 50
+        },
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.data && response.data.liked_products) {
+        const likedIds = new Set(response.data.liked_products.map(product => product.kok_product_id));
+        setLikedProducts(likedIds);
+      }
+    } catch (error) {
+      console.error('찜한 상품 목록 로딩 실패:', error);
+    }
+  };
+
+  // 찜 토글 함수
+  const handleHeartToggle = async (productId) => {
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        console.log('토큰이 없어서 로그인 페이지로 이동');
+        window.location.href = '/';
+        return;
+      }
+
+      // 찜 토글 API 호출
+      const response = await api.post('/api/kok/likes/toggle', {
+        kok_product_id: productId
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      console.log('찜 토글 응답:', response.data);
+
+      // 찜 토글 성공 후 하트 아이콘만 즉시 변경
+      if (response.data) {
+        console.log('찜 토글 성공! 하트 아이콘 상태만 변경합니다.');
+        
+        // 하트 아이콘 상태만 토글 (즉시 피드백)
+        setLikedProducts(prev => {
+          const newSet = new Set(prev);
+          if (newSet.has(productId)) {
+            // 찜 해제된 상태에서 찜 추가
+            newSet.delete(productId);
+            console.log('찜이 추가되었습니다. 채워진 하트로 변경됩니다.');
+          } else {
+            // 찜된 상태에서 찜 해제
+            newSet.add(productId);
+            console.log('찜이 해제되었습니다. 빈 하트로 변경됩니다.');
+          }
+          return newSet;
+        });
+        
+        // 애니메이션 효과 추가
+        const heartButton = document.querySelector(`[data-product-id="${productId}"]`);
+        if (heartButton) {
+          heartButton.style.transform = 'scale(1.2)';
+          setTimeout(() => {
+            heartButton.style.transform = 'scale(1)';
+          }, 150);
+        }
+      }
+    } catch (error) {
+      console.error('찜 토글 실패:', error);
+      
+      // 401 에러 (인증 실패) 시 로그인 페이지로 이동
+      if (error.response?.status === 401) {
+        alert('로그인이 필요합니다.');
+        window.location.href = '/';
+        return;
+      }
+      
+      // 다른 에러의 경우 사용자에게 알림
+      alert('찜 상태 변경에 실패했습니다. 다시 시도해주세요.');
+    }
+  };
 
   const loadCartItems = async () => {
     try {
@@ -132,10 +223,6 @@ const Cart = () => {
   const handleBuyNow = (cartItemId) => {
     console.log('구매하기 클릭:', cartItemId);
     navigate('/kok/payment');
-  };
-
-  const handleWishlist = (cartItemId) => {
-    console.log('찜하기 클릭:', cartItemId);
   };
 
   const toggleRecipeRecommendation = () => {
@@ -304,9 +391,13 @@ const Cart = () => {
                       
                       <button 
                         className="wishlist-btn"
-                        onClick={() => handleWishlist(item.kok_cart_id)}
+                        onClick={() => handleHeartToggle(item.kok_product_id)}
+                        data-product-id={item.kok_product_id}
                       >
-                        <img src={heartIcon} alt="찜하기" />
+                        <img 
+                          src={likedProducts.has(item.kok_product_id) ? heartFilledIcon : heartIcon} 
+                          alt="찜하기" 
+                        />
                       </button>
                     </div>
                   </div>

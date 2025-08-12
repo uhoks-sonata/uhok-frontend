@@ -35,13 +35,39 @@ const KokMain = () => {
   const fetchKokProducts = async () => {
     try {
       console.log('할인 특가 상품 API 호출 시작...');
+      console.log('API 엔드포인트: /api/kok/discounted');
+      console.log('요청 파라미터:', { page: 1, size: 20 });
+      
+      // 토큰 확인
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        console.error('❌ 토큰이 없습니다. 로그인이 필요합니다.');
+        navigate('/login');
+        return;
+      }
+      
       const response = await api.get('/api/kok/discounted', {
         baseURL: '', // 프록시 사용
         params: {
           page: 1,
           size: 20
+        },
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         }
       });
+      
+      console.log('📤 API 요청 헤더:', {
+        'Authorization': token ? `Bearer ${token.substring(0, 20)}...` : '토큰 없음',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      });
+      console.log('📤 API 요청 URL:', '/api/kok/discounted');
+      console.log('📤 API 요청 파라미터:', { page: 1, size: 20 });
+      
+      console.log('📥 할인 특가 상품 API 응답 전체:', response);
       console.log('할인 특가 상품 API 응답:', response.data);
       
       // 백엔드 응답 구조에 맞게 데이터 처리 (products 필드 우선)
@@ -111,14 +137,40 @@ const KokMain = () => {
   const fetchKokTopSellingProducts = async () => {
     try {
       console.log('판매율 높은 상품 API 호출 시작...');
+      console.log('API 엔드포인트: /api/kok/top-selling');
+      console.log('요청 파라미터:', { page: 1, size: 20, sort_by: 'review_count' });
+      
+      // 토큰 확인
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        console.error('❌ 토큰이 없습니다. 로그인이 필요합니다.');
+        navigate('/login');
+        return;
+      }
+      
       const response = await api.get('/api/kok/top-selling', {
         baseURL: '', // 프록시 사용
         params: {
           page: 1,
           size: 20,
           sort_by: 'review_count' // 리뷰 개수 순으로 정렬 (기본값)
+        },
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         }
       });
+      
+      console.log('📤 API 요청 헤더:', {
+        'Authorization': token ? `Bearer ${token.substring(0, 20)}...` : '토큰 없음',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      });
+      console.log('📤 API 요청 URL:', '/api/kok/top-selling');
+      console.log('📤 API 요청 파라미터:', { page: 1, size: 20, sort_by: 'review_count' });
+      
+      console.log('📥 판매율 높은 상품 API 응답 전체:', response);
       console.log('판매율 높은 상품 API 응답:', response.data);
       
       // 백엔드 응답 구조에 맞게 데이터 처리 (products 필드 우선)
@@ -193,6 +245,12 @@ const KokMain = () => {
       
       // 현재 사용자 정보 확인
       const token = localStorage.getItem('access_token');
+      if (!token) {
+        console.error('❌ 토큰이 없습니다. 로그인이 필요합니다.');
+        navigate('/login');
+        return;
+      }
+      
       if (token) {
         try {
           const tokenParts = token.split('.');
@@ -213,10 +271,23 @@ const KokMain = () => {
         baseURL: '', // 프록시 사용
         params: {
           sort_by: 'review_count' // 리뷰 개수 순으로 정렬 (기본값)
+        },
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         }
       });
       
-      console.log('스토어 베스트 상품 API 응답 전체:', response);
+      console.log('📤 API 요청 헤더:', {
+        'Authorization': token ? `Bearer ${token.substring(0, 20)}...` : '토큰 없음',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      });
+      console.log('📤 API 요청 URL:', '/api/kok/store-best-items');
+      console.log('📤 API 요청 파라미터:', { sort_by: 'review_count' });
+      
+      console.log('📥 스토어 베스트 상품 API 응답 전체:', response);
       console.log('응답 상태:', response.status);
       console.log('응답 헤더:', response.headers);
       console.log('응답 데이터:', response.data);
@@ -349,6 +420,38 @@ const KokMain = () => {
   const handleKokNotificationClick = () => {
     console.log('알림 클릭됨');
     navigate('/notifications');
+  };
+
+  // 백엔드 서버 상태를 확인하는 테스트 함수
+  const testBackendConnection = async () => {
+    try {
+      console.log('🔍 백엔드 서버 연결 상태 확인 중...');
+      
+      // 간단한 헬스체크
+      const healthResponse = await fetch('/api/health', { 
+        method: 'GET',
+        timeout: 5000 
+      });
+      console.log('헬스체크 응답:', healthResponse.status);
+      
+      // API 엔드포인트 테스트 (토큰 포함)
+      const token = localStorage.getItem('access_token');
+      const testResponse = await api.get('/api/kok/store-best-items', {
+        params: { sort_by: 'review_count' },
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+      console.log('API 테스트 응답:', testResponse.status);
+      console.log('API 테스트 데이터:', testResponse.data);
+      
+      return true;
+    } catch (error) {
+      console.error('백엔드 서버 연결 테스트 실패:', error);
+      return false;
+    }
   };
 
   useEffect(() => {

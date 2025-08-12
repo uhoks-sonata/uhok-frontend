@@ -79,36 +79,13 @@
 .kok-products-container.discount-grid .kok-product-card .kok-product-info {
   padding: 8px 12px; /* 적절한 패딩 추가 */
   width: 217px; /* 337px - 120px = 217px (카드 너비 - 이미지 너비) */
-  height: 120px; /* 카드 높이와 동일 */
+  height: auto; /* 자동 높이로 변경하여 내용에 맞춤 */
   display: flex;
   flex-direction: column;
   justify-content: flex-start; /* 상단 정렬로 변경 */
-  gap: 12px; /* 요소 간 간격 증가 */
-}
-
-.kok-product-card.grid .kok-product-info {
-  padding: 10px 12px; /* 패딩 증가 */
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.kok-product-card.fixed .kok-product-info {
-  padding: 6px; /* 패딩 줄임 */
-}
-
-.kok-product-name {
-  font-size: 14px; /* 폰트 크기 증가 */
-  font-weight: 500;
-  color: #333;
-  margin: 8px 0; /* 마진 조정 */
-  line-height: 1.3; /* 줄간격 조정 */
-  overflow: hidden;
-  text-overflow: ellipsis; /* 넘치는 텍스트는 ...으로 표시 */
-  white-space: nowrap; /* 한 줄로 제한 */
-  max-width: 100%; /* 최대 너비 제한 */
-  flex: 1; /* 남은 공간 차지 */
+  gap: 6px; /* 요소 간 간격 조정 */
+  min-height: 140px; /* 140px로 증가하여 리뷰 정보 공간 확보 */
+  position: relative; /* 상대 위치 설정 */
 }
 
 /* 할인 특가 상품 카드의 제품명 폰트 크기 증가 */
@@ -118,10 +95,10 @@
   margin: 0; /* 마진 제거 */
   width: 193px; /* 217px - 24px = 193px (정보 영역 너비 - 좌우 패딩) */
   height: auto; /* 자동 높이로 변경 */
-  min-height: 44px; /* 최소 높이 유지 */
-  max-height: 80px; /* 최대 높이를 4줄까지 허용하도록 증가 */
+  min-height: 34px; /* 최소 높이를 2줄까지 허용하도록 조정 */
+  max-height: none; /* 최대 높이 제한 제거 */
   display: -webkit-box;
-  -webkit-line-clamp: 4; /* 4줄까지 표시 허용 */
+  -webkit-line-clamp: 2; /* 2줄까지 표시 허용 (3줄에서 줄임) */
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis; /* 넘치는 텍스트는 ...으로 표시 */
@@ -164,18 +141,77 @@
 /* 할인 특가 상품 카드의 가격 정보 영역 크기 지정 */
 .kok-products-container.discount-grid .kok-product-card .kok-price-info {
   width: 193px; /* 정보 영역 너비에 맞춤 */
-  height: 21px; /* 정확한 가격 정보 높이 */
+  height: auto; /* 자동 높이로 변경 */
   margin: 0; /* 마진 제거 */
+  min-height: 21px; /* 최소 높이만 설정 */
+  flex-shrink: 0; /* 크기 고정 */
 }
 
-.kok-product-card.grid .kok-price-info {
-  gap: 8px; /* 간격 증가 */
-  margin-bottom: 6px; /* 마진 증가 */
+/* 할인 특가 상품 카드의 평점 정보 영역 개선 */
+.kok-products-container.discount-grid .kok-product-card .kok-rating-info {
+  width: 193px; /* 정보 영역 너비에 맞춤 */
+  height: auto; /* 자동 높이로 변경 */
+  min-height: 16px; /* 최소 높이만 설정 */
+  margin-top: 4px; /* 상단 마진 추가 */
+  padding-top: 2px; /* 상단 패딩 추가 */
+  flex-shrink: 0; /* 크기 고정 */
+  position: absolute; /* 절대 위치 설정 */
+  bottom: 25px; /* 하단에서 20px로 조정 (12px에서 증가) */
+  left: 12px; /* 좌측 정렬 */
 }
 
-.kok-product-card.fixed .kok-price-info {
-  gap: 4px; /* 간격 줄임 */
-  margin-bottom: 2px; /* 마진 줄임 */
+.kok-product-card.grid .kok-product-info {
+  padding: 10px 12px; /* 패딩 증가 */
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.kok-product-card.fixed .kok-product-info {
+  padding: 6px; /* 패딩 줄임 */
+}
+
+.kok-product-name {
+  font-size: 14px; /* 폰트 크기 증가 */
+  font-weight: 500;
+  color: #333;
+  margin: 8px 0; /* 마진 조정 */
+  line-height: 1.3; /* 줄간격 조정 */
+  overflow: hidden;
+  text-overflow: ellipsis; /* 넘치는 텍스트는 ...으로 표시 */
+  white-space: nowrap; /* 한 줄로 제한 */
+  max-width: 100%; /* 최대 너비 제한 */
+  flex: 1; /* 남은 공간 차지 */
+}
+
+.kok-product-card.grid .kok-product-info {
+  padding: 10px 12px; /* 패딩 증가 */
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.kok-product-card.fixed .kok-product-info {
+  padding: 6px; /* 패딩 줄임 */
+}
+
+.kok-product-card.grid .kok-product-name {
+  font-size: 14px; /* 폰트 크기 증가 */
+  overflow: hidden;
+  text-overflow: ellipsis; /* 넘치는 텍스트는 ...으로 표시 */
+  white-space: nowrap; /* 한 줄로 제한 */
+  margin: 0 0 8px 0; /* 마진 증가 */
+  line-height: 1.4; /* 줄간격 증가 */
+}
+
+.kok-product-card.fixed .kok-product-name {
+  font-size: 11px; /* 폰트 크기 줄임 */
+  overflow: hidden;
+  text-overflow: ellipsis; /* 넘치는 텍스트는 ...으로 표시 */
+  white-space: nowrap; /* 한 줄로 제한 */
+  margin: 0 0 4px 0; /* 마진 줄임 */
 }
 
 .kok-discount-rate {
@@ -295,6 +331,16 @@
 
 .kok-product-card.fixed .kok-review-count {
   font-size: 9px; /* 폰트 크기 줄임 */
+}
+
+.kok-product-card.grid .kok-price-info {
+  gap: 8px; /* 간격 증가 */
+  margin-bottom: 6px; /* 마진 증가 */
+}
+
+.kok-product-card.fixed .kok-price-info {
+  gap: 4px; /* 간격 줄임 */
+  margin-bottom: 2px; /* 마진 줄임 */
 }
 
 /* 모바일 최적화 */

@@ -184,7 +184,9 @@
 
 .kok-products-container.fixed .kok-product-card .kok-product-name {
   width: 125px;
-  height: 25px;
+  height: auto; /* 자동 높이로 변경 */
+  min-height: 25px; /* 최소 높이만 설정 */
+  max-height: none; /* 최대 높이 제한 제거 */
   font-size: 12px;
   font-weight: 500;
   color: #333;
@@ -193,6 +195,7 @@
   text-align: center;
   overflow: hidden;
   display: -webkit-box;
+  -webkit-line-clamp: 2; /* 2줄까지 표시 허용 */
   -webkit-box-orient: vertical;
   word-break: break-all;
   white-space: normal;
@@ -209,7 +212,7 @@
 }
 
 .kok-products-container.fixed .kok-product-card .kok-discount-rate {
-  font-size: 13px;
+  font-size: 15px; /* 13px에서 15px로 증가 */
   font-weight: bold;
   color: #FA5F8C;
   background: transparent;
@@ -222,25 +225,27 @@
 }
 
 .kok-products-container.fixed .kok-product-card .kok-discount-price {
-  font-size: 14px;
+  font-size: 16px; /* 14px에서 16px로 증가 */
   font-weight: bold;
   color: #333;
 }
 
 .kok-products-container.fixed .kok-product-card .kok-discount-price::after {
   content: "원";
-  font-size: 12px;
+  font-size: 14px; /* 12px에서 14px로 증가 */
   color: inherit;
   font-weight: inherit;
 }
 
 .kok-products-container.fixed .kok-product-card .kok-rating-info {
   width: 70px;
-  height: 16px;
+  height: auto; /* 자동 높이로 변경 */
+  min-height: 16px; /* 최소 높이만 설정 */
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 2px;
+  margin-top: auto; /* 하단에 배치 */
 }
 
 .kok-products-container.fixed .kok-product-card .kok-stars {
@@ -289,7 +294,7 @@
   overflow: hidden !important;
   box-shadow: none !important;
   width: 337px !important;
-  height: 120px !important;
+  height: 140px !important; /* 120px에서 140px로 증가하여 리뷰 정보 공간 확보 */
 }
 
 /* 최근 구매 상품과 중복되지 않는 상품 전용 그리드 */
@@ -391,7 +396,9 @@
 
 .kok-products-container.non-duplicated-grid .kok-product-card .kok-product-name {
   width: 240px !important;
-  height: 30px !important;
+  height: auto !important; /* 자동 높이로 변경 */
+  min-height: 30px !important; /* 최소 높이만 설정 */
+  max-height: none !important; /* 최대 높이 제한 제거 */
   font-size: 14px !important;
   font-weight: 500 !important;
   color: #333 !important;
@@ -400,6 +407,7 @@
   text-align: left !important;
   overflow: hidden !important;
   display: -webkit-box !important;
+  -webkit-line-clamp: 3 !important; /* 3줄까지 표시 허용 */
   -webkit-box-orient: vertical !important;
   word-break: break-all !important;
   white-space: normal !important;
@@ -407,12 +415,13 @@
 
 .kok-products-container.non-duplicated-grid .kok-product-card .kok-rating-info {
   width: 240px !important;
-  height: 5px !important;
+  height: auto !important; /* 자동 높이로 변경 */
+  min-height: 20px !important; /* 최소 높이만 설정 */
   display: flex !important;
   align-items: center !important;
   justify-content: flex-start !important;
   gap: 8px !important;
-  margin-top: 0 !important;
+  margin-top: auto !important; /* 하단에 배치 */
   padding-top: 8px !important;
   background-color: transparent !important;
   border-radius: 0 !important;
