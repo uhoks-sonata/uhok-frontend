@@ -98,6 +98,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  margin-right: 18px;
   margin-bottom: 8px;
 }
 
@@ -193,6 +194,7 @@
   min-width: 0; /* flex 아이템이 부모를 넘지 않도록 */
   overflow: hidden;
   text-overflow: ellipsis;
+  margin-right: 8px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -216,7 +218,7 @@
 .wishlist-product {
   display: flex;
   gap: 12px;
-  padding: 0px;
+  padding: 5px;
   background-color: #ffffff;
   border-radius: 8px;
   padding-top: 0px;
