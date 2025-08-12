@@ -387,7 +387,7 @@
 /* 레시피 추천 받기 버튼 */
 .recipe-recommendation-section {
   margin-top: 32px;
-  padding: 0 20px;
+  padding: 0;
   opacity: 0;
   transform: translateY(20px);
   transition: all 0.5s ease;

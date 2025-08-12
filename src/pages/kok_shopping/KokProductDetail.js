@@ -7,7 +7,7 @@ import Loading from '../../components/Loading';
 import '../../styles/kok_product_detail.css';
 import emptyHeartIcon from '../../assets/heart_empty.png';
 import filledHeartIcon from '../../assets/heart_filled.png';
-import cartIcon from '../../assets/icon-park-outline_weixin-market.png';
+import CartButton from '../../components/CartButton';
 import api from '../api';
 import { ensureToken } from '../../utils/authUtils';
 
@@ -850,18 +850,11 @@ const KokProductDetail = () => {
                 }}
                 onClick={handleKokWishlistClick}
               />
-              <img 
-                src={cartIcon}
-                alt="장바구니"
-                className="cart-button"
-                style={{ 
-                  width: '30px', 
-                  height: '30px', 
-                  marginLeft: '0px',
-                  cursor: 'pointer',
-                  transition: 'transform 0.15s ease-in-out'
-                }}
+              <CartButton 
+                productId={productId}
+                size="30px"
                 onClick={handleKokCartButtonClick}
+                style={{ marginLeft: '0px' }}
               />
             </div>
           </div>

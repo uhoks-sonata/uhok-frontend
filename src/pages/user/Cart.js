@@ -12,6 +12,7 @@ const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
   const [selectedItems, setSelectedItems] = useState(new Set());
   const [loading, setLoading] = useState(true);
+  const [showRecipeRecommendation, setShowRecipeRecommendation] = useState(false);
   const [showQuantityModal, setShowQuantityModal] = useState(false);
   const [selectedCartItemId, setSelectedCartItemId] = useState(null);
   const navigate = useNavigate();
@@ -137,6 +138,10 @@ const Cart = () => {
     console.log('찜하기 클릭:', cartItemId);
   };
 
+  const toggleRecipeRecommendation = () => {
+    setShowRecipeRecommendation(!showRecipeRecommendation);
+  };
+
   const handleQuantityClick = (cartItemId) => {
     setSelectedCartItemId(cartItemId);
     setShowQuantityModal(true);
@@ -231,7 +236,6 @@ const Cart = () => {
                 <div key={item.kok_cart_id} className="cart-item">
                   <div className="item-header">
                     <span className="store-name">{item.kok_store_name}</span>
-                    <span className="free-shipping">무료배송</span>
                     <button 
                       className="remove-item-btn"
                       onClick={() => handleRemoveItem(item.kok_cart_id)}
@@ -262,6 +266,8 @@ const Cart = () => {
                       <div className="item-details">
                         <div className="item-option">
                           {item.recipe_id ? `레시피 ID: ${item.recipe_id}` : '옵션 없음'}
+                          <span className="separator"> | </span>
+                          <span className="free-shipping-text">무료배송</span>
                         </div>
                         <div className="item-price">
                           <span className="discounted-price">{item.kok_discounted_price.toLocaleString()}원</span>
@@ -269,37 +275,39 @@ const Cart = () => {
                         </div>
                       </div>
                       
-                      <div className="item-actions">
-                        <div className="quantity-section">
-                          <div className="quantity-control">
-                            <button 
-                              className="quantity-btn"
-                              onClick={() => handleQuantityChange(item.kok_cart_id, item.kok_quantity - 1)}
-                              disabled={item.kok_quantity <= 1}
-                            >
-                              ▼
-                            </button>
-                            <span 
-                              className="quantity"
-                              onClick={() => handleQuantityClick(item.kok_cart_id)}
-                            >
-                              {item.kok_quantity}
-                            </span>
-                          </div>
+                    </div>
+                    
+                    <div className="item-divider"></div>
+                    
+                    <div className="item-bottom-actions">
+                      <div className="quantity-section">
+                        <div className="quantity-control">
                           <button 
-                            className="buy-now-btn"
-                            onClick={() => handleBuyNow(item.kok_cart_id)}
+                            className="quantity-btn"
+                            onClick={() => handleQuantityChange(item.kok_cart_id, item.kok_quantity - 1)}
+                            disabled={item.kok_quantity <= 1}
                           >
-                            구매
+                            ▼
+                          </button>
+                          <span className="quantity">
+                            {item.kok_quantity}
+                          </span>
+                          <button 
+                            className="quantity-btn"
+                            onClick={() => handleQuantityChange(item.kok_cart_id, item.kok_quantity + 1)}
+                            disabled={item.kok_quantity >= 10}
+                          >
+                            ▲
                           </button>
                         </div>
-                        <button 
-                          className="wishlist-btn"
-                          onClick={() => handleWishlist(item.kok_cart_id)}
-                        >
-                          <img src={heartIcon} alt="찜하기" />
-                        </button>
                       </div>
+                      
+                      <button 
+                        className="wishlist-btn"
+                        onClick={() => handleWishlist(item.kok_cart_id)}
+                      >
+                        <img src={heartIcon} alt="찜하기" />
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -308,8 +316,35 @@ const Cart = () => {
 
             {/* 레시피 추천 바 */}
             {cartItems.length >= 2 && (
-              <div className="recipe-recommendation-bar">
-                두 개 이상 담으셨네요! 레시피 추천드려요
+              <div className="recipe-recommendation-section">
+                <button 
+                  className="recipe-recommendation-btn"
+                  onClick={toggleRecipeRecommendation}
+                >
+                  <span>두 개 이상 담으셨네요! 레시피 추천드려요</span>
+                  <span className="arrow">
+                    ▼
+                  </span>
+                </button>
+                
+                <div className={`recipe-recommendation-content ${showRecipeRecommendation ? 'show' : ''}`}>
+                  <div className="recipe-item">
+                    <img src={test1Image} alt="레시피 추천" className="recipe-thumbnail" />
+                    <div className="recipe-info">
+                      <h4>감자닭볶음탕</h4>
+                      <p>감자와 닭고기로 만드는 매콤한 요리</p>
+                      <span className="recipe-tag">한식</span>
+                    </div>
+                  </div>
+                  <div className="recipe-item">
+                    <img src={test1Image} alt="레시피 추천" className="recipe-thumbnail" />
+                    <div className="recipe-info">
+                      <h4>된장찌개</h4>
+                      <p>구수한 된장으로 만드는 건강한 찌개</p>
+                      <span className="recipe-tag">한식</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -320,8 +355,12 @@ const Cart = () => {
                 <span>{totalProductPrice.toLocaleString()}원</span>
               </div>
               <div className="summary-item discount">
-                <span>상품 할인금액</span>
+                <span>상품 할인 금액</span>
                 <span>-{totalDiscount.toLocaleString()}원</span>
+              </div>
+              <div className="summary-item shipping">
+                <span>배송비</span>
+                <span>0원</span>
               </div>
               <div className="summary-item total">
                 <span>총 결제예정금액 (총 {selectedItems.size}건)</span>
