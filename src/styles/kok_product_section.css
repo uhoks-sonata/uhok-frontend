@@ -193,7 +193,6 @@
   text-align: center;
   overflow: hidden;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   word-break: break-all;
   white-space: normal;
@@ -401,7 +400,6 @@
   text-align: left !important;
   overflow: hidden !important;
   display: -webkit-box !important;
-  -webkit-line-clamp: 2 !important;
   -webkit-box-orient: vertical !important;
   word-break: break-all !important;
   white-space: normal !important;
