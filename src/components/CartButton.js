@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../pages/api';
-import { ensureToken } from '../utils/authUtils';
+import { ensureToken, notifyServerStatus } from '../utils/authUtils';
 import cartIcon from '../assets/icon-park-outline_weixin-market.png';
 
 const CartButton = ({ 
@@ -20,6 +20,17 @@ const CartButton = ({
     try {
       setIsLoading(true);
       
+      // 입력 데이터 검증
+      if (!productId) {
+        alert('상품 ID가 필요합니다.');
+        return;
+      }
+      
+      if (quantity <= 0) {
+        alert('수량은 1개 이상이어야 합니다.');
+        return;
+      }
+      
       // 토큰 확인 및 갱신
       await ensureToken();
       const token = localStorage.getItem('access_token');
@@ -30,12 +41,26 @@ const CartButton = ({
         return;
       }
 
-      // 장바구니 추가 API 호출
-      const response = await api.post('/api/kok/carts', {
+      // 요청 데이터 준비
+      const requestData = {
         kok_product_id: productId,
-        kok_quantity: quantity,
-        recipe_id: recipeId
-      }, {
+        kok_quantity: quantity
+      };
+      
+      // recipe_id가 0이 아닌 경우에만 추가
+      if (recipeId && recipeId !== 0) {
+        requestData.recipe_id = recipeId;
+      }
+
+      console.log('장바구니 추가 요청:', {
+        url: '/api/kok/carts',
+        data: requestData,
+        token: token ? '토큰 있음' : '토큰 없음',
+        timestamp: new Date().toISOString()
+      });
+
+      // 장바구니 추가 API 호출
+      const response = await api.post('/api/kok/carts', requestData, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -52,15 +77,44 @@ const CartButton = ({
       }
       
     } catch (error) {
-      console.error('장바구니 추가 실패:', error);
+      console.error('장바구니 추가 실패:', {
+        error: error,
+        response: error.response,
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message,
+        timestamp: new Date().toISOString()
+      });
       
       if (error.response?.status === 401) {
         alert('로그인이 필요합니다.');
         navigate('/login');
       } else if (error.response?.status === 409) {
         alert('이미 장바구니에 있는 상품입니다.');
+      } else if (error.response?.status === 400) {
+        const errorMessage = error.response?.data?.error || '잘못된 요청입니다.';
+        alert(`요청 오류: ${errorMessage}`);
+      } else if (error.response?.status === 500) {
+        console.error('서버 내부 오류 상세:', error.response?.data);
+        
+        // 500 에러 시 서버 상태 확인 시도
+        try {
+          const healthCheck = await notifyServerStatus();
+          console.log('서버 헬스체크 결과:', healthCheck);
+        } catch (healthError) {
+          console.error('서버 헬스체크 실패:', healthError);
+        }
+        
+        alert('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.\n\n개발자 도구의 콘솔에서 자세한 오류 정보를 확인할 수 있습니다.');
+      } else if (error.response?.status === 404) {
+        alert('API 엔드포인트를 찾을 수 없습니다.');
+      } else if (error.code === 'ECONNABORTED') {
+        alert('요청 시간이 초과되었습니다. 네트워크 상태를 확인해주세요.');
+      } else if (!error.response) {
+        alert('네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.');
       } else {
-        alert('장바구니 추가에 실패했습니다. 다시 시도해주세요.');
+        const errorMessage = error.response?.data?.error || '알 수 없는 오류가 발생했습니다.';
+        alert(`장바구니 추가 실패: ${errorMessage}`);
       }
     } finally {
       setIsLoading(false);

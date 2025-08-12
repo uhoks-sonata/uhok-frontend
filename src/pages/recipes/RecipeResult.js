@@ -201,7 +201,9 @@ const RecipeResult = () => {
                   </div>
                   
 
-                  <p className="recipe-description">{recipeObj.cooking_introduction || ''}</p>
+                  <p className="recipe-description" title={recipeObj.cooking_introduction || ''}>
+                    {recipeObj.cooking_introduction || ''}
+                  </p>
                   <div className="recipe-details">
                     <span className="serving">{recipeObj.number_of_serving}</span>
                   </div>
