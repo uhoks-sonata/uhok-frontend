@@ -176,42 +176,58 @@
 /* 별점 섹션 */
 .rating-section {
   margin-bottom: 32px;
+  border-top: 1px solid #e9ecef;  /* 상단에 얇은 회색 경계선 추가 */
+  padding-top: 8px;               /* 경계선 아래에 여백 추가 */
+}
+
+/* 별점 표시와 분포를 담는 컨테이너 */
+.rating-container {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  margin-bottom: 24px;
 }
 
 .rating-display {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 24px;
+  justify-content: center;
+  gap: 5px;
+  margin-bottom: 0;
+  flex: 0 0 auto;
 }
 
 .rating-star {
-  font-size: 32px;
-  color: #FA5F8C;
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
 }
 
 .rating-score {
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 24px;
+  font-weight: 600;
   color: #000000;
 }
 
 /* 별점 분포 그래프 */
 .rating-distribution {
-  margin-bottom: 24px;
+  margin-bottom: 0;
+  flex: 1;           /* 남은 공간 차지 */
 }
 
 .rating-bar {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 20px;
   margin-bottom: 12px;
+  color: #cecece;
 }
 
 .rating-label {
   min-width: 30px;
   font-size: 14px;
-  color: #666;
+  color: #686868;
+  font-weight: 500;
 }
 
 .rating-bar-bg {
@@ -271,21 +287,27 @@
 
 .ingredients-header {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  align-items: flex-start;
+  gap: 0px;
   margin-bottom: 8px;
 }
 
 .ingredients-info-icon {
-  font-size: 16px;
+  font-size: 13px;
   color: #666;
+  padding-top: 5px;
   cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.ingredients-info-icon:hover {
+  color: #FA5F8C;
 }
 
 .ingredients-description {
   font-size: 13px;
   color: #999;
-  margin: 0 0 16px 0;
+  margin: 6px 0 6px 4px;
   line-height: 1.4;
 }
 
@@ -296,16 +318,15 @@
 }
 
 .ingredient-item {
-  padding: 16px;
-  background-color: #ffffff;
-  border-radius: 8px;
-  border: 1px solid #e9ecef;
+  padding: 1px 0;
 }
 
 .ingredient-info {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
+  width: 100%;
+  gap: 16px; /* 요소들 사이 간격 설정 */
 }
 
 .ingredient-name {
@@ -319,11 +340,31 @@
   color: #666;
 }
 
+/* 재료명과 수량을 묶는 컨테이너 */
+.ingredient-name-amount {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1; /* 남은 공간을 모두 차지 */
+  justify-content: space-between; /* 재료명은 왼쪽, 수량은 오른쪽 */
+}
+
+/* 미보유 재료에 밑줄 추가 */
+.ingredient-item:not(:first-child) .ingredient-name-amount {
+  text-decoration: underline;
+  text-decoration-color: #FA5F8C;
+  text-underline-offset: 2px;
+}
+
 .ingredient-status {
-  padding: 4px 12px;
-  border-radius: 16px;
+  padding: 4px 10px;
+  border-radius: 6px;
   font-size: 12px;
   font-weight: 500;
+  min-width: 80px; /* 4글자에 맞는 너비로 조정 */
+  text-align: center; /* 텍스트 중앙 정렬 */
+  display: inline-block; /* 인라인 블록으로 표시 */
+  box-sizing: border-box; /* 박스 사이즈 계산 방식 통일 */
 }
 
 .ingredient-status.owned {
@@ -344,11 +385,12 @@
 }
 
 /* 섹션 제목 공통 스타일 */
-.section-title {
-  font-size: 18px;
+.recipe-detail-page .section-title {
+  font-size: 20px;
   font-weight: 600;
   color: #000000;
-  margin: 0 0 16px 0;
+  margin: 0 3px 0px 3px;
+  padding: 0; /* 패딩값도 명시적으로 설정 */
 }
 
 /* 콕 쇼핑몰 상품 추천 */
@@ -461,19 +503,39 @@
 
 /* 만드는 방법 섹션 */
 .instructions-section {
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
-.instructions-text {
-  font-size: 14px;
+.instructions-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0px;
+  margin-bottom: 8px;
+}
+
+.instructions-info-icon {
+  font-size: 13px;
   color: #666;
-  margin: 0 0 16px 0;
-  line-height: 1.5;
+  padding-top: 5px;
+  cursor: pointer;
+  transition: color 0.2s ease;
 }
 
-.instructions-btn {
+.instructions-info-icon:hover {
+  color: #FA5F8C;
+}
+
+.instructions-description {
+  font-size: 13px;
+  color: #999;
+  margin: 6px 0 6px 4px;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.instruction-main-btn {
   width: 100%;
-  padding: 16px;
+  padding: 12px 16px;
   background-color: #000000;
   color: #ffffff;
   border: none;
@@ -482,10 +544,68 @@
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  margin-top: 8px;
 }
 
-.instructions-btn:hover {
+.instruction-main-btn:hover {
   background-color: #333333;
+}
+
+.instructions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.instruction-item {
+  padding: 1px 0;
+}
+
+.instruction-info {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  gap: 16px;
+}
+
+.instruction-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #000000;
+}
+
+.instruction-amount {
+  font-size: 14px;
+  color: #666;
+}
+
+.instruction-name-amount {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  justify-content: space-between;
+}
+
+.instruction-btn {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  min-width: 80px;
+  text-align: center;
+  display: inline-block;
+  box-sizing: border-box;
+  background-color: #FA5F8C;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.instruction-btn:hover {
+  background-color: #e04a7a;
 }
 
 /* 모바일 반응형 */

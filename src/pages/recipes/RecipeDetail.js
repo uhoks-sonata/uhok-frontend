@@ -17,6 +17,8 @@ const RecipeDetail = () => {
   const [kokProducts, setKokProducts] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showDescription, setShowDescription] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(false);
 
   // 레시피 상세 정보 조회
   useEffect(() => {
@@ -166,81 +168,80 @@ const RecipeDetail = () => {
         <div className="ingredients-section">
           <div className="ingredients-header">
             <h3 className="section-title">재료</h3>
-            <span className="ingredients-info-icon">ⓘ</span>
+            <span 
+              className="ingredients-info-icon" 
+              onClick={() => setShowDescription(!showDescription)}
+              style={{ cursor: 'pointer' }}
+            >
+              ⓘ
+            </span>
+            {showDescription && (
+              <p className="ingredients-description">장바구니에 없는 재료는 관련 상품을 추천해드려요</p>
+            )}
           </div>
-          <p className="ingredients-description">장바구니에 없는 재료는 관련 상품을 추천해드려요</p>
           <div className="ingredients-list">
-            {recipe.materials?.map((material, index) => (
-              <div key={index} className="ingredient-item">
-                <div className="ingredient-info">
-                  <span className="ingredient-name">{material.material_name}</span>
-                  <span className="ingredient-amount">
-                    {material.measure_amount} {material.measure_unit}
-                  </span>
-                  <span className={`ingredient-status ${index === 0 ? 'owned' : 'not-owned'}`}>
-                    {index === 0 ? '보유' : '미보유'}
-                  </span>
+            {recipe.materials
+              ?.sort((a, b) => {
+                // 보유한 재료(index === 0)를 상단으로, 미보유 재료를 하단으로 정렬
+                const aIndex = recipe.materials.indexOf(a);
+                const bIndex = recipe.materials.indexOf(b);
+                if (aIndex === 0) return -1; // 첫 번째 재료(보유)는 항상 위로
+                if (bIndex === 0) return 1;  // 첫 번째 재료(보유)는 항상 위로
+                return aIndex - bIndex; // 나머지는 원래 순서 유지
+              })
+              .map((material, index) => (
+                <div key={index} className="ingredient-item">
+                  <div className="ingredient-info">
+                    <div className="ingredient-name-amount">
+                      <span className="ingredient-name">{material.material_name}</span>
+                      <span className="ingredient-amount">
+                        {material.measure_amount} {material.measure_unit}
+                      </span>
+                    </div>
+                    <span className={`ingredient-status ${recipe.materials.indexOf(material) === 0 ? 'owned' : 'not-owned'}`}>
+                      {recipe.materials.indexOf(material) === 0 ? '보유' : '미보유'}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
         </div>
 
         {/* 구분선 */}
         <div className="section-divider"></div>
 
-        {/* 콕 쇼핑몰 상품 추천 */}
-        <div className="kok-recommendation-section">
-          <h3 className="section-title">콕과 홈쇼핑에서는 이런 상품을 구매하실 수 있어요!</h3>
-          <div className="kok-products-carousel">
-            {recipe.materials?.slice(0, 4).map((material, index) => {
-              const products = kokProducts[material.material_name] || [];
-              if (products.length === 0) return null;
-              
-              return products.slice(0, 1).map((product) => (
-                <div key={`${material.material_name}-${index}`} className="kok-product-card">
-                  <div className="product-image">
-                    <img src={product.kok_thumbnail || fallbackImg} alt={product.kok_product_name} />
-                  </div>
-                  <div className="product-info">
-                    <p className="product-name">{product.kok_product_name}</p>
-                    <div className="product-meta">
-                      <span className="discount-rate">{product.kok_discount_rate}%</span>
-                      <span className="product-price">{product.kok_discounted_price?.toLocaleString()}원</span>
-                    </div>
-                    <div className="product-rating">
-                      <span className="stars">★{product.kok_review_score}</span>
-                      <span className="review-count">({product.kok_review_cnt})</span>
-                    </div>
-                    {product.kok_store_name && (
-                      <span className="store-name">{product.kok_store_name}</span>
-                    )}
-                  </div>
-                </div>
-              ));
-            })}
-          </div>
-        </div>
+
 
         {/* 만드는 방법 섹션 */}
         <div className="instructions-section">
-          <h3 className="section-title">만드는 방법</h3>
-          <p className="instructions-text">만드는 방법은 '만개의 레시피'에서 확인할 수 있어요</p>
-          <button className="instructions-btn" onClick={handleGoToExternalRecipe}>
-            만드는 방법 보러 가기
+          <div className="instructions-header">
+            <h3 className="section-title">만드는 방법</h3>
+            <span 
+              className="instructions-info-icon"
+              onClick={() => setShowInstructions(!showInstructions)}
+            >
+              ⓘ
+            </span>
+            {showInstructions && (
+              <span className="instructions-description">만드는 방법은 '만개의 레시피'에서 확인할 수 있어요</span>
+            )}
+          </div>
+          <button className="instruction-main-btn" onClick={handleGoToExternalRecipe}>
+            만드는 방법 보러가기
           </button>
         </div>
 
         {/* 별점 섹션 */}
         <div className="rating-section">
           <h3 className="section-title">별점</h3>
-          <div className="rating-display">
-            <span className="rating-star">⭐</span>
-            <span className="rating-score">{rating?.rating || 4.4}</span>
-          </div>
-          
-          {/* 별점 분포 그래프 */}
-          <div className="rating-distribution">
+          <div className="rating-container">
+            <div className="rating-display">
+              <img className="rating-star" src={require('../../assets/rating_start.png')} alt="별점" />
+              <span className="rating-score">{rating?.rating || 4.4}</span>
+            </div>
+            
+            {/* 별점 분포 그래프 */}
+            <div className="rating-distribution">
             <div className="rating-bar">
               <span className="rating-label">5점</span>
               <div className="rating-bar-bg">
@@ -259,6 +260,19 @@ const RecipeDetail = () => {
                 <div className="rating-bar-fill" style={{width: '0%'}}></div>
               </div>
             </div>
+            <div className="rating-bar">
+              <span className="rating-label">2점</span>
+              <div className="rating-bar-bg">
+                <div className="rating-bar-fill" style={{width: '0%'}}></div>
+              </div>
+            </div>
+            <div className="rating-bar">
+              <span className="rating-label">1점</span>
+              <div className="rating-bar-bg">
+                <div className="rating-bar-fill" style={{width: '0%'}}></div>
+              </div>
+            </div>
+          </div>
           </div>
 
           {/* 내 별점 입력 */}

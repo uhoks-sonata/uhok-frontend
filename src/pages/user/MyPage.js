@@ -206,16 +206,6 @@ const MyPage = () => {
     try {
       console.log('주문 내역 클릭');
       
-      // 활동 로그 기록 (실패해도 무시)
-      try {
-        await api.post('/api/user/activity-log', {
-          action: 'view_order_history',
-          timestamp: new Date().toISOString()
-        });
-      } catch (err) {
-        console.log('활동 로그 기록 실패 (무시됨):', err.message);
-      }
-      
       // 주문 내역 페이지로 이동합니다
       window.location.href = '/orderlist';
     } catch (error) {
