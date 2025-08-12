@@ -245,14 +245,24 @@
   display: flex;
   align-items: center;
   background-color: #ffffff;
-  border-radius: 20px;
-  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 30px;
+  padding: 8px 16px;
   gap: 6px;
+  transition: all 0.2s ease;
+}
+
+/* X 버튼에 마우스를 올렸을 때 태그 전체에 효과 적용 */
+.ingredient-tag.x-button-hover {
+  background-color: #e8e8e8;
+  border-color: #d0d0d0;
+  transform: scale(1.02);
 }
 
 .ingredient-name {
-  font-size: 14px;
-  color: #000000;
+  font-size: 13px;
+  font-weight: 400;
+  color: #666;
 }
 
 .remove-ingredient-btn {
@@ -267,12 +277,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
+  border-radius: 0;
   transition: background-color 0.2s ease;
+  align-self: flex-start;
+  margin-top: -2px;
 }
 
 .remove-ingredient-btn:hover {
-  background-color: #ffffff;
+  /* X 버튼 자체의 호버 효과 제거 */
+  background-color: transparent;
+  box-shadow: none;
 }
 
 .input-field-container {
@@ -325,10 +339,6 @@
 .quantity-input input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
-}
-
-.quantity-input input[type="number"] {
-  -moz-appearance: textfield; /* Firefox */
 }
 
 .unit-buttons {
@@ -387,7 +397,7 @@
 /* 레시피 추천 받기 버튼 */
 .recipe-recommendation-section {
   margin-top: 32px;
-  padding: 0 20px;
+  padding: 0;
   opacity: 0;
   transform: translateY(20px);
   transition: all 0.5s ease;

@@ -13,6 +13,14 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative; /* UpBtn 위치 기준 */
+}
+
+/* UpBtn 위치 관리 */
+.kok-content .up-btn {
+  position: absolute;
+  bottom: 40px;
+  right: 20px;
 }
 
 .loading {
