@@ -13,10 +13,9 @@
 
 /* UpBtn 위치 관리 */
 .kok-product-detail-page .up-btn {
-  position: fixed; /* 뷰포트 기준으로 고정 */
-  bottom: 100px;
-  right: 260px;
-  z-index: 1000; /* 다른 요소들 위에 표시 */
+  position: absolute;
+  bottom: 40px;
+  right: 20px;
 }
 
 /* 찜 버튼 애니메이션 */
@@ -539,6 +538,7 @@
   display: flex; /* flexbox 사용 */
   flex-direction: column; /* 세로 배치 */
   align-items: center; /* 가로 중앙 정렬 */
+  max-height: calc(100vh - 200px); /* 스크롤 가능하도록 최대 높이 설정 */
 }
 
 /* 반응형 디자인 */
@@ -571,6 +571,7 @@
   .info-value {
     font-size: 13px;
   }
+  
 }
 
 /* 스크롤바 스타일 - 더 명확하게 표시 */

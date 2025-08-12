@@ -10,7 +10,7 @@ const UpBtn = () => {
     // window 스크롤 확인
     const windowScrollY = window.pageYOffset;
     
-    // 컨테이너 스크롤 확인 (kok-product-list-content)
+    // 컨테이너 스크롤 확인 (여러 컨테이너)
     let containerScrollTop = 0;
     if (containerRef.current) {
       containerScrollTop = containerRef.current.scrollTop;
@@ -23,7 +23,9 @@ const UpBtn = () => {
       windowScrollY,
       containerScrollTop,
       shouldShow,
-      isVisible
+      isVisible,
+      containerFound: !!containerRef.current,
+      containerType: containerRef.current ? containerRef.current.className : 'none'
     });
     
     if (shouldShow) {
