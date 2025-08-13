@@ -73,6 +73,30 @@ const Cart = () => {
       if (response.data) {
         console.log('찜 토글 성공! 하트 아이콘 상태만 변경합니다.');
         
+        // 애니메이션 효과 추가
+        const heartButton = document.querySelector(`[data-product-id="${productId}"]`);
+        if (heartButton) {
+          // 기존 애니메이션 클래스 제거
+          heartButton.classList.remove('liked', 'unliked');
+          
+          // 현재 찜 상태 확인
+          const isCurrentlyLiked = likedProducts.has(productId);
+          
+          // 애니메이션 클래스 추가
+          if (isCurrentlyLiked) {
+            // 찜 해제 애니메이션
+            heartButton.classList.add('unliked');
+          } else {
+            // 찜 추가 애니메이션
+            heartButton.classList.add('liked');
+          }
+          
+          // 애니메이션 완료 후 클래스 제거
+          setTimeout(() => {
+            heartButton.classList.remove('liked', 'unliked');
+          }, isCurrentlyLiked ? 400 : 600);
+        }
+        
         // 하트 아이콘 상태만 토글 (즉시 피드백)
         setLikedProducts(prev => {
           const newSet = new Set(prev);
@@ -87,15 +111,6 @@ const Cart = () => {
           }
           return newSet;
         });
-        
-        // 애니메이션 효과 추가
-        const heartButton = document.querySelector(`[data-product-id="${productId}"]`);
-        if (heartButton) {
-          heartButton.style.transform = 'scale(1.2)';
-          setTimeout(() => {
-            heartButton.style.transform = 'scale(1)';
-          }, 150);
-        }
       }
     } catch (error) {
       console.error('찜 토글 실패:', error);

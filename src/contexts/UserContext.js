@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { logApi } from '../api/logApi';
 
 // 사용자 Context 생성
 const UserContext = createContext();
@@ -80,7 +81,7 @@ export const UserProvider = ({ children }) => {
   }, []);
 
   // 로그인 함수
-  const login = (userData) => {
+  const login = async (userData) => {
     console.log('UserContext - 로그인 함수 호출:', userData);
     
     // 토큰을 로컬 스토리지에 저장
@@ -99,10 +100,44 @@ export const UserProvider = ({ children }) => {
       email: userData.email,
       isLoggedIn: true
     });
+
+    // 로그인 이벤트 로그 기록 (API 명세서에 맞춘 처리)
+    try {
+      if (userData.user_id) {
+        await logApi.createUserLog({
+          user_id: userData.user_id,
+          event_type: 'USER_LOGIN',
+          event_data: {
+            email: userData.email,
+            login_time: new Date().toISOString()
+          }
+        });
+        console.log('✅ 로그인 이벤트 로그 기록 완료');
+      }
+    } catch (error) {
+      console.error('❌ 로그인 이벤트 로그 기록 실패:', error);
+    }
   };
 
   // 로그아웃 함수
-  const logout = () => {
+  const logout = async () => {
+    // 로그아웃 이벤트 로그 기록 (API 명세서에 맞춘 처리)
+    try {
+      if (user && user.user_id) {
+        await logApi.createUserLog({
+          user_id: user.user_id,
+          event_type: 'USER_LOGOUT',
+          event_data: {
+            email: user.email,
+            logout_time: new Date().toISOString()
+          }
+        });
+        console.log('✅ 로그아웃 이벤트 로그 기록 완료');
+      }
+    } catch (error) {
+      console.error('❌ 로그아웃 이벤트 로그 기록 실패:', error);
+    }
+
     localStorage.removeItem('access_token');
     localStorage.removeItem('token_type');
     setUser(null);

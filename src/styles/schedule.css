@@ -319,27 +319,55 @@
 
 /* 위시리스트 버튼 */
 .wishlist-btn {
-  background: #f5f5f5;
-  border: 1px solid #ddd;
+  background: none;
+  border: none;
   color: #666;
   padding: 8px 12px;
   border-radius: 6px;
   font-size: 12px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   gap: 4px;
+  position: relative;
 }
 
 .wishlist-btn:hover {
-  background: #e5e5e5;
+  background: none;
+}
+
+.wishlist-btn:active {
+  transform: scale(0.95);
 }
 
 .wishlist-btn.active {
   background: #FF3B30;
   color: white;
   border-color: #FF3B30;
+}
+
+/* 찜 버튼 애니메이션 효과 */
+.wishlist-btn.liked {
+  animation: heartBeat 0.6s ease-in-out;
+}
+
+.wishlist-btn.unliked {
+  animation: heartShrink 0.6s ease-in-out;
+}
+
+/* 하트 비트 애니메이션 */
+@keyframes heartBeat {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+/* 하트 축소 애니메이션 */
+@keyframes heartShrink {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.8); }
+  100% { transform: scale(1); }
 }
 
 /* 반응형 디자인 */

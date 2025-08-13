@@ -389,17 +389,62 @@
   cursor: pointer;
   padding: 4px;
   border-radius: 50%;
-  transition: background-color 0.2s ease;
+  transition: all 0.3s ease;
+  position: relative;
 }
 
-.wishlist-btn:hover {
-  background-color: #ffffff;
+
+
+.wishlist-btn:active {
+  transform: scale(0.95);
 }
 
 .wishlist-btn img {
   width: 20px;
   height: 20px;
+  transition: all 0.3s ease;
 }
+
+/* 찜 버튼 애니메이션 효과 */
+.wishlist-btn.liked img {
+  animation: heartBeat 0.6s ease-in-out;
+}
+
+         .wishlist-btn.unliked img {
+           animation: heartShrink 0.6s ease-in-out;
+         }
+
+@keyframes heartBeat {
+  0% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.3);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  75% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes heartShrink {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.8);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+
 
 /* 레시피 추천 섹션 */
 .recipe-recommendation-section {

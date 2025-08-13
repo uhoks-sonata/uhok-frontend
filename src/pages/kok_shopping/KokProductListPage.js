@@ -288,6 +288,21 @@ const KokProductListPage = () => {
 
   const handleKokWishlistClick = (productId, event) => {
     event.stopPropagation();
+    
+    // 애니메이션 클래스 추가
+    const heartIcon = event.currentTarget;
+    if (heartIcon) {
+      if (kokWishlistedProducts.has(productId)) {
+        // 찜 해제 애니메이션
+        heartIcon.classList.add('unliked');
+        setTimeout(() => heartIcon.classList.remove('unliked'), 400);
+      } else {
+        // 찜 추가 애니메이션
+        heartIcon.classList.add('liked');
+        setTimeout(() => heartIcon.classList.remove('liked'), 600);
+      }
+    }
+    
     setKokWishlistedProducts(prev => {
       const newSet = new Set(prev);
       if (newSet.has(productId)) {
@@ -297,15 +312,6 @@ const KokProductListPage = () => {
       }
       return newSet;
     });
-    
-    // 애니메이션 효과 추가
-    const heartIcon = event.currentTarget;
-    if (heartIcon) {
-      heartIcon.style.transform = 'scale(1.2)';
-      setTimeout(() => {
-        heartIcon.style.transform = 'scale(1)';
-      }, 150);
-    }
   };
 
   return (

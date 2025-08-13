@@ -9,8 +9,8 @@ import Loading from '../../components/Loading';
 // 마이페이지 스타일을 가져옵니다
 import '../../styles/mypage.css';
 import '../../styles/logout.css';
-// API 설정을 가져옵니다
-import api from '../api';
+// userApi import
+import { userApi } from '../../api/userApi';
 // 사용자 Context import
 import { useUser } from '../../contexts/UserContext';
 // 기본 사용자 아이콘 이미지를 가져옵니다
@@ -119,54 +119,47 @@ const MyPage = () => {
         let orderCount = 0;
         let recipeData = { purchasedRecipe: null, similarRecipes: [] };
         
-        // 사용자 정보 조회 (개발용 토큰으로 인한 서명 검증 실패 방지)
+        // 사용자 정보 조회 (API 명세서에 맞춘 처리)
         try {
           console.log('사용자 정보 조회 중...');
-          const userResponse = await api.get('/api/user/info');
-          userData = userResponse.data;
+          const userResponse = await userApi.getUserInfo();
+          userData = userResponse;
           console.log('사용자 정보 조회 성공:', userData);
         } catch (err) {
-          console.error('사용자 정보 조회 실패 (개발용 토큰으로 인한 서명 검증 실패):', err);
-          // 개발용 토큰으로 인한 401 에러인 경우 임시 데이터 사용
-          if (err.response?.status === 401) {
-            console.log('개발용 토큰으로 인한 인증 실패, 임시 데이터 사용');
-            setMockData();
-            setLoading(false);
-            return;
-          }
-          // 다른 에러인 경우에도 임시 데이터 사용
+          console.error('사용자 정보 조회 실패:', err);
+          // 에러 발생 시 임시 데이터 사용
           setMockData();
           setLoading(false);
           return;
         }
         
-        // 최근 주문 조회
+        // 최근 주문 조회 (현재는 임시 데이터 사용)
         try {
           console.log('최근 주문 조회 중...');
-          const ordersResponse = await api.get('/api/orders/recent?days=7');
-          ordersData = ordersResponse.data || { orders: [] };
+          // TODO: 주문 API 구현 시 실제 API 호출로 교체
+          ordersData = { orders: [] };
           console.log('최근 주문 조회 성공:', ordersData);
         } catch (err) {
-          console.error('최근 주문 조회 실패 (개발용 토큰으로 인한 서명 검증 실패):', err);
+          console.error('최근 주문 조회 실패:', err);
           ordersData = { orders: [] };
         }
         
-        // 주문 개수 조회
+        // 주문 개수 조회 (현재는 임시 데이터 사용)
         try {
           console.log('주문 개수 조회 중...');
-          const orderCountResponse = await api.get('/api/orders/count');
-          orderCount = orderCountResponse.data?.order_count || 0;
+          // TODO: 주문 API 구현 시 실제 API 호출로 교체
+          orderCount = 0;
           console.log('주문 개수 조회 성공:', orderCount);
         } catch (err) {
-          console.error('주문 개수 조회 실패 (개발용 토큰으로 인한 서명 검증 실패):', err);
+          console.error('주문 개수 조회 실패:', err);
           orderCount = 0;
         }
         
-        // 레시피 정보 조회
+        // 레시피 정보 조회 (현재는 임시 데이터 사용)
         try {
           console.log('레시피 정보 조회 중...');
-          const recipeResponse = await api.get('/api/recipes/user');
-          recipeData = recipeResponse.data || { purchasedRecipe: null, similarRecipes: [] };
+          // TODO: 레시피 API 구현 시 실제 API 호출로 교체
+          recipeData = { purchasedRecipe: null, similarRecipes: [] };
           console.log('레시피 정보 조회 성공:', recipeData);
         } catch (err) {
           console.error('레시피 정보 조회 실패:', err);
@@ -220,18 +213,8 @@ const MyPage = () => {
     try {
       console.log('레시피 클릭:', recipeId);
       
-      // 레시피 상세 정보 조회 (실패해도 무시)
-      try {
-        const recipeResponse = await api.get(`/api/recipes/${recipeId}`);
-        const recipeDetail = recipeResponse.data;
-        if (recipeDetail) {
-          console.log('레시피 상세 정보:', recipeDetail);
-        } else {
-          console.log('레시피 상세 정보를 가져올 수 없습니다.');
-        }
-      } catch (err) {
-        console.error('레시피 상세 정보 조회 실패:', err);
-      }
+      // TODO: 레시피 상세 정보 조회 API 구현 시 실제 API 호출로 교체
+      console.log('레시피 상세 정보 조회 기능은 추후 구현 예정입니다.');
       
       // 레시피 상세 페이지로 이동하는 기능을 구현할 예정입니다
       // window.location.href = `/recipe-detail/${recipeId}`;
@@ -265,18 +248,12 @@ const MyPage = () => {
         return;
       }
 
-      // 백엔드 로그아웃 API 호출
-      const response = await api.post('/api/user/logout', {}, {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`
-        }
-      });
+      // 백엔드 로그아웃 API 호출 (API 명세서에 맞춘 처리)
+      const response = await userApi.logout();
 
-      console.log('로그아웃 API 응답:', response.data);
+      console.log('로그아웃 API 응답:', response);
       
-      // 로컬 스토리지에서 토큰 제거
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
+      // 로컬 스토리지에서 토큰 제거 (userApi에서 이미 처리됨)
       
       // 성공 메시지 표시 (선택사항)
       alert('로그아웃이 완료되었습니다.');
@@ -345,6 +322,13 @@ const MyPage = () => {
               <div className="user-name">{userData.username} 님</div>
               {/* 유저 이메일을 표시합니다 (API에서 받아옴) */}
               <div className="user-email">{userData.email}</div>
+            </div>
+            
+            {/* 로그아웃 버튼 */}
+            <div className="logout-container">
+              <button className="logout-button" onClick={handleLogout}>
+                로그아웃
+              </button>
             </div>
           </div>
           
@@ -537,12 +521,7 @@ const MyPage = () => {
           </p>
         </div>
 
-        {/* 로그아웃 섹션 - legal-disclaimer 바로 아래 */}
-        <div className="logout-section">
-          <button className="logout-button" onClick={handleLogout}>
-            로그아웃
-          </button>
-        </div>
+
       </div>
 
       {/* 하단 네비게이션 */}
