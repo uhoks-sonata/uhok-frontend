@@ -166,12 +166,12 @@
 
 .store-name {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   color: #333;
 }
 
 .free-shipping {
-  font-size: 12px;
+  font-size: 13px;
   color: #FA5F8C;
   font-weight: 500;
 }
@@ -297,7 +297,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 8px;
+  margin-top: 0px;
 }
 
 .discounted-price {

@@ -2,6 +2,83 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## 콕 결제 확인 API
+
+### 개요
+이 프로젝트는 콕 쇼핑몰의 결제 확인 기능을 제공하는 React 애플리케이션입니다.
+
+### 주요 기능
+- **단건 결제 확인**: 개별 콕 주문의 결제 상태를 PAYMENT_COMPLETED로 변경
+- **주문 단위 결제 확인**: 특정 주문에 속한 모든 콕 주문의 결제 상태를 일괄 변경
+- **비동기 처리**: 모든 API 호출은 비동기 방식으로 처리되어 사용자 경험 향상
+- **에러 처리**: 다양한 HTTP 상태 코드에 대한 적절한 에러 처리 및 사용자 피드백
+
+### API 엔드포인트
+
+#### 1. 콕 결제 확인 (단건)
+- **HTTP 메서드**: POST
+- **엔드포인트**: `/api/orders/kok/{kok_order_id}/payment/confirm`
+- **헤더**: `Authorization: Bearer {access_token}`
+- **Path Parameter**: `kok_order_id`
+- **응답 코드**: 200
+- **설명**: 현재 상태가 PAYMENT_REQUESTED인 해당 kok_order_id의 주문을 PAYMENT_COMPLETED로 변경
+
+#### 2. 결제 확인 (주문 단위)
+- **HTTP 메서드**: POST
+- **엔드포인트**: `/api/orders/kok/order-unit/{order_id}/payment/confirm`
+- **헤더**: `Authorization: Bearer {access_token}`
+- **Path Parameter**: `order_id`
+- **응답 코드**: 200
+- **설명**: 주어진 order_id에 속한 모든 KokOrder를 PAYMENT_COMPLETED로 변경
+
+### 사용법
+
+#### API 호출 예시
+```javascript
+import { kokApi } from './api/kokApi';
+
+// 단건 결제 확인
+const result = await kokApi.confirmKokPayment('12345');
+
+// 주문 단위 결제 확인
+const result = await kokApi.confirmOrderUnitPayment('ORD-001');
+```
+
+#### 응답 형식
+```javascript
+// 성공 시
+{
+  success: true,
+  message: "결제 확인이 완료되었습니다.",
+  data: "결제 확인이 완료되었습니다."
+}
+
+// 실패 시
+{
+  success: false,
+  message: "에러 메시지",
+  error: "ERROR_CODE"
+}
+```
+
+### 컴포넌트
+
+#### KokPayment.js
+- 메인 결제 페이지
+- 결제 방법 선택 및 카드 정보 입력
+- 결제 처리 및 결제 확인 API 연동
+- 실시간 결제 상태 표시
+
+#### KokPaymentTest.js
+- API 테스트용 컴포넌트
+- 단건/주문 단위 결제 확인 테스트
+- API 엔드포인트 정보 표시
+
+### 스타일링
+- `kok_payment.css`: 결제 페이지 및 테스트 컴포넌트 스타일
+- 반응형 디자인 지원
+- 결제 상태별 시각적 피드백
+
 ## Available Scripts
 
 In the project directory, you can run:

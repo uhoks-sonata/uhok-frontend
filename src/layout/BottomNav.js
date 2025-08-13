@@ -1,7 +1,7 @@
 // React 라이브러리 import
 import React from "react";
-// React Router의 Link와 useLocation 훅 import
-import { Link, useLocation } from "react-router-dom";
+// React Router의 Link와 useLocation, useNavigate 훅 import
+import { Link, useLocation, useNavigate } from "react-router-dom";
 // 하단 네비게이션 스타일 CSS 파일 import
 import "../styles/bottom_nav.css";
 // 하단 네비게이션 배경 이미지 import
@@ -27,9 +27,66 @@ import bottomIconMypageBlack from "../assets/bottom_icon_mypage_black.png";
 
 // ===== 하단 네비게이션 컴포넌트 =====
 // 앱 하단에 위치하는 메인 네비게이션 바 컴포넌트
-const BottomNav = () => {
+const BottomNav = ({ selectedItemsCount = 0, handlePayment = null, productInfo = null, cartItems = [], selectedItems = new Set() }) => {
   // 현재 페이지의 경로 정보를 가져오는 훅
   const location = useLocation();
+  const navigate = useNavigate();
+
+  // 공통 함수: 결제 페이지로 이동하는 로직 (Cart.js와 동일)
+  const navigateToPayment = (orderType = 'ORDER') => {
+    if (selectedItems.size === 0) {
+      alert('주문할 상품을 선택해주세요.');
+      return;
+    }
+
+    try {
+      // 선택된 상품들의 정보 수집
+      const selectedCartItems = cartItems.filter(item => selectedItems.has(item.kok_cart_id));
+      
+      console.log(`🚀 ${orderType === 'ORDER' ? '주문하기' : '테스트'} - 선택된 상품들:`, selectedCartItems);
+      console.log(`🚀 ${orderType === 'ORDER' ? '주문하기' : '테스트'} - selectedItems.size:`, selectedItems.size);
+      console.log(`🚀 ${orderType === 'ORDER' ? '주문하기' : '테스트'} - cartItems.length:`, cartItems.length);
+      
+      // 결제 페이지로 전달할 데이터 구성
+      const navigationState = { 
+        fromCart: true,
+        // 할인 정보 전달
+        discountPrice: selectedCartItems.reduce((total, item) => total + (item.kok_discounted_price * item.kok_quantity), 0),
+        originalPrice: selectedCartItems.reduce((total, item) => total + (item.kok_product_price * item.kok_quantity), 0),
+        productName: selectedCartItems.length === 1 ? selectedCartItems[0].kok_product_name : `${selectedCartItems.length}개 상품`,
+        productImage: selectedCartItems.length === 1 ? selectedCartItems[0].kok_thumbnail : null,
+        cartItems: selectedCartItems,
+        // 주문 ID는 임시로 생성
+        orderId: `${orderType}-${Date.now()}`
+      };
+      
+      console.log(`🚀 ${orderType === 'ORDER' ? '주문하기' : '테스트'} - 결제페이지로 이동 - 전달할 state:`, navigationState);
+      console.log(`📍 ${orderType === 'ORDER' ? '주문하기' : '테스트'} - navigate 함수 호출 직전`);
+      console.log(`📍 ${orderType === 'ORDER' ? '주문하기' : '테스트'} - navigationState.fromCart:`, navigationState.fromCart);
+      console.log(`📍 ${orderType === 'ORDER' ? '주문하기' : '테스트'} - navigationState.cartItems.length:`, navigationState.cartItems.length);
+      
+      // 결제 페이지로 이동
+      const navigateResult = navigate('/kok/payment', { 
+        state: navigationState,
+        replace: false // 히스토리에 기록 남김
+      });
+      
+      console.log(`✅ ${orderType === 'ORDER' ? '주문하기' : '테스트'} - navigate 함수 호출 완료`);
+      console.log(`✅ ${orderType === 'ORDER' ? '주문하기' : '테스트'} - navigate 결과:`, navigateResult);
+      
+      // 추가 확인: 실제로 페이지가 이동되었는지 확인
+      setTimeout(() => {
+        console.log(`🔍 ${orderType === 'ORDER' ? '주문하기' : '테스트'} - 페이지 이동 후 확인`);
+        console.log(`🔍 ${orderType === 'ORDER' ? '주문하기' : '테스트'} - 현재 URL:`, window.location.href);
+        console.log(`🔍 ${orderType === 'ORDER' ? '주문하기' : '테스트'} - history.state:`, window.history.state);
+      }, 100);
+      
+    } catch (error) {
+      console.error(`❌ ${orderType === 'ORDER' ? '주문하기' : '테스트'} - 처리 실패:`, error);
+      console.error(`❌ ${orderType === 'ORDER' ? '주문하기' : '테스트'} - 에러 상세:`, error.message, error.stack);
+      alert(`${orderType === 'ORDER' ? '주문' : '테스트'} 처리에 실패했습니다. 다시 시도해주세요.`);
+    }
+  };
 
   // 네비게이션 클릭 로그를 기록하는 비동기 함수
   const logNavigationClick = async (path, label) => {
@@ -64,6 +121,11 @@ const BottomNav = () => {
       return '결제하기';
     }
     return '주문하기';
+  };
+
+  // 주문/결제 버튼 비활성화 여부 결정 (장바구니에서 선택된 상품이 없을 때)
+  const isOrderButtonDisabled = () => {
+    return location.pathname === '/cart' && selectedItemsCount === 0;
   };
 
   // 네비게이션 아이템 배열 정의
@@ -104,16 +166,40 @@ const BottomNav = () => {
         {shouldShowOrderButton() ? (
           <div className="order-button-container">
             <button 
-              className="order-button"
+              className={`order-button ${isOrderButtonDisabled() ? 'disabled' : ''}`}
               onClick={() => {
                 if (location.pathname.startsWith('/kok/payment')) {
-                  // 결제 페이지에서는 현재 페이지 유지 (결제 처리)
-                  console.log('결제 처리 중...');
+                  // 결제 페이지에서는 handlePayment 함수 호출
+                  if (handlePayment) {
+                    console.log('결제하기 버튼 클릭 - handlePayment 함수 호출');
+                    handlePayment();
+                  } else {
+                    console.log('결제 처리 중...');
+                  }
                 } else {
                   // 상품 상세 페이지나 장바구니에서는 결제 페이지로 이동
-                  window.location.href = '/kok/payment';
+                  // 제품 정보를 state로 전달
+                                    if (location.pathname.startsWith('/kok/product/')) {
+                    // 상품 상세페이지에서 주문하기 버튼 클릭 시
+                    const productId = location.pathname.split('/').pop();
+                             navigate('/kok/payment', {
+           state: {
+             productId: productId,
+             fromProductDetail: true,
+             discountPrice: productInfo?.discountPrice,
+             originalPrice: productInfo?.originalPrice,
+             discountRate: productInfo?.discountRate,
+             productName: productInfo?.productName,
+             productImage: productInfo?.productImage
+           }
+         });
+                  } else {
+                    // 장바구니에서 주문하기 버튼 클릭 시
+                    navigateToPayment();
+                  }
                 }
               }}
+              disabled={isOrderButtonDisabled()}
             >
               {getOrderButtonText()}
             </button>

@@ -29,8 +29,6 @@ const KokMain = () => {
   // 사용자 정보 가져오기
   const { user, isLoggedIn } = useUser();
 
-
-
   // KOK API에서 할인 특가 상품 데이터를 가져오는 함수
   const fetchKokProducts = async () => {
     try {
@@ -645,6 +643,7 @@ const KokMain = () => {
              </div>
            </div>
          )}
+
           </>
         )}
       </main>

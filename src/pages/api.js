@@ -39,7 +39,11 @@ api.interceptors.request.use(
       '/api/user/login',
       '/api/user/signup',
       '/api/user/signup/email/check',
-      '/log'
+      '/log',
+      '/api/recipes/by-ingredients',
+      '/api/recipes/search',
+      '/api/recipes/kok',
+      '/api/recipes/home-shopping'
     ];
     
     // 현재 요청이 공개 엔드포인트인지 확인

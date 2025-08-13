@@ -239,6 +239,26 @@ body {
   box-shadow: 0 2px 4px rgba(246, 140, 177, 0.3);
 }
 
+/* 비활성화된 주문하기 버튼 스타일 */
+.order-button.disabled {
+  background-color: #cccccc;
+  color: #999999;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.order-button.disabled:hover {
+  background-color: #cccccc;
+  transform: none;
+  box-shadow: none;
+}
+
+.order-button.disabled:active {
+  transform: none;
+  box-shadow: none;
+}
+
 /* ===== 반응형 디자인 ===== */
 @media (max-width: 480px) {
   .bottom-nav {

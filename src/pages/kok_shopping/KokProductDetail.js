@@ -19,7 +19,6 @@ const KokProductDetail = () => {
   const [kokProduct, setKokProduct] = useState(null);
   const [kokActiveTab, setKokActiveTab] = useState('description');
   const [kokLoading, setKokLoading] = useState(true);
-  const [kokSearchQuery, setKokSearchQuery] = useState('');
   const [kokIsWishlisted, setKokIsWishlisted] = useState(false);
   const [kokProductImages, setKokProductImages] = useState([]);
   const [kokReviewStats, setKokReviewStats] = useState(null);
@@ -118,19 +117,7 @@ const KokProductDetail = () => {
     }
   };
 
-  // KOK API에서 상품 상세 데이터를 가져오는 함수
-  const fetchKokProductDetail = async (productId) => {
-    try {
-      console.log(`상품 상세 데이터 API 호출: /api/kok/product/${productId}`);
-      const response = await api.get(`/api/kok/product/${productId}`);
-      console.log('상품 상세 데이터 API 응답:', response.data);
-      return response.data;
-    } catch (err) {
-      console.error('KOK 상품 상세 데이터 로딩 실패:', err);
-      console.log('임시 데이터를 사용합니다.');
-      return null;
-    }
-  };
+
 
   // KOK API에서 상품 전체 상세 정보를 가져오는 함수 (API 명세서 기반)
   const fetchKokProductFullDetail = async (productId) => {
@@ -314,9 +301,7 @@ const KokProductDetail = () => {
     }
   };
 
-  const handleKokSearch = (query) => {
-    console.log('검색 실행:', query);
-  };
+
 
   const handleKokNotificationClick = () => {
     console.log('알림 클릭');
@@ -812,7 +797,16 @@ const KokProductDetail = () => {
         <UpBtn />
       </div>
       
-      <BottomNav />
+             <BottomNav 
+         productInfo={{
+           productId: productId,
+           discountPrice: kokProduct?.discountPrice,
+           originalPrice: kokProduct?.originalPrice,
+           discountRate: kokProduct?.discountRate,
+           productName: kokProduct?.name,
+           productImage: kokProduct?.image
+         }}
+       />
     </div>
   );
 };

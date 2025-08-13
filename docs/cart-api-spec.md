@@ -104,6 +104,48 @@ Authorization: Bearer <access_token>
 }
 ```
 
+## 5. 콕 결제 확인 (단건)
+
+### POST /api/orders/kok/{kok_order_id}/payment/confirm
+현재 상태가 PAYMENT_REQUESTED인 해당 kok_order_id의 주문을 PAYMENT_COMPLETED로 변경한다.
+
+**요청 헤더:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Path Parameter:**
+- `kok_order_id`: 콕 주문 ID
+
+**응답:**
+```json
+"결제 확인이 완료되었습니다."
+```
+
+**상태 코드:**
+- `200 OK`: 성공
+
+## 6. 결제 확인 (주문 단위)
+
+### POST /api/orders/kok/order-unit/{order_id}/payment/confirm
+주어진 order_id에 속한 모든 KokOrder를 PAYMENT_COMPLETED로 변경한다.
+
+**요청 헤더:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Path Parameter:**
+- `order_id`: 주문 ID
+
+**응답:**
+```json
+"주문 단위 결제 확인이 완료되었습니다."
+```
+
+**상태 코드:**
+- `200 OK`: 성공
+
 ## 에러 응답 형식
 
 모든 API에서 에러 발생 시 다음과 같은 형식으로 응답합니다:

@@ -218,53 +218,81 @@ const Cart = () => {
     const selectedIds = Array.from(selectedItems);
     
     try {
-      // 선택된 모든 상품 삭제
-      await Promise.all(selectedIds.map(id => cartApi.removeFromCart(id)));
+      // 새로운 일괄 삭제 API 사용
+      const result = await cartApi.removeSelectedItems(selectedIds);
       
-      // 성공 시 로컬 상태 업데이트
-      setCartItems(prev => prev.filter(item => !selectedIds.includes(item.kok_cart_id)));
-      setSelectedItems(new Set());
+      if (result.success) {
+        // 성공 시 로컬 상태 업데이트
+        setCartItems(prev => prev.filter(item => !selectedIds.includes(item.kok_cart_id)));
+        setSelectedItems(new Set());
+        
+        // 성공 메시지 표시
+        alert(result.message);
+      }
     } catch (error) {
       console.error('선택된 상품 삭제 실패:', error);
-      // 에러 처리 (사용자에게 알림 등)
+      alert('선택된 상품 삭제에 실패했습니다. 다시 시도해주세요.');
     }
   };
 
-  const handleOrder = async () => {
+  // 공통 함수: 결제 페이지로 이동하는 로직
+  const navigateToPayment = (orderType = 'ORDER') => {
     if (selectedItems.size === 0) {
       alert('주문할 상품을 선택해주세요.');
       return;
     }
 
     try {
-      // 선택된 상품들을 API 형식에 맞게 변환
-      const selectedItemsForOrder = Array.from(selectedItems).map(cartId => {
-        const cartItem = cartItems.find(item => item.kok_cart_id === cartId);
-        return {
-          cart_id: cartId,
-          quantity: cartItem.kok_quantity
-        };
+      // 선택된 상품들의 정보 수집
+      const selectedCartItems = cartItems.filter(item => selectedItems.has(item.kok_cart_id));
+      
+      console.log(`🚀 ${orderType === 'ORDER' ? '주문하기' : '테스트'} - 선택된 상품들:`, selectedCartItems);
+      console.log(`🚀 ${orderType === 'ORDER' ? '주문하기' : '테스트'} - selectedItems.size:`, selectedItems.size);
+      console.log(`🚀 ${orderType === 'ORDER' ? '주문하기' : '테스트'} - cartItems.length:`, cartItems.length);
+      
+      // 결제 페이지로 전달할 데이터 구성
+      const navigationState = { 
+        fromCart: true,
+        // 할인 정보 전달
+        discountPrice: selectedCartItems.reduce((total, item) => total + (item.kok_discounted_price * item.kok_quantity), 0),
+        originalPrice: selectedCartItems.reduce((total, item) => total + (item.kok_product_price * item.kok_quantity), 0),
+        productName: selectedCartItems.length === 1 ? selectedCartItems[0].kok_product_name : `${selectedCartItems.length}개 상품`,
+        productImage: selectedCartItems.length === 1 ? selectedCartItems[0].kok_thumbnail : null,
+        cartItems: selectedCartItems,
+        // 주문 ID는 임시로 생성
+        orderId: `${orderType}-${Date.now()}`
+      };
+      
+      console.log(`🚀 ${orderType === 'ORDER' ? '주문하기' : '테스트'} - 결제페이지로 이동 - 전달할 state:`, navigationState);
+      console.log(`📍 ${orderType === 'ORDER' ? '주문하기' : '테스트'} - navigate 함수 호출 직전`);
+      console.log(`📍 ${orderType === 'ORDER' ? '주문하기' : '테스트'} - navigationState.fromCart:`, navigationState.fromCart);
+      console.log(`📍 ${orderType === 'ORDER' ? '주문하기' : '테스트'} - navigationState.cartItems.length:`, navigationState.cartItems.length);
+      
+      // 결제 페이지로 이동
+      const navigateResult = navigate('/kok/payment', { 
+        state: navigationState,
+        replace: false // 히스토리에 기록 남김
       });
-
-      console.log('주문 생성 시작:', selectedItemsForOrder);
       
-      // 주문 생성 API 호출
-      const orderResult = await cartApi.createOrder(selectedItemsForOrder);
+      console.log(`✅ ${orderType === 'ORDER' ? '주문하기' : '테스트'} - navigate 함수 호출 완료`);
+      console.log(`✅ ${orderType === 'ORDER' ? '주문하기' : '테스트'} - navigate 결과:`, navigateResult);
       
-      console.log('주문 생성 성공:', orderResult);
-      
-      // 주문 성공 시 결제 페이지로 이동
-      navigate('/kok/payment', { 
-        state: { 
-          orderData: orderResult,
-          fromCart: true 
-        } 
-      });
+      // 추가 확인: 실제로 페이지가 이동되었는지 확인
+      setTimeout(() => {
+        console.log(`🔍 ${orderType === 'ORDER' ? '주문하기' : '테스트'} - 페이지 이동 후 확인`);
+        console.log(`🔍 ${orderType === 'ORDER' ? '주문하기' : '테스트'} - 현재 URL:`, window.location.href);
+        console.log(`🔍 ${orderType === 'ORDER' ? '주문하기' : '테스트'} - history.state:`, window.history.state);
+      }, 100);
       
     } catch (error) {
-      console.error('주문 생성 실패:', error);
-      alert('주문 생성에 실패했습니다. 다시 시도해주세요.');
+      console.error(`❌ ${orderType === 'ORDER' ? '주문하기' : '테스트'} - 처리 실패:`, error);
+      console.error(`❌ ${orderType === 'ORDER' ? '주문하기' : '테스트'} - 에러 상세:`, error.message, error.stack);
+      alert(`${orderType === 'ORDER' ? '주문' : '테스트'} 처리에 실패했습니다. 다시 시도해주세요.`);
     }
+  };
+
+  const handleOrder = async () => {
+    navigateToPayment('ORDER');
   };
 
   const handleBuyNow = (cartItemId) => {
@@ -347,7 +375,7 @@ const Cart = () => {
         <div className="cart-content">
           <div className="loading">장바구니를 불러오는 중...</div>
         </div>
-        <BottomNav />
+        <BottomNav selectedItemsCount={selectedItems.size} cartItems={cartItems} selectedItems={selectedItems} />
       </div>
     );
   }
@@ -577,7 +605,7 @@ const Cart = () => {
         </div>
       )}
 
-      <BottomNav />
+              <BottomNav selectedItemsCount={selectedItems.size} cartItems={cartItems} selectedItems={selectedItems} />
 
       {/* 수량 선택 모달 */}
       {showQuantityModal && (
