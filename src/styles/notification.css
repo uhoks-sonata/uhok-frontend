@@ -3,7 +3,7 @@
   max-width: 480px;
   margin: 0 auto;
   background-color: #ffffff;
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
 }
@@ -217,7 +217,7 @@
 
 .notification-message {
   font-size: 14px;
-  color: #9d9b9b;
+  color: #999;
   line-height: 1.4;
   margin-bottom: 6px;
   word-break: break-word;
