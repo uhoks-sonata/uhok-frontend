@@ -95,17 +95,11 @@
   margin: 0; /* 마진 제거 */
   width: 189px; /* 217px - 24px = 193px (정보 영역 너비 - 좌우 패딩) */
   height: auto; /* 자동 높이로 변경 */
-<<<<<<< HEAD
   min-height: 34px; /* 최소 높이를 2줄까지 허용하도록 조정 */
   max-height: 34px; /* 최대 높이를 2줄로 제한 */
   display: -webkit-box;
   -webkit-line-clamp: 2; /* 2줄까지 표시 허용 */
   -webkit-box-orient: vertical;
-=======
-  min-height: 34px; /* 한 줄 높이로 조정 */
-  max-height: none; /* 높이 제한 해제 */
-  display: block; /* 블록 요소로 변경 */
->>>>>>> f09f2c273345f0084673368962bcb529d1b1df49
   overflow: hidden;
   text-overflow: ellipsis; /* 넘치는 텍스트는 ...으로 표시 */
   word-break: keep-all; /* 한글 단어 단위로 줄바꿈 */
