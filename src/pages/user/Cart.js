@@ -19,6 +19,8 @@ const Cart = () => {
   const [selectedCartItemId, setSelectedCartItemId] = useState(null);
   const [likedProducts, setLikedProducts] = useState(new Set()); // 찜한 상품 ID들을 저장
   const [isRecipeLoading, setIsRecipeLoading] = useState(false); // 레시피 추천 로딩 상태
+  const [recipeRecommendations, setRecipeRecommendations] = useState([]); // 레시피 추천 데이터
+  const [recipeLoading, setRecipeLoading] = useState(false); // 레시피 API 로딩 상태
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -280,7 +282,48 @@ const Cart = () => {
     // 1.5초 후 RecipeResult 페이지로 이동
     setTimeout(() => {
       setIsRecipeLoading(false);
-      navigate('/recipes/result');
+      
+      // 장바구니 상품들을 기반으로 레시피 추천 데이터 생성
+      const cartIngredients = cartItems.map(item => item.kok_product_name);
+      
+      // RecipeResult 페이지로 이동하면서 필요한 데이터 전달
+      navigate('/recipes/result', {
+        state: {
+          recipes: [
+            {
+              recipe_id: 1,
+              recipe_title: "감자닭볶음탕",
+              cooking_name: "감자닭볶음탕",
+              scrap_count: 128,
+              cooking_case_name: "일반",
+              cooking_category_name: "한식",
+              cooking_introduction: "감자와 닭고기로 만드는 맛있는 볶음탕",
+              number_of_serving: "2인분",
+              thumbnail_url: "",
+              matched_ingredient_count: 2,
+              total_ingredients_count: 8,
+              used_ingredients: cartIngredients.slice(0, 2)
+            },
+            {
+              recipe_id: 2,
+              recipe_title: "김치찌개",
+              cooking_name: "김치찌개",
+              scrap_count: 95,
+              cooking_case_name: "일반",
+              cooking_category_name: "한식",
+              cooking_introduction: "신김치로 만드는 얼큰한 김치찌개",
+              number_of_serving: "2인분",
+              thumbnail_url: "",
+              matched_ingredient_count: 1,
+              total_ingredients_count: 6,
+              used_ingredients: cartIngredients.slice(0, 1)
+            }
+          ],
+          ingredients: cartIngredients,
+          total: 2,
+          page: 1
+        }
+      });
     }, 1500);
   };
 
