@@ -4,6 +4,7 @@ import HeaderNavCart from '../../layout/HeaderNavCart';
 import BottomNav from '../../layout/BottomNav';
 import { cartApi } from '../../api/cartApi';
 import api from '../api';
+import Loading from '../../components/Loading';
 import '../../styles/cart.css';
 import heartIcon from '../../assets/heart_empty.png';
 import heartFilledIcon from '../../assets/heart_filled.png';
@@ -17,6 +18,7 @@ const Cart = () => {
   const [showQuantityModal, setShowQuantityModal] = useState(false);
   const [selectedCartItemId, setSelectedCartItemId] = useState(null);
   const [likedProducts, setLikedProducts] = useState(new Set()); // 찜한 상품 ID들을 저장
+  const [isRecipeLoading, setIsRecipeLoading] = useState(false); // 레시피 추천 로딩 상태
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -272,19 +274,14 @@ const Cart = () => {
     navigate('/kok/payment');
   };
 
-  const handleWishlist = (cartItemId) => {
-    console.log('찜하기 클릭:', cartItemId);
-  };
-
-  const [recipeRecommendations, setRecipeRecommendations] = useState([]);
-  const [recipeLoading, setRecipeLoading] = useState(false);
-
-  const toggleRecipeRecommendation = async () => {
-    if (!showRecipeRecommendation && selectedItems.size > 0) {
-      // 레시피 추천을 처음 열 때 API 호출
-      await loadRecipeRecommendations();
-    }
-    setShowRecipeRecommendation(!showRecipeRecommendation);
+  const toggleRecipeRecommendation = () => {
+    setIsRecipeLoading(true);
+    
+    // 1.5초 후 RecipeResult 페이지로 이동
+    setTimeout(() => {
+      setIsRecipeLoading(false);
+      navigate('/recipes/result');
+    }, 1500);
   };
 
   const loadRecipeRecommendations = async () => {
@@ -346,6 +343,30 @@ const Cart = () => {
         />
         <div className="cart-content">
           <div className="loading">장바구니를 불러오는 중...</div>
+        </div>
+        <BottomNav />
+      </div>
+    );
+  }
+
+  // 레시피 추천 로딩 중일 때 전체 화면 로딩 표시
+  if (isRecipeLoading) {
+    return (
+      <div className="cart-page">
+        <HeaderNavCart 
+          onBackClick={handleBack}
+          onNotificationClick={handleNotificationClick}
+        />
+        <div className="cart-content">
+          <Loading 
+            message="레시피를 추천하고 있어요..." 
+            containerStyle={{ 
+              height: '60vh',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          />
         </div>
         <BottomNav />
       </div>
@@ -489,13 +510,13 @@ const Cart = () => {
             </div>
 
             {/* 레시피 추천 바 */}
-            {cartItems.length >= 2 && (
+            {cartItems.length >= 1 && (
               <div className="recipe-recommendation-section">
                 <button 
                   className="recipe-recommendation-btn"
                   onClick={toggleRecipeRecommendation}
                 >
-                  <span>두 개 이상 담으셨네요! 레시피 추천드려요</span>
+                  <span>상품을 담으셨네요! 레시피 추천드려요</span>
                   <span className="arrow">
                     ▼
                   </span>
