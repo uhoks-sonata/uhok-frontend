@@ -377,6 +377,11 @@
   color: #ffffff;
 }
 
+.ingredient-status.cart {
+  background-color: #FFA500;
+  color: #ffffff;
+}
+
 /* 구분선 */
 .section-divider {
   height: 1px;

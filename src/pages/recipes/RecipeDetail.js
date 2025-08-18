@@ -19,6 +19,7 @@ const RecipeDetail = () => {
   const [error, setError] = useState(null);
   const [showDescription, setShowDescription] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
+  const [ingredientsStatus, setIngredientsStatus] = useState(null);
 
   // 레시피 상세 정보 조회
   useEffect(() => {
@@ -37,6 +38,14 @@ const RecipeDetail = () => {
           setRating(ratingData);
         } catch (ratingError) {
           console.log('별점 정보 조회 실패:', ratingError);
+        }
+        
+        // 재료 상태 조회
+        try {
+          const statusData = await recipeApi.getRecipeIngredientStatus(recipeId);
+          setIngredientsStatus(statusData);
+        } catch (statusError) {
+          console.log('재료 상태 조회 실패:', statusError);
         }
         
         // 재료별 콕 쇼핑몰 상품 조회
@@ -180,16 +189,27 @@ const RecipeDetail = () => {
             )}
           </div>
           <div className="ingredients-list">
-            {recipe.materials
-              ?.sort((a, b) => {
-                // 보유한 재료(index === 0)를 상단으로, 미보유 재료를 하단으로 정렬
-                const aIndex = recipe.materials.indexOf(a);
-                const bIndex = recipe.materials.indexOf(b);
-                if (aIndex === 0) return -1; // 첫 번째 재료(보유)는 항상 위로
-                if (bIndex === 0) return 1;  // 첫 번째 재료(보유)는 항상 위로
-                return aIndex - bIndex; // 나머지는 원래 순서 유지
-              })
-              .map((material, index) => (
+            {recipe.materials?.map((material, index) => {
+              // 재료 상태 확인
+              let status = 'not-owned';
+              let statusText = '미보유';
+              
+              if (ingredientsStatus) {
+                const { owned, cart, not_owned } = ingredientsStatus.ingredients_status;
+                
+                if (owned.some(item => item.material_name === material.material_name)) {
+                  status = 'owned';
+                  statusText = '보유';
+                } else if (cart.some(item => item.material_name === material.material_name)) {
+                  status = 'cart';
+                  statusText = '장바구니';
+                } else if (not_owned.some(item => item.material_name === material.material_name)) {
+                  status = 'not-owned';
+                  statusText = '미보유';
+                }
+              }
+              
+              return (
                 <div key={index} className="ingredient-item">
                   <div className="ingredient-info">
                     <div className="ingredient-name-amount">
@@ -198,12 +218,13 @@ const RecipeDetail = () => {
                         {material.measure_amount} {material.measure_unit}
                       </span>
                     </div>
-                    <span className={`ingredient-status ${recipe.materials.indexOf(material) === 0 ? 'owned' : 'not-owned'}`}>
-                      {recipe.materials.indexOf(material) === 0 ? '보유' : '미보유'}
+                    <span className={`ingredient-status ${status}`}>
+                      {statusText}
                     </span>
                   </div>
                 </div>
-              ))}
+              );
+            })}
           </div>
         </div>
 
