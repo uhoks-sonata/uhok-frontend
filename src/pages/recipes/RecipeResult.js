@@ -8,6 +8,7 @@ import img1 from '../../assets/test/test1.png';
 import img2 from '../../assets/test/test2.png';
 import img3 from '../../assets/test/test3.png';
 import fallbackImg from '../../assets/no_items.png';
+import bookmarkIcon from '../../assets/bookmark-icon.png';
 import { recipeApi } from '../../api/recipeApi';
 
 const RecipeResult = () => {
@@ -184,29 +185,24 @@ const RecipeResult = () => {
                 </div>
                 <div className="recipe-info">
                   <h3 className="recipe-name">{recipeObj.recipe_title || recipeObj.name}</h3>
-                  <div className="recipe-meta">
-                    <span className="cooking-name">{recipeObj.cooking_name}</span>
-                    <span className="cooking-category">{recipeObj.cooking_category_name}</span>
-                    <span className="cooking-case">{recipeObj.cooking_case_name}</span>
-                  </div>
-                  <div className="recipe-stats">
-                    <span className="scrap-count">스크랩 {recipeObj.scrap_count || recipeObj.scrapCount || 0}</span>
-                    {typeof recipeObj.matched_ingredient_count === 'number' && (
-                      <span className="matched-ingredients">
-                        <span className="matched-count">{actualMatchedCount}개 재료 일치</span>
-                        <span className="separator"> | </span>
-                        <span className="total-ingredients">재료 총 {recipeObj.total_ingredients_count || (Array.isArray(recipeObj.used_ingredients) ? recipeObj.used_ingredients.length : 0)}개</span>
+                                     <div className="recipe-stats">
+                     <span className="serving serving-small">{recipeObj.number_of_serving}</span>
+                     <span className="separator"> | </span>
+                                           <span className="scrap-count">
+                        <img className="bookmark-icon" src={bookmarkIcon} alt="북마크" />
+                        <span className="bookmark-count">{recipeObj.scrap_count || recipeObj.scrapCount || 0}</span>
                       </span>
-                    )}
-                  </div>
-                  
-
+                   </div>
+                  {typeof recipeObj.matched_ingredient_count === 'number' && (
+                    <div className="matched-ingredients">
+                      <span className="matched-count">{actualMatchedCount}개 재료 일치</span>
+                      <span className="separator"> | </span>
+                      <span className="total-ingredients">재료 총 {recipeObj.total_ingredients_count || (Array.isArray(recipeObj.used_ingredients) ? recipeObj.used_ingredients.length : 0)}개</span>
+                    </div>
+                  )}
                   <p className="recipe-description" title={recipeObj.cooking_introduction || ''}>
                     {recipeObj.cooking_introduction || ''}
                   </p>
-                  <div className="recipe-details">
-                    <span className="serving">{recipeObj.number_of_serving}</span>
-                  </div>
                 </div>
               </div>
             );

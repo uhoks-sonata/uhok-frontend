@@ -25,8 +25,27 @@ const KokProductDetail = () => {
   const [kokReviewList, setKokReviewList] = useState([]);
   const [kokSellerInfo, setKokSellerInfo] = useState(null);
   const [kokDetailInfo, setKokDetailInfo] = useState([]);
+  
+  // 수량 선택 모달 관련 상태
+  const [showQuantityModal, setShowQuantityModal] = useState(false);
+  const [selectedQuantity, setSelectedQuantity] = useState(1);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
 
 
+
+  // BottomNav에서 주문하기 버튼 클릭 시 수량 선택 모달 열기
+  useEffect(() => {
+    const handleOpenQuantityModal = () => {
+      console.log('BottomNav에서 수량 선택 모달 열기 이벤트 수신');
+      setShowQuantityModal(true);
+    };
+
+    window.addEventListener('openQuantityModal', handleOpenQuantityModal);
+
+    return () => {
+      window.removeEventListener('openQuantityModal', handleOpenQuantityModal);
+    };
+  }, []);
 
   // KOK API에서 상품 기본 정보를 가져오는 함수
   const fetchKokProductInfo = async (productId) => {
@@ -323,6 +342,76 @@ const KokProductDetail = () => {
       setTimeout(() => {
         cartButton.style.transform = 'scale(1)';
       }, 150);
+    }
+  };
+
+  // 수량 선택 모달 열기
+  const handleOrderClick = () => {
+    console.log('주문하기 클릭 - 수량 선택 모달 열기');
+    setShowQuantityModal(true);
+  };
+
+  // 수량 선택 모달 닫기
+  const handleCloseQuantityModal = () => {
+    setShowQuantityModal(false);
+    setSelectedQuantity(1); // 수량 초기화
+  };
+
+  // 수량 변경
+  const handleQuantityChange = (newQuantity) => {
+    setSelectedQuantity(newQuantity);
+  };
+
+  // 장바구니에 추가
+  const handleAddToCart = async () => {
+    try {
+      setIsAddingToCart(true);
+      
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        alert('로그인이 필요합니다.');
+        navigate('/');
+        return;
+      }
+
+      const cartData = {
+        kok_product_id: parseInt(productId),
+        kok_quantity: selectedQuantity,
+        recipe_id: 0 // 레시피 ID는 0으로 설정
+      };
+
+      console.log('장바구니 추가 요청:', cartData);
+      
+      const response = await api.post('/api/kok/carts', cartData, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      console.log('장바구니 추가 성공:', response.data);
+      
+      // 성공 메시지 표시
+      alert('장바구니에 추가되었습니다!');
+      
+      // 모달 닫기
+      handleCloseQuantityModal();
+      
+      // 장바구니 페이지로 이동 (선택사항)
+      // navigate('/cart');
+      
+    } catch (error) {
+      console.error('장바구니 추가 실패:', error);
+      
+      if (error.response?.status === 401) {
+        alert('로그인이 필요합니다.');
+        navigate('/');
+      } else if (error.response?.status === 400) {
+        alert('이미 장바구니에 있는 상품입니다.');
+      } else {
+        alert('장바구니 추가에 실패했습니다. 다시 시도해주세요.');
+      }
+    } finally {
+      setIsAddingToCart(false);
     }
   };
 
@@ -791,11 +880,184 @@ const KokProductDetail = () => {
         {/* 탭 컨텐츠 */}
         {renderKokTabContent()}
       </div>
+
+
       
       {/* 맨 위로 가기 버튼 */}
       <div style={{ position: 'relative' }}>
         <UpBtn />
       </div>
+      
+      {/* 수량 선택 모달 */}
+      {showQuantityModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 2000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '16px',
+            padding: '24px',
+            width: '90%',
+            maxWidth: '400px',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)'
+          }}>
+            {/* 모달 헤더 */}
+            <div style={{
+              textAlign: 'center',
+              marginBottom: '24px'
+            }}>
+              <h3 style={{
+                fontSize: '18px',
+                fontWeight: 'bold',
+                margin: '0 0 8px 0',
+                color: '#333'
+              }}>
+                수량 선택
+              </h3>
+              <p style={{
+                fontSize: '14px',
+                color: '#666',
+                margin: 0
+              }}>
+                {kokProduct?.name}
+              </p>
+            </div>
+
+            {/* 수량 선택 */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '16px',
+              marginBottom: '32px'
+            }}>
+              <button
+                onClick={() => handleQuantityChange(Math.max(1, selectedQuantity - 1))}
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  border: '2px solid #FA5F8C',
+                  backgroundColor: 'white',
+                  color: '#FA5F8C',
+                  borderRadius: '50%',
+                  fontSize: '18px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                -
+              </button>
+              
+              <span style={{
+                fontSize: '24px',
+                fontWeight: 'bold',
+                color: '#333',
+                minWidth: '60px',
+                textAlign: 'center'
+              }}>
+                {selectedQuantity}
+              </span>
+              
+              <button
+                onClick={() => handleQuantityChange(selectedQuantity + 1)}
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  border: '2px solid #FA5F8C',
+                  backgroundColor: '#FA5F8C',
+                  color: 'white',
+                  borderRadius: '50%',
+                  fontSize: '18px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                +
+              </button>
+            </div>
+
+            {/* 총 가격 */}
+            <div style={{
+              textAlign: 'center',
+              marginBottom: '24px',
+              padding: '16px',
+              backgroundColor: '#f8f9fa',
+              borderRadius: '8px'
+            }}>
+              <p style={{
+                fontSize: '14px',
+                color: '#666',
+                margin: '0 0 4px 0'
+              }}>
+                총 가격
+              </p>
+              <p style={{
+                fontSize: '20px',
+                fontWeight: 'bold',
+                color: '#FA5F8C',
+                margin: 0
+              }}>
+                {(kokProduct?.discountPrice * selectedQuantity).toLocaleString()}원
+              </p>
+            </div>
+
+            {/* 버튼들 */}
+            <div style={{
+              display: 'flex',
+              gap: '12px'
+            }}>
+              <button
+                onClick={handleCloseQuantityModal}
+                style={{
+                  flex: 1,
+                  padding: '14px',
+                  border: '1px solid #ddd',
+                  backgroundColor: 'white',
+                  color: '#666',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  cursor: 'pointer'
+                }}
+              >
+                취소
+              </button>
+              
+              <button
+                onClick={handleAddToCart}
+                disabled={isAddingToCart}
+                style={{
+                  flex: 1,
+                  padding: '14px',
+                  border: 'none',
+                  backgroundColor: isAddingToCart ? '#ccc' : '#FA5F8C',
+                  color: 'white',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: 'bold',
+                  cursor: isAddingToCart ? 'not-allowed' : 'pointer'
+                }}
+              >
+                {isAddingToCart ? '추가 중...' : '장바구니 추가'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       
              <BottomNav 
          productInfo={{
