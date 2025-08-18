@@ -86,8 +86,16 @@ const OrderList = () => {
         
         // 응답 데이터를 검증하고 가져옵니다
         const ordersData = ordersResponse.data;
-        if (!ordersData || !ordersData.orders) {
-          throw new Error('주문 데이터를 가져올 수 없습니다.');
+        if (!ordersData || !ordersData.orders || ordersData.orders.length === 0) {
+          // 주문이 없는 경우 빈 배열로 설정
+          setOrderData({
+            orders: [],
+            total_count: 0,
+            page: 1,
+            size: 20
+          });
+          setLoading(false);
+          return;
         }
         
         // API 응답을 프론트엔드 형식으로 변환합니다 (비동기 처리)
@@ -350,8 +358,8 @@ const OrderList = () => {
           {orderData.orders.length === 0 ? (
             // 주문 내역이 없을 때 표시할 컴포넌트
             <div className="no-orders-container">
-              <img src={noItemsIcon} alt="주문 내역 없음" className="no-orders-icon" />
-              <p className="no-orders-text">주문 내역이 없습니다.</p>
+              <img src={noItemsIcon} alt="주문한 상품 없음" className="no-orders-icon" />
+              <p className="no-orders-text">주문한 상품이 없습니다.</p>
               <p className="no-orders-subtext">첫 주문을 시작해보세요!</p>
             </div>
           ) : (

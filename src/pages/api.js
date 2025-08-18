@@ -38,7 +38,8 @@ api.interceptors.request.use(
     const publicEndpoints = [
       '/api/user/login',
       '/api/user/signup',
-      '/api/user/signup/email/check'
+      '/api/user/signup/email/check',
+      '/log'
     ];
     
     // 현재 요청이 공개 엔드포인트인지 확인

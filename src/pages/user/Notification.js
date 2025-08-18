@@ -2,99 +2,33 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HeaderNavNoti from '../../layout/HeaderNavNoti';
 import BottomNav from '../../layout/BottomNav';
+import Loading from '../../components/Loading';
 import '../../styles/notification.css';
 import api from '../api';
 import { ensureToken } from '../../utils/authUtils';
 
 const Notification = () => {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('homeshopping'); // 'homeshopping' 또는 'shopping'
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [totalCount, setTotalCount] = useState(0);
-  const [unreadCount, setUnreadCount] = useState(0);
   const [error, setError] = useState(null);
 
-  // 더미 데이터 (나중에 API로 교체)
-  const dummyNotifications = [
-    {
-      id: 1,
-      type: 'order',
-      title: '주문이 완료되었습니다',
-      message: '블루투스 이어폰 주문이 성공적으로 완료되었습니다.',
-      time: '2024-01-15 14:30',
-      isRead: false,
-      icon: '📦'
-    },
-    {
-      id: 2,
-      type: 'promotion',
-      title: '특가 상품 알림',
-      message: '관심 상품에 30% 할인 혜택이 적용되었습니다!',
-      time: '2024-01-15 12:15',
-      isRead: false,
-      icon: '🎉'
-    },
-    {
-      id: 3,
-      type: 'delivery',
-      title: '배송 시작',
-      message: '주문하신 상품이 배송을 시작했습니다.',
-      time: '2024-01-14 16:45',
-      isRead: true,
-      icon: '🚚'
-    },
-    {
-      id: 4,
-      type: 'review',
-      title: '리뷰 작성 요청',
-      message: '구매하신 상품은 어떠셨나요? 리뷰를 작성해주세요.',
-      time: '2024-01-14 10:20',
-      isRead: true,
-      icon: '⭐'
-    },
-    {
-      id: 5,
-      type: 'system',
-      title: '시스템 업데이트',
-      message: '더 나은 서비스를 위해 시스템이 업데이트되었습니다.',
-      time: '2024-01-13 09:00',
-      isRead: true,
-      icon: '🔧'
-    }
-  ];
 
-  // 알림 타입별 아이콘 매핑
-  const getNotificationIcon = (type) => {
-    switch (type) {
-      case 'order_status':
-        return '📦';
-      case 'discount':
-        return '🎉';
-      case 'delivery':
-        return '🚚';
-      case 'review':
-        return '⭐';
-      case 'system':
-        return '🔧';
-      default:
-        return '🔔';
-    }
-  };
 
-  // 콕 알림 API 호출
-  const fetchKokNotifications = async (limit = 50) => {
+  // 홈쇼핑 알림 API 호출 (모든 알림 통합 조회)
+  const fetchHomeShoppingNotifications = async (limit = 20) => {
     try {
-      console.log('콕 알림 API 호출 시작...');
+      console.log('홈쇼핑 알림 API 호출 시작...');
       await ensureToken();
       
-      const response = await api.get('/api/kok/notifications', {
-        params: { limit }
+      const response = await api.get('/api/homeshopping/notifications/all', {
+        params: { limit, offset: 0 }
       });
       
-      console.log('콕 알림 API 응답:', response.data);
+      console.log('홈쇼핑 알림 API 응답:', response.data);
       
       if (response.data) {
-        // API 응답을 컴포넌트 형식에 맞게 변환
         const transformedNotifications = response.data.notifications.map(notification => ({
           id: notification.notification_id,
           type: notification.notification_type,
@@ -108,20 +42,156 @@ const Notification = () => {
             minute: '2-digit'
           }),
           isRead: notification.is_read,
-          icon: getNotificationIcon(notification.notification_type)
+          relatedEntityType: notification.related_entity_type,
+          relatedEntityId: notification.related_entity_id,
+          homeshoppingOrderId: notification.homeshopping_order_id,
+          homeshoppingLikeId: notification.homeshopping_like_id,
+          statusId: notification.status_id,
+          readAt: notification.read_at
         }));
         
-        setNotifications(transformedNotifications);
-        setTotalCount(response.data.total);
-        setUnreadCount(response.data.unread_count);
+        // 테스트용 더미 데이터 추가 (나중에 지우기 쉽게 주석 처리)
+        const testDummyData = [
+          {
+            id: 'test-1',
+            type: 'order_status_change',
+            title: '주문 상태 변경',
+            message: '주문하신 [농팜] 프리미엄 김치 세트가 배송을 시작합니다.',
+            time: '2025.01.20 15:00',
+            isRead: false,
+            relatedEntityType: 'order',
+            relatedEntityId: 12345,
+            homeshoppingOrderId: 12345,
+            statusId: 2
+          },
+          {
+            id: 'test-2',
+            type: 'broadcast_start',
+            title: '방송 시작 알림',
+            message: '오늘 저녁 8시, 신선 식재료 특가 방송이 시작됩니다!',
+            time: '2025.01.20 14:30',
+            isRead: true,
+            relatedEntityType: 'broadcast',
+            relatedEntityId: 67890,
+            homeshoppingOrderId: null,
+            statusId: 1
+          },
+          {
+            id: 'test-3',
+            type: 'order_completed',
+            title: '주문 완료',
+            message: '주문하신 [농팜] 유기농 과일 세트가 성공적으로 주문되었습니다.',
+            time: '2025.01.20 13:15',
+            isRead: false,
+            relatedEntityType: 'order',
+            relatedEntityId: 12346,
+            homeshoppingOrderId: 12346,
+            statusId: 1
+          },
+          {
+            id: 'test-4',
+            type: 'like_notification',
+            title: '좋아요 알림',
+            message: '찜해두신 [농팜] 프리미엄 생수 500ml가 특가로 할인됩니다!',
+            time: '2025.01.20 12:00',
+            isRead: true,
+            relatedEntityType: 'like',
+            relatedEntityId: 11111,
+            homeshoppingLikeId: 11111,
+            statusId: 1
+          },
+          {
+            id: 'test-5',
+            type: 'delivery_completed',
+            title: '배송 완료',
+            message: '주문하신 [농팜] 김치 세트가 안전하게 배송 완료되었습니다.',
+            time: '2025.01.20 11:45',
+            isRead: false,
+            relatedEntityType: 'order',
+            relatedEntityId: 12347,
+            homeshoppingOrderId: 12347,
+            statusId: 3
+          }
+        ];
+        
+        // 실제 데이터와 테스트 데이터 합치기
+        const allNotifications = [...transformedNotifications, ...testDummyData];
+        setNotifications(allNotifications);
       }
     } catch (err) {
-      console.error('콕 알림 데이터 로딩 실패:', err);
-      setError('알림을 불러오는 중 오류가 발생했습니다.');
-      // API 연결 실패 시 더미 데이터 사용
-      setNotifications(dummyNotifications);
-      setTotalCount(dummyNotifications.length);
-      setUnreadCount(dummyNotifications.filter(n => !n.isRead).length);
+      console.error('홈쇼핑 알림 데이터 로딩 실패:', err);
+      setError('홈쇼핑 알림을 불러오는 중 오류가 발생했습니다.');
+      setNotifications([]);
+    }
+  };
+
+  // 탭 변경 시 알림 데이터 로드
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setLoading(true);
+    setError(null);
+    
+    if (tab === 'homeshopping') {
+      fetchHomeShoppingNotifications();
+    } else {
+      fetchShoppingNotifications();
+    }
+    
+    setLoading(false);
+  };
+
+  // 쇼핑몰 알림 API 호출
+  const fetchShoppingNotifications = async (limit = 20) => {
+    try {
+      console.log('쇼핑몰 알림 API 호출 시작...');
+      await ensureToken();
+      
+      const response = await api.get('/api/orders/kok/notifications/history', {
+        params: { limit, offset: 0 }
+      });
+      
+      console.log('쇼핑몰 알림 API 응답:', response.data);
+      
+      if (response.data) {
+        const transformedNotifications = response.data.notifications.map(notification => ({
+          id: notification.notification_id,
+          type: notification.order_status,
+          title: notification.title || notification.notification_message,
+          message: notification.message || notification.notification_message,
+          time: new Date(notification.created_at).toLocaleString('ko-KR', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+          }),
+          isRead: false, // API 응답에 is_read 필드가 없으므로 기본값 false
+          productName: notification.product_name,
+          orderStatus: notification.order_status_name
+        }));
+        
+        // 테스트용 더미 데이터 추가 (나중에 지우기 쉽게 주석 처리)
+        const testDummyData = [
+          {
+            id: 'test-kok-1',
+            type: 'test',
+            title: '[테스트] 콕 주문 테스트 알림',
+            message: '상품이 주문되었습니다.',
+            time: '2025.01.20 15:30',
+            isRead: false,
+            productName: '[테스트] 테스트 상품명',
+            orderStatus: '주문완료'
+          }
+        ];
+        
+        // 실제 데이터와 테스트 데이터 합치기
+        const allNotifications = [...transformedNotifications, ...testDummyData];
+        setNotifications(allNotifications);
+      }
+    } catch (err) {
+      console.error('쇼핑몰 알림 데이터 로딩 실패:', err);
+      setError('쇼핑몰 알림을 불러오는 중 오류가 발생했습니다.');
+      setNotifications([]);
     }
   };
 
@@ -138,30 +208,15 @@ const Notification = () => {
         return;
       }
       
-      await fetchKokNotifications();
+      // 기본적으로 홈쇼핑 알림 로드
+      await fetchHomeShoppingNotifications();
       setLoading(false);
     };
 
     loadNotifications();
   }, []);
 
-  const handleNotificationClick = (notificationId) => {
-    // 알림 읽음 처리
-    setNotifications(prev => 
-      prev.map(notification => 
-        notification.id === notificationId 
-          ? { ...notification, isRead: true }
-          : notification
-      )
-    );
-  };
 
-  const handleMarkAllAsRead = () => {
-    setNotifications(prev => 
-      prev.map(notification => ({ ...notification, isRead: true }))
-    );
-    setUnreadCount(0);
-  };
 
   if (loading) {
     return (
@@ -170,10 +225,7 @@ const Notification = () => {
         <HeaderNavNoti 
           onBackClick={() => navigate(-1)}
         />
-        <div className="notification-loading">
-          <div className="loading-spinner"></div>
-          <p>알림을 불러오는 중...</p>
-        </div>
+        <Loading message="알림을 불러오는 중..." />
         <BottomNav />
       </div>
     );
@@ -187,6 +239,22 @@ const Notification = () => {
       />
       
       <div className="notification-content">
+        {/* 탭 네비게이션 */}
+        <div className="notification-tabs">
+          <button 
+            className={`notification-tab-button ${activeTab === 'homeshopping' ? 'active' : ''}`}
+            onClick={() => handleTabChange('homeshopping')}
+          >
+            홈쇼핑
+          </button>
+          <button 
+            className={`notification-tab-button ${activeTab === 'shopping' ? 'active' : ''}`}
+            onClick={() => handleTabChange('shopping')}
+          >
+            콕 주문
+          </button>
+        </div>
+
         {/* 에러 메시지 */}
         {error && (
           <div className="notification-error">
@@ -194,56 +262,63 @@ const Notification = () => {
           </div>
         )}
 
-        {/* 알림 헤더 */}
+        {/* 알림 헤더
         <div className="notification-header">
           <div className="notification-summary">
-            <h2>알림 {totalCount}개</h2>
-            {unreadCount > 0 && (
-              <span className="unread-badge">{unreadCount}개 읽지 않음</span>
-            )}
+            <h2>{activeTab === 'homeshopping' ? '홈쇼핑' : '콕 주문'} 알림</h2>
           </div>
-          {unreadCount > 0 && (
-            <button 
-              className="mark-all-read-btn"
-              onClick={handleMarkAllAsRead}
-            >
-              모두 읽음
-            </button>
-          )}
-        </div>
+        </div> */}
 
         {/* 알림 목록 */}
         <div className="notification-list">
           {notifications.length === 0 ? (
             <div className="no-notifications">
-              <div className="no-notifications-icon">🔔</div>
+              <svg 
+                width="48" 
+                height="48" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                xmlns="http://www.w3.org/2000/svg"
+                className="no-notifications-icon"
+              >
+                <path 
+                  d="M12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22ZM18 16V11C18 7.93 16.37 5.36 13.5 4.68V4C13.5 3.17 12.83 2.5 12 2.5C11.17 2.5 10.5 3.17 10.5 4V4.68C7.64 5.36 6 7.92 6 11V16L4 18V19H20V18L18 16ZM16 17H8V11C8 8.52 9.51 6.5 12 6.5C14.49 6.5 16 8.52 16 11V17Z" 
+                  fill="#CCCCCC"
+                />
+              </svg>
               <h3>알림이 없습니다</h3>
-              <p>새로운 알림이 오면 여기에 표시됩니다.</p>
+              <p>{activeTab === 'homeshopping' ? '홈쇼핑' : '콕 주문'} 새로운 알림이 오면 여기에 표시됩니다.</p>
             </div>
           ) : (
             notifications.map(notification => (
               <div 
                 key={notification.id}
                 className={`notification-item ${!notification.isRead ? 'unread' : ''}`}
-                onClick={() => handleNotificationClick(notification.id)}
               >
-                <div className="notification-icon">
-                  {notification.icon}
-                </div>
                 <div className="notification-content-body">
-                  <div className="notification-title">
-                    {notification.title}
-                    {!notification.isRead && <span className="unread-dot"></span>}
+                  <div className="notification-status">
+                    {activeTab === 'shopping' && notification.orderStatus 
+                      ? notification.orderStatus 
+                      : notification.title}
                   </div>
+                  {activeTab === 'shopping' && notification.productName && (
+                    <div className="notification-product">
+                      {notification.productName}
+                    </div>
+                  )}
                   <div className="notification-message">
                     {notification.message}
                   </div>
-                  <div className="notification-time">
-                    {notification.time}
-                  </div>
+                  {activeTab === 'homeshopping' && notification.relatedEntityType && (
+                    <div className="notification-entity-info">
+                      {notification.relatedEntityType === 'order' && '주문 알림'}
+                      {notification.relatedEntityType === 'broadcast' && '방송 알림'}
+                      {notification.relatedEntityType === 'like' && '좋아요 알림'}
+                    </div>
+                  )}
                 </div>
-                <div className="notification-arrow">
-                  <span>›</span>
+                <div className="notification-time">
+                  {notification.time}
                 </div>
               </div>
             ))

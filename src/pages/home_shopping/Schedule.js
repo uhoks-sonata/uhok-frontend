@@ -66,6 +66,23 @@ const Schedule = () => {
   // 위시리스트 토글
   const toggleWishlist = (itemId) => {
     console.log(`위시리스트 토글: ${itemId}`);
+    
+    // 애니메이션 효과 추가
+    const wishlistBtn = document.querySelector(`[data-item-id="${itemId}"]`);
+    if (wishlistBtn) {
+      if (scheduleData.find(item => item.id === itemId)?.wishlist) {
+        // 찜 해제 애니메이션
+        wishlistBtn.classList.add('unliked');
+        setTimeout(() => wishlistBtn.classList.remove('unliked'), 400);
+      } else {
+        // 찜 추가 애니메이션
+        wishlistBtn.classList.add('liked');
+        setTimeout(() => wishlistBtn.classList.remove('liked'), 600);
+      }
+    }
+    
+    // 데이터 상태 업데이트 (실제로는 API 호출)
+    // scheduleData 상태가 있다면 여기서 업데이트
   };
 
   // 알림 핸들러
@@ -157,6 +174,7 @@ const Schedule = () => {
                     <button 
                       className={`wishlist-btn ${item.wishlist ? 'active' : ''}`}
                       onClick={() => toggleWishlist(item.id)}
+                      data-item-id={item.id}
                     >
                       ❤️ 방송알림신청
                     </button>
