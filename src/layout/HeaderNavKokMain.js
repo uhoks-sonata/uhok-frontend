@@ -21,6 +21,19 @@ const HeaderNavKokMain = ({ onNotificationsClick, onBackClick, onCartClick, onSe
     } else {
       // 콕 쇼핑몰 타입으로 검색 페이지로 이동
       if (searchTerm && searchTerm.trim()) {
+        // 검색어를 sessionStorage에 임시 저장 (중복 요청 방지)
+        const searchStateKey = `kok_search_${searchTerm.trim()}`;
+        const existingState = sessionStorage.getItem(searchStateKey);
+        
+        if (!existingState) {
+          // 아직 저장된 상태가 없으면 임시로 빈 결과 저장
+          sessionStorage.setItem(searchStateKey, JSON.stringify({
+            results: [],
+            timestamp: Date.now(),
+            pending: true // 검색 중임을 표시
+          }));
+        }
+        
         const searchUrl = `/kok/search?q=${encodeURIComponent(searchTerm.trim())}`;
         navigate(searchUrl);
       } else {

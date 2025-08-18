@@ -7,6 +7,8 @@ import HeaderSearchBar from '../../components/HeaderSearchBar';
 import BottomNav from '../../layout/BottomNav';
 // 로딩 컴포넌트를 가져옵니다
 import Loading from '../../components/Loading';
+// 뒤로가기 버튼 컴포넌트를 가져옵니다
+import HeaderNavBackBtn from '../../components/HeaderNavBackBtn';
 // 검색 페이지 스타일을 가져옵니다
 import '../../styles/search.css';
 // 홈쇼핑 API를 가져옵니다
@@ -58,37 +60,7 @@ const HomeShoppingSearch = () => {
     }
   }, [isLoggedIn, user?.token]);
 
-  // 홈쇼핑 검색 히스토리 저장 (API 사용)
-  const saveSearchHistory = useCallback(async (query) => {
-    try {
-      if (isLoggedIn && user?.token) {
-        // 로그인된 사용자는 서버에 홈쇼핑 검색어 저장
-        await homeShoppingApi.saveSearchHistory(query);
-        // 저장 후 히스토리 상태 업데이트 (로컬 상태만 업데이트)
-        setSearchHistory(prevHistory => {
-          const currentHistory = prevHistory.filter(item => item !== query);
-          return [query, ...currentHistory].slice(0, 10);
-        });
-      } else {
-        // 비로그인 사용자는 로컬스토리지에 저장
-        const history = JSON.parse(localStorage.getItem('homeshopping_searchHistory') || '[]');
-        const updatedHistory = [query, ...history.filter(item => item !== query)].slice(0, 20);
-        localStorage.setItem('homeshopping_searchHistory', JSON.stringify(updatedHistory));
-        setSearchHistory(updatedHistory.slice(0, 10));
-      }
-    } catch (error) {
-      console.error('홈쇼핑 검색 히스토리 저장 실패:', error);
-      // API 실패 시 로컬스토리지에 저장
-      try {
-        const history = JSON.parse(localStorage.getItem('homeshopping_searchHistory') || '[]');
-        const updatedHistory = [query, ...history.filter(item => item !== query)].slice(0, 20);
-        localStorage.setItem('homeshopping_searchHistory', JSON.stringify(updatedHistory));
-        setSearchHistory(updatedHistory.slice(0, 10));
-      } catch (localError) {
-        console.error('로컬스토리지 홈쇼핑 검색 히스토리 저장 실패:', localError);
-      }
-    }
-  }, [isLoggedIn, user?.token]);
+
 
   // 홈쇼핑 검색 실행 함수
   const handleSearch = useCallback(async (e = null, queryOverride = null) => {
@@ -121,8 +93,35 @@ const HomeShoppingSearch = () => {
     try {
       console.log('홈쇼핑 검색 실행:', query);
       
-      // 검색 히스토리에 저장
-      saveSearchHistory(query);
+      // 검색 히스토리에 저장 (함수 내부에서 직접 처리)
+      try {
+        if (isLoggedIn && user?.token) {
+          // 로그인된 사용자는 서버에 홈쇼핑 검색어 저장
+          await homeShoppingApi.saveSearchHistory(query);
+          // 저장 후 히스토리 상태 업데이트 (로컬 상태만 업데이트)
+          setSearchHistory(prevHistory => {
+            const currentHistory = prevHistory.filter(item => item !== query);
+            return [query, ...currentHistory].slice(0, 10);
+          });
+        } else {
+          // 비로그인 사용자는 로컬스토리지에 저장
+          const history = JSON.parse(localStorage.getItem('homeshopping_searchHistory') || '[]');
+          const updatedHistory = [query, ...history.filter(item => item !== query)].slice(0, 20);
+          localStorage.setItem('homeshopping_searchHistory', JSON.stringify(updatedHistory));
+          setSearchHistory(updatedHistory.slice(0, 10));
+        }
+      } catch (error) {
+        console.error('홈쇼핑 검색 히스토리 저장 실패:', error);
+        // API 실패 시 로컬스토리지에 저장
+        try {
+          const history = JSON.parse(localStorage.getItem('homeshopping_searchHistory') || '[]');
+          const updatedHistory = [query, ...history.filter(item => item !== query)].slice(0, 20);
+          localStorage.setItem('homeshopping_searchHistory', JSON.stringify(updatedHistory));
+          setSearchHistory(updatedHistory.slice(0, 10));
+        } catch (localError) {
+          console.error('로컬스토리지 홈쇼핑 검색 히스토리 저장 실패:', localError);
+        }
+      }
       
       // URL 업데이트 (쿼리 파라미터 추가)
       navigate(`/homeshopping/search?q=${encodeURIComponent(query)}`, { replace: true });
@@ -179,7 +178,7 @@ const HomeShoppingSearch = () => {
       setError('홈쇼핑 검색 중 오류가 발생했습니다.');
       setLoading(false);
     }
-  }, [searchQuery, navigate, saveSearchHistory]);
+  }, [searchQuery, navigate, isLoggedIn, user?.token]);
 
   // URL 쿼리 파라미터에서 초기 검색어 가져오기 (홈쇼핑 전용)
   useEffect(() => {
@@ -224,7 +223,7 @@ const HomeShoppingSearch = () => {
         handleSearch(null, query);
       }
     }
-  }, [location.search, handleSearch]);
+  }, [location.search]); // handleSearch 의존성 제거
 
   // 컴포넌트 마운트 시 홈쇼핑 검색 히스토리 로드
   useEffect(() => {
@@ -365,9 +364,7 @@ const HomeShoppingSearch = () => {
     return (
       <div className="search-page">
         <div className="search-header">
-          <button className="back-button" onClick={handleBack}>
-            ← 뒤로
-          </button>
+          <HeaderNavBackBtn onClick={handleBack} />
           <HeaderSearchBar 
             onSearch={(query) => {
               if (query && query.trim()) {
@@ -390,22 +387,20 @@ const HomeShoppingSearch = () => {
     <div className="search-page">
 
       
-             {/* 홈쇼핑 검색 헤더 */}
-       <div className="search-header">
-         <button className="back-button" onClick={handleBack}>
-           ← 뒤로
-         </button>
-         
-         <HeaderSearchBar 
-           onSearch={(query) => {
-             console.log('🔍 HeaderSearchBar에서 홈쇼핑 검색:', query);
-             if (query && query.trim()) {
-               navigate(`/homeshopping/search?q=${encodeURIComponent(query.trim())}`);
-             }
-           }}
-           placeholder="홈쇼핑 상품 검색"
-         />
-       </div>
+                     {/* 홈쇼핑 검색 헤더 */}
+        <div className="search-header">
+          <HeaderNavBackBtn onClick={handleBack} />
+          
+          <HeaderSearchBar 
+            onSearch={(query) => {
+              console.log('🔍 HeaderSearchBar에서 홈쇼핑 검색:', query);
+              if (query && query.trim()) {
+                navigate(`/homeshopping/search?q=${encodeURIComponent(query.trim())}`);
+              }
+            }}
+            placeholder="홈쇼핑 상품 검색"
+          />
+        </div>
 
              {/* 메인 콘텐츠 */}
        <div className="search-content">

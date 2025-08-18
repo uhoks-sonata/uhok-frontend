@@ -18,18 +18,25 @@
 }
 
 .back-button {
-  padding: 8px 12px;
-  background-color: transparent;
+  appearance: none;
+  background: none;
   border: none;
-  color: #3b82f6;
-  font-size: 16px;
+  padding: 0;
   cursor: pointer;
-  border-radius: 6px;
-  transition: background-color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.back-button:hover {
-  background-color: #f3f4f6;
+.back-button:hover,
+.back-button:active,
+.back-button:focus,
+.back-button:focus-visible {
+  background: transparent;
+  outline: none;
+  box-shadow: none;
 }
 
 .search-type-toggle {
@@ -63,36 +70,36 @@
   color: #374151;
 }
 
-/* 검색 타입 전환 버튼 */
+/* 검색 타입 전환 버튼 (wishlist tab-navigation 스타일 적용) */
 .search-type-switch {
   display: flex;
-  gap: 4px;
-  background-color: #f3f4f6;
+  margin-bottom: 16px;
+  background-color: #ffffff;
   border-radius: 8px;
   padding: 4px;
 }
 
 .switch-btn {
-  padding: 8px 16px;
-  background-color: transparent;
+  flex: 1;
+  padding: 12px 16px;
   border: none;
+  background: transparent;
   border-radius: 6px;
   font-size: 14px;
   font-weight: 500;
-  color: #6b7280;
+  color: #666;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
 .switch-btn.active {
-  background-color: #ffffff;
-  color: #3b82f6;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background-color: #333;
+  color: #ffffff;
 }
 
 .switch-btn:hover:not(.active) {
-  background-color: #e5e7eb;
-  color: #374151;
+  background-color: #f5f5f5;
+  color: #333;
 }
 
 .search-header-left,
@@ -170,7 +177,7 @@
 /* ===== 검색 빈 상태 (검색 전) ===== */
 
 .search-empty-state {
-  padding-top: 20px;
+  padding-top: 0px;
 }
 
 
