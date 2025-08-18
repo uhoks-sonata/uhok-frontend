@@ -2,8 +2,8 @@
 import React, { useState } from 'react';
 // React Router의 useNavigate와 Link 훅/컴포넌트 import
 import { useNavigate, Link } from 'react-router-dom';
-// api.js import
-import api from '../api';
+// userApi import
+import { userApi } from '../../api/userApi';
 // 회원가입 페이지 스타일 CSS 파일 import
 import '../../styles/signup.css';
 
@@ -50,15 +50,15 @@ const Signup = () => {
       
       // API 명세서에 맞춘 이메일 중복 확인 요청
       // GET /api/user/signup/email/check?email=test@example.com
-      const response = await api.get(`/api/user/signup/email/check?email=${encodeURIComponent(email)}`);
+      const response = await userApi.checkEmailDuplicate(email);
       
-      console.log('이메일 중복 확인 API 응답:', response.data);
+      console.log('이메일 중복 확인 API 응답:', response);
 
       // API 명세서 응답 형식에 맞춘 처리
-      // Response: { "email": "test@example.com", "is_duplicate": true, "message": "이미 존재하는 아이디입니다." }
-      if (response.data.is_duplicate) {
+      // Response: { "email": "test@example.com", "is_duplicate": true, "message": "string" }
+      if (response.is_duplicate) {
         // 중복된 경우 (이미 존재하는 이메일)
-        setEmailMessage(response.data.message || '이미 존재하는 아이디입니다.');
+        setEmailMessage(response.message || '이미 존재하는 아이디입니다.');
         setIsEmailChecked(false);
       } else {
         // 중복되지 않은 경우 (사용 가능한 이메일)
@@ -114,19 +114,19 @@ const Signup = () => {
       
       // API 명세서에 맞춘 회원가입 요청
       // POST /api/user/signup
-      // Body: { "email": "user@example.com", "password": "1234password", "username": "홍길동" }
-      const response = await api.post('/api/user/signup', {
+      // Body: { "email": "user@example.com", "password": "string", "username": "string" }
+      const response = await userApi.signup({
         email: email,
         password: password,
         username: username
       });
       
-      console.log('회원가입 API 응답:', response.data);
+      console.log('회원가입 API 응답:', response);
 
       // API 명세서 응답 형식에 맞춘 처리
-      // Response: { "user_id": 1, "email": "user@example.com", "username": "홍길동", "created_at": "2025-08-01T02:24:19.206Z" }
-      if (response.data.user_id) {
-        console.log('회원가입 성공 - 사용자 ID:', response.data.user_id);
+      // Response: { "user_id": 0, "email": "user@example.com", "username": "string", "created_at": "2025-08-10T02:44:56.611Z" }
+      if (response.user_id) {
+        console.log('회원가입 성공 - 사용자 ID:', response.user_id);
         
         // 회원가입 성공 시 알림 표시
         alert('회원가입이 완료되었습니다.');

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import HeaderNavCart from '../../layout/HeaderNavCart';
 import BottomNav from '../../layout/BottomNav';
 import { cartApi } from '../../api/cartApi';
+import api from '../api';
 import '../../styles/cart.css';
 import heartIcon from '../../assets/heart_empty.png';
 import heartFilledIcon from '../../assets/heart_filled.png';
@@ -15,11 +16,116 @@ const Cart = () => {
   const [showRecipeRecommendation, setShowRecipeRecommendation] = useState(false);
   const [showQuantityModal, setShowQuantityModal] = useState(false);
   const [selectedCartItemId, setSelectedCartItemId] = useState(null);
+  const [likedProducts, setLikedProducts] = useState(new Set()); // 찜한 상품 ID들을 저장
   const navigate = useNavigate();
 
   useEffect(() => {
     loadCartItems();
+    loadLikedProducts();
   }, []);
+
+  // 찜한 상품 목록을 가져오는 함수
+  const loadLikedProducts = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+
+      const response = await api.get('/api/kok/likes', {
+        params: {
+          limit: 50
+        },
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.data && response.data.liked_products) {
+        const likedIds = new Set(response.data.liked_products.map(product => product.kok_product_id));
+        setLikedProducts(likedIds);
+      }
+    } catch (error) {
+      console.error('찜한 상품 목록 로딩 실패:', error);
+    }
+  };
+
+  // 찜 토글 함수
+  const handleHeartToggle = async (productId) => {
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        console.log('토큰이 없어서 로그인 페이지로 이동');
+        window.location.href = '/';
+        return;
+      }
+
+      // 찜 토글 API 호출
+      const response = await api.post('/api/kok/likes/toggle', {
+        kok_product_id: productId
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      console.log('찜 토글 응답:', response.data);
+
+      // 찜 토글 성공 후 하트 아이콘만 즉시 변경
+      if (response.data) {
+        console.log('찜 토글 성공! 하트 아이콘 상태만 변경합니다.');
+        
+        // 애니메이션 효과 추가
+        const heartButton = document.querySelector(`[data-product-id="${productId}"]`);
+        if (heartButton) {
+          // 기존 애니메이션 클래스 제거
+          heartButton.classList.remove('liked', 'unliked');
+          
+          // 현재 찜 상태 확인
+          const isCurrentlyLiked = likedProducts.has(productId);
+          
+          // 애니메이션 클래스 추가
+          if (isCurrentlyLiked) {
+            // 찜 해제 애니메이션
+            heartButton.classList.add('unliked');
+          } else {
+            // 찜 추가 애니메이션
+            heartButton.classList.add('liked');
+          }
+          
+          // 애니메이션 완료 후 클래스 제거
+          setTimeout(() => {
+            heartButton.classList.remove('liked', 'unliked');
+          }, isCurrentlyLiked ? 400 : 600);
+        }
+        
+        // 하트 아이콘 상태만 토글 (즉시 피드백)
+        setLikedProducts(prev => {
+          const newSet = new Set(prev);
+          if (newSet.has(productId)) {
+            // 찜 해제된 상태에서 찜 추가
+            newSet.delete(productId);
+            console.log('찜이 추가되었습니다. 채워진 하트로 변경됩니다.');
+          } else {
+            // 찜된 상태에서 찜 해제
+            newSet.add(productId);
+            console.log('찜이 해제되었습니다. 빈 하트로 변경됩니다.');
+          }
+          return newSet;
+        });
+      }
+    } catch (error) {
+      console.error('찜 토글 실패:', error);
+      
+      // 401 에러 (인증 실패) 시 로그인 페이지로 이동
+      if (error.response?.status === 401) {
+        alert('로그인이 필요합니다.');
+        window.location.href = '/';
+        return;
+      }
+      
+      // 다른 에러의 경우 사용자에게 알림
+      alert('찜 상태 변경에 실패했습니다. 다시 시도해주세요.');
+    }
+  };
 
   const loadCartItems = async () => {
     try {
@@ -124,9 +230,41 @@ const Cart = () => {
     }
   };
 
-  const handleOrder = () => {
-    console.log('주문하기 클릭');
-    navigate('/kok/payment');
+  const handleOrder = async () => {
+    if (selectedItems.size === 0) {
+      alert('주문할 상품을 선택해주세요.');
+      return;
+    }
+
+    try {
+      // 선택된 상품들을 API 형식에 맞게 변환
+      const selectedItemsForOrder = Array.from(selectedItems).map(cartId => {
+        const cartItem = cartItems.find(item => item.kok_cart_id === cartId);
+        return {
+          cart_id: cartId,
+          quantity: cartItem.kok_quantity
+        };
+      });
+
+      console.log('주문 생성 시작:', selectedItemsForOrder);
+      
+      // 주문 생성 API 호출
+      const orderResult = await cartApi.createOrder(selectedItemsForOrder);
+      
+      console.log('주문 생성 성공:', orderResult);
+      
+      // 주문 성공 시 결제 페이지로 이동
+      navigate('/kok/payment', { 
+        state: { 
+          orderData: orderResult,
+          fromCart: true 
+        } 
+      });
+      
+    } catch (error) {
+      console.error('주문 생성 실패:', error);
+      alert('주문 생성에 실패했습니다. 다시 시도해주세요.');
+    }
   };
 
   const handleBuyNow = (cartItemId) => {
@@ -138,8 +276,40 @@ const Cart = () => {
     console.log('찜하기 클릭:', cartItemId);
   };
 
-  const toggleRecipeRecommendation = () => {
+  const [recipeRecommendations, setRecipeRecommendations] = useState([]);
+  const [recipeLoading, setRecipeLoading] = useState(false);
+
+  const toggleRecipeRecommendation = async () => {
+    if (!showRecipeRecommendation && selectedItems.size > 0) {
+      // 레시피 추천을 처음 열 때 API 호출
+      await loadRecipeRecommendations();
+    }
     setShowRecipeRecommendation(!showRecipeRecommendation);
+  };
+
+  const loadRecipeRecommendations = async () => {
+    if (selectedItems.size === 0) {
+      alert('레시피 추천을 받으려면 상품을 선택해주세요.');
+      return;
+    }
+
+    try {
+      setRecipeLoading(true);
+      
+      // 선택된 상품들의 cart_id 배열
+      const selectedCartIds = Array.from(selectedItems);
+      
+      // 레시피 추천 API 호출
+      const result = await cartApi.getRecipeRecommendations(selectedCartIds);
+      
+      setRecipeRecommendations(result.recipes || []);
+      
+    } catch (error) {
+      console.error('레시피 추천 로딩 실패:', error);
+      alert('레시피 추천을 불러오는데 실패했습니다.');
+    } finally {
+      setRecipeLoading(false);
+    }
   };
 
   const handleQuantityClick = (cartItemId) => {
@@ -304,9 +474,13 @@ const Cart = () => {
                       
                       <button 
                         className="wishlist-btn"
-                        onClick={() => handleWishlist(item.kok_cart_id)}
+                        onClick={() => handleHeartToggle(item.kok_product_id)}
+                        data-product-id={item.kok_product_id}
                       >
-                        <img src={heartIcon} alt="찜하기" />
+                        <img 
+                          src={likedProducts.has(item.kok_product_id) ? heartFilledIcon : heartIcon} 
+                          alt="찜하기" 
+                        />
                       </button>
                     </div>
                   </div>
@@ -328,22 +502,41 @@ const Cart = () => {
                 </button>
                 
                 <div className={`recipe-recommendation-content ${showRecipeRecommendation ? 'show' : ''}`}>
-                  <div className="recipe-item">
-                    <img src={test1Image} alt="레시피 추천" className="recipe-thumbnail" />
-                    <div className="recipe-info">
-                      <h4>감자닭볶음탕</h4>
-                      <p>감자와 닭고기로 만드는 매콤한 요리</p>
-                      <span className="recipe-tag">한식</span>
+                  {recipeLoading ? (
+                    <div className="recipe-loading">레시피를 추천받는 중...</div>
+                  ) : recipeRecommendations.length > 0 ? (
+                    <>
+                      {recipeRecommendations.map((recipe, index) => (
+                        <div key={index} className="recipe-item">
+                          <img 
+                            src={recipe.recipe_thumbnail || test1Image} 
+                            alt={recipe.cooking_name} 
+                            className="recipe-thumbnail" 
+                          />
+                          <div className="recipe-info">
+                            <h4>{recipe.cooking_name}</h4>
+                            <p>조리시간: {recipe.cooking_time} | 난이도: {recipe.difficulty}</p>
+                            <div className="recipe-meta">
+                              <span className="recipe-tag">스크랩 {recipe.scrap_count}</span>
+                              <span className="recipe-ingredients">재료 {recipe.matched_ingredient_count}개</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      <div className="recipe-more">
+                        <button 
+                          className="recipe-more-btn"
+                          onClick={() => navigate('/recipes/recommendation')}
+                        >
+                          더 많은 레시피 보기
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="recipe-empty">
+                      선택한 상품으로 만들 수 있는 레시피가 없습니다.
                     </div>
-                  </div>
-                  <div className="recipe-item">
-                    <img src={test1Image} alt="레시피 추천" className="recipe-thumbnail" />
-                    <div className="recipe-info">
-                      <h4>된장찌개</h4>
-                      <p>구수한 된장으로 만드는 건강한 찌개</p>
-                      <span className="recipe-tag">한식</span>
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
             )}

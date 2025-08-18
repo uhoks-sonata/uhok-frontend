@@ -136,3 +136,35 @@ export const removeToken = () => {
 export const isLoggedIn = () => {
   return !!localStorage.getItem('access_token');
 };
+
+/**
+ * 백엔드 서버 상태를 확인하는 함수
+ * @returns {Promise<boolean>} 서버가 정상인지 여부
+ */
+export const checkServerHealth = async () => {
+  try {
+    const response = await fetch('/api/health', {
+      method: 'GET',
+      timeout: 5000
+    });
+    return response.ok;
+  } catch (error) {
+    console.error('서버 헬스체크 실패:', error);
+    return false;
+  }
+};
+
+/**
+ * 서버 연결 상태를 확인하고 사용자에게 알리는 함수
+ */
+export const notifyServerStatus = async () => {
+  const isHealthy = await checkServerHealth();
+  if (!isHealthy) {
+    console.warn('백엔드 서버에 연결할 수 없습니다.');
+    console.warn('다음을 확인해주세요:');
+    console.warn('1. 백엔드 서버가 실행 중인지 확인');
+    console.warn('2. 프록시 설정이 올바른지 확인 (setupProxy.js)');
+    console.warn('3. 백엔드 서버 포트가 9000인지 확인');
+  }
+  return isHealthy;
+};

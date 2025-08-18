@@ -2,8 +2,8 @@
 import React, { useState } from 'react';
 // React Router의 Link와 useNavigate 훅 import
 import { Link, useNavigate } from 'react-router-dom';
-// api.js import
-import api from '../api';
+// userApi import
+import { userApi } from '../../api/userApi';
 // 로그인 페이지 스타일 CSS 파일 import
 import '../../styles/login.css';
 // 사용자 Context import
@@ -57,57 +57,57 @@ const Login = () => {
     try {
       // API 명세서에 맞춘 로그인 요청
       // POST /api/user/login
-      // 백엔드 요구사항: { "username": "user@example.com", "password": "secure_password" }
+      // Request body: { "email": "user@example.com", "password": "secure_password" }
       const requestData = {
-        username: email.trim(), // 백엔드가 username 필드를 요구함
-        password: password.trim() // 비밀번호도 공백 제거
+        email: email.trim(),
+        password: password.trim()
       };
       
       console.log('로그인 요청 데이터:', requestData);
       console.log('요청 URL:', '/api/user/login');
-      console.log('요청 헤더:', {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      });
-      console.log('백엔드 요구사항: username 필드 사용, 예시 계정: user@example.com / secure_password');
       
-      // OAuth2PasswordRequestForm 형식으로 요청 데이터 전송 (form-urlencoded)
-      const formData = new URLSearchParams();
-      formData.append('username', email);  // OAuth2 표준에서는 username 필드 사용
-      formData.append('password', password);
-      formData.append('grant_type', 'password');
+      // 새로운 userApi 사용
+      const response = await userApi.login(requestData);
       
-      const response = await api.post('/api/user/login', formData, {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      });
-      
-      console.log('로그인 API 응답:', response.data);
+      console.log('로그인 API 응답:', response);
 
       // API 명세서 응답 형식에 맞춘 처리
       // Response: { "access_token": "eyJhbGciOiJIUzI1...", "token_type": "bearer" }
-      if (response.data && response.data.access_token) {
+      if (response && response.access_token) {
         console.log('백엔드에서 토큰을 성공적으로 받았습니다!');
         
-        // 토큰을 로컬 스토리지에 저장
-        localStorage.setItem('access_token', response.data.access_token);
-        localStorage.setItem('token_type', response.data.token_type);
-        
-        // 사용자 Context에 로그인 정보 저장
-        const userData = {
-          token: response.data.access_token,
-          tokenType: response.data.token_type,
-          email: email
-        };
-        login(userData);
+        // 사용자 정보 조회 (API 명세서에 맞춘 처리)
+        let userData;
+        try {
+          const userInfo = await userApi.getUserInfo();
+          console.log('사용자 정보 조회 성공:', userInfo);
+          
+          // 사용자 Context에 로그인 정보 저장
+          userData = {
+            token: response.access_token,
+            tokenType: response.token_type,
+            email: email,
+            user_id: userInfo.user_id,
+            username: userInfo.username
+          };
+          await login(userData);
+        } catch (error) {
+          console.error('사용자 정보 조회 실패:', error);
+          // 사용자 정보 조회 실패 시에도 기본 정보로 로그인 진행
+          userData = {
+            token: response.access_token,
+            tokenType: response.token_type,
+            email: email
+          };
+          await login(userData);
+        }
         
         console.log('로그인 성공 - 백엔드 토큰 저장 완료:', userData);
         // 로그인 성공 시 메인 페이지로 이동
         navigate('/main');
       } else {
         // 토큰이 없는 경우 에러 처리
-        console.error('백엔드 응답에 토큰이 없습니다:', response.data);
+        console.error('백엔드 응답에 토큰이 없습니다:', response);
         setError('로그인에 실패했습니다. 토큰을 받지 못했습니다.');
       }
     } catch (err) {

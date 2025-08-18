@@ -458,10 +458,15 @@ const KokProductDetail = () => {
       // 애니메이션 효과를 위한 DOM 조작
       const heartButton = document.querySelector('.heart-button');
       if (heartButton) {
-        heartButton.style.transform = 'scale(1.2)';
-        setTimeout(() => {
-          heartButton.style.transform = 'scale(1)';
-        }, 150);
+        if (!kokIsWishlisted) {
+          // 찜 추가 애니메이션
+          heartButton.classList.add('liked');
+          setTimeout(() => heartButton.classList.remove('liked'), 600);
+        } else {
+          // 찜 해제 애니메이션
+          heartButton.classList.add('unliked');
+          setTimeout(() => heartButton.classList.remove('unliked'), 600);
+        }
       }
     } catch (error) {
       console.error('찜 API 호출 실패:', error);
@@ -654,59 +659,63 @@ const KokProductDetail = () => {
             <div className="details-info">
               <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '16px' }}>상세 정보</h3>
               
-              {/* 판매자 정보 */}
+              {/* 판매자 정보 표 */}
               {kokSellerInfo && (
                 <div style={{ marginBottom: '24px' }}>
                   <h4 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', color: '#333' }}>판매자 정보</h4>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #f0f0f0' }}>
-                      <span style={{ fontSize: '13px', color: '#666' }}>상호명/대표자</span>
-                      <span style={{ fontSize: '13px', fontWeight: '500' }}>{kokSellerInfo.kok_co_ceo}</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #f0f0f0' }}>
-                      <span style={{ fontSize: '13px', color: '#666' }}>사업자등록번호</span>
-                      <span style={{ fontSize: '13px', fontWeight: '500' }}>{kokSellerInfo.kok_co_reg_no}</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #f0f0f0' }}>
-                      <span style={{ fontSize: '13px', color: '#666' }}>통신판매업신고</span>
-                      <span style={{ fontSize: '13px', fontWeight: '500' }}>{kokSellerInfo.kok_co_ec_reg}</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #f0f0f0' }}>
-                      <span style={{ fontSize: '13px', color: '#666' }}>전화번호</span>
-                      <span style={{ fontSize: '13px', fontWeight: '500' }}>{kokSellerInfo.kok_tell}</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #f0f0f0' }}>
-                      <span style={{ fontSize: '13px', color: '#666' }}>인증완료 항목</span>
-                      <span style={{ fontSize: '13px', fontWeight: '500' }}>{kokSellerInfo.kok_ver_item}</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #f0f0f0' }}>
-                      <span style={{ fontSize: '13px', color: '#666' }}>인증시기</span>
-                      <span style={{ fontSize: '13px', fontWeight: '500' }}>{kokSellerInfo.kok_ver_date}</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #f0f0f0' }}>
-                      <span style={{ fontSize: '13px', color: '#666' }}>영업소재지</span>
-                      <span style={{ fontSize: '13px', fontWeight: '500' }}>{kokSellerInfo.kok_co_addr}</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0' }}>
-                      <span style={{ fontSize: '13px', color: '#666' }}>반품주소</span>
-                      <span style={{ fontSize: '13px', fontWeight: '500' }}>{kokSellerInfo.kok_return_addr}</span>
-                    </div>
-                  </div>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #e0e0e0', borderRadius: '8px', overflow: 'hidden' }}>
+                    <tbody>
+                      <tr style={{ borderBottom: '1px solid #f0f0f0' }}>
+                        <td style={{ padding: '12px', backgroundColor: '#f8f9fa', fontWeight: '500', fontSize: '13px', color: '#666', width: '30%' }}>상호명/대표자</td>
+                        <td style={{ padding: '12px', fontSize: '13px', color: '#333' }}>{kokSellerInfo.kok_co_ceo}</td>
+                      </tr>
+                      <tr style={{ borderBottom: '1px solid #f0f0f0' }}>
+                        <td style={{ padding: '12px', backgroundColor: '#f8f9fa', fontWeight: '500', fontSize: '13px', color: '#666' }}>사업자등록번호</td>
+                        <td style={{ padding: '12px', fontSize: '13px', color: '#333' }}>{kokSellerInfo.kok_co_reg_no}</td>
+                      </tr>
+                      <tr style={{ borderBottom: '1px solid #f0f0f0' }}>
+                        <td style={{ padding: '12px', backgroundColor: '#f8f9fa', fontWeight: '500', fontSize: '13px', color: '#666' }}>통신판매업신고</td>
+                        <td style={{ padding: '12px', fontSize: '13px', color: '#333' }}>{kokSellerInfo.kok_co_ec_reg}</td>
+                      </tr>
+                      <tr style={{ borderBottom: '1px solid #f0f0f0' }}>
+                        <td style={{ padding: '12px', backgroundColor: '#f8f9fa', fontWeight: '500', fontSize: '13px', color: '#666' }}>전화번호</td>
+                        <td style={{ padding: '12px', fontSize: '13px', color: '#333' }}>{kokSellerInfo.kok_tell}</td>
+                      </tr>
+                      <tr style={{ borderBottom: '1px solid #f0f0f0' }}>
+                        <td style={{ padding: '12px', backgroundColor: '#f8f9fa', fontWeight: '500', fontSize: '13px', color: '#666' }}>인증완료 항목</td>
+                        <td style={{ padding: '12px', fontSize: '13px', color: '#333' }}>{kokSellerInfo.kok_ver_item}</td>
+                      </tr>
+                      <tr style={{ borderBottom: '1px solid #f0f0f0' }}>
+                        <td style={{ padding: '12px', backgroundColor: '#f8f9fa', fontWeight: '500', fontSize: '13px', color: '#666' }}>인증시기</td>
+                        <td style={{ padding: '12px', fontSize: '13px', color: '#333' }}>{kokSellerInfo.kok_ver_date}</td>
+                      </tr>
+                      <tr style={{ borderBottom: '1px solid #f0f0f0' }}>
+                        <td style={{ padding: '12px', backgroundColor: '#f8f9fa', fontWeight: '500', fontSize: '13px', color: '#666' }}>영업소재지</td>
+                        <td style={{ padding: '12px', fontSize: '13px', color: '#333' }}>{kokSellerInfo.kok_co_addr}</td>
+                      </tr>
+                      <tr>
+                        <td style={{ padding: '12px', backgroundColor: '#f8f9fa', fontWeight: '500', fontSize: '13px', color: '#666' }}>반품주소</td>
+                        <td style={{ padding: '12px', fontSize: '13px', color: '#333' }}>{kokSellerInfo.kok_return_addr}</td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               )}
 
-              {/* 상세 정보 */}
+              {/* 제품 상세 정보 표 */}
               {kokDetailInfo.length > 0 && (
                 <div>
                   <h4 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', color: '#333' }}>제품 상세 정보</h4>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {kokDetailInfo.map((detail, index) => (
-                      <div key={index} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #f0f0f0' }}>
-                        <span style={{ fontSize: '13px', color: '#666' }}>{detail.kok_detail_col}</span>
-                        <span style={{ fontSize: '13px', fontWeight: '500' }}>{detail.kok_detail_val}</span>
-                      </div>
-                    ))}
-                  </div>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #e0e0e0', borderRadius: '8px', overflow: 'hidden' }}>
+                    <tbody>
+                      {kokDetailInfo.map((detail, index) => (
+                        <tr key={index} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                          <td style={{ padding: '12px', backgroundColor: '#f8f9fa', fontWeight: '500', fontSize: '13px', color: '#666', width: '30%' }}>{detail.kok_detail_col}</td>
+                          <td style={{ padding: '12px', fontSize: '13px', color: '#333' }}>{detail.kok_detail_val}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
 
@@ -801,7 +810,7 @@ const KokProductDetail = () => {
               {renderKokStars(kokReviewStats ? kokReviewStats.kok_review_score : kokProduct.rating)}
             </span>
             <span style={{ marginLeft: '8px', fontSize: '14px', color: '#666' }}>
-              {kokReviewStats ? kokReviewStats.kok_review_score : kokProduct.rating} ({kokReviewStats ? kokReviewStats.kok_review_cnt : kokProduct.reviewCount}개 리뷰)
+              {kokReviewStats ? kokReviewStats.kok_review_score : kokProduct.rating} ({kokReviewStats?.kok_review_cnt ?? kokProduct?.reviewCount ?? 0}개 리뷰)
             </span>
           </div>
 
@@ -827,19 +836,27 @@ const KokProductDetail = () => {
               <span style={{ fontSize: '10px', color: '#999' }}>
                 {kokProduct.shippingInfo || '배송정보 없음'}
               </span>
-              <img 
-                src={kokIsWishlisted ? filledHeartIcon : emptyHeartIcon}
-                alt="찜"
-                className="heart-button"
-                style={{ 
-                  width: '38px', 
-                  height: '38px', 
-                  marginLeft: '8px',
-                  cursor: 'pointer',
-                  transition: 'transform 0.15s ease-in-out'
-                }}
-                onClick={handleKokWishlistClick}
-              />
+                             <div 
+                 className="heart-button"
+                 style={{ 
+                   width: '32px', 
+                   height: '32px', 
+                   marginLeft: '8px',
+                   cursor: 'pointer',
+                   display: 'flex',
+                   alignItems: 'center',
+                   justifyContent: 'center'
+                 }}
+                 onClick={handleKokWishlistClick}
+               >
+                 <img 
+                   src={kokIsWishlisted ? filledHeartIcon : emptyHeartIcon}
+                   alt="찜"
+                   style={{ 
+                     transition: 'transform 0.15s ease-in-out'
+                   }}
+                 />
+               </div>
               <CartButton 
                 productId={productId}
                 size="30px"

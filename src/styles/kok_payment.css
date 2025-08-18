@@ -85,7 +85,7 @@
 }
 
 .total-price {
-  color: #f68cb1;
+  color: #FA5F8C;
   font-size: 18px;
 }
 
@@ -122,13 +122,13 @@
 }
 
 .method-option:hover {
-  border-color: #f68cb1;
+  border-color: #FA5F8C;
 }
 
 .method-option input[type="radio"] {
   width: 18px;
   height: 18px;
-  accent-color: #f68cb1;
+  accent-color: #FA5F8C;
 }
 
 .method-option span {
@@ -176,7 +176,7 @@
 
 .form-group input:focus {
   outline: none;
-  border-color: #f68cb1;
+  border-color: #FA5F8C;
 }
 
 .form-row {
@@ -195,7 +195,7 @@
 .payment-button {
   width: 100%;
   padding: 16px;
-  background-color: #f68cb1;
+  background-color: #FA5F8C;
   color: white;
   border: none;
   border-radius: 12px;
@@ -206,7 +206,7 @@
 }
 
 .payment-button:hover {
-  background-color: #e67a9f;
+  background-color: #FA5F8C;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(246, 140, 177, 0.4);
 }

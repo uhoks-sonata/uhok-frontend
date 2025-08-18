@@ -17,17 +17,17 @@ const isTokenExpired = (token) => {
 };
 
 const api = axios.create({
-  baseURL: process.env.FASTAPI_BASE_URL || 'http://localhost:9000', // 환경변수 기반 기본 URL
+  baseURL: '', // 프록시를 사용하므로 baseURL을 비워둠
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
   timeout: 10000, // 10초 타임아웃 추가
-});
+ });
 
 // API 설정 로깅
 console.log('API 설정:', {
-  baseURL: 'http://localhost:3001',
+  baseURL: '프록시 사용 (/api -> localhost:9000)',
   timeout: 10000
 });
 
@@ -38,7 +38,8 @@ api.interceptors.request.use(
     const publicEndpoints = [
       '/api/user/login',
       '/api/user/signup',
-      '/api/user/signup/email/check'
+      '/api/user/signup/email/check',
+      '/log'
     ];
     
     // 현재 요청이 공개 엔드포인트인지 확인
@@ -113,6 +114,21 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
+    // 500 에러 처리 (서버 내부 오류)
+    if (error.response?.status === 500) {
+      console.error('서버 내부 오류 발생:', {
+        url: error.config?.url,
+        method: error.config?.method,
+        status: error.response.status,
+        statusText: error.response.statusText,
+        data: error.response.data,
+        headers: error.response.headers
+      });
+      
+      // 500 에러는 서버 측 문제이므로 사용자에게 명확한 안내
+      console.warn('500 에러는 서버 측 문제입니다. 백엔드 개발자에게 문의하세요.');
+    }
+    
     // 401 에러 처리 (인증 실패)
     if (error.response?.status === 401) {
       // 현재 페이지가 인증이 필요하지 않은 페이지인지 확인
@@ -151,6 +167,25 @@ api.interceptors.response.use(
       console.log('API 엔드포인트가 존재하지 않습니다:', error.config.url);
       // 404 에러는 개발 환경에서 흔한 상황이므로 에러를 그대로 전달
       return Promise.reject(error);
+    }
+    
+    // 기타 에러들에 대한 로깅
+    if (error.response) {
+      console.error('API 응답 에러:', {
+        url: error.config?.url,
+        method: error.config?.method,
+        status: error.response.status,
+        statusText: error.response.statusText,
+        data: error.response.data
+      });
+    } else if (error.request) {
+      console.error('API 요청 에러 (응답 없음):', {
+        url: error.config?.url,
+        method: error.config?.method,
+        request: error.request
+      });
+    } else {
+      console.error('API 설정 에러:', error.message);
     }
     
     return Promise.reject(error);
