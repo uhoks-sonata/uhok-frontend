@@ -15,6 +15,57 @@
   overflow-y: auto;
 }
 
+/* 탭 네비게이션 */
+.notification-tabs {
+  display: flex;
+  background-color: #ffffff;
+  /* border-bottom: 2px solid #e0e0e0; */
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  min-height: 48px;
+  box-shadow: none;
+  margin: 0;
+  padding: 20px;
+  gap: 12px;
+}
+
+.notification-tab-button {
+  flex: 1;
+  background-color: #F2F2F2;
+  border: none;
+  padding: 16px 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  width: 210px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  user-select: none;
+  margin: 0;
+  border-radius: 10px;
+}
+
+.notification-tab-button:hover {
+  color: #333;
+  background-color: #ffffff;
+  border: 2px solid #000000;
+}
+
+.notification-tab-button.active {
+  color: #ffffff;
+  font-weight: bold;
+  background-color: #000000;
+  border: none;
+}
+
 /* 로딩 상태 */
 .notification-loading {
   display: flex;
@@ -154,6 +205,22 @@
   gap: 6px;
 }
 
+.notification-status {
+  font-size: 16px;
+  font-weight: bold;
+  color: #000000;
+  margin-bottom: 10px;
+  line-height: 1.3;
+}
+
+.notification-product {
+  font-size: 14px;
+  color: #000000;
+  margin-bottom: 6px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
 .unread-dot {
   width: 6px;
   height: 6px;
@@ -164,7 +231,7 @@
 
 .notification-message {
   font-size: 14px;
-  color: #666;
+  color: #9d9b9b;
   line-height: 1.4;
   margin-bottom: 6px;
   word-break: break-word;
