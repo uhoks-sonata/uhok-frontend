@@ -22,18 +22,25 @@ const api = axios.create({
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
-  timeout: 10000, // 10초 타임아웃 추가
+  timeout: 30000, // 30초로 타임아웃 증가 (임시 디버깅용)
  });
 
 // API 설정 로깅
 console.log('API 설정:', {
   baseURL: '프록시 사용 (/api -> localhost:9000)',
-  timeout: 10000
+  timeout: 30000
 });
 
 // 요청 인터셉터: 인증이 필요한 요청에만 토큰 첨부
 api.interceptors.request.use(
   (config) => {
+    console.log('🔍 API 요청 시작:', {
+      url: config.url,
+      method: config.method,
+      params: config.params,
+      headers: config.headers
+    });
+    
     // 인증이 필요하지 않은 엔드포인트 목록
     const publicEndpoints = [
       '/api/user/login',
@@ -115,6 +122,12 @@ api.interceptors.request.use(
 // 응답 인터셉터: 토큰 만료 시 자동 로그아웃
 api.interceptors.response.use(
   (response) => {
+    console.log('✅ API 응답 성공:', {
+      url: response.config.url,
+      method: response.config.method,
+      status: response.status,
+      statusText: response.statusText
+    });
     return response;
   },
   (error) => {

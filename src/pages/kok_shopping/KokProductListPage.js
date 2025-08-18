@@ -270,6 +270,13 @@ const KokProductListPage = () => {
 
   const handleKokSearch = (query) => {
     console.log('검색 실행:', query);
+    // 콕 쇼핑몰 타입으로 검색 페이지로 이동
+    if (query && query.trim()) {
+      const searchUrl = `/kok/search?q=${encodeURIComponent(query.trim())}`;
+      navigate(searchUrl);
+    } else {
+      navigate('/kok/search');
+    }
   };
 
   const handleKokNotificationClick = () => {

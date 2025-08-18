@@ -15,10 +15,21 @@ const HeaderNavKokMain = ({ onNotificationsClick, onBackClick, onCartClick, onSe
   const handleBackClick = onBackClick || (() => navigate(-1));
   const handleNotificationsClick = onNotificationsClick || (() => navigate('/notifications'));
   const handleCartClick = onCartClick || (() => navigate('/cart'));
-  const handleSearch = onSearch || ((searchTerm) => {
-    // 검색 기능 구현 (예: 검색 페이지로 이동)
-    navigate(`/search?q=${encodeURIComponent(searchTerm)}`);
-  });
+  const handleSearch = (searchTerm) => {
+    if (onSearch) {
+      onSearch(searchTerm);
+    } else {
+      // 콕 쇼핑몰 타입으로 검색 페이지로 이동
+      if (searchTerm && searchTerm.trim()) {
+        const searchUrl = `/kok/search?q=${encodeURIComponent(searchTerm.trim())}`;
+        navigate(searchUrl);
+      } else {
+        navigate('/kok/search');
+      }
+    }
+  };
+
+
 
   // 검색창 클릭 시 입력 모드로 전환
   const handleSearchBarClick = () => {

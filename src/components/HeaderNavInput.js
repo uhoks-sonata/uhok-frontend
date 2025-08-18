@@ -19,6 +19,7 @@ const HeaderNavInput = ({
     console.log('searchTerm:', searchTerm);
     console.log('onSearch 존재:', !!onSearch);
     console.log('onSubmit 존재:', !!onSubmit);
+    console.log('현재 URL:', window.location.href);
     
     if (searchTerm.trim() && onSearch) {
       console.log('onSearch 호출:', searchTerm.trim());

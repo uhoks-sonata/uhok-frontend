@@ -81,7 +81,7 @@ const KokMain = () => {
             : product.kok_discounted_price, // 할인율이 0이면 할인가가 원가
           discountPrice: product.kok_discounted_price,
           discountRate: product.kok_discount_rate,
-          image: product.kok_thumbnail,
+          image: product.kok_thumbnail || 'https://via.placeholder.com/300x300/CCCCCC/666666?text=No+Image',
           rating: product.kok_review_score || 0, // 백엔드에서 제공하는 별점
           reviewCount: product.kok_review_cnt || 0, // 백엔드에서 제공하는 리뷰 수
           storeName: product.kok_store_name
@@ -101,7 +101,7 @@ const KokMain = () => {
             : product.kok_discounted_price,
           discountPrice: product.kok_discounted_price,
           discountRate: product.kok_discount_rate,
-          image: product.kok_thumbnail,
+          image: product.kok_thumbnail || 'https://via.placeholder.com/300x300/CCCCCC/666666?text=No+Image',
           rating: product.kok_review_score || 0,
           reviewCount: product.kok_review_cnt || 0,
           storeName: product.kok_store_name
@@ -184,7 +184,7 @@ const KokMain = () => {
             : product.kok_discounted_price,
           discountPrice: product.kok_discounted_price,
           discountRate: product.kok_discount_rate,
-          image: product.kok_thumbnail,
+          image: product.kok_product_image || product.kok_thumbnail || '/test1.png',
           rating: product.kok_review_score || 0, // 백엔드에서 제공하는 별점
           reviewCount: product.kok_review_cnt || 0, // 백엔드에서 제공하는 리뷰 수
           storeName: product.kok_store_name
@@ -204,7 +204,7 @@ const KokMain = () => {
             : product.kok_discounted_price,
           discountPrice: product.kok_discounted_price,
           discountRate: product.kok_discount_rate,
-          image: product.kok_thumbnail,
+          image: product.kok_product_image || product.kok_thumbnail || '/test1.png',
           rating: product.kok_review_score || 0,
           reviewCount: product.kok_review_cnt || 0,
           storeName: product.kok_store_name
@@ -323,7 +323,7 @@ const KokMain = () => {
             : product.kok_discounted_price,
           discountPrice: product.kok_discounted_price,
           discountRate: product.kok_discount_rate,
-          image: product.kok_thumbnail,
+          image: product.kok_product_image || product.kok_thumbnail || '/test1.png',
           rating: product.kok_review_score || 0, // 백엔드에서 제공하는 별점
           reviewCount: product.kok_review_cnt || 0, // 백엔드에서 제공하는 리뷰 수
           storeName: product.kok_store_name
@@ -352,7 +352,7 @@ const KokMain = () => {
             : product.kok_discounted_price,
           discountPrice: product.kok_discounted_price,
           discountRate: product.kok_discount_rate,
-          image: product.kok_thumbnail,
+          image: product.kok_product_image || product.kok_thumbnail || '/test1.png',
           rating: product.kok_review_score || 0,
           reviewCount: product.kok_review_cnt || 0,
           storeName: product.kok_store_name
@@ -405,12 +405,12 @@ const KokMain = () => {
 
   // 검색 핸들러 (콕 쇼핑몰 타입으로 검색 페이지 이동)
   const handleKokSearch = (query) => {
-    console.log('콕 쇼핑몰 검색어:', query);
     // 콕 쇼핑몰 타입으로 검색 페이지로 이동
     if (query && query.trim()) {
-      navigate(`/search?q=${encodeURIComponent(query.trim())}&type=kok`);
+      const searchUrl = `/kok/search?q=${encodeURIComponent(query.trim())}`;
+      navigate(searchUrl);
     } else {
-      navigate('/search?type=kok');
+      navigate('/kok/search');
     }
   };
 
@@ -563,6 +563,7 @@ const KokMain = () => {
       <HeaderNavMain 
         title="콕 쇼핑몰" 
         onNotificationsClick={handleKokNotificationClick}
+        onSearch={handleKokSearch}
       />
       <main className="kok-main-content">
         {kokLoading ? (

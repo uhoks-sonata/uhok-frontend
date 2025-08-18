@@ -122,7 +122,7 @@ const MyPage = () => {
         // 사용자 정보 조회 (API 명세서에 맞춘 처리)
         try {
           console.log('사용자 정보 조회 중...');
-          const userResponse = await userApi.getUserInfo();
+          const userResponse = await userApi.getProfile();
           userData = userResponse;
           console.log('사용자 정보 조회 성공:', userData);
         } catch (err) {

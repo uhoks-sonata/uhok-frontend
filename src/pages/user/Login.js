@@ -79,7 +79,7 @@ const Login = () => {
         // 사용자 정보 조회 (API 명세서에 맞춘 처리)
         let userData;
         try {
-          const userInfo = await userApi.getUserInfo();
+          const userInfo = await userApi.getProfile();
           console.log('사용자 정보 조회 성공:', userInfo);
           
           // 사용자 Context에 로그인 정보 저장

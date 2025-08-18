@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { kokApi } from '../../api/kokApi';
+import { orderApi } from '../../api/orderApi';
 import HeaderNavPayment from '../../layout/HeaderNavPayment';
 import BottomNav from '../../layout/BottomNav';
 import api from '../api';
@@ -24,23 +25,8 @@ const KokPayment = () => {
   // URL 파라미터나 state에서 주문 정보 가져오기
   useEffect(() => {
     const fetchOrderInfo = async () => {
-      console.log('🔍 fetchOrderInfo 시작');
-      console.log('🔍 location.state:', location.state);
-      console.log('🔍 location.search:', location.search);
-      console.log('🔍 location.pathname:', location.pathname);
-      
       // 1. location.state에서 데이터 읽기 (우선순위 1)
       if (location.state?.fromCart) {
-        console.log('🛒 location.state에서 장바구니 데이터 감지됨!');
-        console.log('장바구니에서 전달받은 주문 정보:', {
-          discountPrice: location.state.discountPrice,
-          originalPrice: location.state.originalPrice,
-          productName: location.state.productName,
-          productImage: location.state.productImage,
-          cartItems: location.state.cartItems,
-          orderId: location.state.orderId
-        });
-
         // 장바구니에서 전달받은 할인 가격 정보 사용
         const orderInfoData = {
           kokOrderId: `KOK-${location.state.orderId || 'CART'}`,
@@ -57,7 +43,6 @@ const KokPayment = () => {
           originalPrice: location.state.originalPrice
         };
         
-        console.log('✅ 설정할 orderInfo:', orderInfoData);
         setOrderInfo(orderInfoData);
         return;
       }
@@ -69,11 +54,8 @@ const KokPayment = () => {
       if (dataParam) {
         try {
           const decodedData = JSON.parse(decodeURIComponent(dataParam));
-          console.log('📡 URL 파라미터에서 읽은 데이터:', decodedData);
           
           if (decodedData.fromCart) {
-            console.log('🛒 URL 파라미터에서 장바구니 데이터 감지됨!');
-            
             // 장바구니에서 전달받은 할인 가격 정보 사용
             const orderInfoData = {
               kokOrderId: `KOK-${decodedData.orderId || 'CART'}`,
@@ -90,7 +72,6 @@ const KokPayment = () => {
               originalPrice: decodedData.originalPrice
             };
             
-            console.log('✅ URL 파라미터에서 설정할 orderInfo:', orderInfoData);
             setOrderInfo(orderInfoData);
             
             // location.state에도 저장 (UI 표시용)
@@ -101,45 +82,34 @@ const KokPayment = () => {
             return;
           }
         } catch (error) {
-          console.error('❌ URL 파라미터 파싱 실패:', error);
+          console.error('URL 파라미터 파싱 실패:', error);
         }
       }
       
       // 3. 기존 location.state 처리 (우선순위 3)
       if (location.state?.orderInfo) {
-        console.log('✅ orderInfo가 있는 경우');
         setOrderInfo(location.state.orderInfo);
       } else if (location.state?.productId) {
         // 상품 상세페이지에서 전달받은 제품 ID로 실제 제품 정보를 API에서 가져오기
-        console.log('📱 상품 상세페이지에서 넘어온 경우 감지됨!');
         const productId = location.state.productId;
-        console.log('상품 상세페이지에서 전달받은 제품 ID:', productId);
         
         // 상품 상세페이지에서 전달받은 할인 가격 정보가 있는지 확인
         if (location.state.fromProductDetail && location.state.discountPrice) {
-          console.log('상품 상세페이지에서 전달받은 할인 가격 정보:', {
-            discountPrice: location.state.discountPrice,
-            originalPrice: location.state.originalPrice,
-            discountRate: location.state.discountRate,
-            productName: location.state.productName
+          // 전달받은 할인 가격 정보 사용
+          setOrderInfo({
+            kokOrderId: `KOK-${productId}`,
+            orderId: `ORD-${productId}`,
+            productName: location.state.productName || `제품 ID: ${productId}`,
+            quantity: 1,
+            price: location.state.discountPrice,
+            totalAmount: location.state.discountPrice,
+            productId: productId,
+            productImage: location.state.productImage || '/test1.png' // 상품 상세페이지에서 전달받은 이미지 사용
           });
-          
-                     // 전달받은 할인 가격 정보 사용
-           setOrderInfo({
-             kokOrderId: `KOK-${productId}`,
-             orderId: `ORD-${productId}`,
-             productName: location.state.productName || `제품 ID: ${productId}`,
-             quantity: 1,
-             price: location.state.discountPrice,
-             totalAmount: location.state.discountPrice,
-             productId: productId,
-             productImage: location.state.productImage || '/test1.png' // 상품 상세페이지에서 전달받은 이미지 사용
-           });
         } else {
           try {
             // 제품 기본 정보 가져오기
             const productInfo = await api.get(`/api/kok/product/${productId}/info`);
-            console.log('제품 기본 정보 API 응답:', productInfo.data);
             
             if (productInfo.data) {
               const product = productInfo.data;
@@ -213,7 +183,6 @@ const KokPayment = () => {
         }
       } else {
         // 기본 주문 정보 (실제로는 API에서 가져와야 함)
-        console.log('⚠️ 기본 더미데이터 사용 (location.state가 비어있음)');
         setOrderInfo({
           kokOrderId: '12345',
           orderId: 'ORD-001',
@@ -232,51 +201,60 @@ const KokPayment = () => {
     setExpiryDate('12/25');
     setCvv('123');
     setCardHolderName('홍길동');
-    
-    console.log('🚀 KokPayment 컴포넌트 마운트됨');
   }, [location]);
 
   // 결제 처리 함수 (비동기)
   const handlePayment = async () => {
-    console.log('🎯 handlePayment 함수 호출됨!');
-    console.log('현재 상태:', { paymentMethod, cardNumber, expiryDate, cvv, cardHolderName, orderInfo });
-    
     if (!validatePaymentForm()) {
-      console.log('❌ 폼 유효성 검사 실패');
       return;
     }
 
-    console.log('✅ 폼 유효성 검사 통과, 결제 처리 시작');
     setIsProcessing(true);
     setPaymentStatus('processing');
     setErrorMessage('');
 
     try {
-      // 실제 결제 처리 API 호출 (여기서는 시뮬레이션)
-      console.log('💳 결제 처리 중...', {
-        paymentMethod,
-        cardNumber,
-        expiryDate,
-        cvv,
-        cardHolderName,
-        orderInfo
-      });
+      // 1. 주문 생성 API 호출
+      if (orderInfo?.fromCart && orderInfo?.cartItems) {
+        // API 명세서에 맞는 형식으로 데이터 변환
+        const selectedItems = orderInfo.cartItems.map(item => ({
+          cart_id: item.kok_cart_id,
+          quantity: item.kok_quantity
+        }));
+        
+        // 주문 생성 API 호출
+        const orderResult = await orderApi.createKokOrder(selectedItems);
+        
+        // 주문 정보 업데이트
+        setOrderInfo(prev => ({
+          ...prev,
+          orderId: orderResult.order_id,
+          totalAmount: orderResult.total_amount
+        }));
+        
+        // 결제 처리 시뮬레이션 (2초 대기)
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      } else {
+        // 단일 상품인 경우 기존 방식 사용
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
 
-      // 결제 처리 시뮬레이션 (3초 대기)
-      console.log('⏳ 3초 대기 시작...');
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      console.log('✅ 3초 대기 완료');
-
-      // 결제 성공 후 결제 확인 처리
-      console.log('🔄 결제 확인 처리 시작...');
+      // 2. 결제 확인 처리
       await handlePaymentConfirmation();
 
     } catch (error) {
-      console.error('❌ 결제 처리 실패:', error);
+      console.error('결제 처리 실패:', error);
       setPaymentStatus('failed');
-      setErrorMessage('결제 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+      
+      // API 오류 메시지 처리
+      if (error.response?.data?.message) {
+        setErrorMessage(`결제 처리 실패: ${error.response.data.message}`);
+      } else if (error.message) {
+        setErrorMessage(`결제 처리 실패: ${error.message}`);
+      } else {
+        setErrorMessage('결제 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+      }
     } finally {
-      console.log('🏁 결제 처리 완료, isProcessing = false');
       setIsProcessing(false);
     }
   };
@@ -284,43 +262,52 @@ const KokPayment = () => {
   // 결제 확인 처리 함수 (비동기)
   const handlePaymentConfirmation = async () => {
     try {
-      console.log('결제 확인 처리 시작...');
-
       let confirmationResult;
+
+      // 장바구니에서 온 주문인 경우
+      if (orderInfo?.fromCart && orderInfo?.orderId) {
+        try {
+          // 주문 단위 결제 확인 시도
+          confirmationResult = await kokApi.confirmOrderUnitPayment(orderInfo.orderId);
+          
+          if (confirmationResult.success) {
+            setPaymentStatus('completed');
+            alert('결제가 완료되었습니다!');
+            navigate('/mypage');
+            return;
+          }
+        } catch (error) {
+          console.log('주문 단위 결제 확인 실패, 단건 결제 확인 시도...');
+        }
+      }
 
       // 단건 결제 확인 시도
       if (orderInfo?.kokOrderId) {
-        console.log(`단건 결제 확인: kok_order_id = ${orderInfo.kokOrderId}`);
-        confirmationResult = await kokApi.confirmKokPayment(orderInfo.kokOrderId);
-        
-        if (confirmationResult.success) {
-          console.log('단건 결제 확인 성공:', confirmationResult.message);
-          setPaymentStatus('completed');
-          alert('결제가 완료되었습니다!');
-          navigate('/mypage');
-          return;
+        try {
+          confirmationResult = await kokApi.confirmKokPayment(orderInfo.kokOrderId);
+          
+          if (confirmationResult.success) {
+            setPaymentStatus('completed');
+            alert('결제가 완료되었습니다!');
+            navigate('/mypage');
+            return;
+          }
+        } catch (error) {
+          console.log('단건 결제 확인 실패:', error);
         }
       }
 
-      // 주문 단위 결제 확인 시도
-      if (orderInfo?.orderId) {
-        console.log(`주문 단위 결제 확인: order_id = ${orderInfo.orderId}`);
-        confirmationResult = await kokApi.confirmOrderUnitPayment(orderInfo.orderId);
-        
-        if (confirmationResult.success) {
-          console.log('주문 단위 결제 확인 성공:', confirmationResult.message);
-          setPaymentStatus('completed');
-          alert('결제가 완료되었습니다!');
-          navigate('/mypage');
-          return;
-        }
+      // 결제 확인 성공 처리
+      if (confirmationResult?.success) {
+        setPaymentStatus('completed');
+        alert('결제가 완료되었습니다!');
+        navigate('/mypage');
+        return;
       }
 
       // 결제 확인 실패
-      if (confirmationResult) {
-        setPaymentStatus('failed');
-        setErrorMessage(confirmationResult.message || '결제 확인에 실패했습니다.');
-      }
+      setPaymentStatus('failed');
+      setErrorMessage(confirmationResult?.message || '결제 확인에 실패했습니다.');
 
     } catch (error) {
       console.error('결제 확인 처리 실패:', error);
@@ -331,33 +318,25 @@ const KokPayment = () => {
 
   // 결제 폼 유효성 검사
   const validatePaymentForm = () => {
-    console.log('🔍 폼 유효성 검사 시작');
-    console.log('현재 입력값:', { cardNumber, expiryDate, cvv, cardHolderName });
-    
     if (paymentMethod === 'card') {
       if (!cardNumber.trim()) {
-        console.log('❌ 카드 번호 누락');
         alert('카드 번호를 입력해주세요.');
         return false;
       }
       if (!expiryDate.trim()) {
-        console.log('❌ 만료일 누락');
         alert('만료일을 입력해주세요.');
         return false;
       }
       if (!cvv.trim()) {
-        console.log('❌ CVV 누락');
         alert('CVV를 입력해주세요.');
         return false;
       }
       if (!cardHolderName.trim()) {
-        console.log('❌ 카드 소유자명 누락');
         alert('카드 소유자명을 입력해주세요.');
         return false;
       }
     }
     
-    console.log('✅ 폼 유효성 검사 통과');
     return true;
   };
 
@@ -413,22 +392,6 @@ const KokPayment = () => {
         <div className="order-summary">
           <h2>주문 요약</h2>
           
-          {/* 디버깅 정보 표시 */}
-          <div style={{ 
-            backgroundColor: '#f8f9fa', 
-            padding: '10px', 
-            marginBottom: '15px', 
-            borderRadius: '8px', 
-            fontSize: '12px',
-            border: '1px solid #dee2e6'
-          }}>
-            <strong>🔍 디버깅 정보:</strong><br/>
-            fromCart: {orderInfo?.fromCart ? '✅' : '❌'}<br/>
-            상품 수: {orderInfo?.cartItems?.length || 0}개<br/>
-            총 수량: {orderInfo?.quantity || 0}개<br/>
-            할인가: ₩{orderInfo?.price?.toLocaleString() || '0'}
-          </div>
-          
           {orderInfo && (
             <div className="order-summary-items">
               {/* 장바구니에서 넘어온 경우 각 상품을 개별적으로 표시 */}
@@ -458,7 +421,9 @@ const KokPayment = () => {
                             <div className="store-details">
                               <span className="store-name">{storeName}</span>
                               <span className="delivery-info">
-                                <span className="delivery-icon">🚚</span>
+                                <span className="delivery-icon">
+                                  <img src={require('../../assets/delivery_icon.png')} alt="배송" />
+                                </span>
                                 무료배송
                               </span>
                             </div>

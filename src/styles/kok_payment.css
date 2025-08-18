@@ -614,14 +614,22 @@
 .delivery-info {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 3px;
   font-size: 14px;
   color: #28a745;
   font-weight: 500;
 }
 
 .delivery-icon {
-  font-size: 16px;
+  padding-top: 3px;
+  font-size: 0px;
+}
+
+.delivery-icon img {
+  width: 21px;
+  height: 19px;
+  object-fit: contain;
+  vertical-align: middle;
 }
 
 /* 개별 상품 표시 스타일 */

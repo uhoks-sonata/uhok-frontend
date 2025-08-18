@@ -15,12 +15,13 @@ import Notification from './pages/user/Notification';
 // 홈쇼핑 관련 페이지
 import Main from './pages/home_shopping/main';
 import Schedule from './pages/home_shopping/Schedule';
-import Search from './pages/home_shopping/Search';
+import HomeShoppingSearch from './pages/home_shopping/HomeShoppingSearch';
 
 // KOK 쇼핑 관련 페이지
 import KokMain from './pages/kok_shopping/KokMain';
 import KokProductDetail from './pages/kok_shopping/KokProductDetail';
 import KokProductListPage from './pages/kok_shopping/KokProductListPage';
+import KokSearch from './pages/kok_shopping/KokSearch';
 
 // 레시피 관련 페이지
 import RecipeRecommendation from './pages/recipes/RecipeRecommendation';
@@ -70,8 +71,8 @@ function App() {
               <Route path="/main" element={<Main />} />
               {/* 편성표 경로 (/schedule) - Schedule 페이지로 설정 */}
               <Route path="/schedule" element={<Schedule />} />
-              {/* 검색 경로 (/search) - Search 페이지로 설정 */}
-              <Route path="/search" element={<Search />} />
+              {/* 홈쇼핑 검색 경로 (/homeshopping/search) - HomeShoppingSearch 페이지로 설정 */}
+              <Route path="/homeshopping/search" element={<HomeShoppingSearch />} />
               {/* ===== KOK 라우트 ===== */}
 
               {/* KOK 메인 경로 (/kok) - KOK 메인 페이지 */}
@@ -80,6 +81,8 @@ function App() {
               <Route path="/kok/product/:productId" element={<KokProductDetail />} />
               {/* 제품 목록 경로 (/kok/products/:sectionType) - 제품 목록 페이지 */}
               <Route path="/kok/products/:sectionType" element={<KokProductListPage />} />
+              {/* 콕 검색 경로 (/kok/search) - 콕 검색 페이지 */}
+              <Route path="/kok/search" element={<KokSearch />} />
               
                               {/* 레시피 추천 경로 (/recipes) - 레시피 추천 페이지 */}
                 <Route path="/recipes" element={<RecipeRecommendation />} />

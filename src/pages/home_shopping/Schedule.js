@@ -95,7 +95,7 @@ const Schedule = () => {
       {/* 편성표 헤더 네비게이션 */}
       <HeaderNavSchedule 
         onBackClick={() => navigate(-1)}
-        onSearchClick={(searchTerm) => navigate('/search?type=homeshopping')}
+        onSearchClick={(searchTerm) => navigate('/homeshopping/search?type=homeshopping')}
         onNotificationClick={handleNotification}
       />
 

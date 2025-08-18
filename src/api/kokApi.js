@@ -120,27 +120,57 @@ export const kokApi = {
   // ===== 검색 기능 =====
   
   // 키워드 기반 상품 검색
-  searchProducts: async (keyword, page = 1, size = 20) => {
+  searchProducts: async (keyword, page = 1, size = 20, accessToken = null) => {
     try {
       console.log('🚀 상품 검색 API 호출:', { keyword, page, size });
-      const response = await api.get('/api/kok/search', {
+      console.log('🔍 요청 URL:', '/api/kok/search');
+      console.log('🔍 요청 파라미터:', { keyword, page, size });
+      console.log('🔍 Authorization 토큰:', accessToken ? '있음' : '없음');
+      
+      const config = {
         params: { keyword, page, size }
-      });
+      };
+      
+      // Authorization 헤더가 있으면 추가 (선택사항)
+      if (accessToken) {
+        config.headers = {
+          'Authorization': `Bearer ${accessToken}`
+        };
+      }
+      
+      console.log('🔍 최종 요청 설정:', config);
+      const response = await api.get('/api/kok/search', config);
       console.log('✅ 상품 검색 API 응답:', response.data);
       return response.data;
     } catch (error) {
       console.error('❌ 상품 검색 API 호출 실패:', error);
+      console.error('❌ 에러 상세 정보:', {
+        message: error.message,
+        code: error.code,
+        config: error.config,
+        response: error.response
+      });
       throw error;
     }
   },
 
   // 검색 이력 조회
-  getSearchHistory: async (limit = 10) => {
+  getSearchHistory: async (limit = 10, accessToken = null) => {
     try {
       console.log('🚀 검색 이력 API 호출:', { limit });
-      const response = await api.get('/api/kok/search/history', {
+      
+      const config = {
         params: { limit }
-      });
+      };
+      
+      // Authorization 헤더가 있으면 추가
+      if (accessToken) {
+        config.headers = {
+          'Authorization': `Bearer ${accessToken}`
+        };
+      }
+      
+      const response = await api.get('/api/kok/search/history', config);
       console.log('✅ 검색 이력 API 응답:', response.data);
       return response.data;
     } catch (error) {
@@ -150,10 +180,24 @@ export const kokApi = {
   },
 
   // 검색 이력 추가
-  addSearchHistory: async (keyword) => {
+  addSearchHistory: async (keyword, accessToken = null) => {
     try {
       console.log('🚀 검색 이력 추가 API 호출:', { keyword });
-      const response = await api.post('/api/kok/search/history', { keyword });
+      
+      const config = {
+        data: { keyword }
+      };
+      
+      // Authorization 헤더가 있으면 추가
+      if (accessToken) {
+        config.headers = {
+          'Authorization': `Bearer ${accessToken}`
+        };
+      }
+      
+      const response = await api.post('/api/kok/search/history', config.data, {
+        headers: config.headers
+      });
       console.log('✅ 검색 이력 추가 API 응답:', response.data);
       return response.data;
     } catch (error) {
@@ -163,10 +207,20 @@ export const kokApi = {
   },
 
   // 검색 이력 삭제
-  deleteSearchHistory: async (historyId) => {
+  deleteSearchHistory: async (historyId, accessToken = null) => {
     try {
       console.log('🚀 검색 이력 삭제 API 호출:', { historyId });
-      const response = await api.delete(`/api/kok/search/history/${historyId}`);
+      
+      const config = {};
+      
+      // Authorization 헤더가 있으면 추가
+      if (accessToken) {
+        config.headers = {
+          'Authorization': `Bearer ${accessToken}`
+        };
+      }
+      
+      const response = await api.delete(`/api/kok/search/history/${historyId}`, config);
       console.log('✅ 검색 이력 삭제 API 응답:', response.data);
       return response.data;
     } catch (error) {
@@ -233,7 +287,7 @@ export const kokApi = {
             originalPrice: product.kok_discounted_price / (1 - product.kok_discount_rate / 100),
             discountPrice: product.kok_discounted_price,
             discountRate: product.kok_discount_rate,
-            image: product.kok_thumbnail,
+            image: product.kok_thumbnail || '/test1.png',
             rating: product.kok_review_score || 4.5,
             reviewCount: product.kok_review_cnt || 0,
             storeName: product.kok_store_name,
@@ -252,7 +306,7 @@ export const kokApi = {
               originalPrice: product.kok_discounted_price / (1 - product.kok_discount_rate / 100),
               discountPrice: product.kok_discounted_price,
               discountRate: product.kok_discount_rate,
-              image: product.kok_thumbnail,
+              image: product.kok_thumbnail || '/test1.png',
               rating: product.kok_review_score || 4.5,
               reviewCount: product.kok_review_cnt || 0,
               storeName: product.kok_store_name,
@@ -272,7 +326,7 @@ export const kokApi = {
               originalPrice: product.kok_discounted_price / (1 - product.kok_discount_rate / 100),
               discountPrice: product.kok_discounted_price,
               discountRate: product.kok_discount_rate,
-              image: product.kok_thumbnail,
+              image: product.kok_thumbnail || '/test1.png',
               rating: product.kok_review_score || 4.5,
               reviewCount: product.kok_review_cnt || 0,
               storeName: product.kok_store_name,
