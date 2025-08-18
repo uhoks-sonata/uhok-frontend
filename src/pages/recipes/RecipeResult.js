@@ -88,7 +88,13 @@ const RecipeResult = () => {
     // 레시피 상세 페이지로 이동
     const recipeId = recipe.recipe_id || recipe.id;
     if (recipeId) {
-      navigate(`/recipes/${recipeId}`);
+      // 재료 상태 정보를 state로 전달
+      navigate(`/recipes/${recipeId}`, {
+        state: {
+          ingredients: ingredients,
+          recipeData: recipe
+        }
+      });
     }
   };
 
