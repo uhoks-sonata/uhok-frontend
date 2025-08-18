@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HeaderNavNoti from '../../layout/HeaderNavNoti';
 import BottomNav from '../../layout/BottomNav';
+import Loading from '../../components/Loading';
 import '../../styles/notification.css';
 import api from '../api';
 import { ensureToken } from '../../utils/authUtils';
@@ -15,14 +16,14 @@ const Notification = () => {
 
 
 
-  // 홈쇼핑 알림 API 호출
+  // 홈쇼핑 알림 API 호출 (모든 알림 통합 조회)
   const fetchHomeShoppingNotifications = async (limit = 20) => {
     try {
       console.log('홈쇼핑 알림 API 호출 시작...');
       await ensureToken();
       
-      const response = await api.get('/api/homeshopping/notifications', {
-        params: { limit }
+      const response = await api.get('/api/homeshopping/notifications/all', {
+        params: { limit, offset: 0 }
       });
       
       console.log('홈쇼핑 알림 API 응답:', response.data);
@@ -40,18 +41,76 @@ const Notification = () => {
             hour: '2-digit',
             minute: '2-digit'
           }),
-          isRead: notification.is_read
+          isRead: notification.is_read,
+          relatedEntityType: notification.related_entity_type,
+          relatedEntityId: notification.related_entity_id,
+          homeshoppingOrderId: notification.homeshopping_order_id,
+          homeshoppingLikeId: notification.homeshopping_like_id,
+          statusId: notification.status_id,
+          readAt: notification.read_at
         }));
         
         // 테스트용 더미 데이터 추가 (나중에 지우기 쉽게 주석 처리)
         const testDummyData = [
           {
             id: 'test-1',
-            type: 'test',
-            title: '[테스트] 홈쇼핑 테스트 알림',
-            message: '이것은 테스트용 더미 데이터입니다. API 연결 후 지워주세요.',
+            type: 'order_status_change',
+            title: '주문 상태 변경',
+            message: '주문하신 [농팜] 프리미엄 김치 세트가 배송을 시작합니다.',
             time: '2025.01.20 15:00',
-            isRead: false
+            isRead: false,
+            relatedEntityType: 'order',
+            relatedEntityId: 12345,
+            homeshoppingOrderId: 12345,
+            statusId: 2
+          },
+          {
+            id: 'test-2',
+            type: 'broadcast_start',
+            title: '방송 시작 알림',
+            message: '오늘 저녁 8시, 신선 식재료 특가 방송이 시작됩니다!',
+            time: '2025.01.20 14:30',
+            isRead: true,
+            relatedEntityType: 'broadcast',
+            relatedEntityId: 67890,
+            homeshoppingOrderId: null,
+            statusId: 1
+          },
+          {
+            id: 'test-3',
+            type: 'order_completed',
+            title: '주문 완료',
+            message: '주문하신 [농팜] 유기농 과일 세트가 성공적으로 주문되었습니다.',
+            time: '2025.01.20 13:15',
+            isRead: false,
+            relatedEntityType: 'order',
+            relatedEntityId: 12346,
+            homeshoppingOrderId: 12346,
+            statusId: 1
+          },
+          {
+            id: 'test-4',
+            type: 'like_notification',
+            title: '좋아요 알림',
+            message: '찜해두신 [농팜] 프리미엄 생수 500ml가 특가로 할인됩니다!',
+            time: '2025.01.20 12:00',
+            isRead: true,
+            relatedEntityType: 'like',
+            relatedEntityId: 11111,
+            homeshoppingLikeId: 11111,
+            statusId: 1
+          },
+          {
+            id: 'test-5',
+            type: 'delivery_completed',
+            title: '배송 완료',
+            message: '주문하신 [농팜] 김치 세트가 안전하게 배송 완료되었습니다.',
+            time: '2025.01.20 11:45',
+            isRead: false,
+            relatedEntityType: 'order',
+            relatedEntityId: 12347,
+            homeshoppingOrderId: 12347,
+            statusId: 3
           }
         ];
         
@@ -166,10 +225,7 @@ const Notification = () => {
         <HeaderNavNoti 
           onBackClick={() => navigate(-1)}
         />
-        <div className="notification-loading">
-          <div className="loading-spinner"></div>
-          <p>알림을 불러오는 중...</p>
-        </div>
+        <Loading message="알림을 불러오는 중..." />
         <BottomNav />
       </div>
     );
@@ -237,7 +293,7 @@ const Notification = () => {
             notifications.map(notification => (
               <div 
                 key={notification.id}
-                className="notification-item"
+                className={`notification-item ${!notification.isRead ? 'unread' : ''}`}
               >
                 <div className="notification-content-body">
                   <div className="notification-status">
@@ -253,6 +309,13 @@ const Notification = () => {
                   <div className="notification-message">
                     {notification.message}
                   </div>
+                  {activeTab === 'homeshopping' && notification.relatedEntityType && (
+                    <div className="notification-entity-info">
+                      {notification.relatedEntityType === 'order' && '주문 알림'}
+                      {notification.relatedEntityType === 'broadcast' && '방송 알림'}
+                      {notification.relatedEntityType === 'like' && '좋아요 알림'}
+                    </div>
+                  )}
                 </div>
                 <div className="notification-time">
                   {notification.time}
