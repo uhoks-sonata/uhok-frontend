@@ -227,9 +227,7 @@ const Notification = () => {
                      </div>
                    )}
                    <div className="notification-message">
-                     {activeTab === 'shopping' && notification.title 
-                       ? notification.title 
-                       : notification.message}
+                     {notification.message}
                    </div>
 
                  </div>
