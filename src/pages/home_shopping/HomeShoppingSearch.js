@@ -39,20 +39,64 @@ const HomeShoppingSearch = () => {
     try {
       if (isLoggedIn && user?.token) {
         // 로그인된 사용자는 서버에서 홈쇼핑 검색 히스토리 가져오기
-        const response = await homeShoppingApi.getSearchHistory(10);
+        const response = await homeShoppingApi.getSearchHistory(); // limit 파라미터 제거
         const history = response.history || [];
-        setSearchHistory(history.map(item => item.homeshopping_keyword));
+        
+        console.log('🔍 백엔드에서 받은 원본 히스토리:', {
+          전체개수: history.length,
+          원본데이터: history.map(item => ({
+            id: item.homeshopping_history_id,
+            keyword: item.homeshopping_keyword,
+            createdAt: item.created_at
+          }))
+        });
+        
+        // UI에서 중복 제거 및 최신순 정렬
+        const keywordMap = new Map();
+        
+        // 원본 데이터를 그대로 순회하면서 중복 제거
+        history.forEach(item => {
+          const existingItem = keywordMap.get(item.homeshopping_keyword);
+          const currentTime = new Date(item.created_at);
+          
+          // 같은 키워드가 없거나, 현재 항목이 더 최신인 경우 업데이트
+          if (!existingItem || currentTime > new Date(existingItem.created_at)) {
+            keywordMap.set(item.homeshopping_keyword, {
+              id: item.homeshopping_history_id,
+              keyword: item.homeshopping_keyword,
+              createdAt: item.created_at
+            });
+          }
+        });
+        
+        // 최신 순으로 정렬 (created_at 기준 내림차순)
+        const sortedHistory = Array.from(keywordMap.values())
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+          .map(item => item.keyword)
+          .slice(0, 10); // UI에는 최대 10개만 표시
+        
+        console.log('🔍 UI 중복 제거 및 최신순 정렬 후 히스토리:', {
+          원본개수: history.length,
+          중복제거후개수: keywordMap.size,
+          UI표시개수: sortedHistory.length,
+          최종키워드: sortedHistory
+        });
+        
+        setSearchHistory(sortedHistory);
       } else {
         // 비로그인 사용자는 로컬스토리지에서 가져오기
         const history = JSON.parse(localStorage.getItem('homeshopping_searchHistory') || '[]');
-        setSearchHistory(history.slice(0, 10));
+        // 중복 제거 후 최신순 정렬
+        const uniqueHistory = history.filter((keyword, index, self) => self.indexOf(keyword) === index);
+        setSearchHistory(uniqueHistory.slice(0, 10));
       }
     } catch (error) {
       console.error('홈쇼핑 검색 히스토리 로드 실패:', error);
       // API 실패 시 로컬스토리지에서 가져오기
       try {
         const history = JSON.parse(localStorage.getItem('homeshopping_searchHistory') || '[]');
-        setSearchHistory(history.slice(0, 10));
+        const uniqueHistory = history.filter((keyword, index, self) => self.indexOf(keyword) === index);
+        setSearchHistory(uniqueHistory.slice(0, 10));
       } catch (localError) {
         console.error('로컬스토리지 홈쇼핑 검색 히스토리 로드 실패:', localError);
         setSearchHistory([]);
@@ -60,9 +104,88 @@ const HomeShoppingSearch = () => {
     }
   }, [isLoggedIn, user?.token]);
 
+  // 검색만 실행하는 함수 (저장 없이)
+  const executeSearchOnly = useCallback(async (query) => {
+    if (!query || loading) {
+      console.log('🔍 검색 조건 불충족 또는 중복 실행 방지');
+      return;
+    }
 
+    console.log('🔍 홈쇼핑 검색만 실행 (저장 없이):', { query });
+    
+    // 컴포넌트가 언마운트되었는지 확인하는 플래그
+    let isMounted = true;
+    
+    setLoading(true);
+    setError(null);
 
-  // 홈쇼핑 검색 실행 함수
+    try {
+      // URL 업데이트
+      navigate(`/homeshopping/search?q=${encodeURIComponent(query)}`, { replace: true });
+      
+      // 홈쇼핑 실제 API 검색
+      try {
+        console.log('홈쇼핑 상품 검색 시작:', query);
+        const response = await homeShoppingApi.searchProducts(query, 1, 20);
+        
+        console.log('홈쇼핑 API 응답 전체:', response);
+        console.log('홈쇼핑 상품 데이터 샘플:', response.products?.[0]);
+        
+        // API 응답 데이터를 검색 결과 형식으로 변환
+        const homeshoppingResults = (response.products || []).map(product => ({
+          id: product.product_id,
+          title: product.product_name,
+          description: `${product.store_name}에서 판매 중인 홈쇼핑 상품`,
+          price: `${product.dc_price?.toLocaleString() || '0'}원`,
+          originalPrice: `${product.sale_price?.toLocaleString() || '0'}원`,
+          discount: `${product.dc_rate || 0}%`,
+          image: product.thumb_img_url || '/test1.png',
+          category: '홈쇼핑',
+          rating: 4.5, // 기본값
+          reviewCount: 128, // 기본값
+          channel: product.store_name || '홈쇼핑',
+          broadcastTime: product.live_date ? 
+            `${product.live_date} ${product.live_start_time}~${product.live_end_time}` : 
+            '방송 일정 없음'
+        }));
+        
+        // 중복 제거 (id 기준)
+        const uniqueHomeshoppingResults = homeshoppingResults.filter((product, index, self) => 
+          index === self.findIndex(p => p.id === product.id)
+        );
+        
+        console.log('홈쇼핑 검색 결과:', uniqueHomeshoppingResults.length, '개 상품 (중복 제거 후)');
+        if (isMounted) {
+          setSearchResults(uniqueHomeshoppingResults);
+        }
+        
+        // 검색 결과를 sessionStorage에 저장
+        const searchStateKey = `homeshopping_search_${query}`;
+        sessionStorage.setItem(searchStateKey, JSON.stringify({
+          results: uniqueHomeshoppingResults,
+          timestamp: Date.now()
+        }));
+      } catch (error) {
+        console.error('홈쇼핑 상품 검색 실패:', error);
+        if (isMounted) {
+          setError('홈쇼핑 상품 검색 중 오류가 발생했습니다.');
+        }
+      }
+      
+      if (isMounted) {
+        setLoading(false);
+      }
+      
+    } catch (err) {
+      console.error('홈쇼핑 검색 실패:', err);
+      if (isMounted) {
+        setError('홈쇼핑 검색 중 오류가 발생했습니다.');
+        setLoading(false);
+      }
+    }
+  }, [loading, navigate]);
+
+  // 홈쇼핑 검색 실행 함수 (저장 포함)
   const handleSearch = useCallback(async (e = null, queryOverride = null) => {
     console.log('🔍 홈쇼핑 검색 실행 함수 호출:', { e, queryOverride, searchQuery });
     
@@ -86,7 +209,7 @@ const HomeShoppingSearch = () => {
       return;
     }
 
-    console.log('🔍 홈쇼핑 실제 검색 시작:', { query });
+    console.log('🔍 홈쇼핑 실제 검색 시작 (저장 포함):', { query });
     setLoading(true);
     setError(null);
 
@@ -96,13 +219,55 @@ const HomeShoppingSearch = () => {
       // 검색 히스토리에 저장 (함수 내부에서 직접 처리)
       try {
         if (isLoggedIn && user?.token) {
-          // 로그인된 사용자는 서버에 홈쇼핑 검색어 저장
-          await homeShoppingApi.saveSearchHistory(query);
-          // 저장 후 히스토리 상태 업데이트 (로컬 상태만 업데이트)
-          setSearchHistory(prevHistory => {
-            const currentHistory = prevHistory.filter(item => item !== query);
-            return [query, ...currentHistory].slice(0, 10);
-          });
+          // 백엔드에서 현재 히스토리를 가져와서 중복 체크
+          try {
+            const response = await homeShoppingApi.getSearchHistory(20);
+            const currentHistory = response.history || [];
+            
+            // 시간 정보를 활용한 중복 체크
+            const existingItem = currentHistory.find(item => item.homeshopping_keyword === query);
+            const currentTime = new Date();
+            
+                         if (existingItem) {
+               console.log('🔍 이미 백엔드에 존재하는 검색어입니다. UI에서 맨 위로 올리기:', query);
+               
+               // 기존 항목의 시간과 현재 시간 비교 (1분 이내면 중복으로 간주)
+               const existingTime = new Date(existingItem.created_at);
+               const timeDiff = currentTime - existingTime;
+               const isRecentDuplicate = timeDiff < 60000; // 1분 = 60000ms
+               
+               if (isRecentDuplicate) {
+                 console.log('🔍 최근에 검색된 키워드입니다. DB 저장 생략, UI에서 맨 위로 이동:', query);
+                 // DB 저장 없이 UI에서만 맨 위로 이동
+                 setSearchHistory(prevHistory => {
+                   const filteredHistory = prevHistory.filter(item => item !== query);
+                   return [query, ...filteredHistory].slice(0, 10);
+                 });
+               } else {
+                 // 시간이 충분히 지난 경우 새로운 검색으로 처리
+                 console.log('🔍 시간이 지난 검색어입니다. 새로운 검색으로 저장:', query);
+                 await homeShoppingApi.saveSearchHistory(query);
+                 
+                 // 히스토리 다시 로드하여 최신 순으로 정렬
+                 await loadSearchHistory();
+               }
+            } else {
+              // 새로운 검색어만 백엔드에 저장
+              console.log('🔍 새로운 검색어를 백엔드에 저장:', query);
+              await homeShoppingApi.saveSearchHistory(query);
+              
+              // 히스토리 다시 로드하여 최신 순으로 정렬
+              await loadSearchHistory();
+            }
+          } catch (historyError) {
+            console.error('히스토리 중복 체크 실패, 기본 저장 로직 실행:', historyError);
+            // 히스토리 가져오기 실패 시 기본 저장 로직 실행
+            await homeShoppingApi.saveSearchHistory(query);
+            setSearchHistory(prevHistory => {
+              const currentHistory = prevHistory.filter(item => item !== query);
+              return [query, ...currentHistory].slice(0, 10);
+            });
+          }
         } else {
           // 비로그인 사용자는 로컬스토리지에 저장
           const history = JSON.parse(localStorage.getItem('homeshopping_searchHistory') || '[]');
@@ -213,13 +378,17 @@ const HomeShoppingSearch = () => {
           console.log('복원된 홈쇼핑 검색 결과:', uniqueResults.length, '개 상품 (중복 제거 후)');
           setSearchResults(uniqueResults);
           setLoading(false);
+          
+          // 복원된 검색어는 이미 저장되어 있으므로 히스토리 저장 생략
+          console.log('🔍 복원된 검색어는 이미 히스토리에 저장되어 있음:', query);
         } catch (error) {
           console.error('홈쇼핑 검색 상태 복원 실패:', error);
-          handleSearch(null, query);
+          // 복원 실패 시 검색만 실행 (저장 없이)
+          executeSearchOnly(query);
         }
       } else {
-        // 새로운 검색 실행
-        console.log('새로운 홈쇼핑 검색 실행:', query);
+        // 새로운 검색 실행 (저장 포함)
+        console.log('새로운 홈쇼핑 검색 실행 (저장 포함):', query);
         handleSearch(null, query);
       }
     }

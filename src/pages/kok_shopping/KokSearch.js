@@ -1,5 +1,5 @@
 // React와 필요한 훅들을 가져옵니다
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 // 검색 헤더 컴포넌트를 가져옵니다
 import HeaderSearchBar from '../../components/HeaderSearchBar';
@@ -31,37 +31,15 @@ const KokSearch = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchHistory, setSearchHistory] = useState([]);
-  
-  // 중복 실행 방지를 위한 ref
-  const currentQueryRef = useRef('');
-
-  // 사용자 정보가 변경될 때마다 콘솔에 출력 (디버깅용)
-  useEffect(() => {
-    console.log('KokSearch - 사용자 정보 상태:', {
-      user: user,
-      isLoggedIn: isLoggedIn,
-      hasUser: !!user,
-      userEmail: user?.email,
-      hasToken: !!user?.token,
-      userLoading: userLoading
-    });
-  }, [user, isLoggedIn, userLoading]);
+  const searchType = 'kok'; // 콕 검색 타입 (상수로 변경)
 
   // 콕 검색 히스토리 로드 (API 사용)
   const loadSearchHistory = useCallback(async () => {
     console.log('🔍 콕 검색 히스토리 로드 시작:', { isLoggedIn });
-    
-    // 컴포넌트가 언마운트되었는지 확인하는 플래그
-    let isMounted = true;
-    
     try {
       if (isLoggedIn && user?.token) {
-        // 로그인된 사용자는 서버에서 콕 검색 히스토리 가져오기 (더 큰 limit으로 호출)
-        const response = await kokApi.getSearchHistory(50, user.token);
-        
-        // 컴포넌트가 언마운트되었으면 상태 업데이트하지 않음
-        if (!isMounted) return;
-        
+        // 로그인된 사용자는 서버에서 콕 검색 히스토리 가져오기
+        const response = await kokApi.getSearchHistory(50, user.token); // 더 많은 데이터 가져오기
         const history = response.history || [];
         
         console.log('🔍 백엔드에서 받은 원본 히스토리:', {
@@ -73,27 +51,44 @@ const KokSearch = () => {
           }))
         });
         
-        // 중복 제거 후 설정
-        const uniqueHistory = history
-          .map(item => item.kok_keyword)
-          .filter((keyword, index, self) => self.indexOf(keyword) === index);
+        // UI에서 중복 제거 및 최신순 정렬
+        const keywordMap = new Map();
         
-        console.log('🔍 중복 제거 후 히스토리:', {
-          중복제거후개수: uniqueHistory.length,
-          최종키워드: uniqueHistory
+        // 원본 데이터를 그대로 순회하면서 중복 제거
+        history.forEach(item => {
+          const existingItem = keywordMap.get(item.kok_keyword);
+          const currentTime = new Date(item.created_at);
+          
+          // 같은 키워드가 없거나, 현재 항목이 더 최신인 경우 업데이트
+          if (!existingItem || currentTime > new Date(existingItem.created_at)) {
+            keywordMap.set(item.kok_keyword, {
+              id: item.kok_history_id,
+              keyword: item.kok_keyword,
+              createdAt: item.created_at
+            });
+          }
         });
         
-        if (isMounted) {
-          setSearchHistory(uniqueHistory);
-        }
+        // 최신 순으로 정렬 (created_at 기준 내림차순)
+        const sortedHistory = Array.from(keywordMap.values())
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+          .map(item => item.keyword)
+          .slice(0, 10); // UI에는 최대 10개만 표시
+        
+        console.log('🔍 UI 중복 제거 및 최신순 정렬 후 히스토리:', {
+          원본개수: history.length,
+          중복제거후개수: keywordMap.size,
+          UI표시개수: sortedHistory.length,
+          최종키워드: sortedHistory
+        });
+        
+        setSearchHistory(sortedHistory);
       } else {
         // 비로그인 사용자는 로컬스토리지에서 가져오기
         const history = JSON.parse(localStorage.getItem('kok_searchHistory') || '[]');
-        // 중복 제거 후 설정
+        // 중복 제거 후 최신순 정렬
         const uniqueHistory = history.filter((keyword, index, self) => self.indexOf(keyword) === index);
-        if (isMounted) {
-          setSearchHistory(uniqueHistory.slice(0, 10));
-        }
+        setSearchHistory(uniqueHistory.slice(0, 10));
       }
     } catch (error) {
       console.error('콕 검색 히스토리 로드 실패:', error);
@@ -101,117 +96,22 @@ const KokSearch = () => {
       try {
         const history = JSON.parse(localStorage.getItem('kok_searchHistory') || '[]');
         const uniqueHistory = history.filter((keyword, index, self) => self.indexOf(keyword) === index);
-        if (isMounted) {
-          setSearchHistory(uniqueHistory.slice(0, 10));
-        }
+        setSearchHistory(uniqueHistory.slice(0, 10));
       } catch (localError) {
         console.error('로컬스토리지 콕 검색 히스토리 로드 실패:', localError);
-        if (isMounted) {
-          setSearchHistory([]);
-        }
+        setSearchHistory([]);
       }
     }
-    
-    // cleanup 함수 반환
-    return () => {
-      isMounted = false;
-    };
   }, [isLoggedIn, user?.token]);
 
-  // URL 쿼리 파라미터에서 초기 검색어 가져오기 (콕 전용)
-  useEffect(() => {
-    console.log('=== 콕 Search 페이지 URL 파라미터 읽기 ===');
-    console.log('현재 URL:', window.location.href);
-    console.log('location.search:', location.search);
-    
-    const urlParams = new URLSearchParams(location.search);
-    const query = urlParams.get('q');
-    
-    console.log('URL에서 읽은 파라미터:', { query });
-    
-    if (query) {
-      setSearchQuery(query);
-      currentQueryRef.current = query;
-      
-      // sessionStorage를 사용하여 뒤로가기인지 확인
-      const searchStateKey = `kok_search_${query}`;
-      const savedSearchState = sessionStorage.getItem(searchStateKey);
-      
-      if (savedSearchState) {
-        try {
-          const parsedState = JSON.parse(savedSearchState);
-          
-          // pending 상태인지 확인
-          if (parsedState.pending) {
-            console.log('검색이 진행 중입니다. 새로운 검색 실행:', query);
-            // pending 상태를 제거하고 새로운 검색 실행
-            sessionStorage.removeItem(searchStateKey);
-            // handleSearch 대신 직접 검색 로직 실행
-            executeSearch(query);
-          } else {
-            // 이미 검색한 결과가 있다면 복원 (뒤로가기로 돌아온 경우)
-            console.log('저장된 콕 검색 결과 복원:', query);
-            const results = parsedState.results || [];
-            
-            // 복원된 결과에서도 중복 제거
-            const uniqueResults = results.filter((product, index, self) => 
-              index === self.findIndex(p => p.id === product.id)
-            );
-            
-            console.log('복원된 콕 검색 결과:', uniqueResults.length, '개 상품 (중복 제거 후)');
-            setSearchResults(uniqueResults);
-            setLoading(false);
-            
-            // 복원된 검색어는 이미 저장되어 있으므로 히스토리 저장 생략
-            console.log('🔍 복원된 검색어는 이미 히스토리에 저장되어 있음:', query);
-          }
-        } catch (error) {
-          console.error('콕 검색 상태 복원 실패:', error);
-          // handleSearch 대신 직접 검색 로직 실행
-          executeSearch(query);
-        }
-      } else {
-        // 새로운 검색 실행
-        console.log('새로운 콕 검색 실행:', query);
-        // handleSearch 대신 직접 검색 로직 실행
-        executeSearch(query);
-      }
-    }
-  }, [location.search]); // handleSearch 의존성 제거
-
-  // 컴포넌트 마운트 시 콕 검색 히스토리 로드
-  useEffect(() => {
-    let cleanup;
-    
-    const loadHistory = async () => {
-      cleanup = await loadSearchHistory();
-    };
-    
-    loadHistory();
-    
-    // cleanup 함수 반환
-    return () => {
-      if (cleanup) cleanup();
-    };
-  }, [loadSearchHistory]); // loadSearchHistory 의존성 추가
-
-  // 실제 검색 실행 함수 (useEffect에서 사용)
-  const executeSearch = useCallback(async (query) => {
+  // 검색만 실행하는 함수 (저장 없이)
+  const executeSearchOnly = useCallback(async (query) => {
     if (!query || loading) {
       console.log('🔍 검색 조건 불충족 또는 중복 실행 방지');
       return;
     }
 
-    // 중복 실행 방지: 같은 검색어로 이미 실행 중인지 확인
-    if (currentQueryRef.current === query && searchResults.length > 0) {
-      console.log('🔍 이미 실행된 검색어입니다. 중복 실행 방지:', query);
-      return;
-    }
-    
-    // 현재 검색어를 ref에 설정하여 중복 실행 방지
-    currentQueryRef.current = query;
-
-    console.log('🔍 콕 실제 검색 시작:', { query });
+    console.log('🔍 콕 검색만 실행 (저장 없이):', { query });
     
     // 컴포넌트가 언마운트되었는지 확인하는 플래그
     let isMounted = true;
@@ -220,197 +120,6 @@ const KokSearch = () => {
     setError(null);
 
     try {
-      console.log('콕 검색 실행:', query);
-      
-      // 검색 히스토리에 저장 (함수 내부에서 직접 처리)
-      try {
-        if (isLoggedIn && user?.token) {
-          // 백엔드에서 현재 히스토리를 가져와서 중복 체크
-                     try {
-             const response = await kokApi.getSearchHistory(50, user.token);
-             const currentHistory = response.history || [];
-             const existingKeywords = currentHistory.map(item => item.kok_keyword);
-            
-            const isDuplicate = existingKeywords.includes(query);
-            
-            if (isDuplicate) {
-              console.log('🔍 이미 백엔드에 존재하는 검색어입니다. 저장 생략:', query);
-                             // 중복된 검색어는 백엔드에 저장하지 않고, 순서만 최신으로 변경
-               if (isMounted) {
-                 setSearchHistory(prevHistory => {
-                   const currentHistory = prevHistory.filter(item => item !== query);
-                   const updatedHistory = [query, ...currentHistory];
-                   // 중복 제거 후 최대 10개만 유지
-                   return updatedHistory.filter((keyword, index, self) => self.indexOf(keyword) === index).slice(0, 10);
-                 });
-               }
-            } else {
-              // 새로운 검색어만 백엔드에 저장
-              console.log('🔍 새로운 검색어를 백엔드에 저장:', query);
-              await kokApi.addSearchHistory(query, user.token);
-              
-              // 백엔드 DB 정리: 중복 제거 및 최신 순서로 업데이트
-              try {
-                console.log('🔍 백엔드 DB 정리 시작 (새로운 검색어)');
-                const allHistoryResponse = await kokApi.getSearchHistory(50, user.token);
-                const allHistory = allHistoryResponse.history || [];
-                
-                // 중복 제거 및 최신 순서로 정렬
-                const uniqueKeywords = [];
-                const seenKeywords = new Set();
-                
-                // 현재 검색어를 맨 앞에 추가
-                uniqueKeywords.push(query);
-                seenKeywords.add(query);
-                
-                // 기존 히스토리에서 중복 제거하며 추가
-                allHistory.forEach(item => {
-                  if (!seenKeywords.has(item.kok_keyword)) {
-                    uniqueKeywords.push(item.kok_keyword);
-                    seenKeywords.add(item.kok_keyword);
-                  }
-                });
-                
-                // 최대 10개만 유지
-                const finalKeywords = uniqueKeywords.slice(0, 10);
-                
-                console.log('🔍 백엔드 DB 정리 결과 (새로운 검색어):', {
-                  원본개수: allHistory.length,
-                  중복제거후: uniqueKeywords.length,
-                  최종개수: finalKeywords.length,
-                  최종키워드: finalKeywords
-                });
-                
-                // 기존 히스토리 모두 삭제
-                const deletePromises = allHistory.map(item => 
-                  kokApi.deleteSearchHistory(item.kok_history_id, user.token)
-                );
-                await Promise.allSettled(deletePromises);
-                
-                // 정리된 키워드들 다시 저장
-                const savePromises = finalKeywords.map(keyword => 
-                  kokApi.addSearchHistory(keyword, user.token)
-                );
-                await Promise.allSettled(savePromises);
-                
-                                 console.log('🔍 백엔드 DB 정리 완료 (새로운 검색어)');
-                 
-                 // UI 상태 업데이트
-                 if (isMounted) {
-                   setSearchHistory(finalKeywords);
-                 }
-                
-              } catch (cleanupError) {
-                console.error('🔍 백엔드 DB 정리 실패 (새로운 검색어):', cleanupError);
-                                 // 정리 실패 시 기본 로직으로 fallback
-                 if (isMounted) {
-                   setSearchHistory(prevHistory => {
-                     const currentHistory = prevHistory.filter(item => item !== query);
-                     const updatedHistory = [query, ...currentHistory];
-                     return updatedHistory.filter((keyword, index, self) => self.indexOf(keyword) === index).slice(0, 10);
-                   });
-                 }
-              }
-            }
-            
-            // 백엔드 DB 정리: 중복 제거 및 최신 순서로 업데이트
-            try {
-              console.log('🔍 백엔드 DB 정리 시작');
-              const allHistoryResponse = await kokApi.getSearchHistory(50, user.token);
-              const allHistory = allHistoryResponse.history || [];
-              
-              // 중복 제거 및 최신 순서로 정렬
-              const uniqueKeywords = [];
-              const seenKeywords = new Set();
-              
-              // 현재 검색어를 맨 앞에 추가
-              if (!seenKeywords.has(query)) {
-                uniqueKeywords.push(query);
-                seenKeywords.add(query);
-              }
-              
-              // 기존 히스토리에서 중복 제거하며 추가
-              allHistory.forEach(item => {
-                if (!seenKeywords.has(item.kok_keyword)) {
-                  uniqueKeywords.push(item.kok_keyword);
-                  seenKeywords.add(item.kok_keyword);
-                }
-              });
-              
-              // 최대 10개만 유지
-              const finalKeywords = uniqueKeywords.slice(0, 10);
-              
-              console.log('🔍 백엔드 DB 정리 결과:', {
-                원본개수: allHistory.length,
-                중복제거후: uniqueKeywords.length,
-                최종개수: finalKeywords.length,
-                최종키워드: finalKeywords
-              });
-              
-              // 기존 히스토리 모두 삭제
-              const deletePromises = allHistory.map(item => 
-                kokApi.deleteSearchHistory(item.kok_history_id, user.token)
-              );
-              await Promise.allSettled(deletePromises);
-              
-              // 정리된 키워드들 다시 저장
-              const savePromises = finalKeywords.map(keyword => 
-                kokApi.addSearchHistory(keyword, user.token)
-              );
-              await Promise.allSettled(savePromises);
-              
-              console.log('🔍 백엔드 DB 정리 완료');
-              
-                             // UI 상태 업데이트
-               if (isMounted) {
-                 setSearchHistory(finalKeywords);
-               }
-              
-            } catch (cleanupError) {
-              console.error('🔍 백엔드 DB 정리 실패:', cleanupError);
-              // 정리 실패 시 기본 로직으로 fallback
-            }
-          } catch (historyError) {
-            console.error('히스토리 중복 체크 실패, 기본 저장 로직 실행:', historyError);
-                         // 히스토리 가져오기 실패 시 기본 저장 로직 실행
-             await kokApi.addSearchHistory(query, user.token);
-             if (isMounted) {
-               setSearchHistory(prevHistory => {
-                 const currentHistory = prevHistory.filter(item => item !== query);
-                 const updatedHistory = [query, ...currentHistory];
-                 // 중복 제거 후 최대 10개만 유지
-                 return updatedHistory.filter((keyword, index, self) => self.indexOf(keyword) === index).slice(0, 10);
-               });
-             }
-          }
-                 } else {
-           // 비로그인 사용자는 로컬스토리지에 저장
-           const history = JSON.parse(localStorage.getItem('kok_searchHistory') || '[]');
-           const updatedHistory = [query, ...history.filter(item => item !== query)];
-           // 중복 제거 후 최대 20개만 유지
-           const uniqueHistory = updatedHistory.filter((keyword, index, self) => self.indexOf(keyword) === index).slice(0, 20);
-           localStorage.setItem('kok_searchHistory', JSON.stringify(uniqueHistory));
-           if (isMounted) {
-             setSearchHistory(uniqueHistory.slice(0, 10));
-           }
-         }
-      } catch (error) {
-        console.error('콕 검색 히스토리 저장 실패:', error);
-                 // API 실패 시 로컬스토리지에 저장
-         try {
-           const history = JSON.parse(localStorage.getItem('kok_searchHistory') || '[]');
-           const updatedHistory = [query, ...history.filter(item => item !== query)];
-           // 중복 제거 후 최대 20개만 유지
-           const uniqueHistory = updatedHistory.filter((keyword, index, self) => self.indexOf(keyword) === index).slice(0, 20);
-           localStorage.setItem('kok_searchHistory', JSON.stringify(uniqueHistory));
-           if (isMounted) {
-             setSearchHistory(uniqueHistory.slice(0, 10));
-           }
-         } catch (localError) {
-          console.error('로컬스토리지 콕 검색 히스토리 저장 실패:', localError);
-        }
-      }
-      
       // URL 업데이트
       navigate(`/kok/search?q=${encodeURIComponent(query)}`, { replace: true });
       
@@ -449,10 +158,10 @@ const KokSearch = () => {
           index === self.findIndex(p => p.id === product.id)
         );
         
-                 console.log('콕 검색 결과:', uniqueKokResults.length, '개 상품 (중복 제거 후)');
-         if (isMounted) {
-           setSearchResults(uniqueKokResults);
-         }
+        console.log('콕 검색 결과:', uniqueKokResults.length, '개 상품 (중복 제거 후)');
+        if (isMounted) {
+          setSearchResults(uniqueKokResults);
+        }
         
         // 검색 결과를 sessionStorage에 저장
         const searchStateKey = `kok_search_${query}`;
@@ -462,32 +171,25 @@ const KokSearch = () => {
         }));
       } catch (error) {
         console.error('콕 상품 검색 실패:', error);
-        
-        if (error.response?.status === 500) {
-          setError('서버에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해주세요.');
-        } else if (error.response?.status === 404) {
-          setError('검색 서비스를 찾을 수 없습니다.');
-        } else {
+        if (isMounted) {
           setError('콕 상품 검색 중 오류가 발생했습니다.');
         }
       }
       
-             if (isMounted) {
-         setLoading(false);
-       }
-       
-     } catch (err) {
-       console.error('콕 검색 실패:', err);
-       if (isMounted) {
-         setError('콕 검색 중 오류가 발생했습니다.');
-         setLoading(false);
-       }
-     }
+      if (isMounted) {
+        setLoading(false);
+      }
+      
+    } catch (err) {
+      console.error('콕 검색 실패:', err);
+      if (isMounted) {
+        setError('콕 검색 중 오류가 발생했습니다.');
+        setLoading(false);
+      }
+    }
   }, [loading, navigate, isLoggedIn, user?.token]);
 
-
-
-  // 콕 검색 실행 함수
+  // 콕 검색 실행 함수 (저장 포함)
   const handleSearch = useCallback(async (e = null, queryOverride = null) => {
     console.log('🔍 콕 검색 실행 함수 호출:', { e, queryOverride, searchQuery });
     
@@ -511,14 +213,211 @@ const KokSearch = () => {
       return;
     }
 
-    // 새로운 검색어인 경우 로그 출력
-    if (currentQueryRef.current !== query) {
-      console.log('🔍 새로운 검색어로 검색 시작:', query);
-    }
+    console.log('🔍 콕 실제 검색 시작 (저장 포함):', { query });
+    setLoading(true);
+    setError(null);
 
-    // executeSearch 함수 호출
-    executeSearch(query);
-  }, [searchQuery, executeSearch]);
+    try {
+      console.log('콕 검색 실행:', query);
+      
+      // 검색 히스토리에 저장 (함수 내부에서 직접 처리)
+      try {
+        if (isLoggedIn && user?.token) {
+          // 백엔드에서 현재 히스토리를 가져와서 중복 체크
+          try {
+            const response = await kokApi.getSearchHistory(20, user.token);
+            const currentHistory = response.history || [];
+            
+            // 시간 정보를 활용한 중복 체크
+            const existingItem = currentHistory.find(item => item.kok_keyword === query);
+            const currentTime = new Date();
+            
+            if (existingItem) {
+              console.log('🔍 이미 백엔드에 존재하는 검색어입니다. UI에서 맨 위로 올리기:', query);
+              
+              // 기존 항목의 시간과 현재 시간 비교 (1분 이내면 중복으로 간주)
+              const existingTime = new Date(existingItem.created_at);
+              const timeDiff = currentTime - existingTime;
+              const isRecentDuplicate = timeDiff < 60000; // 1분 = 60000ms
+              
+              if (isRecentDuplicate) {
+                console.log('🔍 최근에 검색된 키워드입니다. DB 저장 생략, UI에서 맨 위로 이동:', query);
+                // DB 저장 없이 UI에서만 맨 위로 이동
+                setSearchHistory(prevHistory => {
+                  const filteredHistory = prevHistory.filter(item => item !== query);
+                  return [query, ...filteredHistory].slice(0, 10);
+                });
+              } else {
+                // 시간이 충분히 지난 경우 새로운 검색으로 처리
+                                 console.log('🔍 시간이 지난 검색어입니다. 새로운 검색으로 저장:', query);
+                 await kokApi.addSearchHistory(query, user.token);
+                
+                // 히스토리 다시 로드하여 최신 순으로 정렬
+                await loadSearchHistory();
+              }
+            } else {
+                             // 새로운 검색어만 백엔드에 저장
+               console.log('🔍 새로운 검색어를 백엔드에 저장:', query);
+               await kokApi.addSearchHistory(query, user.token);
+              
+              // 히스토리 다시 로드하여 최신 순으로 정렬
+              await loadSearchHistory();
+            }
+          } catch (historyError) {
+                         console.error('히스토리 중복 체크 실패, 기본 저장 로직 실행:', historyError);
+             // 히스토리 가져오기 실패 시 기본 저장 로직 실행
+             await kokApi.addSearchHistory(query, user.token);
+            setSearchHistory(prevHistory => {
+              const currentHistory = prevHistory.filter(item => item !== query);
+              return [query, ...currentHistory].slice(0, 10);
+            });
+          }
+        } else {
+          // 비로그인 사용자는 로컬스토리지에 저장
+          const history = JSON.parse(localStorage.getItem('kok_searchHistory') || '[]');
+          const updatedHistory = [query, ...history.filter(item => item !== query)].slice(0, 20);
+          localStorage.setItem('kok_searchHistory', JSON.stringify(updatedHistory));
+          setSearchHistory(updatedHistory.slice(0, 10));
+        }
+      } catch (error) {
+        console.error('콕 검색 히스토리 저장 실패:', error);
+        // API 실패 시 로컬스토리지에 저장
+        try {
+          const history = JSON.parse(localStorage.getItem('kok_searchHistory') || '[]');
+          const updatedHistory = [query, ...history.filter(item => item !== query)].slice(0, 20);
+          localStorage.setItem('kok_searchHistory', JSON.stringify(updatedHistory));
+          setSearchHistory(updatedHistory.slice(0, 10));
+        } catch (localError) {
+          console.error('로컬스토리지 콕 검색 히스토리 저장 실패:', localError);
+        }
+      }
+      
+      // URL 업데이트 (쿼리 파라미터 추가)
+      navigate(`/kok/search?q=${encodeURIComponent(query)}`, { replace: true });
+      
+      // 콕 실제 API 검색
+      try {
+        console.log('콕 상품 검색 시작:', query);
+        const accessToken = isLoggedIn && user?.token ? user.token : null;
+        const response = await kokApi.searchProducts(query, 1, 20, accessToken);
+        
+        console.log('콕 API 응답 전체:', response);
+        console.log('콕 상품 데이터 샘플:', response.products?.[0]);
+        
+        // API 응답 데이터를 검색 결과 형식으로 변환
+        const kokResults = (response.products || []).map(product => {
+          console.log('콕 상품 원본 데이터:', product);
+          console.log('콕 상품 이미지:', product.kok_thumbnail);
+          
+          return {
+            id: product.kok_product_id,
+            title: product.kok_product_name,
+            description: `콕 쇼핑몰에서 판매 중인 상품`,
+            price: `${product.kok_discounted_price?.toLocaleString() || '0'}원`,
+            originalPrice: `${product.kok_product_price?.toLocaleString() || '0'}원`,
+            discount: `${product.kok_discount_rate || 0}%`,
+            image: product.kok_thumbnail || 'https://via.placeholder.com/300x300/CCCCCC/666666?text=No+Image',
+            category: '콕 상품',
+            rating: product.kok_review_score || 4.5,
+            reviewCount: product.kok_review_cnt || 128,
+            storeName: product.kok_store_name || 'COK 스토어',
+            shipping: '무료배송'
+          };
+        });
+        
+        // 중복 제거 (id 기준)
+        const uniqueKokResults = kokResults.filter((product, index, self) => 
+          index === self.findIndex(p => p.id === product.id)
+        );
+        
+        console.log('콕 검색 결과:', uniqueKokResults.length, '개 상품 (중복 제거 후)');
+        setSearchResults(uniqueKokResults);
+        
+        // 검색 결과를 sessionStorage에 저장
+        const searchStateKey = `kok_search_${query}`;
+        sessionStorage.setItem(searchStateKey, JSON.stringify({
+          results: uniqueKokResults,
+          timestamp: Date.now()
+        }));
+      } catch (error) {
+        console.error('콕 상품 검색 실패:', error);
+        setError('콕 상품 검색 중 오류가 발생했습니다.');
+      }
+      
+      setLoading(false);
+      
+    } catch (err) {
+      console.error('콕 검색 실패:', err);
+      setError('콕 검색 중 오류가 발생했습니다.');
+      setLoading(false);
+    }
+  }, [searchQuery, navigate, isLoggedIn, user?.token]);
+
+  // URL 쿼리 파라미터에서 초기 검색어 가져오기 (콕 전용)
+  useEffect(() => {
+    console.log('=== 콕 Search 페이지 URL 파라미터 읽기 ===');
+    console.log('현재 URL:', window.location.href);
+    console.log('location.search:', location.search);
+    
+    const urlParams = new URLSearchParams(location.search);
+    const query = urlParams.get('q');
+    
+    console.log('URL에서 읽은 파라미터:', { query });
+    
+    if (query) {
+      setSearchQuery(query);
+      
+      // sessionStorage를 사용하여 뒤로가기인지 확인
+      const searchStateKey = `kok_search_${query}`;
+      const savedSearchState = sessionStorage.getItem(searchStateKey);
+      
+      if (savedSearchState) {
+        // 이미 검색한 결과가 있다면 복원 (뒤로가기로 돌아온 경우)
+        console.log('저장된 콕 검색 결과 복원:', query);
+        try {
+          const parsedState = JSON.parse(savedSearchState);
+          const results = parsedState.results || [];
+          
+          // 복원된 결과에서도 중복 제거
+          const uniqueResults = results.filter((product, index, self) => 
+            index === self.findIndex(p => p.id === product.id)
+          );
+          
+          console.log('복원된 콕 검색 결과:', uniqueResults.length, '개 상품 (중복 제거 후)');
+          setSearchResults(uniqueResults);
+          setLoading(false);
+          
+          // 복원된 검색어는 이미 저장되어 있으므로 히스토리 저장 생략
+          console.log('🔍 복원된 검색어는 이미 히스토리에 저장되어 있음:', query);
+        } catch (error) {
+          console.error('콕 검색 상태 복원 실패:', error);
+          // 복원 실패 시 검색만 실행 (저장 없이)
+          executeSearchOnly(query);
+        }
+      } else {
+        // 새로운 검색 실행 (저장 포함)
+        console.log('새로운 콕 검색 실행 (저장 포함):', query);
+        handleSearch(null, query);
+      }
+    }
+  }, [location.search]); // handleSearch 의존성 제거
+
+  // 컴포넌트 마운트 시 콕 검색 히스토리 로드
+  useEffect(() => {
+    loadSearchHistory();
+  }, [loadSearchHistory]); // loadSearchHistory 의존성 추가
+
+  // 사용자 정보가 변경될 때마다 콘솔에 출력 (디버깅용)
+  useEffect(() => {
+    console.log('KokSearch - 사용자 정보 상태:', {
+      user: user,
+      isLoggedIn: isLoggedIn,
+      hasUser: !!user,
+      userEmail: user?.email,
+      hasToken: !!user?.token,
+      userLoading: userLoading
+    });
+  }, [user, isLoggedIn, userLoading]);
 
   // 뒤로가기 핸들러
   const handleBack = () => {
@@ -540,12 +439,6 @@ const KokSearch = () => {
 
   // 검색 히스토리 클릭 핸들러
   const handleHistoryClick = (query) => {
-    // 이미 같은 검색어로 검색 중이거나 결과가 있는 경우 중복 실행 방지
-    if (currentQueryRef.current === query && searchResults.length > 0) {
-      console.log('🔍 이미 실행된 검색어입니다. 히스토리 클릭 중복 실행 방지:', query);
-      return;
-    }
-    
     setSearchQuery(query);
     handleSearch(null, query);
   };
@@ -554,8 +447,8 @@ const KokSearch = () => {
   const handleDeleteHistory = async (queryToDelete) => {
     try {
       if (isLoggedIn && user?.token) {
-                 // 로그인된 사용자는 서버에서 콕 검색어 삭제
-         const response = await kokApi.getSearchHistory(50, user.token);
+        // 로그인된 사용자는 서버에서 콕 검색어 삭제
+        const response = await kokApi.getSearchHistory(20, user.token);
         const history = response.history || [];
         const targetHistory = history.find(item => item.kok_keyword === queryToDelete);
         
@@ -588,10 +481,10 @@ const KokSearch = () => {
   // 콕 검색 히스토리 전체 삭제 핸들러 (API 사용)
   const handleClearAllHistory = async () => {
     try {
-      if (isLoggedIn && user?.token) {
+      if (isLoggedIn) {
         // 로그인된 사용자는 서버에서 모든 콕 검색어 삭제
-                 // 백엔드 제한을 고려하여 더 큰 숫자로 히스토리를 가져옴
-         const response = await kokApi.getSearchHistory(50, user.token);
+        // 백엔드 제한을 고려하여 작은 숫자로 히스토리를 가져옴
+        const response = await kokApi.getSearchHistory(20, user.token);
         const history = response.history || [];
         
         if (history.length === 0) {
@@ -658,14 +551,14 @@ const KokSearch = () => {
           <HeaderSearchBar 
             onSearch={(query) => {
               if (query && query.trim()) {
-                navigate(`/kok/search?q=${encodeURIComponent(query.trim())}`);
+                navigate(`/kok/search?q=${encodeURIComponent(query.trim())}&type=${searchType}`);
               }
             }}
-            placeholder="콕 상품 검색"
+            placeholder={`${searchType === 'kok' ? '콕' : '홈쇼핑'} 상품 검색`}
           />
         </div>
         <div className="search-content">
-          <Loading message="콕 검색 페이지를 불러오는 중..." />
+          <Loading message="검색 페이지를 불러오는 중..." />
         </div>
         <BottomNav />
       </div>
@@ -675,20 +568,22 @@ const KokSearch = () => {
   // 콕 검색 페이지 렌더링
   return (
     <div className="search-page">
-             {/* 콕 검색 헤더 */}
-       <div className="search-header">
-         <HeaderNavBackBtn onClick={handleBack} />
-         
-         <HeaderSearchBar 
-           onSearch={(query) => {
-             console.log('🔍 HeaderSearchBar에서 콕 검색:', query);
-             if (query && query.trim()) {
-               navigate(`/kok/search?q=${encodeURIComponent(query.trim())}`);
-             }
-           }}
-           placeholder="콕 상품 검색"
-         />
-       </div>
+
+      
+                     {/* 콕 검색 헤더 */}
+        <div className="search-header">
+          <HeaderNavBackBtn onClick={handleBack} />
+          
+          <HeaderSearchBar 
+            onSearch={(query) => {
+              console.log('🔍 HeaderSearchBar에서 콕 검색:', query);
+              if (query && query.trim()) {
+                navigate(`/kok/search?q=${encodeURIComponent(query.trim())}`);
+              }
+            }}
+            placeholder="콕 상품 검색"
+          />
+        </div>
 
              {/* 메인 콘텐츠 */}
        <div className="search-content">
@@ -754,7 +649,7 @@ const KokSearch = () => {
         {/* 로딩 중일 때 */}
         {loading && (
           <div className="search-loading">
-            <Loading message={`"${searchQuery}" 콕 검색 중...`} />
+            <Loading message={`"${searchQuery}" 검색 중...`} />
           </div>
         )}
 
@@ -828,7 +723,7 @@ const KokSearch = () => {
           <div className="no-results">
             <div className="no-results-icon">🔍</div>
             <h3>검색 결과가 없습니다</h3>
-            <p>"{searchQuery}"에 대한 콕 검색 결과를 찾을 수 없습니다.</p>
+            <p>"{searchQuery}"에 대한 검색 결과를 찾을 수 없습니다.</p>
           </div>
         )}
       </div>

@@ -29,9 +29,11 @@
 }
 
 .search-icon {
+  position: absolute;
+  left: 16px;
   color: #666;
-  margin-right: 100px;
   flex-shrink: 0;
+  z-index: 1;
 }
 
 .search-input {
@@ -42,6 +44,7 @@
   font-size: 14px;
   color: #333;
   width: 100%;
+  padding-left: 44px;
   box-shadow: none !important;
   -webkit-appearance: none;
   -moz-appearance: none;

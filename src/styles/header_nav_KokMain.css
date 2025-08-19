@@ -61,3 +61,23 @@
   color: #111;
   display: block;
 }
+
+/* ===== 콕 메인 헤더 네비게이션 스타일 ===== */
+
+.hn-main-left {
+  display: flex;
+  align-items: center;
+}
+
+.hn-main-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+.hn-main-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}

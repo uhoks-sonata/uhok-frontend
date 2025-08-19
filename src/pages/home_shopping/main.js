@@ -231,13 +231,7 @@ const Main = () => {
     // 상품 상세 페이지로 이동하는 기능을 구현할 예정입니다
   };
 
-  // 검색 버튼 클릭 시 실행되는 핸들러 함수를 정의합니다
-  const handleSearch = () => {
-    // 콘솔에 검색 로그를 출력합니다
-    console.log('검색 버튼 클릭');
-    // 검색 페이지로 이동합니다
-            navigate('/homeshopping/search?type=homeshopping');
-  };
+
 
   // 현재 시간과 비교하여 방송 중/방송예정을 구분하는 함수를 정의합니다
   const getBroadcastStatus = (startTime) => {

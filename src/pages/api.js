@@ -22,7 +22,7 @@ const api = axios.create({
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
-  timeout: 30000, // 30초로 타임아웃 증가 (임시 디버깅용)
+  timeout: 60000, // 60초로 타임아웃 증가 (검색 히스토리 API 대응)
  });
 
 // API 설정 로깅

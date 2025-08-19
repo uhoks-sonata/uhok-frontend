@@ -20,6 +20,7 @@ const HeaderNavWishList = ({ onBackClick, onSearchClick, onNotificationClick, on
           onSearch={onSearchClick}
           placeholder="상품 검색"
           className="wishlist-search"
+          searchType="kok"
         />
       </div>
       

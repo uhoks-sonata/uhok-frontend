@@ -1,23 +1,18 @@
-/* 편성표 페이지 전용 Header Nav 내용 배치 (틀은 HeaderNavFrame) */
-.hn-schedule-left,
-.hn-schedule-right {
-  display: flex;
-  align-items: center;
-}
+/* ===== 편성표 헤더 네비게이션 스타일 ===== */
 
 .hn-schedule-left {
-  gap: 20px; /* 뒤로가기와 타이틀 간격 - 메인과 일관 */
+  display: flex;
+  align-items: center;
 }
 
 .hn-schedule-center {
-  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex: 1;
 }
 
 .hn-schedule-right {
-  gap: 3px; /* 벨과 카트 간격 */
-  justify-content: center; /* 중앙 정렬 추가 */
-  padding-top: 7px;
+  display: flex;
+  align-items: center;
 }

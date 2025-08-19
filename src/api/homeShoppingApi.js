@@ -91,12 +91,10 @@ export const homeShoppingApi = {
   },
 
   // 검색어 조회
-  getSearchHistory: async (limit = 5) => {
+  getSearchHistory: async (limit = 50) => {
     try {
-      console.log('📋 검색어 조회 API 요청:', { limit });
-      const response = await api.get('/api/homeshopping/search/history', {
-        params: { limit }
-      });
+      console.log('📋 검색어 조회 API 요청');
+      const response = await api.get('/api/homeshopping/search/history');
       console.log('✅ 검색어 조회 API 응답:', response.data);
       return response.data;
     } catch (error) {

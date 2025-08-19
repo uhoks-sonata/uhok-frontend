@@ -21,3 +21,23 @@
   justify-content: center; /* 중앙 정렬 */
   padding-top: 7px;
 }
+
+/* ===== 찜 목록 헤더 네비게이션 스타일 ===== */
+
+.hn-wishlist-left {
+  display: flex;
+  align-items: center;
+}
+
+.hn-wishlist-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+.hn-wishlist-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}

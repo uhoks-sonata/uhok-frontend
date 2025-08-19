@@ -18,11 +18,23 @@ const HeaderSearchBar = ({ onSearch, onClick, placeholder = '상품 검색', cla
     setSearchTerm(e.target.value);
   };
 
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSubmit(e);
+    }
+  };
+
+  const handleWrapperClick = () => {
+    if (onClick) {
+      onClick();
+    }
+  };
+
   return (
     <form className={`header-search-bar ${className}`.trim()} onSubmit={handleSubmit}>
       <div 
         className={`search-input-wrapper ${onClick ? 'clickable' : ''}`.trim()}
-        onClick={onClick}
+        onClick={handleWrapperClick}
       >
         <svg
           className="search-icon"
@@ -45,8 +57,9 @@ const HeaderSearchBar = ({ onSearch, onClick, placeholder = '상품 검색', cla
           placeholder={placeholder}
           value={searchTerm}
           onChange={handleInputChange}
+          onKeyPress={handleKeyPress}
           aria-label="상품 검색"
-          readOnly={!!onClick}
+          readOnly={Boolean(onClick)}
         />
       </div>
     </form>

@@ -15,6 +15,7 @@ const HeaderNavKokMain = ({ onNotificationsClick, onBackClick, onCartClick, onSe
   const handleBackClick = onBackClick || (() => navigate(-1));
   const handleNotificationsClick = onNotificationsClick || (() => navigate('/notifications'));
   const handleCartClick = onCartClick || (() => navigate('/cart'));
+  
   const handleSearch = (searchTerm) => {
     if (onSearch) {
       onSearch(searchTerm);
@@ -39,17 +40,6 @@ const HeaderNavKokMain = ({ onNotificationsClick, onBackClick, onCartClick, onSe
       } else {
         navigate('/kok/search');
       }
-    }
-  };
-
-
-
-  // 검색창 클릭 시 입력 모드로 전환
-  const handleSearchBarClick = () => {
-    // 검색창에 포커스를 주어 입력 모드로 전환
-    const searchInput = document.querySelector('.search-input');
-    if (searchInput) {
-      searchInput.focus();
     }
   };
 

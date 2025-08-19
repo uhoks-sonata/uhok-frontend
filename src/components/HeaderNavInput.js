@@ -1,33 +1,42 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../styles/header_nav_Input.css';
 
 // 헤더 검색 입력창 컴포넌트
 // - 검색 아이콘과 입력창을 포함
-// - 검색 기능 제공
+// - 클릭 시 바로 검색 페이지로 이동
 const HeaderNavInput = ({ 
   onSearch, 
   placeholder = '검색어를 입력하세요', 
   className = '',
   defaultValue = '',
-  onSubmit
+  searchType = 'kok' // 'kok', 'homeshopping', 'wishlist'
 }) => {
   const [searchTerm, setSearchTerm] = useState(defaultValue);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('=== HeaderNavInput handleSubmit 호출됨 ===');
-    console.log('searchTerm:', searchTerm);
+  const handleClick = () => {
+    console.log('=== HeaderNavInput 클릭됨 ===');
+    console.log('searchType:', searchType);
     console.log('onSearch 존재:', !!onSearch);
-    console.log('onSubmit 존재:', !!onSubmit);
-    console.log('현재 URL:', window.location.href);
     
-    if (searchTerm.trim() && onSearch) {
-      console.log('onSearch 호출:', searchTerm.trim());
-      onSearch(searchTerm.trim());
-    }
-    if (onSubmit) {
-      console.log('onSubmit 호출:', searchTerm.trim());
-      onSubmit(searchTerm.trim());
+    if (onSearch) {
+      // 커스텀 검색 핸들러가 있으면 사용
+      onSearch();
+    } else {
+      // 기본 검색 페이지 이동 로직
+      switch (searchType) {
+        case 'homeshopping':
+          navigate('/homeshopping/search?type=homeshopping');
+          break;
+        case 'wishlist':
+          navigate('/search?type=wishlist');
+          break;
+        case 'kok':
+        default:
+          navigate('/kok/search');
+          break;
+      }
     }
   };
 
@@ -36,18 +45,9 @@ const HeaderNavInput = ({
     setSearchTerm(e.target.value);
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      handleSubmit(e);
-    }
-  };
-
   return (
-    <form className={`header-nav-input ${className}`.trim()} onSubmit={handleSubmit}>
-      <div className="input-wrapper" onClick={() => {
-        const input = document.querySelector('.search-input');
-        if (input) input.focus();
-      }}>
+    <div className={`header-nav-input ${className}`.trim()} onClick={handleClick}>
+      <div className="input-wrapper">
         <svg
           className="search-icon"
           viewBox="0 0 24 24"
@@ -69,11 +69,11 @@ const HeaderNavInput = ({
           placeholder={placeholder}
           value={searchTerm}
           onChange={handleInputChange}
-          onKeyPress={handleKeyPress}
           aria-label="검색"
+          readOnly
         />
       </div>
-    </form>
+    </div>
   );
 };
 

@@ -3,6 +3,7 @@
   flex: 1;
   max-width: 400px;
   margin: 0 16px;
+  cursor: pointer;
 }
 
 .input-wrapper {
@@ -14,10 +15,10 @@
   padding: 2px 16px;
   height: 47px;
   transition: all 0.2s ease;
-  cursor: text;
+  cursor: pointer;
 }
 
-.input-wrapper:focus-within {
+.input-wrapper:hover {
   background-color: #ffffff;
   box-shadow: 0 0 0 2px #ff69b4;
 }
@@ -40,11 +41,6 @@
   width: 100%;
   padding-left: 44px;
   cursor: text;
-  pointer-events: auto;
-  user-select: text;
-  -webkit-user-select: text;
-  -moz-user-select: text;
-  -ms-user-select: text;
 }
 
 .search-input::placeholder {
