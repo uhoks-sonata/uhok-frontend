@@ -144,7 +144,6 @@
   justify-content: flex-start;
   gap: 16px;
   height: 100%; /* 전체 높이 사용 */
-  min-height: calc(100vh - 250px); /* 헤더, 날짜, 시간, 바텀 네비게이션 높이를 제외한 최소 높이 */
 }
 
 .channel-list::-webkit-scrollbar {
