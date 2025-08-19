@@ -24,34 +24,49 @@ export const recipeApi = {
    * 1. 보유 재료가 차감되는 형식으로 보여줌, 입력한 재료가 많이 속한 레시피 순으로 제공
    * GET /api/recipes/by-ingredients
    */
-  getRecipesByIngredients: async ({ 
-    ingredient, 
-    amount, 
-    unit, 
-    page = 1, 
-    size = 5, 
-    signal 
+  getRecipesByIngredients: async ({
+    ingredients,
+    page = 1,
+    size = 5,
+    signal
   } = {}) => {
     try {
-      const qs = buildQuery({ ingredient, amount, unit, page, size });
-      const url = `/api/recipes/by-ingredients?${qs}`;
+      // 파라미터명 수정: ingredients → ingredient
+      const queryParams = new URLSearchParams();
       
+      // ingredient 파라미터 (배열)
+      ingredients.forEach(ingredient => {
+        queryParams.append('ingredient', ingredient.name);
+      });
+      
+      // amount 파라미터 (배열)
+      ingredients.forEach(ingredient => {
+        queryParams.append('amount', ingredient.amount);
+      });
+      
+      // unit 파라미터 (배열)
+      ingredients.forEach(ingredient => {
+        queryParams.append('unit', ingredient.unit);
+      });
+      
+      // 페이지네이션
+      queryParams.append('page', page);
+      queryParams.append('size', size);
+      
+      const url = `/api/recipes/by-ingredients?${queryParams.toString()}`;
+
       console.log('🔍 재료 기반 레시피 추천 API 요청:', {
         url,
-        params: { ingredient, amount, unit, page, size }
+        params: { ingredients, page, size }
       });
-      
-      const response = await api.get(url, { 
-        baseURL: '', 
-        timeout: 30000, 
-        signal 
+
+      const response = await api.get(url, {
+        baseURL: '',
+        timeout: 30000,
+        signal
       });
-      
-      console.log('✅ 재료 기반 레시피 추천 API 응답:', {
-        status: response.status,
-        data: response.data
-      });
-      
+
+      console.log('✅ 재료 기반 레시피 추천 API 응답:', response.data);
       return response.data;
     } catch (error) {
       console.error('❌ 재료 기반 레시피 추천 API 오류:', error);

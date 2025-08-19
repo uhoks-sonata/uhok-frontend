@@ -103,7 +103,7 @@ const RecipeRecommendation = () => {
         }
         
         // 실제 API 호출로 변경
-        const ingredient = selectedIngredients.map((i) => i.name);
+        const ingredients = selectedIngredients.map((i) => i.name);
         const allHaveAmountAndUnit = selectedIngredients.every((i) => i.amount != null && i.unit);
         const amount = allHaveAmountAndUnit ? selectedIngredients.map((i) => {
           // 숫자를 문자열로 변환하고, 정수인 경우 소수점 제거
@@ -115,9 +115,7 @@ const RecipeRecommendation = () => {
 
         // API 요청 파라미터 로깅
         const apiParams = {
-          ingredient,
-          amount,
-          unit,
+          ingredients: selectedIngredients, // ingredient 객체 배열 전달
           page: 1,
           size: 5,
         };
