@@ -162,26 +162,7 @@ const Schedule = () => {
             console.log(Object.keys(firstItem));
             console.log('📋 첫 번째 아이템 전체 데이터:', JSON.stringify(firstItem, null, 2));
             
-            // API 응답에 status 필드가 없으므로 계산해서 추가
-            const schedulesWithStatus = response.data.schedules.map(item => {
-              const now = new Date();
-              const liveStart = new Date(`${item.live_date} ${item.live_start_time}`);
-              const liveEnd = new Date(`${item.live_date} ${item.live_end_time}`);
-              
-              let status = 'LIVE 예정';
-              if (now >= liveStart && now <= liveEnd) {
-                status = 'LIVE';
-              } else if (now > liveEnd) {
-                status = '종료';
-              }
-              
-              return {
-                ...item,
-                status
-              };
-            });
-            
-            setScheduleData(schedulesWithStatus);
+            setScheduleData(response.data.schedules);
           } else {
             console.log('❌ API 응답에 schedules가 없음');
             console.log('❌ response:', response);
@@ -362,26 +343,33 @@ const Schedule = () => {
   };
 
   // 방송 상태 표시 함수
-  const renderStatusBadge = (status) => {
+  const renderStatusBadge = (item) => {
+    const now = new Date();
+    const liveStart = new Date(`${item.live_date} ${item.live_start_time}`);
+    const liveEnd = new Date(`${item.live_date} ${item.live_end_time}`);
+    
     let statusText = '';
     let statusClass = '';
     
-    switch (status) {
-      case 'live':
-        statusText = 'LIVE';
-        statusClass = 'status-live';
-        break;
-      case 'live 예정':
-        statusText = 'LIVE 예정';
-        statusClass = 'status-upcoming';
-        break;
-      case '종료':
-        statusText = '종료';
-        statusClass = 'status-ended';
-        break;
-      default:
-        statusText = '알 수 없음';
-        statusClass = 'status-unknown';
+    // 현재 시간이 방송 시작 시간보다 이전이면 "방송 예정"
+    if (now < liveStart) {
+      statusText = '방송 예정';
+      statusClass = 'status-upcoming';
+    }
+    // 현재 시간이 방송 시작과 종료 시간 사이에 있으면 "LIVE"
+    else if (now >= liveStart && now <= liveEnd) {
+      statusText = 'LIVE';
+      statusClass = 'status-live';
+    }
+    // 현재 시간이 방송 종료 시간보다 이후면 "방송 종료"
+    else if (now > liveEnd) {
+      statusText = '방송 종료';
+      statusClass = 'status-ended';
+    }
+    // 기본값
+    else {
+      statusText = '알 수 없음';
+      statusClass = 'status-unknown';
     }
     
     return (
@@ -451,62 +439,142 @@ const Schedule = () => {
       return <div className="no-schedule">방송 일정이 없습니다.</div>;
     }
 
-    // 전체 방송 시간 범위 계산
-    const startTime = scheduleData[0]?.live_start_time?.substring(0, 5) || '';
-    const endTime = scheduleData[scheduleData.length - 1]?.live_end_time?.substring(0, 5) || '';
+    // 선택된 날짜와 시간에 따라 편성표 필터링
+    let filteredScheduleData = scheduleData;
+
+    // 1. 날짜 필터링
+    if (selectedDate) {
+      filteredScheduleData = filteredScheduleData.filter(item => {
+        const itemDate = new Date(item.live_date);
+        const selectedDateObj = new Date(selectedDate);
+        return itemDate.toDateString() === selectedDateObj.toDateString();
+      });
+    }
+
+    // 2. 시간 필터링
+    if (selectedTime) {
+      const selectedHour = parseInt(selectedTime.split(':')[0]);
+      filteredScheduleData = filteredScheduleData.filter(item => {
+        const startHour = parseInt(item.live_start_time.split(':')[0]);
+        const endHour = parseInt(item.live_end_time.split(':')[0]);
+        
+        // 선택된 시간이 방송 시간 범위에 포함되는지 확인
+        return selectedHour >= startHour && selectedHour <= endHour;
+      });
+    }
+
+    // 필터링된 데이터가 없으면 메시지 표시
+    if (filteredScheduleData.length === 0) {
+      let message = '방송 일정이 없습니다.';
+      if (selectedDate && selectedTime) {
+        message = `${selectedDate} ${selectedTime}에 해당하는 방송 일정이 없습니다.`;
+      } else if (selectedDate) {
+        message = `${selectedDate}에 해당하는 방송 일정이 없습니다.`;
+      } else if (selectedTime) {
+        message = `${selectedTime}에 해당하는 방송 일정이 없습니다.`;
+      }
+      return <div className="no-schedule">{message}</div>;
+    }
+
+    // 전체 방송 시간 범위 계산 (필터링된 데이터 기준)
+    const startTime = filteredScheduleData[0]?.live_start_time?.substring(0, 5) || '';
+    const endTime = filteredScheduleData[filteredScheduleData.length - 1]?.live_end_time?.substring(0, 5) || '';
 
     return (
       <div className="schedule-timeline">
+        {/* 필터링 정보 표시 */}
+        {(selectedDate || selectedTime) && (
+          <div className="schedule-filter-info">
+            <span className="filter-label">필터링:</span>
+            {selectedDate && (
+              <span className="filter-date">
+                {new Date(selectedDate).toLocaleDateString('ko-KR', { 
+                  month: 'long', 
+                  day: 'numeric',
+                  weekday: 'long'
+                })}
+              </span>
+            )}
+            {selectedTime && (
+              <span className="filter-time">
+                {selectedTime}
+              </span>
+            )}
+            <button 
+              className="clear-filter-btn"
+              onClick={() => {
+                setSelectedDate(null);
+                setSelectedTime(null);
+              }}
+            >
+              필터 초기화
+            </button>
+          </div>
+        )}
+
         {/* 전체 방송 시간 범위를 위에 표시 */}
         <div className="schedule-time-header">
           <span className="time-range">
-            {startTime} ~ {endTime}
+            {filteredScheduleData.length > 0 ? 
+              `${filteredScheduleData[0]?.live_start_time?.substring(0, 5) || '--:--'} ~ ${filteredScheduleData[0]?.live_end_time?.substring(0, 5) || '--:--'}` : 
+              '--:-- ~ --:--'
+            }
+          </span>
+          <span className="schedule-count">
+            총 {filteredScheduleData.length}개 방송
           </span>
         </div>
         
-        {scheduleData.map((item) => {
+        {filteredScheduleData.map((item) => {
           console.log('스케줄 아이템 product_id:', item.product_id, typeof item.product_id);
           return (
             <div key={item.live_id} className="schedule-item">
-            <div className="schedule-content">
-              <div className="schedule-image">
-                <img src={item.thumb_img_url} alt={item.product_name} />
-                {renderStatusBadge(item.status)}
+              {/* 방송 시간 표시 */}
+              <div className="schedule-time-range">
+                <span className="time-range">
+                  {item.live_start_time?.substring(0, 5) || '--:--'} ~ {item.live_end_time?.substring(0, 5) || '--:--'}
+                </span>
               </div>
-              <div className="schedule-info">
-                <div className="channel-info">
-                  <span className="schedule-channel-name">{item.homeshopping_name}</span>
+              
+              <div className="schedule-content">
+                <div className="schedule-image">
+                  <img src={item.thumb_img_url} alt={item.product_name} />
+                  {renderStatusBadge(item)}
                 </div>
-                <div className="schedule-product-meta">
-                  <div className="schedule-product-name">{item.product_name}</div>
-                </div>
-                <div className="schedule-price-info">
-                  <div className="schedule-original-price">{item.original_price?.toLocaleString() || '0'}원</div>
-                  <div className="schedule-discount-display">
-                    <span className="schedule-discount-rate">{item.discount_rate || '0'}%</span>
-                    <span className="schedule-discount-price">{item.discounted_price?.toLocaleString() || '0'}원</span>
+                <div className="schedule-info">
+                  <div className="channel-info">
+                    <span className="schedule-channel-name">{item.homeshopping_name}</span>
                   </div>
-                  <div className="schedule-wishlist-btn">
-                    <button 
-                      className="heart-button"
-                      data-product-id={item.product_id}
-                      onClick={(e) => {
-                        e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
-                        handleHeartToggle(item.product_id);
-                      }}>
-                      <img 
-                        src={unlikedProducts.has(item.product_id) ? emptyHeartIcon : filledHeartIcon} 
-                        alt="찜 토글" 
-                        className="heart-icon"
-                      />
-                    </button>
+                  <div className="schedule-product-meta">
+                    <div className="schedule-product-name">{item.product_name}</div>
+                  </div>
+                  <div className="schedule-price-info">
+                    <div className="schedule-original-price">{item.original_price?.toLocaleString() || '0'}원</div>
+                    <div className="schedule-discount-display">
+                      <span className="schedule-discount-rate">{item.discount_rate || '0'}%</span>
+                      <span className="schedule-discount-price">{item.discounted_price?.toLocaleString() || '0'}원</span>
+                    </div>
+                    <div className="schedule-wishlist-btn">
+                      <button 
+                        className="heart-button"
+                        data-product-id={item.product_id}
+                        onClick={(e) => {
+                          e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
+                          handleHeartToggle(item.product_id);
+                        }}>
+                        <img 
+                          src={unlikedProducts.has(item.product_id) ? emptyHeartIcon : filledHeartIcon} 
+                          alt="찜 토글" 
+                          className="heart-icon"
+                        />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
       </div>
     );
   };
