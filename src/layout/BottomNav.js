@@ -178,21 +178,13 @@ const BottomNav = ({ selectedItemsCount = 0, handlePayment = null, productInfo =
                   }
                 } else {
                   // 상품 상세 페이지나 장바구니에서는 결제 페이지로 이동
-                  // 제품 정보를 state로 전달
-                                    if (location.pathname.startsWith('/kok/product/')) {
+                  if (location.pathname.startsWith('/kok/product/')) {
                     // 상품 상세페이지에서 주문하기 버튼 클릭 시
-                    const productId = location.pathname.split('/').pop();
-                             navigate('/kok/payment', {
-           state: {
-             productId: productId,
-             fromProductDetail: true,
-             discountPrice: productInfo?.discountPrice,
-             originalPrice: productInfo?.originalPrice,
-             discountRate: productInfo?.discountRate,
-             productName: productInfo?.productName,
-             productImage: productInfo?.productImage
-           }
-         });
+                    // 수량 선택 모달을 열기 위해 이벤트를 발생시킴
+                    const orderButtonEvent = new CustomEvent('openQuantityModal', {
+                      detail: { productId: location.pathname.split('/').pop() }
+                    });
+                    window.dispatchEvent(orderButtonEvent);
                   } else {
                     // 장바구니에서 주문하기 버튼 클릭 시
                     navigateToPayment();

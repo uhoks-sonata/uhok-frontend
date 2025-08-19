@@ -11,6 +11,8 @@ import '../../styles/mypage.css';
 import '../../styles/logout.css';
 // userApi import
 import { userApi } from '../../api/userApi';
+// orderApi import
+import { orderApi } from '../../api/orderApi';
 // 사용자 Context import
 import { useUser } from '../../contexts/UserContext';
 // 기본 사용자 아이콘 이미지를 가져옵니다
@@ -133,25 +135,33 @@ const MyPage = () => {
           return;
         }
         
-        // 최근 주문 조회 (현재는 임시 데이터 사용)
+        // 최근 주문 조회 (실제 API 호출)
         try {
           console.log('최근 주문 조회 중...');
-          // TODO: 주문 API 구현 시 실제 API 호출로 교체
-          ordersData = { orders: [] };
+          const recentOrdersResponse = await orderApi.getRecentOrders(7);
+          ordersData = recentOrdersResponse;
           console.log('최근 주문 조회 성공:', ordersData);
         } catch (err) {
           console.error('최근 주문 조회 실패:', err);
+          if (err.response?.status === 401) {
+            console.log('401 에러 - 로그인이 필요합니다.');
+          }
           ordersData = { orders: [] };
         }
         
-        // 주문 개수 조회 (현재는 임시 데이터 사용)
+        // 주문 개수 조회 (실제 API 호출)
         try {
           console.log('주문 개수 조회 중...');
-          // TODO: 주문 API 구현 시 실제 API 호출로 교체
-          orderCount = 0;
+          const orderCountResponse = await orderApi.getOrderCount();
+          orderCount = orderCountResponse.order_count || 0;
           console.log('주문 개수 조회 성공:', orderCount);
         } catch (err) {
           console.error('주문 개수 조회 실패:', err);
+          if (err.response?.status === 401) {
+            console.log('401 에러 - 로그인이 필요합니다.');
+          } else if (err.response?.status === 404) {
+            console.log('404 에러 - 주문 개수 API 엔드포인트가 존재하지 않습니다.');
+          }
           orderCount = 0;
         }
         
@@ -174,7 +184,7 @@ const MyPage = () => {
           email: userData.email,
           created_at: userData.created_at,
           orderCount: orderCount,
-          recentOrders: ordersData.orders || []
+          recentOrders: ordersData || []
         });
         
         setRecipeData(recipeData);
@@ -198,6 +208,15 @@ const MyPage = () => {
   const handleOrderHistoryClick = async () => {
     try {
       console.log('주문 내역 클릭');
+      
+      // 로그인 상태 확인
+      const accessToken = localStorage.getItem('access_token');
+      if (!accessToken) {
+        console.log('로그인되지 않은 상태에서 주문내역 페이지로 이동');
+        // 로그인되지 않아도 주문내역 페이지로 이동 (더미 데이터 표시)
+      } else {
+        console.log('로그인된 상태에서 주문내역 페이지로 이동');
+      }
       
       // 주문 내역 페이지로 이동합니다
       window.location.href = '/orderlist';
@@ -379,35 +398,69 @@ const MyPage = () => {
                         <span className="delivery-date">{firstOrder.order_date} 도착</span>
                       </div>
                       
-                      {/* 상품 정보들 - 같은 주문번호의 모든 상품을 표시합니다 */}
-                      {orders.map((order, index) => (
-                        <div key={`${orderId}-${index}`} className="mypage-product-info">
-                          {/* 상품 이미지를 표시합니다 (API에서 받아옴) */}
-                          <div className="mypage-product-image">
-                            <img src={order.product_image} alt={order.product_name} />
-                          </div>
-                          
-                          {/* 상품 상세 정보 */}
-                          <div className="mypage-product-details">
-                            {/* 브랜드명과 상품명을 표시합니다 (API에서 받아옴) */}
-                            <div className="mypage-product-name" title={`${order.brand_name} | ${order.product_name}`}>
-                              {`${order.brand_name} | ${order.product_name}`.length > 20 
-                                ? `${`${order.brand_name} | ${order.product_name}`.substring(0, 20)}...`
-                                : `${order.brand_name} | ${order.product_name}`
-                              }
-                            </div>
-                            {/* 상품 설명을 표시합니다 (API에서 받아옴) */}
-                            <div className="mypage-product-description" title={order.product_description}>
-                              {order.product_description.length > 20 
-                                ? `${order.product_description.substring(0, 20)}...`
-                                : order.product_description
-                              }
-                            </div>
-                            {/* 가격과 수량을 표시합니다 (API에서 받아옴) */}
-                            <div className="mypage-product-price">{formatPrice(order.product_price)} · {order.product_quantity}개</div>
-                          </div>
-                        </div>
-                      ))}
+                                             {/* 상품 정보들 - 같은 주문번호의 모든 상품을 표시합니다 */}
+                       {(() => {
+                         const allItems = [];
+                         
+                         // kok_orders 처리
+                         if (orders[0].kok_orders && orders[0].kok_orders.length > 0) {
+                           orders[0].kok_orders.forEach((kokOrder, index) => {
+                             allItems.push({
+                               type: 'kok',
+                               product_id: kokOrder.kok_product_id,
+                               product_name: `콕 상품 ${kokOrder.kok_product_id}`,
+                               product_description: '콕 상품입니다',
+                               product_price: kokOrder.order_price,
+                               product_quantity: kokOrder.quantity,
+                               product_image: testImage1
+                             });
+                           });
+                         }
+                         
+                         // homeshopping_orders 처리
+                         if (orders[0].homeshopping_orders && orders[0].homeshopping_orders.length > 0) {
+                           orders[0].homeshopping_orders.forEach((homeOrder, index) => {
+                             allItems.push({
+                               type: 'homeshopping',
+                               product_id: homeOrder.product_id,
+                               product_name: `홈쇼핑 상품 ${homeOrder.product_id}`,
+                               product_description: '홈쇼핑 상품입니다',
+                               product_price: homeOrder.order_price,
+                               product_quantity: homeOrder.quantity,
+                               product_image: testImage2
+                             });
+                           });
+                         }
+                         
+                         return allItems.map((item, index) => (
+                           <div key={`${orderId}-${index}`} className="mypage-product-info">
+                             {/* 상품 이미지를 표시합니다 */}
+                             <div className="mypage-product-image">
+                               <img src={item.product_image} alt={item.product_name} />
+                             </div>
+                             
+                             {/* 상품 상세 정보 */}
+                             <div className="mypage-product-details">
+                               {/* 상품명을 표시합니다 */}
+                               <div className="mypage-product-name" title={item.product_name}>
+                                 {item.product_name.length > 20 
+                                   ? `${item.product_name.substring(0, 20)}...`
+                                   : item.product_name
+                                 }
+                               </div>
+                               {/* 상품 설명을 표시합니다 */}
+                               <div className="mypage-product-description" title={item.product_description}>
+                                 {item.product_description.length > 20 
+                                   ? `${item.product_description.substring(0, 20)}...`
+                                   : item.product_description
+                                 }
+                               </div>
+                               {/* 가격과 수량을 표시합니다 */}
+                               <div className="mypage-product-price">{formatPrice(item.product_price)} · {item.product_quantity}개</div>
+                             </div>
+                           </div>
+                         ));
+                       })()}
                       
                       {/* 레시피 관련 버튼들 */}
                       <div className="recipe-buttons">

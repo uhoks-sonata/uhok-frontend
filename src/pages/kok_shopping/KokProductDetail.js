@@ -152,6 +152,22 @@ const KokProductDetail = () => {
     }
   };
 
+  // 하단 네비게이션의 주문하기 버튼 클릭 이벤트 리스너
+  useEffect(() => {
+    const handleOpenQuantityModal = (event) => {
+      if (event.detail.productId === productId) {
+        console.log('하단 네비게이션에서 주문하기 버튼 클릭됨');
+        setShowQuantityModal(true);
+      }
+    };
+
+    window.addEventListener('openQuantityModal', handleOpenQuantityModal);
+
+    return () => {
+      window.removeEventListener('openQuantityModal', handleOpenQuantityModal);
+    };
+  }, [productId]);
+
   useEffect(() => {
     const loadKokProductData = async () => {
       try {
@@ -362,7 +378,7 @@ const KokProductDetail = () => {
     setSelectedQuantity(newQuantity);
   };
 
-  // 장바구니에 추가
+  // 장바구니에 추가 (일반)
   const handleAddToCart = async () => {
     try {
       setIsAddingToCart(true);
@@ -409,6 +425,165 @@ const KokProductDetail = () => {
         alert('이미 장바구니에 있는 상품입니다.');
       } else {
         alert('장바구니 추가에 실패했습니다. 다시 시도해주세요.');
+      }
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
+
+  // 주문하기를 위한 장바구니 추가 및 결제 페이지 이동 (백그라운드 처리)
+  const handleOrderNow = async () => {
+    try {
+      setIsAddingToCart(true);
+      
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        alert('로그인이 필요합니다.');
+        navigate('/');
+        return;
+      }
+
+      console.log('🚀 주문하기 - 장바구니 확인 시작');
+      
+      // 1. 먼저 현재 장바구니 상태 확인
+      const cartResponse = await api.get('/api/kok/carts', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      console.log('✅ 현재 장바구니 상태:', cartResponse.data);
+      
+      const cartItems = cartResponse.data.cart_items || [];
+      const existingCartItem = cartItems.find(item => 
+        item.kok_product_id === parseInt(productId)
+      );
+
+      // 2. 이미 장바구니에 있는 상품인지 확인
+      if (existingCartItem) {
+        console.log('이미 장바구니에 있는 상품 발견:', existingCartItem);
+        
+        // 사용자에게 선택권 제공
+        const userChoice = window.confirm('이미 해당 상품이 장바구니에 있습니다.\n\n장바구니로 이동하시겠습니까?\n\n[확인] 장바구니로 이동\n[취소] 현재 페이지에서 계속 쇼핑');
+        
+        if (userChoice) {
+          // 장바구니로 이동
+          console.log('사용자가 장바구니로 이동을 선택했습니다.');
+          handleCloseQuantityModal();
+          navigate('/cart');
+          return;
+        } else {
+          // 현재 페이지에서 계속 쇼핑
+          console.log('사용자가 현재 페이지에서 계속 쇼핑을 선택했습니다.');
+          handleCloseQuantityModal();
+          return;
+        }
+      }
+
+      // 3. 장바구니에 없는 상품이므로 새로 추가
+      const cartData = {
+        kok_product_id: parseInt(productId),
+        kok_quantity: selectedQuantity,
+        recipe_id: 0 // 레시피 ID는 0으로 설정
+      };
+
+      console.log('🚀 주문하기 - 장바구니 추가 요청:', cartData);
+      
+      let cartItemToOrder = null;
+      
+      try {
+        // 4. 장바구니에 상품 추가
+        const response = await api.post('/api/kok/carts', cartData, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        console.log('✅ 주문하기 - 장바구니 추가 성공:', response.data);
+        
+        // 5. 장바구니 목록 다시 조회하여 추가된 상품 정보 가져오기
+        const updatedCartResponse = await api.get('/api/kok/carts', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        console.log('✅ 주문하기 - 업데이트된 장바구니 목록 조회 성공:', updatedCartResponse.data);
+        
+        // 6. 추가된 상품 찾기
+        const updatedCartItems = updatedCartResponse.data.cart_items || [];
+        cartItemToOrder = updatedCartItems.find(item => 
+          item.kok_product_id === parseInt(productId)
+        );
+
+        if (!cartItemToOrder) {
+          throw new Error('장바구니에서 추가된 상품을 찾을 수 없습니다.');
+        }
+
+        console.log('✅ 찾은 장바구니 아이템:', cartItemToOrder);
+
+      } catch (addError) {
+        console.log('🔍 장바구니 추가 에러 상세:', addError);
+        console.log('🔍 에러 상태 코드:', addError.response?.status);
+        console.log('🔍 에러 메시지:', addError.response?.data);
+        
+        // 장바구니 추가 실패 시 처리
+        if (addError.response?.status === 400) {
+          // 이미 장바구니에 있는 상품인 경우 (이중 체크)
+          console.log('이미 장바구니에 있는 상품입니다. 사용자에게 선택권을 제공합니다.');
+          
+          // 사용자에게 선택권 제공
+          const userChoice = window.confirm('이미 해당 상품이 장바구니에 있습니다.\n\n장바구니로 이동하시겠습니까?\n\n[확인] 장바구니로 이동\n[취소] 현재 페이지에서 계속 쇼핑');
+          
+          if (userChoice) {
+            // 장바구니로 이동
+            console.log('사용자가 장바구니로 이동을 선택했습니다.');
+            handleCloseQuantityModal();
+            navigate('/cart');
+            return;
+          } else {
+            // 현재 페이지에서 계속 쇼핑
+            console.log('사용자가 현재 페이지에서 계속 쇼핑을 선택했습니다.');
+            handleCloseQuantityModal();
+            return;
+          }
+        } else {
+          // 다른 에러인 경우 재throw
+          console.log('다른 에러 발생, 재throw:', addError);
+          throw addError;
+        }
+      }
+
+      // 4. 결제 페이지로 이동할 데이터 구성
+      const navigationState = {
+        fromCart: true,
+        discountPrice: cartItemToOrder.kok_discounted_price * cartItemToOrder.kok_quantity,
+        originalPrice: cartItemToOrder.kok_product_price * cartItemToOrder.kok_quantity,
+        productName: cartItemToOrder.kok_product_name,
+        productImage: cartItemToOrder.kok_thumbnail,
+        cartItems: [cartItemToOrder], // 단일 상품이므로 배열로 감싸기
+        orderId: `ORDER-${Date.now()}`
+      };
+
+      console.log('🚀 주문하기 - 결제 페이지로 이동:', navigationState);
+      
+      // 5. 모달 닫기
+      handleCloseQuantityModal();
+      
+      // 6. 결제 페이지로 이동 (UI에서는 장바구니 추가 과정이 보이지 않음)
+      navigate('/kok/payment', { 
+        state: navigationState,
+        replace: false
+      });
+      
+    } catch (error) {
+      console.error('❌ 주문하기 처리 실패:', error);
+      
+      if (error.response?.status === 401) {
+        alert('로그인이 필요합니다.');
+        navigate('/');
+      } else {
+        alert('주문 처리에 실패했습니다. 다시 시도해주세요.');
       }
     } finally {
       setIsAddingToCart(false);
@@ -1019,41 +1194,67 @@ const KokProductDetail = () => {
             {/* 버튼들 */}
             <div style={{
               display: 'flex',
+              flexDirection: 'column',
               gap: '12px'
             }}>
+              {/* 주문하기 버튼 */}
               <button
-                onClick={handleCloseQuantityModal}
-                style={{
-                  flex: 1,
-                  padding: '14px',
-                  border: '1px solid #ddd',
-                  backgroundColor: 'white',
-                  color: '#666',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  cursor: 'pointer'
-                }}
-              >
-                취소
-              </button>
-              
-              <button
-                onClick={handleAddToCart}
+                onClick={handleOrderNow}
                 disabled={isAddingToCart}
                 style={{
-                  flex: 1,
-                  padding: '14px',
+                  width: '100%',
+                  padding: '16px',
                   border: 'none',
                   backgroundColor: isAddingToCart ? '#ccc' : '#FA5F8C',
                   color: 'white',
                   borderRadius: '8px',
-                  fontSize: '14px',
+                  fontSize: '16px',
                   fontWeight: 'bold',
                   cursor: isAddingToCart ? 'not-allowed' : 'pointer'
                 }}
               >
-                {isAddingToCart ? '추가 중...' : '장바구니 추가'}
+                {isAddingToCart ? '주문 처리 중...' : '주문하기'}
               </button>
+              
+              {/* 하단 버튼들 */}
+              <div style={{
+                display: 'flex',
+                gap: '12px'
+              }}>
+                <button
+                  onClick={handleCloseQuantityModal}
+                  style={{
+                    flex: 1,
+                    padding: '14px',
+                    border: '1px solid #ddd',
+                    backgroundColor: 'white',
+                    color: '#666',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  취소
+                </button>
+                
+                <button
+                  onClick={handleAddToCart}
+                  disabled={isAddingToCart}
+                  style={{
+                    flex: 1,
+                    padding: '14px',
+                    border: '1px solid #FA5F8C',
+                    backgroundColor: 'white',
+                    color: '#FA5F8C',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    cursor: isAddingToCart ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  {isAddingToCart ? '추가 중...' : '장바구니 추가'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

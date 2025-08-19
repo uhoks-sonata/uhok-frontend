@@ -8,13 +8,10 @@
 
 /* 메인 콘텐츠 영역 */
 .mypage-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 10px;
-  padding-bottom: 10px;
-  
-  padding-right: 8px;
-  padding-top: 8px;
+  padding-top: 5px;
+        height: calc(100vh - 185px);
+        max-height: calc(100vh - 185px);
+        overflow-y: auto;
 }
 
 /* 로딩 및 에러 상태 */
