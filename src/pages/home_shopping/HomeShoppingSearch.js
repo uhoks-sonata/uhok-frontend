@@ -7,6 +7,8 @@ import HeaderSearchBar from '../../components/HeaderSearchBar';
 import BottomNav from '../../layout/BottomNav';
 // 로딩 컴포넌트를 가져옵니다
 import Loading from '../../components/Loading';
+// 뒤로가기 버튼 컴포넌트를 가져옵니다
+import HeaderNavBackBtn from '../../components/HeaderNavBackBtn';
 // 검색 페이지 스타일을 가져옵니다
 import '../../styles/search.css';
 // 홈쇼핑 API를 가져옵니다
@@ -30,6 +32,11 @@ const HomeShoppingSearch = () => {
   const [error, setError] = useState(null);
   const [searchHistory, setSearchHistory] = useState([]);
   const searchType = 'home'; // 홈쇼핑 검색 타입 (상수로 변경)
+  
+  // 무한 스크롤을 위한 상태 변수들
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   // 홈쇼핑 검색 히스토리 로드 (API 사용)
   const loadSearchHistory = useCallback(async () => {
@@ -37,20 +44,64 @@ const HomeShoppingSearch = () => {
     try {
       if (isLoggedIn && user?.token) {
         // 로그인된 사용자는 서버에서 홈쇼핑 검색 히스토리 가져오기
-        const response = await homeShoppingApi.getSearchHistory(10);
+        const response = await homeShoppingApi.getSearchHistory(); // limit 파라미터 제거
         const history = response.history || [];
-        setSearchHistory(history.map(item => item.homeshopping_keyword));
+        
+        console.log('🔍 백엔드에서 받은 원본 히스토리:', {
+          전체개수: history.length,
+          원본데이터: history.map(item => ({
+            id: item.homeshopping_history_id,
+            keyword: item.homeshopping_keyword,
+            createdAt: item.created_at
+          }))
+        });
+        
+        // UI에서 중복 제거 및 최신순 정렬
+        const keywordMap = new Map();
+        
+        // 원본 데이터를 그대로 순회하면서 중복 제거
+        history.forEach(item => {
+          const existingItem = keywordMap.get(item.homeshopping_keyword);
+          const currentTime = new Date(item.created_at);
+          
+          // 같은 키워드가 없거나, 현재 항목이 더 최신인 경우 업데이트
+          if (!existingItem || currentTime > new Date(existingItem.created_at)) {
+            keywordMap.set(item.homeshopping_keyword, {
+              id: item.homeshopping_history_id,
+              keyword: item.homeshopping_keyword,
+              createdAt: item.created_at
+            });
+          }
+        });
+        
+        // 최신 순으로 정렬 (created_at 기준 내림차순)
+        const sortedHistory = Array.from(keywordMap.values())
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+          .map(item => item.keyword)
+          .slice(0, 10); // UI에는 최대 10개만 표시
+        
+        console.log('🔍 UI 중복 제거 및 최신순 정렬 후 히스토리:', {
+          원본개수: history.length,
+          중복제거후개수: keywordMap.size,
+          UI표시개수: sortedHistory.length,
+          최종키워드: sortedHistory
+        });
+        
+        setSearchHistory(sortedHistory);
       } else {
         // 비로그인 사용자는 로컬스토리지에서 가져오기
         const history = JSON.parse(localStorage.getItem('homeshopping_searchHistory') || '[]');
-        setSearchHistory(history.slice(0, 10));
+        // 중복 제거 후 최신순 정렬
+        const uniqueHistory = history.filter((keyword, index, self) => self.indexOf(keyword) === index);
+        setSearchHistory(uniqueHistory.slice(0, 10));
       }
     } catch (error) {
       console.error('홈쇼핑 검색 히스토리 로드 실패:', error);
       // API 실패 시 로컬스토리지에서 가져오기
       try {
         const history = JSON.parse(localStorage.getItem('homeshopping_searchHistory') || '[]');
-        setSearchHistory(history.slice(0, 10));
+        const uniqueHistory = history.filter((keyword, index, self) => self.indexOf(keyword) === index);
+        setSearchHistory(uniqueHistory.slice(0, 10));
       } catch (localError) {
         console.error('로컬스토리지 홈쇼핑 검색 히스토리 로드 실패:', localError);
         setSearchHistory([]);
@@ -58,39 +109,134 @@ const HomeShoppingSearch = () => {
     }
   }, [isLoggedIn, user?.token]);
 
-  // 홈쇼핑 검색 히스토리 저장 (API 사용)
-  const saveSearchHistory = useCallback(async (query) => {
+  // 검색만 실행하는 함수 (저장 없이)
+  const executeSearchOnly = useCallback(async (query) => {
+    if (!query || loading) {
+      console.log('🔍 검색 조건 불충족 또는 중복 실행 방지');
+      return;
+    }
+
+    console.log('🔍 홈쇼핑 검색만 실행 (저장 없이):', { query });
+    
+    // 컴포넌트가 언마운트되었는지 확인하는 플래그
+    let isMounted = true;
+    
+    setLoading(true);
+    setError(null);
+
     try {
-      if (isLoggedIn && user?.token) {
-        // 로그인된 사용자는 서버에 홈쇼핑 검색어 저장
-        await homeShoppingApi.saveSearchHistory(query);
-        // 저장 후 히스토리 상태 업데이트 (로컬 상태만 업데이트)
-        setSearchHistory(prevHistory => {
-          const currentHistory = prevHistory.filter(item => item !== query);
-          return [query, ...currentHistory].slice(0, 10);
-        });
-      } else {
-        // 비로그인 사용자는 로컬스토리지에 저장
-        const history = JSON.parse(localStorage.getItem('homeshopping_searchHistory') || '[]');
-        const updatedHistory = [query, ...history.filter(item => item !== query)].slice(0, 20);
-        localStorage.setItem('homeshopping_searchHistory', JSON.stringify(updatedHistory));
-        setSearchHistory(updatedHistory.slice(0, 10));
-      }
-    } catch (error) {
-      console.error('홈쇼핑 검색 히스토리 저장 실패:', error);
-      // API 실패 시 로컬스토리지에 저장
+      // URL 업데이트
+      navigate(`/homeshopping/search?q=${encodeURIComponent(query)}`, { replace: true });
+      
+      // 홈쇼핑 실제 API 검색
       try {
-        const history = JSON.parse(localStorage.getItem('homeshopping_searchHistory') || '[]');
-        const updatedHistory = [query, ...history.filter(item => item !== query)].slice(0, 20);
-        localStorage.setItem('homeshopping_searchHistory', JSON.stringify(updatedHistory));
-        setSearchHistory(updatedHistory.slice(0, 10));
-      } catch (localError) {
-        console.error('로컬스토리지 홈쇼핑 검색 히스토리 저장 실패:', localError);
+        console.log('홈쇼핑 상품 검색 시작:', query);
+        const response = await homeShoppingApi.searchProducts(query, 1, 20);
+        
+        console.log('홈쇼핑 API 응답 전체:', response);
+        console.log('홈쇼핑 상품 데이터 샘플:', response.products?.[0]);
+        
+        // API 응답 데이터를 검색 결과 형식으로 변환
+        const homeshoppingResults = (response.products || []).map(product => {
+          console.log('홈쇼핑 상품 원본 데이터:', product);
+          
+          // 안전한 데이터 추출을 위한 헬퍼 함수
+          const safeGet = (obj, key, defaultValue = '') => {
+            return obj && obj[key] !== undefined && obj[key] !== null ? obj[key] : defaultValue;
+          };
+          
+          // 숫자 데이터 안전 처리
+          const safeNumber = (value, defaultValue = 0) => {
+            const num = parseFloat(value);
+            return isNaN(num) ? defaultValue : num;
+          };
+          
+          // 가격 데이터 안전 처리
+          const formatPrice = (price) => {
+            const numPrice = safeNumber(price, 0);
+            return numPrice > 0 ? numPrice.toLocaleString() : '0';
+          };
+          
+          // 이미지 URL 안전 처리
+          const getImageUrl = (imageUrl) => {
+            if (!imageUrl || imageUrl === 'null' || imageUrl === 'undefined') {
+              return 'https://via.placeholder.com/300x300/CCCCCC/666666?text=No+Image';
+            }
+            // 상대 경로인 경우 절대 경로로 변환
+            if (imageUrl.startsWith('/')) {
+              return imageUrl;
+            }
+            return imageUrl;
+          };
+          
+          // 방송 시간 안전 처리
+          const getBroadcastTime = (liveDate, startTime, endTime) => {
+            if (liveDate && startTime && endTime) {
+              return `${liveDate} ${startTime}~${endTime}`;
+            }
+            return '방송 일정 없음';
+          };
+          
+          const result = {
+            id: safeGet(product, 'product_id') || safeGet(product, 'id') || `homeshopping_${Date.now()}_${Math.random()}`,
+            title: safeGet(product, 'product_name') || safeGet(product, 'name') || safeGet(product, 'title') || '상품명 없음',
+            description: `${safeGet(product, 'store_name', '홈쇼핑')}에서 판매 중인 홈쇼핑 상품`,
+            price: `${formatPrice(safeGet(product, 'dc_price') || safeGet(product, 'discounted_price'))}원`,
+            originalPrice: `${formatPrice(safeGet(product, 'sale_price') || safeGet(product, 'original_price'))}원`,
+            discount: `${safeNumber(safeGet(product, 'dc_rate') || safeGet(product, 'discount_rate'), 0)}%`,
+            image: getImageUrl(safeGet(product, 'thumb_img_url') || safeGet(product, 'image') || safeGet(product, 'thumbnail')),
+            category: safeGet(product, 'category') || '홈쇼핑',
+            rating: safeNumber(safeGet(product, 'rating'), 0),
+            reviewCount: safeNumber(safeGet(product, 'review_count'), 0),
+            channel: safeGet(product, 'store_name') || '홈쇼핑',
+            broadcastTime: getBroadcastTime(
+              safeGet(product, 'live_date'),
+              safeGet(product, 'live_start_time'),
+              safeGet(product, 'live_end_time')
+            )
+          };
+          
+          console.log('변환된 홈쇼핑 상품 데이터:', result);
+          return result;
+        });
+        
+        // 중복 제거 (id 기준)
+        const uniqueHomeshoppingResults = homeshoppingResults.filter((product, index, self) => 
+          index === self.findIndex(p => p.id === product.id)
+        );
+        
+        console.log('홈쇼핑 검색 결과:', uniqueHomeshoppingResults.length, '개 상품 (중복 제거 후)');
+        if (isMounted) {
+          setSearchResults(uniqueHomeshoppingResults);
+        }
+        
+        // 검색 결과를 sessionStorage에 저장
+        const searchStateKey = `homeshopping_search_${query}`;
+        sessionStorage.setItem(searchStateKey, JSON.stringify({
+          results: uniqueHomeshoppingResults,
+          timestamp: Date.now()
+        }));
+      } catch (error) {
+        console.error('홈쇼핑 상품 검색 실패:', error);
+        if (isMounted) {
+          setError('홈쇼핑 상품 검색 중 오류가 발생했습니다.');
+        }
+      }
+      
+      if (isMounted) {
+        setLoading(false);
+      }
+      
+    } catch (err) {
+      console.error('홈쇼핑 검색 실패:', err);
+      if (isMounted) {
+        setError('홈쇼핑 검색 중 오류가 발생했습니다.');
+        setLoading(false);
       }
     }
-  }, [isLoggedIn, user?.token]);
+  }, [loading, navigate]);
 
-  // 홈쇼핑 검색 실행 함수
+  // 홈쇼핑 검색 실행 함수 (저장 포함)
   const handleSearch = useCallback(async (e = null, queryOverride = null) => {
     console.log('🔍 홈쇼핑 검색 실행 함수 호출:', { e, queryOverride, searchQuery });
     
@@ -114,15 +260,84 @@ const HomeShoppingSearch = () => {
       return;
     }
 
-    console.log('🔍 홈쇼핑 실제 검색 시작:', { query });
+    console.log('🔍 홈쇼핑 실제 검색 시작 (저장 포함):', { query });
     setLoading(true);
     setError(null);
 
     try {
       console.log('홈쇼핑 검색 실행:', query);
       
-      // 검색 히스토리에 저장
-      saveSearchHistory(query);
+      // 검색 히스토리에 저장 (함수 내부에서 직접 처리)
+      try {
+        if (isLoggedIn && user?.token) {
+          // 백엔드에서 현재 히스토리를 가져와서 중복 체크
+          try {
+            const response = await homeShoppingApi.getSearchHistory(20);
+            const currentHistory = response.history || [];
+            
+            // 시간 정보를 활용한 중복 체크
+            const existingItem = currentHistory.find(item => item.homeshopping_keyword === query);
+            const currentTime = new Date();
+            
+                         if (existingItem) {
+               console.log('🔍 이미 백엔드에 존재하는 검색어입니다. UI에서 맨 위로 올리기:', query);
+               
+               // 기존 항목의 시간과 현재 시간 비교 (1분 이내면 중복으로 간주)
+               const existingTime = new Date(existingItem.created_at);
+               const timeDiff = currentTime - existingTime;
+               const isRecentDuplicate = timeDiff < 60000; // 1분 = 60000ms
+               
+               if (isRecentDuplicate) {
+                 console.log('🔍 최근에 검색된 키워드입니다. DB 저장 생략, UI에서 맨 위로 이동:', query);
+                 // DB 저장 없이 UI에서만 맨 위로 이동
+                 setSearchHistory(prevHistory => {
+                   const filteredHistory = prevHistory.filter(item => item !== query);
+                   return [query, ...filteredHistory].slice(0, 10);
+                 });
+               } else {
+                 // 시간이 충분히 지난 경우 새로운 검색으로 처리
+                 console.log('🔍 시간이 지난 검색어입니다. 새로운 검색으로 저장:', query);
+                 await homeShoppingApi.saveSearchHistory(query);
+                 
+                 // 히스토리 다시 로드하여 최신 순으로 정렬
+                 await loadSearchHistory();
+               }
+            } else {
+              // 새로운 검색어만 백엔드에 저장
+              console.log('🔍 새로운 검색어를 백엔드에 저장:', query);
+              await homeShoppingApi.saveSearchHistory(query);
+              
+              // 히스토리 다시 로드하여 최신 순으로 정렬
+              await loadSearchHistory();
+            }
+          } catch (historyError) {
+            console.error('히스토리 중복 체크 실패, 기본 저장 로직 실행:', historyError);
+            // 히스토리 가져오기 실패 시 기본 저장 로직 실행
+            await homeShoppingApi.saveSearchHistory(query);
+            setSearchHistory(prevHistory => {
+              const currentHistory = prevHistory.filter(item => item !== query);
+              return [query, ...currentHistory].slice(0, 10);
+            });
+          }
+        } else {
+          // 비로그인 사용자는 로컬스토리지에 저장
+          const history = JSON.parse(localStorage.getItem('homeshopping_searchHistory') || '[]');
+          const updatedHistory = [query, ...history.filter(item => item !== query)].slice(0, 20);
+          localStorage.setItem('homeshopping_searchHistory', JSON.stringify(updatedHistory));
+          setSearchHistory(updatedHistory.slice(0, 10));
+        }
+      } catch (error) {
+        console.error('홈쇼핑 검색 히스토리 저장 실패:', error);
+        // API 실패 시 로컬스토리지에 저장
+        try {
+          const history = JSON.parse(localStorage.getItem('homeshopping_searchHistory') || '[]');
+          const updatedHistory = [query, ...history.filter(item => item !== query)].slice(0, 20);
+          localStorage.setItem('homeshopping_searchHistory', JSON.stringify(updatedHistory));
+          setSearchHistory(updatedHistory.slice(0, 10));
+        } catch (localError) {
+          console.error('로컬스토리지 홈쇼핑 검색 히스토리 저장 실패:', localError);
+        }
+      }
       
       // URL 업데이트 (쿼리 파라미터 추가)
       navigate(`/homeshopping/search?q=${encodeURIComponent(query)}`, { replace: true });
@@ -136,22 +351,68 @@ const HomeShoppingSearch = () => {
         console.log('홈쇼핑 상품 데이터 샘플:', response.products?.[0]);
         
         // API 응답 데이터를 검색 결과 형식으로 변환
-        const homeshoppingResults = (response.products || []).map(product => ({
-          id: product.product_id,
-          title: product.product_name,
-          description: `${product.store_name}에서 판매 중인 홈쇼핑 상품`,
-          price: `${product.dc_price?.toLocaleString() || '0'}원`,
-          originalPrice: `${product.sale_price?.toLocaleString() || '0'}원`,
-          discount: `${product.dc_rate || 0}%`,
-          image: product.thumb_img_url || '/test1.png',
-          category: '홈쇼핑',
-          rating: 4.5, // 기본값
-          reviewCount: 128, // 기본값
-          channel: product.store_name || '홈쇼핑',
-          broadcastTime: product.live_date ? 
-            `${product.live_date} ${product.live_start_time}~${product.live_end_time}` : 
-            '방송 일정 없음'
-        }));
+        const homeshoppingResults = (response.products || []).map(product => {
+          console.log('홈쇼핑 상품 원본 데이터:', product);
+          
+          // 안전한 데이터 추출을 위한 헬퍼 함수
+          const safeGet = (obj, key, defaultValue = '') => {
+            return obj && obj[key] !== undefined && obj[key] !== null ? obj[key] : defaultValue;
+          };
+          
+          // 숫자 데이터 안전 처리
+          const safeNumber = (value, defaultValue = 0) => {
+            const num = parseFloat(value);
+            return isNaN(num) ? defaultValue : num;
+          };
+          
+          // 가격 데이터 안전 처리
+          const formatPrice = (price) => {
+            const numPrice = safeNumber(price, 0);
+            return numPrice > 0 ? numPrice.toLocaleString() : '0';
+          };
+          
+          // 이미지 URL 안전 처리
+          const getImageUrl = (imageUrl) => {
+            if (!imageUrl || imageUrl === 'null' || imageUrl === 'undefined') {
+              return 'https://via.placeholder.com/300x300/CCCCCC/666666?text=No+Image';
+            }
+            // 상대 경로인 경우 절대 경로로 변환
+            if (imageUrl.startsWith('/')) {
+              return imageUrl;
+            }
+            return imageUrl;
+          };
+          
+          // 방송 시간 안전 처리
+          const getBroadcastTime = (liveDate, startTime, endTime) => {
+            if (liveDate && startTime && endTime) {
+              return `${liveDate} ${startTime}~${endTime}`;
+            }
+            return '방송 일정 없음';
+          };
+          
+          const result = {
+            id: safeGet(product, 'product_id') || safeGet(product, 'id') || `homeshopping_${Date.now()}_${Math.random()}`,
+            title: safeGet(product, 'product_name') || safeGet(product, 'name') || safeGet(product, 'title') || '상품명 없음',
+            description: `${safeGet(product, 'store_name', '홈쇼핑')}에서 판매 중인 홈쇼핑 상품`,
+            price: `${formatPrice(safeGet(product, 'dc_price') || safeGet(product, 'discounted_price'))}원`,
+            originalPrice: `${formatPrice(safeGet(product, 'sale_price') || safeGet(product, 'original_price'))}원`,
+            discount: `${safeNumber(safeGet(product, 'dc_rate') || safeGet(product, 'discount_rate'), 0)}%`,
+            image: getImageUrl(safeGet(product, 'thumb_img_url') || safeGet(product, 'image') || safeGet(product, 'thumbnail')),
+            category: safeGet(product, 'category') || '홈쇼핑',
+            rating: safeNumber(safeGet(product, 'rating'), 0),
+            reviewCount: safeNumber(safeGet(product, 'review_count'), 0),
+            channel: safeGet(product, 'store_name') || '홈쇼핑',
+            broadcastTime: getBroadcastTime(
+              safeGet(product, 'live_date'),
+              safeGet(product, 'live_start_time'),
+              safeGet(product, 'live_end_time')
+            )
+          };
+          
+          console.log('변환된 홈쇼핑 상품 데이터:', result);
+          return result;
+        });
         
         // 중복 제거 (id 기준)
         const uniqueHomeshoppingResults = homeshoppingResults.filter((product, index, self) => 
@@ -161,11 +422,17 @@ const HomeShoppingSearch = () => {
         console.log('홈쇼핑 검색 결과:', uniqueHomeshoppingResults.length, '개 상품 (중복 제거 후)');
         setSearchResults(uniqueHomeshoppingResults);
         
+        // 무한 스크롤 상태 초기화
+        setCurrentPage(1);
+        setHasMore(uniqueHomeshoppingResults.length === 20); // 20개면 더 로드 가능
+        
         // 검색 결과를 sessionStorage에 저장
         const searchStateKey = `homeshopping_search_${query}`;
         sessionStorage.setItem(searchStateKey, JSON.stringify({
           results: uniqueHomeshoppingResults,
-          timestamp: Date.now()
+          timestamp: Date.now(),
+          currentPage: 1,
+          hasMore: uniqueHomeshoppingResults.length === 20
         }));
       } catch (error) {
         console.error('홈쇼핑 상품 검색 실패:', error);
@@ -179,7 +446,7 @@ const HomeShoppingSearch = () => {
       setError('홈쇼핑 검색 중 오류가 발생했습니다.');
       setLoading(false);
     }
-  }, [searchQuery, navigate, saveSearchHistory]);
+  }, [searchQuery, navigate, isLoggedIn, user?.token]);
 
   // URL 쿼리 파라미터에서 초기 검색어 가져오기 (홈쇼핑 전용)
   useEffect(() => {
@@ -214,17 +481,186 @@ const HomeShoppingSearch = () => {
           console.log('복원된 홈쇼핑 검색 결과:', uniqueResults.length, '개 상품 (중복 제거 후)');
           setSearchResults(uniqueResults);
           setLoading(false);
+          
+          // 복원된 검색어는 이미 저장되어 있으므로 히스토리 저장 생략
+          console.log('🔍 복원된 검색어는 이미 히스토리에 저장되어 있음:', query);
         } catch (error) {
           console.error('홈쇼핑 검색 상태 복원 실패:', error);
-          handleSearch(null, query);
+          // 복원 실패 시 검색만 실행 (저장 없이)
+          executeSearchOnly(query);
         }
       } else {
-        // 새로운 검색 실행
-        console.log('새로운 홈쇼핑 검색 실행:', query);
+        // 새로운 검색 실행 (저장 포함)
+        console.log('새로운 홈쇼핑 검색 실행 (저장 포함):', query);
         handleSearch(null, query);
       }
     }
-  }, [location.search, handleSearch]);
+  }, [location.search]); // handleSearch 의존성 제거
+
+  // 더 많은 검색 결과를 로드하는 함수
+  const loadMoreSearchResults = useCallback(async () => {
+    if (loadingMore || !hasMore || !searchQuery.trim()) return;
+    
+    console.log('🔄 더 많은 홈쇼핑 검색 결과 로드 시작 - 페이지:', currentPage + 1);
+    setLoadingMore(true);
+    
+    try {
+      const response = await homeShoppingApi.searchProducts(searchQuery, currentPage + 1, 20);
+      
+      console.log('홈쇼핑 추가 검색 API 응답:', response);
+      
+      // API 응답 데이터를 검색 결과 형식으로 변환
+      const newHomeshoppingResults = (response.products || []).map(product => ({
+        id: product.product_id,
+        title: product.product_name,
+        description: `${product.store_name}에서 판매 중인 홈쇼핑 상품`,
+        price: `${product.dc_price?.toLocaleString() || '0'}원`,
+        originalPrice: `${product.sale_price?.toLocaleString() || '0'}원`,
+        discount: `${product.dc_rate || 0}%`,
+                    image: product.thumb_img_url || 'https://via.placeholder.com/300x300/CCCCCC/666666?text=No+Image',
+        category: '홈쇼핑',
+        rating: product.rating || product.review_score || 0,
+        reviewCount: product.review_count || product.review_cnt || 0,
+        channel: product.store_name || '홈쇼핑',
+        broadcastTime: product.live_date ? 
+          `${product.live_date} ${product.live_start_time}~${product.live_end_time}` : 
+          '방송 일정 없음'
+      }));
+      
+      if (newHomeshoppingResults && newHomeshoppingResults.length > 0) {
+        // 중복 제거를 위해 기존 상품 ID들을 Set으로 관리
+        const existingIds = new Set(searchResults.map(p => p.id));
+        const uniqueNewResults = newHomeshoppingResults.filter(product => !existingIds.has(product.id));
+        
+        if (uniqueNewResults.length > 0) {
+          setSearchResults(prev => [...prev, ...uniqueNewResults]);
+          setCurrentPage(prev => prev + 1);
+          console.log('✅ 새로운 홈쇼핑 검색 결과 추가 완료:', uniqueNewResults.length, '개');
+          
+          // 20개 미만이면 더 이상 로드할 상품이 없음
+          if (newHomeshoppingResults.length < 20) {
+            setHasMore(false);
+            console.log('📄 마지막 페이지 도달 - 더 이상 로드할 홈쇼핑 검색 결과가 없음');
+          }
+          
+          // sessionStorage 업데이트
+          const searchStateKey = `homeshopping_search_${searchQuery}`;
+          const currentState = JSON.parse(sessionStorage.getItem(searchStateKey) || '{}');
+          sessionStorage.setItem(searchStateKey, JSON.stringify({
+            ...currentState,
+            results: [...searchResults, ...uniqueNewResults],
+            currentPage: currentPage + 1,
+            hasMore: newHomeshoppingResults.length === 20
+          }));
+        } else {
+          console.log('⚠️ 중복 제거 후 추가할 홈쇼핑 검색 결과가 없음');
+          setHasMore(false);
+        }
+      } else {
+        console.log('📄 더 이상 로드할 홈쇼핑 검색 결과가 없음');
+        setHasMore(false);
+      }
+    } catch (error) {
+      console.error('❌ 더 많은 홈쇼핑 검색 결과 로드 중 오류:', error);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, hasMore, searchQuery, currentPage, searchResults]);
+
+  // 스크롤 이벤트 리스너 (무한 스크롤)
+  useEffect(() => {
+    const handleScroll = () => {
+      // .search-content 요소를 찾기
+      const searchContent = document.querySelector('.search-content');
+      if (!searchContent) return;
+      
+      const scrollTop = searchContent.scrollTop;
+      const scrollHeight = searchContent.scrollHeight;
+      const clientHeight = searchContent.clientHeight;
+      
+      // 스크롤이 최하단에 도달했는지 확인 (100px 여유)
+      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 100;
+      if (isAtBottom && hasMore && !loadingMore && searchResults.length > 0) {
+        console.log('🎯 스크롤 최하단 도달! 새로운 홈쇼핑 검색 결과 로드 시작');
+        // 함수를 직접 호출하여 무한 루프 방지
+        if (loadingMore || !hasMore || !searchQuery.trim()) return;
+        
+        setLoadingMore(true);
+        
+        // 비동기 함수를 즉시 실행
+        (async () => {
+          try {
+            const response = await homeShoppingApi.searchProducts(searchQuery, currentPage + 1, 20);
+            
+            console.log('홈쇼핑 추가 검색 API 응답:', response);
+            
+            // API 응답 데이터를 검색 결과 형식으로 변환
+            const newHomeshoppingResults = (response.products || []).map(product => ({
+              id: product.product_id,
+              title: product.product_name,
+              description: `${product.store_name}에서 판매 중인 홈쇼핑 상품`,
+              price: `${product.dc_price?.toLocaleString() || '0'}원`,
+              originalPrice: `${product.sale_price?.toLocaleString() || '0'}원`,
+              discount: `${product.dc_rate || 0}%`,
+              image: product.thumb_img_url || 'https://via.placeholder.com/300x300/CCCCCC/666666?text=No+Image',
+              category: '홈쇼핑',
+              rating: product.rating || product.review_score || 0,
+              reviewCount: product.review_count || product.review_cnt || 0,
+              channel: product.store_name || '홈쇼핑',
+              broadcastTime: product.live_date ? 
+                `${product.live_date} ${product.live_start_time}~${product.live_end_time}` : 
+                '방송 일정 없음'
+            }));
+            
+            if (newHomeshoppingResults && newHomeshoppingResults.length > 0) {
+              // 중복 제거를 위해 기존 상품 ID들을 Set으로 관리
+              const existingIds = new Set(searchResults.map(p => p.id));
+              const uniqueNewResults = newHomeshoppingResults.filter(product => !existingIds.has(product.id));
+              
+              if (uniqueNewResults.length > 0) {
+                setSearchResults(prev => [...prev, ...uniqueNewResults]);
+                setCurrentPage(prev => prev + 1);
+                console.log('✅ 새로운 홈쇼핑 검색 결과 추가 완료:', uniqueNewResults.length, '개');
+                
+                // 20개 미만이면 더 이상 로드할 상품이 없음
+                if (newHomeshoppingResults.length < 20) {
+                  setHasMore(false);
+                  console.log('📄 마지막 페이지 도달 - 더 이상 로드할 홈쇼핑 검색 결과가 없음');
+                }
+                
+                // sessionStorage 업데이트
+                const searchStateKey = `homeshopping_search_${searchQuery}`;
+                const currentState = JSON.parse(sessionStorage.getItem(searchStateKey) || '{}');
+                sessionStorage.setItem(searchStateKey, JSON.stringify({
+                  ...currentState,
+                  results: [...searchResults, ...uniqueNewResults],
+                  currentPage: currentPage + 1,
+                  hasMore: newHomeshoppingResults.length === 20
+                }));
+              } else {
+                console.log('⚠️ 중복 제거 후 추가할 홈쇼핑 검색 결과가 없음');
+                setHasMore(false);
+              }
+            } else {
+              console.log('📄 더 이상 로드할 홈쇼핑 검색 결과가 없음');
+              setHasMore(false);
+            }
+          } catch (error) {
+            console.error('❌ 더 많은 홈쇼핑 검색 결과 로드 중 오류:', error);
+          } finally {
+            setLoadingMore(false);
+          }
+        })();
+      }
+    };
+
+    // .search-content 요소에 스크롤 이벤트 리스너 등록
+    const searchContent = document.querySelector('.search-content');
+    if (searchContent) {
+      searchContent.addEventListener('scroll', handleScroll);
+      return () => searchContent.removeEventListener('scroll', handleScroll);
+    }
+  }, [hasMore, loadingMore, searchResults.length, searchQuery, currentPage]);
 
   // 컴포넌트 마운트 시 홈쇼핑 검색 히스토리 로드
   useEffect(() => {
@@ -282,6 +718,12 @@ const HomeShoppingSearch = () => {
         localStorage.setItem('homeshopping_searchHistory', JSON.stringify(updatedHistory));
         setSearchHistory(updatedHistory.slice(0, 10));
       }
+      
+      // sessionStorage에서도 해당 검색 결과 삭제
+      const searchStateKey = `homeshopping_search_${queryToDelete}`;
+      sessionStorage.removeItem(searchStateKey);
+      console.log('🗑️ sessionStorage에서 검색 결과 삭제:', searchStateKey);
+      
     } catch (error) {
       console.error('홈쇼핑 검색 히스토리 삭제 실패:', error);
       // API 실패 시 로컬스토리지에서 삭제
@@ -290,6 +732,11 @@ const HomeShoppingSearch = () => {
         const updatedHistory = history.filter(item => item !== queryToDelete);
         localStorage.setItem('homeshopping_searchHistory', JSON.stringify(updatedHistory));
         setSearchHistory(updatedHistory.slice(0, 10));
+        
+        // sessionStorage에서도 해당 검색 결과 삭제
+        const searchStateKey = `homeshopping_search_${queryToDelete}`;
+        sessionStorage.removeItem(searchStateKey);
+        console.log('🗑️ sessionStorage에서 검색 결과 삭제:', searchStateKey);
       } catch (localError) {
         console.error('로컬스토리지 홈쇼핑 검색 히스토리 삭제 실패:', localError);
       }
@@ -338,6 +785,19 @@ const HomeShoppingSearch = () => {
         // 삭제 후 히스토리 다시 로드
         await loadSearchHistory();
         
+        // sessionStorage에서 모든 홈쇼핑 검색 결과 삭제
+        const keysToRemove = [];
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const key = sessionStorage.key(i);
+          if (key && key.startsWith('homeshopping_search_')) {
+            keysToRemove.push(key);
+          }
+        }
+        keysToRemove.forEach(key => {
+          sessionStorage.removeItem(key);
+          console.log('🗑️ sessionStorage에서 검색 결과 삭제:', key);
+        });
+        
         // 성공 메시지 표시
         if (successCount > 0) {
           alert(`검색 히스토리 ${successCount}개가 삭제되었습니다.`);
@@ -348,6 +808,20 @@ const HomeShoppingSearch = () => {
         localStorage.removeItem('homeshopping_searchHistory');
         setSearchHistory([]);
         console.log(`로컬 검색 히스토리 ${history.length}개 삭제 완료`);
+        
+        // sessionStorage에서 모든 홈쇼핑 검색 결과 삭제
+        const keysToRemove = [];
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const key = sessionStorage.key(i);
+          if (key && key.startsWith('homeshopping_search_')) {
+            keysToRemove.push(key);
+          }
+        }
+        keysToRemove.forEach(key => {
+          sessionStorage.removeItem(key);
+          console.log('🗑️ sessionStorage에서 검색 결과 삭제:', key);
+        });
+        
         alert(`검색 히스토리 ${history.length}개가 삭제되었습니다.`);
       }
     } catch (error) {
@@ -356,6 +830,20 @@ const HomeShoppingSearch = () => {
       const history = JSON.parse(localStorage.getItem('homeshopping_searchHistory') || '[]');
       localStorage.removeItem('homeshopping_searchHistory');
       setSearchHistory([]);
+      
+      // sessionStorage에서 모든 홈쇼핑 검색 결과 삭제
+      const keysToRemove = [];
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        if (key && key.startsWith('homeshopping_search_')) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(key => {
+        sessionStorage.removeItem(key);
+        console.log('🗑️ sessionStorage에서 검색 결과 삭제:', key);
+      });
+      
       alert(`검색 히스토리 ${history.length}개가 삭제되었습니다. (로컬 저장소)`);
     }
   };
@@ -365,9 +853,7 @@ const HomeShoppingSearch = () => {
     return (
       <div className="search-page">
         <div className="search-header">
-          <button className="back-button" onClick={handleBack}>
-            ← 뒤로
-          </button>
+          <HeaderNavBackBtn onClick={handleBack} />
           <HeaderSearchBar 
             onSearch={(query) => {
               if (query && query.trim()) {
@@ -390,22 +876,20 @@ const HomeShoppingSearch = () => {
     <div className="search-page">
 
       
-             {/* 홈쇼핑 검색 헤더 */}
-       <div className="search-header">
-         <button className="back-button" onClick={handleBack}>
-           ← 뒤로
-         </button>
-         
-         <HeaderSearchBar 
-           onSearch={(query) => {
-             console.log('🔍 HeaderSearchBar에서 홈쇼핑 검색:', query);
-             if (query && query.trim()) {
-               navigate(`/homeshopping/search?q=${encodeURIComponent(query.trim())}`);
-             }
-           }}
-           placeholder="홈쇼핑 상품 검색"
-         />
-       </div>
+                     {/* 홈쇼핑 검색 헤더 */}
+        <div className="search-header">
+          <HeaderNavBackBtn onClick={handleBack} />
+          
+          <HeaderSearchBar 
+            onSearch={(query) => {
+              console.log('🔍 HeaderSearchBar에서 홈쇼핑 검색:', query);
+              if (query && query.trim()) {
+                navigate(`/homeshopping/search?q=${encodeURIComponent(query.trim())}`);
+              }
+            }}
+            placeholder="홈쇼핑 상품 검색"
+          />
+        </div>
 
              {/* 메인 콘텐츠 */}
        <div className="search-content">
@@ -505,7 +989,7 @@ const HomeShoppingSearch = () => {
                 >
                   <div className="result-image">
                     <img 
-                      src={result.image} 
+                      src={result.image || 'https://via.placeholder.com/300x300/CCCCCC/666666?text=No+Image'} 
                       alt={result.title}
                       onError={(e) => {
                         e.target.src = 'https://via.placeholder.com/300x300/CCCCCC/666666?text=No+Image'; // 기본 이미지로 대체
@@ -514,18 +998,10 @@ const HomeShoppingSearch = () => {
                     />
                   </div>
                   <div className="result-info">
-                    <div className="result-category">{result.category}</div>
                     <h4 className="result-title">{result.title}</h4>
-                    <p className="result-description">{result.description}</p>
-                    
-                    {/* 홈쇼핑 추가 정보 표시 */}
-                    <div className="homeshopping-info">
-                      {result.channel && <span className="channel">📺 {result.channel}</span>}
-                      {result.broadcastTime && <span className="broadcast-time">⏰ {result.broadcastTime}</span>}
-                    </div>
                     
                     <div className="result-rating">
-                      <span className="rating">⭐ {result.rating}</span>
+                      <span className="rating">★ {result.rating}</span>
                       <span className="review-count">리뷰 {result.reviewCount}</span>
                     </div>
                     <div className="result-price">
@@ -536,6 +1012,43 @@ const HomeShoppingSearch = () => {
                   </div>
                 </div>
               ))}
+              
+              {/* 무한 스크롤 상태 표시 */}
+              {loadingMore && (
+                <div style={{
+                  textAlign: 'center',
+                  padding: '20px',
+                  color: '#666',
+                  fontSize: '14px',
+                  gridColumn: '1 / -1'
+                }}>
+                  <div style={{
+                    width: '20px',
+                    height: '20px',
+                    border: '2px solid #f3f3f3',
+                    borderTop: '2px solid #FA5F8C',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite',
+                    margin: '0 auto 10px'
+                  }}></div>
+                  더 많은 검색 결과를 불러오는 중...
+                </div>
+              )}
+              
+              {!hasMore && searchResults.length > 0 && (
+                <div style={{
+                  textAlign: 'center',
+                  padding: '20px',
+                  color: '#999',
+                  fontSize: '14px',
+                  backgroundColor: '#f8f9fa',
+                  borderRadius: '8px',
+                  margin: '20px 0',
+                  gridColumn: '1 / -1'
+                }}>
+                  더 이상 로드할 검색 결과가 없습니다
+                </div>
+              )}
             </div>
           </div>
         )}

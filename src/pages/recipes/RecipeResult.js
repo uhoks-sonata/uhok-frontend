@@ -1,13 +1,13 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import BottomNav from '../../layout/BottomNav';
 import HeaderNavRecipeRecommendation from '../../layout/HeaderNavRecipeRecommendation';
 import Loading from '../../components/Loading';
 import '../../styles/recipe_result.css';
 // 로컬 더미 이미지로 교체 (외부 placeholder 차단/오류 대비)
-import img1 from '../../assets/test/test1.png';
-import img2 from '../../assets/test/test2.png';
-import img3 from '../../assets/test/test3.png';
+// import img1 from '../../assets/test/test1.png';
+// import img2 from '../../assets/test/test2.png';
+// import img3 from '../../assets/test/test3.png';
 import fallbackImg from '../../assets/no_items.png';
 import bookmarkIcon from '../../assets/bookmark-icon.png';
 import { recipeApi } from '../../api/recipeApi';
@@ -16,7 +16,7 @@ const RecipeResult = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // location.state에서 데이터를 가져옴
+  // 상태 관리
   const [recipes, setRecipes] = useState([]);
   const [ingredients, setIngredients] = useState([]);
   const [total, setTotal] = useState(0);
@@ -31,7 +31,7 @@ const RecipeResult = () => {
   const combinationCache = useMemo(() => new Map(), []);
 
   // 백엔드 응답의 이미지 키 다양성 대응 및 로컬 폴백 사용
-  const localImgs = useMemo(() => [img1, img2, img3], []);
+  // const localImgs = useMemo(() => [img1, img2, img3], []);
   const getRecipeImageSrc = (recipe, idx) => {
     const candidates = [
       recipe?.thumbnail_url,
@@ -43,7 +43,7 @@ const RecipeResult = () => {
       recipe?.thumbnail,
     ].filter((v) => typeof v === 'string' && v.length > 0);
     if (candidates.length > 0) return candidates[0];
-    return localImgs[idx % localImgs.length] || fallbackImg;
+    return fallbackImg;
   };
 
   // 재료 표기를 문자열로 정규화 (객체/문자열 둘 다 처리)
@@ -69,6 +69,11 @@ const RecipeResult = () => {
   }, [recipes]);
 
   useEffect(() => {
+    // 이미 초기화되었으면 중복 실행 방지
+    if (isInitialized) {
+      return;
+    }
+    
     if (location.state) {
       console.log('Location state received:', location.state);
       console.log('Recipes from state:', location.state.recipes);
@@ -124,9 +129,15 @@ const RecipeResult = () => {
   const handleRecipeClick = (recipe) => {
     console.log('레시피 클릭:', recipe);
     // 레시피 상세 페이지로 이동
-    const recipeId = recipe.recipe_id || recipe.id;
+    const recipeId = recipe.RECIPE_ID || recipe.recipe_id || recipe.id;
     if (recipeId) {
-      navigate(`/recipes/${recipeId}`);
+      // 재료 상태 정보를 state로 전달
+      navigate(`/recipes/${recipeId}`, {
+        state: {
+          ingredients: ingredients,
+          recipeData: recipe
+        }
+      });
     }
   };
 
@@ -226,21 +237,35 @@ const RecipeResult = () => {
       {/* 헤더 */}
       <HeaderNavRecipeRecommendation onBackClick={handleBack} />
 
-      {/* 선택된 재료 태그들 */}
-      <div className="selected-ingredients-section">
-        <div className="ingredients-tags">
-          {displayIngredients.map((ingredient, index) => (
-            <div key={index} className="ingredient-tag">
-              <span className="ingredient-name">{ingredient}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+             {/* 선택된 재료 태그들 */}
+       <div className="selected-ingredients-section">
+         <div className="ingredients-tags">
+           {displayIngredients.map((ingredient, index) => (
+             <div key={index} className="ingredient-tag">
+               <span className="ingredient-name">{ingredient}</span>
+             </div>
+           ))}
+         </div>
+         
+         {/* 남은 재료 정보 표시
+         {remainingStock.size > 0 && (
+           <div className="remaining-ingredients">
+             <h4>남은 재료:</h4>
+             <div className="remaining-tags">
+               {Array.from(remainingStock.entries()).map(([name, stock]) => (
+                 stock.amount > 0.001 && (
+                   <div key={name} className="remaining-tag">
+                     <span className="ingredient-name">{name}</span>
+                     <span className="amount">{stock.amount.toFixed(1)}{stock.unit}</span>
+                   </div>
+                 )
+               ))}
+             </div>
+           </div>
+         )} */}
+       </div>
 
-      {/* 결과 요약 */}
-      <div className="result-summary">
-        <p>총 {total}개의 레시피를 찾았습니다.</p>
-      </div>
+
 
       {/* 레시피 목록 */}
       <main className="recipe-list">

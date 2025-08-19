@@ -19,6 +19,7 @@ const HeaderNavSchedule = ({ onBackClick, onSearchClick, onNotificationClick }) 
           onSearch={onSearchClick}
           placeholder="홈쇼핑 검색"
           className="schedule-search"
+          searchType="homeshopping"
         />
       </div>
       

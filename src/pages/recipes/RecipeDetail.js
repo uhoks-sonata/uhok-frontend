@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import BottomNav from '../../layout/BottomNav';
 import HeaderNavRecipeDetail from '../../layout/HeaderNavRecipeDetail';
 import '../../styles/recipe_detail.css';
@@ -9,6 +9,7 @@ import { recipeApi } from '../../api/recipeApi';
 const RecipeDetail = () => {
   const navigate = useNavigate();
   const { recipeId } = useParams();
+  const location = useLocation();
   
   // 상태 관리
   const [recipe, setRecipe] = useState(null);
@@ -80,6 +81,56 @@ const RecipeDetail = () => {
       fetchRecipeDetail();
     }
   }, [recipeId]);
+
+  // RecipeResult에서 전달받은 재료 정보로 초기 재료 상태 설정
+  useEffect(() => {
+    if (location.state?.ingredients && recipe?.materials) {
+      // RecipeResult에서 전달받은 재료 목록
+      const resultIngredients = location.state.ingredients;
+      
+      // 초기 재료 상태 설정 (API 응답 전까지 임시로 사용)
+      const initialStatus = {
+        ingredients_status: {
+          owned: [],
+          cart: [],
+          not_owned: []
+        },
+        summary: {
+          total_ingredients: recipe.materials.length,
+          owned_count: 0,
+          cart_count: 0,
+          not_owned_count: recipe.materials.length
+        }
+      };
+
+      // RecipeResult에서 보유로 표시되었던 재료들을 owned로 설정
+      recipe.materials.forEach(material => {
+        const isOwned = resultIngredients.some(ing => {
+          if (typeof ing === 'string') {
+            return ing.toLowerCase().includes(material.material_name.toLowerCase()) ||
+                   material.material_name.toLowerCase().includes(ing.toLowerCase());
+          } else if (ing?.name) {
+            return ing.name.toLowerCase().includes(material.material_name.toLowerCase()) ||
+                   material.material_name.toLowerCase().includes(ing.name.toLowerCase());
+          }
+          return false;
+        });
+
+        if (isOwned) {
+          initialStatus.ingredients_status.owned.push({ material_name: material.material_name });
+          initialStatus.summary.owned_count++;
+          initialStatus.summary.not_owned_count--;
+        } else {
+          initialStatus.ingredients_status.not_owned.push({ material_name: material.material_name });
+        }
+      });
+
+      // API 응답이 오기 전까지 임시 상태 사용
+      if (!ingredientsStatus) {
+        setIngredientsStatus(initialStatus);
+      }
+    }
+  }, [location.state, recipe, ingredientsStatus]);
 
   // 별점 등록
   const handleRatingSubmit = async (newRating) => {

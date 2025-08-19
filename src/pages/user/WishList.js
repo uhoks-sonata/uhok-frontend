@@ -199,11 +199,10 @@ const WishList = () => {
 
   // 검색 핸들러
   const handleSearch = (query) => {
-    console.log('=== 검색 핸들러 호출됨 ===');
+    console.log('=== 찜 목록 검색 핸들러 호출됨 ===');
     console.log('검색어:', query);
-    console.log('검색어 타입:', typeof query);
-    console.log('검색어 길이:', query ? query.length : 0);
     
+    // 검색어가 있으면 기존 로직 사용, 없으면 콕 검색 페이지로 이동
     if (query && query.trim()) {
       const searchUrl = `/search?q=${encodeURIComponent(query.trim())}&type=wishlist`;
       console.log('이동할 URL:', searchUrl);
@@ -217,7 +216,9 @@ const WishList = () => {
         window.location.href = searchUrl;
       }
     } else {
-      console.log('검색어가 비어있음');
+      // 검색어가 없으면 콕 검색 페이지로 이동
+      console.log('콕 검색 페이지로 이동');
+      navigate('/kok/search');
     }
   };
 

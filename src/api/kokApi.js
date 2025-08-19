@@ -160,7 +160,8 @@ export const kokApi = {
       console.log('🚀 검색 이력 API 호출:', { limit });
       
       const config = {
-        params: { limit }
+        params: { limit },
+        timeout: 90000 // 검색 히스토리 API는 90초 타임아웃 설정
       };
       
       // Authorization 헤더가 있으면 추가

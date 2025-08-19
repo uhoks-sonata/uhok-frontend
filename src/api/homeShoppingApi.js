@@ -11,8 +11,8 @@ export const homeShoppingApi = {
       const response = await api.get('/api/homeshopping/schedule', {
         params: { page, size }
       });
-      console.log('✅ 편성표 조회 API 응답:', response.data);
-      return response.data;
+      console.log('✅ 편성표 조회 API 응답:', response);
+      return response; // response.data가 아닌 response 전체 반환
     } catch (error) {
       console.error('❌ 편성표 조회 실패:', error);
       throw error;
@@ -91,12 +91,10 @@ export const homeShoppingApi = {
   },
 
   // 검색어 조회
-  getSearchHistory: async (limit = 5) => {
+  getSearchHistory: async (limit = 50) => {
     try {
-      console.log('📋 검색어 조회 API 요청:', { limit });
-      const response = await api.get('/api/homeshopping/search/history', {
-        params: { limit }
-      });
+      console.log('📋 검색어 조회 API 요청');
+      const response = await api.get('/api/homeshopping/search/history');
       console.log('✅ 검색어 조회 API 응답:', response.data);
       return response.data;
     } catch (error) {

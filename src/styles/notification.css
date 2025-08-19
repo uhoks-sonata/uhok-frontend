@@ -13,6 +13,14 @@
   flex: 1;
   padding: 0 0 80px 0; /* 바텀네비 공간 확보 */
   overflow-y: auto;
+  /* 스크롤바 숨기기 */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+/* Webkit 브라우저에서 스크롤바 숨기기 */
+.notification-content::-webkit-scrollbar {
+  display: none;
 }
 
 /* 탭 네비게이션 */

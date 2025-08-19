@@ -1,5 +1,5 @@
 // React와 필요한 훅들을 가져옵니다
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 // 검색 헤더 컴포넌트를 가져옵니다
 import HeaderSearchBar from '../../components/HeaderSearchBar';
@@ -7,6 +7,8 @@ import HeaderSearchBar from '../../components/HeaderSearchBar';
 import BottomNav from '../../layout/BottomNav';
 // 로딩 컴포넌트를 가져옵니다
 import Loading from '../../components/Loading';
+// 뒤로가기 버튼 컴포넌트를 가져옵니다
+import HeaderNavBackBtn from '../../components/HeaderNavBackBtn';
 // 검색 페이지 스타일을 가져옵니다
 import '../../styles/search.css';
 // 콕 API를 가져옵니다
@@ -29,6 +31,374 @@ const KokSearch = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchHistory, setSearchHistory] = useState([]);
+  const searchType = 'kok'; // 콕 검색 타입 (상수로 변경)
+  
+  // 무한 스크롤을 위한 상태 변수들
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  // 콕 검색 히스토리 로드 (API 사용)
+  const loadSearchHistory = useCallback(async () => {
+    console.log('🔍 콕 검색 히스토리 로드 시작:', { isLoggedIn });
+    try {
+      if (isLoggedIn && user?.token) {
+        // 로그인된 사용자는 서버에서 콕 검색 히스토리 가져오기
+        const response = await kokApi.getSearchHistory(50, user.token); // 더 많은 데이터 가져오기
+        const history = response.history || [];
+        
+        console.log('🔍 백엔드에서 받은 원본 히스토리:', {
+          전체개수: history.length,
+          원본데이터: history.map(item => ({
+            id: item.kok_history_id,
+            keyword: item.kok_keyword,
+            createdAt: item.created_at
+          }))
+        });
+        
+        // UI에서 중복 제거 및 최신순 정렬
+        const keywordMap = new Map();
+        
+        // 원본 데이터를 그대로 순회하면서 중복 제거
+        history.forEach(item => {
+          const existingItem = keywordMap.get(item.kok_keyword);
+          const currentTime = new Date(item.created_at);
+          
+          // 같은 키워드가 없거나, 현재 항목이 더 최신인 경우 업데이트
+          if (!existingItem || currentTime > new Date(existingItem.created_at)) {
+            keywordMap.set(item.kok_keyword, {
+              id: item.kok_history_id,
+              keyword: item.kok_keyword,
+              createdAt: item.created_at
+            });
+          }
+        });
+        
+        // 최신 순으로 정렬 (created_at 기준 내림차순)
+        const sortedHistory = Array.from(keywordMap.values())
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+          .map(item => item.keyword)
+          .slice(0, 10); // UI에는 최대 10개만 표시
+        
+        console.log('🔍 UI 중복 제거 및 최신순 정렬 후 히스토리:', {
+          원본개수: history.length,
+          중복제거후개수: keywordMap.size,
+          UI표시개수: sortedHistory.length,
+          최종키워드: sortedHistory
+        });
+        
+        setSearchHistory(sortedHistory);
+      } else {
+        // 비로그인 사용자는 로컬스토리지에서 가져오기
+        const history = JSON.parse(localStorage.getItem('kok_searchHistory') || '[]');
+        // 중복 제거 후 최신순 정렬
+        const uniqueHistory = history.filter((keyword, index, self) => self.indexOf(keyword) === index);
+        setSearchHistory(uniqueHistory.slice(0, 10));
+      }
+    } catch (error) {
+      console.error('콕 검색 히스토리 로드 실패:', error);
+      // API 실패 시 로컬스토리지에서 가져오기
+      try {
+        const history = JSON.parse(localStorage.getItem('kok_searchHistory') || '[]');
+        const uniqueHistory = history.filter((keyword, index, self) => self.indexOf(keyword) === index);
+        setSearchHistory(uniqueHistory.slice(0, 10));
+      } catch (localError) {
+        console.error('로컬스토리지 콕 검색 히스토리 로드 실패:', localError);
+        setSearchHistory([]);
+      }
+    }
+  }, [isLoggedIn, user?.token]);
+
+  // 검색만 실행하는 함수 (저장 없이)
+  const executeSearchOnly = useCallback(async (query) => {
+    if (!query || loading) {
+      console.log('🔍 검색 조건 불충족 또는 중복 실행 방지');
+      return;
+    }
+
+    console.log('🔍 콕 검색만 실행 (저장 없이):', { query });
+    
+    // 컴포넌트가 언마운트되었는지 확인하는 플래그
+    let isMounted = true;
+    
+    setLoading(true);
+    setError(null);
+
+         try {
+       // URL 업데이트
+       navigate(`/kok/search?q=${encodeURIComponent(query)}`, { replace: true });
+       
+       // 콕 실제 API 검색
+       try {
+         console.log('콕 상품 검색 시작:', query);
+         const accessToken = isLoggedIn && user?.token ? user.token : null;
+         const response = await kokApi.searchProducts(query, 1, 20, accessToken);
+         
+         console.log('콕 API 응답 전체:', response);
+         console.log('콕 상품 데이터 샘플:', response.products?.[0]);
+         
+                   // API 응답 데이터를 검색 결과 형식으로 변환 (KokMain.js와 동일한 방식)
+          const kokResults = (response.products || []).map(product => {
+            console.log('콕 상품 원본 데이터:', product);
+            
+            // KokMain.js와 동일한 방식으로 데이터 변환
+            const transformedProduct = {
+              id: product.kok_product_id,
+              name: product.kok_product_name,
+              originalPrice: product.kok_discount_rate > 0 
+                ? Math.round(product.kok_discounted_price / (1 - product.kok_discount_rate / 100)) 
+                : product.kok_discounted_price, // 할인율이 0이면 할인가가 원가
+              discountPrice: product.kok_discounted_price,
+              discountRate: product.kok_discount_rate,
+              image: product.kok_thumbnail || 'https://via.placeholder.com/300x300/CCCCCC/666666?text=No+Image',
+              rating: product.kok_review_score || 0, // 백엔드에서 제공하는 별점
+              reviewCount: product.kok_review_cnt || 0, // 백엔드에서 제공하는 리뷰 수
+              storeName: product.kok_store_name
+            };
+            
+            // 검색 결과 형식으로 변환
+            const result = {
+              id: transformedProduct.id,
+              title: transformedProduct.name,
+              description: `콕 쇼핑몰에서 판매 중인 상품`,
+              price: `${transformedProduct.discountPrice.toLocaleString()}원`,
+              originalPrice: `${transformedProduct.originalPrice.toLocaleString()}원`,
+              discount: `${transformedProduct.discountRate}%`,
+              image: transformedProduct.image,
+              category: '콕 상품',
+              rating: transformedProduct.rating,
+              reviewCount: transformedProduct.reviewCount,
+              storeName: transformedProduct.storeName,
+              shipping: '무료배송'
+            };
+            
+            console.log('변환된 콕 상품 데이터:', result);
+            return result;
+          });
+        
+        // 중복 제거 (id 기준)
+        const uniqueKokResults = kokResults.filter((product, index, self) => 
+          index === self.findIndex(p => p.id === product.id)
+        );
+        
+        console.log('콕 검색 결과:', uniqueKokResults.length, '개 상품 (중복 제거 후)');
+        if (isMounted) {
+          setSearchResults(uniqueKokResults);
+        }
+        
+        // 검색 결과를 sessionStorage에 저장
+        const searchStateKey = `kok_search_${query}`;
+        sessionStorage.setItem(searchStateKey, JSON.stringify({
+          results: uniqueKokResults,
+          timestamp: Date.now()
+        }));
+      } catch (error) {
+        console.error('콕 상품 검색 실패:', error);
+        if (isMounted) {
+          setError('콕 상품 검색 중 오류가 발생했습니다.');
+        }
+      }
+      
+      if (isMounted) {
+        setLoading(false);
+      }
+      
+    } catch (err) {
+      console.error('콕 검색 실패:', err);
+      if (isMounted) {
+        setError('콕 검색 중 오류가 발생했습니다.');
+        setLoading(false);
+      }
+    }
+  }, [loading, navigate, isLoggedIn, user?.token]);
+
+  // 콕 검색 실행 함수 (저장 포함)
+  const handleSearch = useCallback(async (e = null, queryOverride = null) => {
+    console.log('🔍 콕 검색 실행 함수 호출:', { e, queryOverride, searchQuery });
+    
+    // SearchHeader에서 (e, searchQuery) 순서로 전달됨
+    // 두 번째 파라미터가 문자열이면 검색어로 사용
+    if (typeof queryOverride === 'string') {
+      // SearchHeader에서 온 경우: e = 이벤트, queryOverride = searchQuery
+    } else if (typeof e === 'string') {
+      // 다른 곳에서 검색어만 전달한 경우
+      queryOverride = e;
+      e = null;
+    }
+    
+    if (e && e.preventDefault) {
+      e.preventDefault();
+    }
+    
+    const query = queryOverride || searchQuery.trim();
+    if (!query) {
+      console.log('🔍 검색어가 없어서 콕 검색 중단');
+      return;
+    }
+
+    console.log('🔍 콕 실제 검색 시작 (저장 포함):', { query });
+    setLoading(true);
+    setError(null);
+
+    try {
+      console.log('콕 검색 실행:', query);
+      
+      // 검색 히스토리에 저장 (함수 내부에서 직접 처리)
+      try {
+        if (isLoggedIn && user?.token) {
+          // 백엔드에서 현재 히스토리를 가져와서 중복 체크
+          try {
+            const response = await kokApi.getSearchHistory(20, user.token);
+            const currentHistory = response.history || [];
+            
+            // 시간 정보를 활용한 중복 체크
+            const existingItem = currentHistory.find(item => item.kok_keyword === query);
+            const currentTime = new Date();
+            
+            if (existingItem) {
+              console.log('🔍 이미 백엔드에 존재하는 검색어입니다. UI에서 맨 위로 올리기:', query);
+              
+              // 기존 항목의 시간과 현재 시간 비교 (1분 이내면 중복으로 간주)
+              const existingTime = new Date(existingItem.created_at);
+              const timeDiff = currentTime - existingTime;
+              const isRecentDuplicate = timeDiff < 60000; // 1분 = 60000ms
+              
+              if (isRecentDuplicate) {
+                console.log('🔍 최근에 검색된 키워드입니다. DB 저장 생략, UI에서 맨 위로 이동:', query);
+                // DB 저장 없이 UI에서만 맨 위로 이동
+                setSearchHistory(prevHistory => {
+                  const filteredHistory = prevHistory.filter(item => item !== query);
+                  return [query, ...filteredHistory].slice(0, 10);
+                });
+              } else {
+                // 시간이 충분히 지난 경우 새로운 검색으로 처리
+                                 console.log('🔍 시간이 지난 검색어입니다. 새로운 검색으로 저장:', query);
+                 await kokApi.addSearchHistory(query, user.token);
+                
+                // 히스토리 다시 로드하여 최신 순으로 정렬
+                await loadSearchHistory();
+              }
+            } else {
+                             // 새로운 검색어만 백엔드에 저장
+               console.log('🔍 새로운 검색어를 백엔드에 저장:', query);
+               await kokApi.addSearchHistory(query, user.token);
+              
+              // 히스토리 다시 로드하여 최신 순으로 정렬
+              await loadSearchHistory();
+            }
+          } catch (historyError) {
+                         console.error('히스토리 중복 체크 실패, 기본 저장 로직 실행:', historyError);
+             // 히스토리 가져오기 실패 시 기본 저장 로직 실행
+             await kokApi.addSearchHistory(query, user.token);
+            setSearchHistory(prevHistory => {
+              const currentHistory = prevHistory.filter(item => item !== query);
+              return [query, ...currentHistory].slice(0, 10);
+            });
+          }
+        } else {
+          // 비로그인 사용자는 로컬스토리지에 저장
+          const history = JSON.parse(localStorage.getItem('kok_searchHistory') || '[]');
+          const updatedHistory = [query, ...history.filter(item => item !== query)].slice(0, 20);
+          localStorage.setItem('kok_searchHistory', JSON.stringify(updatedHistory));
+          setSearchHistory(updatedHistory.slice(0, 10));
+        }
+      } catch (error) {
+        console.error('콕 검색 히스토리 저장 실패:', error);
+        // API 실패 시 로컬스토리지에 저장
+        try {
+          const history = JSON.parse(localStorage.getItem('kok_searchHistory') || '[]');
+          const updatedHistory = [query, ...history.filter(item => item !== query)].slice(0, 20);
+          localStorage.setItem('kok_searchHistory', JSON.stringify(updatedHistory));
+          setSearchHistory(updatedHistory.slice(0, 10));
+        } catch (localError) {
+          console.error('로컬스토리지 콕 검색 히스토리 저장 실패:', localError);
+        }
+      }
+      
+      // URL 업데이트 (쿼리 파라미터 추가)
+      navigate(`/kok/search?q=${encodeURIComponent(query)}`, { replace: true });
+      
+      // 콕 실제 API 검색
+      try {
+        console.log('콕 상품 검색 시작:', query);
+        const accessToken = isLoggedIn && user?.token ? user.token : null;
+        const response = await kokApi.searchProducts(query, 1, 20, accessToken);
+        
+        console.log('콕 API 응답 전체:', response);
+        console.log('콕 상품 데이터 샘플:', response.products?.[0]);
+        
+                 // API 응답 데이터를 검색 결과 형식으로 변환 (KokMain.js와 동일한 방식)
+         const kokResults = (response.products || []).map(product => {
+           console.log('콕 상품 원본 데이터:', product);
+           
+           // KokMain.js와 동일한 방식으로 데이터 변환
+           const transformedProduct = {
+             id: product.kok_product_id,
+             name: product.kok_product_name,
+             originalPrice: product.kok_discount_rate > 0 
+               ? Math.round(product.kok_discounted_price / (1 - product.kok_discount_rate / 100)) 
+               : product.kok_discounted_price, // 할인율이 0이면 할인가가 원가
+             discountPrice: product.kok_discounted_price,
+             discountRate: product.kok_discount_rate,
+             image: product.kok_thumbnail || 'https://via.placeholder.com/300x300/CCCCCC/666666?text=No+Image',
+             rating: product.kok_review_score || 0, // 백엔드에서 제공하는 별점
+             reviewCount: product.kok_review_cnt || 0, // 백엔드에서 제공하는 리뷰 수
+             storeName: product.kok_store_name
+           };
+           
+           // 검색 결과 형식으로 변환
+           const result = {
+             id: transformedProduct.id,
+             title: transformedProduct.name,
+             description: `콕 쇼핑몰에서 판매 중인 상품`,
+             price: `${transformedProduct.discountPrice.toLocaleString()}원`,
+             originalPrice: `${transformedProduct.originalPrice.toLocaleString()}원`,
+             discount: `${transformedProduct.discountRate}%`,
+             image: transformedProduct.image,
+             category: '콕 상품',
+             rating: transformedProduct.rating,
+             reviewCount: transformedProduct.reviewCount,
+             storeName: transformedProduct.storeName,
+             shipping: '무료배송'
+           };
+           
+           console.log('변환된 콕 상품 데이터:', result);
+           return result;
+         });
+        
+        // 중복 제거 (id 기준)
+        const uniqueKokResults = kokResults.filter((product, index, self) => 
+          index === self.findIndex(p => p.id === product.id)
+        );
+        
+        console.log('콕 검색 결과:', uniqueKokResults.length, '개 상품 (중복 제거 후)');
+        setSearchResults(uniqueKokResults);
+        
+        // 무한 스크롤 상태 초기화
+        setCurrentPage(1);
+        setHasMore(uniqueKokResults.length === 20); // 20개면 더 로드 가능
+        
+        // 검색 결과를 sessionStorage에 저장
+        const searchStateKey = `kok_search_${query}`;
+        sessionStorage.setItem(searchStateKey, JSON.stringify({
+          results: uniqueKokResults,
+          timestamp: Date.now(),
+          currentPage: 1,
+          hasMore: uniqueKokResults.length === 20
+        }));
+      } catch (error) {
+        console.error('콕 상품 검색 실패:', error);
+        setError('콕 상품 검색 중 오류가 발생했습니다.');
+      }
+      
+      setLoading(false);
+      
+    } catch (err) {
+      console.error('콕 검색 실패:', err);
+      setError('콕 검색 중 오류가 발생했습니다.');
+      setLoading(false);
+    }
+  }, [searchQuery, navigate, isLoggedIn, user?.token]);
 
   // URL 쿼리 파라미터에서 초기 검색어 가져오기 (콕 전용)
   useEffect(() => {
@@ -63,22 +433,225 @@ const KokSearch = () => {
           console.log('복원된 콕 검색 결과:', uniqueResults.length, '개 상품 (중복 제거 후)');
           setSearchResults(uniqueResults);
           setLoading(false);
+          
+          // 복원된 검색어는 이미 저장되어 있으므로 히스토리 저장 생략
+          console.log('🔍 복원된 검색어는 이미 히스토리에 저장되어 있음:', query);
         } catch (error) {
           console.error('콕 검색 상태 복원 실패:', error);
-          handleSearch(null, query);
+          // 복원 실패 시 검색만 실행 (저장 없이)
+          executeSearchOnly(query);
         }
       } else {
-        // 새로운 검색 실행
-        console.log('새로운 콕 검색 실행:', query);
+        // 새로운 검색 실행 (저장 포함)
+        console.log('새로운 콕 검색 실행 (저장 포함):', query);
         handleSearch(null, query);
       }
     }
-  }, [location.search]);
+  }, [location.search]); // handleSearch 의존성 제거
+
+     // 더 많은 검색 결과를 로드하는 함수
+   const loadMoreSearchResults = useCallback(async () => {
+     if (loadingMore || !hasMore || !searchQuery.trim()) return;
+     
+     console.log('🔄 더 많은 검색 결과 로드 시작 - 페이지:', currentPage + 1);
+     setLoadingMore(true);
+     
+     try {
+       const accessToken = isLoggedIn && user?.token ? user.token : null;
+       const response = await kokApi.searchProducts(searchQuery, currentPage + 1, 20, accessToken);
+       
+       console.log('콕 추가 검색 API 응답:', response);
+       
+              // API 응답 데이터를 검색 결과 형식으로 변환 (KokMain.js와 동일한 방식)
+       const newKokResults = (response.products || []).map(product => {
+         // KokMain.js와 동일한 방식으로 데이터 변환
+         const transformedProduct = {
+           id: product.kok_product_id,
+           name: product.kok_product_name,
+           originalPrice: product.kok_discount_rate > 0 
+             ? Math.round(product.kok_discounted_price / (1 - product.kok_discount_rate / 100)) 
+             : product.kok_discounted_price, // 할인율이 0이면 할인가가 원가
+           discountPrice: product.kok_discounted_price,
+           discountRate: product.kok_discount_rate,
+           image: product.kok_thumbnail || 'https://via.placeholder.com/300x300/CCCCCC/666666?text=No+Image',
+           rating: product.kok_review_score || 0, // 백엔드에서 제공하는 별점
+           reviewCount: product.kok_review_cnt || 0, // 백엔드에서 제공하는 리뷰 수
+           storeName: product.kok_store_name
+         };
+         
+         // 검색 결과 형식으로 변환
+         return {
+           id: transformedProduct.id,
+           title: transformedProduct.name,
+           description: `콕 쇼핑몰에서 판매 중인 상품`,
+           price: `${transformedProduct.discountPrice.toLocaleString()}원`,
+           originalPrice: `${transformedProduct.originalPrice.toLocaleString()}원`,
+           discount: `${transformedProduct.discountRate}%`,
+           image: transformedProduct.image,
+           category: '콕 상품',
+           rating: transformedProduct.rating,
+           reviewCount: transformedProduct.reviewCount,
+           storeName: transformedProduct.storeName,
+           shipping: '무료배송'
+         };
+       });
+      
+      if (newKokResults && newKokResults.length > 0) {
+        // 중복 제거를 위해 기존 상품 ID들을 Set으로 관리
+        const existingIds = new Set(searchResults.map(p => p.id));
+        const uniqueNewResults = newKokResults.filter(product => !existingIds.has(product.id));
+        
+        if (uniqueNewResults.length > 0) {
+          setSearchResults(prev => [...prev, ...uniqueNewResults]);
+          setCurrentPage(prev => prev + 1);
+          console.log('✅ 새로운 검색 결과 추가 완료:', uniqueNewResults.length, '개');
+          
+          // 20개 미만이면 더 이상 로드할 상품이 없음
+          if (newKokResults.length < 20) {
+            setHasMore(false);
+            console.log('📄 마지막 페이지 도달 - 더 이상 로드할 검색 결과가 없음');
+          }
+          
+          // sessionStorage 업데이트
+          const searchStateKey = `kok_search_${searchQuery}`;
+          const currentState = JSON.parse(sessionStorage.getItem(searchStateKey) || '{}');
+          sessionStorage.setItem(searchStateKey, JSON.stringify({
+            ...currentState,
+            results: [...searchResults, ...uniqueNewResults],
+            currentPage: currentPage + 1,
+            hasMore: newKokResults.length === 20
+          }));
+        } else {
+          console.log('⚠️ 중복 제거 후 추가할 검색 결과가 없음');
+          setHasMore(false);
+        }
+      } else {
+        console.log('📄 더 이상 로드할 검색 결과가 없음');
+        setHasMore(false);
+      }
+    } catch (error) {
+      console.error('❌ 더 많은 검색 결과 로드 중 오류:', error);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, hasMore, searchQuery, currentPage, searchResults, isLoggedIn, user?.token]);
+
+  // 스크롤 이벤트 리스너 (무한 스크롤)
+  useEffect(() => {
+    const handleScroll = () => {
+      // .search-content 요소를 찾기
+      const searchContent = document.querySelector('.search-content');
+      if (!searchContent) return;
+      
+      const scrollTop = searchContent.scrollTop;
+      const scrollHeight = searchContent.scrollHeight;
+      const clientHeight = searchContent.clientHeight;
+      
+      // 스크롤이 최하단에 도달했는지 확인 (100px 여유)
+      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 100;
+      if (isAtBottom && hasMore && !loadingMore && searchResults.length > 0) {
+        console.log('🎯 스크롤 최하단 도달! 새로운 검색 결과 로드 시작');
+        // 함수를 직접 호출하여 무한 루프 방지
+        if (loadingMore || !hasMore || !searchQuery.trim()) return;
+        
+        setLoadingMore(true);
+        
+        // 비동기 함수를 즉시 실행
+        (async () => {
+          try {
+            const accessToken = isLoggedIn && user?.token ? user.token : null;
+            const response = await kokApi.searchProducts(searchQuery, currentPage + 1, 20, accessToken);
+            
+            console.log('콕 추가 검색 API 응답:', response);
+            
+                         // API 응답 데이터를 검색 결과 형식으로 변환 (KokMain.js와 동일한 방식)
+             const newKokResults = (response.products || []).map(product => {
+               // KokMain.js와 동일한 방식으로 데이터 변환
+               const transformedProduct = {
+                 id: product.kok_product_id,
+                 name: product.kok_product_name,
+                 originalPrice: product.kok_discount_rate > 0 
+                   ? Math.round(product.kok_discounted_price / (1 - product.kok_discount_rate / 100)) 
+                   : product.kok_discounted_price, // 할인율이 0이면 할인가가 원가
+                 discountPrice: product.kok_discounted_price,
+                 discountRate: product.kok_discount_rate,
+                 image: product.kok_thumbnail || 'https://via.placeholder.com/300x300/CCCCCC/666666?text=No+Image',
+                 rating: product.kok_review_score || 0, // 백엔드에서 제공하는 별점
+                 reviewCount: product.kok_review_cnt || 0, // 백엔드에서 제공하는 리뷰 수
+                 storeName: product.kok_store_name
+               };
+               
+               // 검색 결과 형식으로 변환
+               return {
+                 id: transformedProduct.id,
+                 title: transformedProduct.name,
+                 description: `콕 쇼핑몰에서 판매 중인 상품`,
+                 price: `${transformedProduct.discountPrice.toLocaleString()}원`,
+                 originalPrice: `${transformedProduct.originalPrice.toLocaleString()}원`,
+                 discount: `${transformedProduct.discountRate}%`,
+                 image: transformedProduct.image,
+                 category: '콕 상품',
+                 rating: transformedProduct.rating,
+                 reviewCount: transformedProduct.reviewCount,
+                 storeName: transformedProduct.storeName,
+                 shipping: '무료배송'
+               };
+             });
+            
+            if (newKokResults && newKokResults.length > 0) {
+              // 중복 제거를 위해 기존 상품 ID들을 Set으로 관리
+              const existingIds = new Set(searchResults.map(p => p.id));
+              const uniqueNewResults = newKokResults.filter(product => !existingIds.has(product.id));
+              
+              if (uniqueNewResults.length > 0) {
+                setSearchResults(prev => [...prev, ...uniqueNewResults]);
+                setCurrentPage(prev => prev + 1);
+                console.log('✅ 새로운 검색 결과 추가 완료:', uniqueNewResults.length, '개');
+                
+                // 20개 미만이면 더 이상 로드할 상품이 없음
+                if (newKokResults.length < 20) {
+                  setHasMore(false);
+                  console.log('📄 마지막 페이지 도달 - 더 이상 로드할 검색 결과가 없음');
+                }
+                
+                // sessionStorage 업데이트
+                const searchStateKey = `kok_search_${searchQuery}`;
+                const currentState = JSON.parse(sessionStorage.getItem(searchStateKey) || '{}');
+                sessionStorage.setItem(searchStateKey, JSON.stringify({
+                  ...currentState,
+                  results: [...searchResults, ...uniqueNewResults],
+                  currentPage: currentPage + 1,
+                  hasMore: newKokResults.length === 20
+                }));
+              } else {
+                console.log('⚠️ 중복 제거 후 추가할 검색 결과가 없음');
+                setHasMore(false);
+              }
+            } else {
+              console.log('📄 더 이상 로드할 검색 결과가 없음');
+              setHasMore(false);
+            }
+          } catch (error) {
+            console.error('❌ 더 많은 검색 결과 로드 중 오류:', error);
+          } finally {
+            setLoadingMore(false);
+          }
+        })();
+      }
+    };
+
+    // .search-content 요소에 스크롤 이벤트 리스너 등록
+    const searchContent = document.querySelector('.search-content');
+    if (searchContent) {
+      searchContent.addEventListener('scroll', handleScroll);
+      return () => searchContent.removeEventListener('scroll', handleScroll);
+    }
+  }, [hasMore, loadingMore, searchResults.length, searchQuery, currentPage, isLoggedIn, user?.token]);
 
   // 컴포넌트 마운트 시 콕 검색 히스토리 로드
   useEffect(() => {
     loadSearchHistory();
-  }, []); // 컴포넌트 마운트 시에만 실행
+  }, [loadSearchHistory]); // loadSearchHistory 의존성 추가
 
   // 사용자 정보가 변경될 때마다 콘솔에 출력 (디버깅용)
   useEffect(() => {
@@ -91,169 +664,6 @@ const KokSearch = () => {
       userLoading: userLoading
     });
   }, [user, isLoggedIn, userLoading]);
-
-  // 콕 검색 히스토리 로드 (API 사용)
-  const loadSearchHistory = async () => {
-    console.log('🔍 콕 검색 히스토리 로드 시작:', { isLoggedIn });
-    try {
-      if (isLoggedIn && user?.token) {
-        // 로그인된 사용자는 서버에서 콕 검색 히스토리 가져오기
-        const response = await kokApi.getSearchHistory(10, user.token);
-        const history = response.history || [];
-        setSearchHistory(history.map(item => item.kok_keyword));
-      } else {
-        // 비로그인 사용자는 로컬스토리지에서 가져오기
-        const history = JSON.parse(localStorage.getItem('kok_searchHistory') || '[]');
-        setSearchHistory(history.slice(0, 10));
-      }
-    } catch (error) {
-      console.error('콕 검색 히스토리 로드 실패:', error);
-      // API 실패 시 로컬스토리지에서 가져오기
-      try {
-        const history = JSON.parse(localStorage.getItem('kok_searchHistory') || '[]');
-        setSearchHistory(history.slice(0, 10));
-      } catch (localError) {
-        console.error('로컬스토리지 콕 검색 히스토리 로드 실패:', localError);
-        setSearchHistory([]);
-      }
-    }
-  };
-
-  // 콕 검색 히스토리 저장 (API 사용)
-  const saveSearchHistory = async (query) => {
-    try {
-      if (isLoggedIn && user?.token) {
-        // 로그인된 사용자는 서버에 콕 검색어 저장
-        await kokApi.addSearchHistory(query, user.token);
-        // 저장 후 히스토리 상태 업데이트 (로컬 상태만 업데이트)
-        setSearchHistory(prevHistory => {
-          const currentHistory = prevHistory.filter(item => item !== query);
-          return [query, ...currentHistory].slice(0, 10);
-        });
-      } else {
-        // 비로그인 사용자는 로컬스토리지에 저장
-        const history = JSON.parse(localStorage.getItem('kok_searchHistory') || '[]');
-        const updatedHistory = [query, ...history.filter(item => item !== query)].slice(0, 20);
-        localStorage.setItem('kok_searchHistory', JSON.stringify(updatedHistory));
-        setSearchHistory(updatedHistory.slice(0, 10));
-      }
-    } catch (error) {
-      console.error('콕 검색 히스토리 저장 실패:', error);
-      // API 실패 시 로컬스토리지에 저장
-      try {
-        const history = JSON.parse(localStorage.getItem('kok_searchHistory') || '[]');
-        const updatedHistory = [query, ...history.filter(item => item !== query)].slice(0, 20);
-        localStorage.setItem('kok_searchHistory', JSON.stringify(updatedHistory));
-        setSearchHistory(updatedHistory.slice(0, 10));
-      } catch (localError) {
-        console.error('로컬스토리지 콕 검색 히스토리 저장 실패:', localError);
-      }
-    }
-  };
-
-  // 콕 검색 실행 함수
-  const handleSearch = async (e = null, queryOverride = null) => {
-    console.log('🔍 콕 검색 실행 함수 호출:', { e, queryOverride, searchQuery });
-    
-    // SearchHeader에서 (e, searchQuery) 순서로 전달됨
-    // 두 번째 파라미터가 문자열이면 검색어로 사용
-    if (typeof queryOverride === 'string') {
-      // SearchHeader에서 온 경우: e = 이벤트, queryOverride = searchQuery
-    } else if (typeof e === 'string') {
-      // 다른 곳에서 검색어만 전달한 경우
-      queryOverride = e;
-      e = null;
-    }
-    
-    if (e && e.preventDefault) {
-      e.preventDefault();
-    }
-    
-    const query = queryOverride || searchQuery.trim();
-    if (!query) {
-      console.log('🔍 검색어가 없어서 콕 검색 중단');
-      return;
-    }
-
-    console.log('🔍 콕 실제 검색 시작:', { query });
-    setLoading(true);
-    setError(null);
-
-    try {
-      console.log('콕 검색 실행:', query);
-      
-      // 검색 히스토리에 저장
-      saveSearchHistory(query);
-      
-      // URL 업데이트 (쿼리 파라미터 추가)
-      navigate(`/kok/search?q=${encodeURIComponent(query)}`, { replace: true });
-      
-      // 콕 실제 API 검색
-      try {
-        console.log('콕 상품 검색 시작:', query);
-        // Authorization 헤더는 선택사항이므로 토큰이 있으면 전달
-        const accessToken = isLoggedIn && user?.token ? user.token : null;
-        const response = await kokApi.searchProducts(query, 1, 20, accessToken);
-        
-        console.log('콕 API 응답 전체:', response);
-        console.log('콕 상품 데이터 샘플:', response.products?.[0]);
-        
-        // API 응답 데이터를 검색 결과 형식으로 변환
-        const kokResults = (response.products || []).map(product => {
-          console.log('콕 상품 원본 데이터:', product);
-          console.log('콕 상품 이미지:', product.kok_thumbnail);
-          
-          return {
-            id: product.kok_product_id,
-            title: product.kok_product_name,
-            description: `콕 쇼핑몰에서 판매 중인 상품`,
-            price: `${product.kok_discounted_price?.toLocaleString() || '0'}원`,
-            originalPrice: `${product.kok_product_price?.toLocaleString() || '0'}원`,
-            discount: `${product.kok_discount_rate || 0}%`,
-            image: product.kok_thumbnail || 'https://via.placeholder.com/300x300/CCCCCC/666666?text=No+Image',
-            category: '콕 상품',
-            rating: product.kok_review_score || 4.5, // 백엔드에서 제공하는 별점 사용
-            reviewCount: product.kok_review_cnt || 128, // 백엔드에서 제공하는 리뷰 수 사용
-            storeName: product.kok_store_name || 'COK 스토어',
-            shipping: '무료배송'
-          };
-        });
-        
-        // 중복 제거 (id 기준)
-        const uniqueKokResults = kokResults.filter((product, index, self) => 
-          index === self.findIndex(p => p.id === product.id)
-        );
-        
-        console.log('콕 검색 결과:', uniqueKokResults.length, '개 상품 (중복 제거 후)');
-        setSearchResults(uniqueKokResults);
-        
-        // 검색 결과를 sessionStorage에 저장
-        const searchStateKey = `kok_search_${query}`;
-        sessionStorage.setItem(searchStateKey, JSON.stringify({
-          results: uniqueKokResults,
-          timestamp: Date.now()
-        }));
-      } catch (error) {
-        console.error('콕 상품 검색 실패:', error);
-        
-        // 서버 오류인 경우 더 구체적인 메시지 표시
-        if (error.response?.status === 500) {
-          setError('서버에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해주세요.');
-        } else if (error.response?.status === 404) {
-          setError('검색 서비스를 찾을 수 없습니다.');
-        } else {
-          setError('콕 상품 검색 중 오류가 발생했습니다.');
-        }
-      }
-      
-      setLoading(false);
-      
-    } catch (err) {
-      console.error('콕 검색 실패:', err);
-      setError('콕 검색 중 오류가 발생했습니다.');
-      setLoading(false);
-    }
-  };
 
   // 뒤로가기 핸들러
   const handleBack = () => {
@@ -300,6 +710,12 @@ const KokSearch = () => {
         localStorage.setItem('kok_searchHistory', JSON.stringify(updatedHistory));
         setSearchHistory(updatedHistory.slice(0, 10));
       }
+      
+      // sessionStorage에서도 해당 검색 결과 삭제
+      const searchStateKey = `kok_search_${queryToDelete}`;
+      sessionStorage.removeItem(searchStateKey);
+      console.log('🗑️ sessionStorage에서 검색 결과 삭제:', searchStateKey);
+      
     } catch (error) {
       console.error('콕 검색 히스토리 삭제 실패:', error);
       // API 실패 시 로컬스토리지에서 삭제
@@ -308,6 +724,11 @@ const KokSearch = () => {
         const updatedHistory = history.filter(item => item !== queryToDelete);
         localStorage.setItem('kok_searchHistory', JSON.stringify(updatedHistory));
         setSearchHistory(updatedHistory.slice(0, 10));
+        
+        // sessionStorage에서도 해당 검색 결과 삭제
+        const searchStateKey = `kok_search_${queryToDelete}`;
+        sessionStorage.removeItem(searchStateKey);
+        console.log('🗑️ sessionStorage에서 검색 결과 삭제:', searchStateKey);
       } catch (localError) {
         console.error('로컬스토리지 콕 검색 히스토리 삭제 실패:', localError);
       }
@@ -317,7 +738,7 @@ const KokSearch = () => {
   // 콕 검색 히스토리 전체 삭제 핸들러 (API 사용)
   const handleClearAllHistory = async () => {
     try {
-      if (isLoggedIn && user?.token) {
+      if (isLoggedIn) {
         // 로그인된 사용자는 서버에서 모든 콕 검색어 삭제
         // 백엔드 제한을 고려하여 작은 숫자로 히스토리를 가져옴
         const response = await kokApi.getSearchHistory(20, user.token);
@@ -356,6 +777,19 @@ const KokSearch = () => {
         // 삭제 후 히스토리 다시 로드
         await loadSearchHistory();
         
+        // sessionStorage에서 모든 콕 검색 결과 삭제
+        const keysToRemove = [];
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const key = sessionStorage.key(i);
+          if (key && key.startsWith('kok_search_')) {
+            keysToRemove.push(key);
+          }
+        }
+        keysToRemove.forEach(key => {
+          sessionStorage.removeItem(key);
+          console.log('🗑️ sessionStorage에서 검색 결과 삭제:', key);
+        });
+        
         // 성공 메시지 표시
         if (successCount > 0) {
           alert(`검색 히스토리 ${successCount}개가 삭제되었습니다.`);
@@ -366,6 +800,20 @@ const KokSearch = () => {
         localStorage.removeItem('kok_searchHistory');
         setSearchHistory([]);
         console.log(`로컬 검색 히스토리 ${history.length}개 삭제 완료`);
+        
+        // sessionStorage에서 모든 콕 검색 결과 삭제
+        const keysToRemove = [];
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const key = sessionStorage.key(i);
+          if (key && key.startsWith('kok_search_')) {
+            keysToRemove.push(key);
+          }
+        }
+        keysToRemove.forEach(key => {
+          sessionStorage.removeItem(key);
+          console.log('🗑️ sessionStorage에서 검색 결과 삭제:', key);
+        });
+        
         alert(`검색 히스토리 ${history.length}개가 삭제되었습니다.`);
       }
     } catch (error) {
@@ -374,6 +822,20 @@ const KokSearch = () => {
       const history = JSON.parse(localStorage.getItem('kok_searchHistory') || '[]');
       localStorage.removeItem('kok_searchHistory');
       setSearchHistory([]);
+      
+      // sessionStorage에서 모든 콕 검색 결과 삭제
+      const keysToRemove = [];
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        if (key && key.startsWith('kok_search_')) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(key => {
+        sessionStorage.removeItem(key);
+        console.log('🗑️ sessionStorage에서 검색 결과 삭제:', key);
+      });
+      
       alert(`검색 히스토리 ${history.length}개가 삭제되었습니다. (로컬 저장소)`);
     }
   };
@@ -383,20 +845,18 @@ const KokSearch = () => {
     return (
       <div className="search-page">
         <div className="search-header">
-          <button className="back-button" onClick={handleBack}>
-            ← 뒤로
-          </button>
+          <HeaderNavBackBtn onClick={handleBack} />
           <HeaderSearchBar 
             onSearch={(query) => {
               if (query && query.trim()) {
-                navigate(`/kok/search?q=${encodeURIComponent(query.trim())}`);
+                navigate(`/kok/search?q=${encodeURIComponent(query.trim())}&type=${searchType}`);
               }
             }}
-            placeholder="콕 상품 검색"
+            placeholder={`${searchType === 'kok' ? '콕' : '홈쇼핑'} 상품 검색`}
           />
         </div>
         <div className="search-content">
-          <Loading message="콕 검색 페이지를 불러오는 중..." />
+          <Loading message="검색 페이지를 불러오는 중..." />
         </div>
         <BottomNav />
       </div>
@@ -406,22 +866,22 @@ const KokSearch = () => {
   // 콕 검색 페이지 렌더링
   return (
     <div className="search-page">
-             {/* 콕 검색 헤더 */}
-       <div className="search-header">
-         <button className="back-button" onClick={handleBack}>
-           ← 뒤로
-         </button>
-         
-         <HeaderSearchBar 
-           onSearch={(query) => {
-             console.log('🔍 HeaderSearchBar에서 콕 검색:', query);
-             if (query && query.trim()) {
-               navigate(`/kok/search?q=${encodeURIComponent(query.trim())}`);
-             }
-           }}
-           placeholder="콕 상품 검색"
-         />
-       </div>
+
+      
+                     {/* 콕 검색 헤더 */}
+        <div className="search-header">
+          <HeaderNavBackBtn onClick={handleBack} />
+          
+          <HeaderSearchBar 
+            onSearch={(query) => {
+              console.log('🔍 HeaderSearchBar에서 콕 검색:', query);
+              if (query && query.trim()) {
+                navigate(`/kok/search?q=${encodeURIComponent(query.trim())}`);
+              }
+            }}
+            placeholder="콕 상품 검색"
+          />
+        </div>
 
              {/* 메인 콘텐츠 */}
        <div className="search-content">
@@ -487,7 +947,7 @@ const KokSearch = () => {
         {/* 로딩 중일 때 */}
         {loading && (
           <div className="search-loading">
-            <Loading message={`"${searchQuery}" 콕 검색 중...`} />
+            <Loading message={`"${searchQuery}" 검색 중...`} />
           </div>
         )}
 
@@ -530,18 +990,12 @@ const KokSearch = () => {
                     />
                   </div>
                   <div className="result-info">
-                    <div className="result-category">{result.category}</div>
-                    <h4 className="result-title">{result.title}</h4>
-                    <p className="result-description">{result.description}</p>
+                                         <h4 className="result-title">{result.title}</h4>
                     
-                    {/* 콕 추가 정보 표시 */}
-                    <div className="kok-info">
-                      {result.storeName && <span className="store-name">🏪 {result.storeName}</span>}
-                      {result.shipping && <span className="shipping">🚚 {result.shipping}</span>}
-                    </div>
+                    
                     
                     <div className="result-rating">
-                      <span className="rating">⭐ {result.rating}</span>
+                      <span className="rating">★ {result.rating}</span>
                       <span className="review-count">리뷰 {result.reviewCount}</span>
                     </div>
                     <div className="result-price">
@@ -552,6 +1006,43 @@ const KokSearch = () => {
                   </div>
                 </div>
               ))}
+              
+              {/* 무한 스크롤 상태 표시 */}
+              {loadingMore && (
+                <div style={{
+                  textAlign: 'center',
+                  padding: '20px',
+                  color: '#666',
+                  fontSize: '14px',
+                  gridColumn: '1 / -1'
+                }}>
+                  <div style={{
+                    width: '20px',
+                    height: '20px',
+                    border: '2px solid #f3f3f3',
+                    borderTop: '2px solid #FA5F8C',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite',
+                    margin: '0 auto 10px'
+                  }}></div>
+                  더 많은 검색 결과를 불러오는 중...
+                </div>
+              )}
+              
+              {!hasMore && searchResults.length > 0 && (
+                <div style={{
+                  textAlign: 'center',
+                  padding: '20px',
+                  color: '#999',
+                  fontSize: '14px',
+                  backgroundColor: '#f8f9fa',
+                  borderRadius: '8px',
+                  margin: '20px 0',
+                  gridColumn: '1 / -1'
+                }}>
+                  더 이상 로드할 검색 결과가 없습니다
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -561,7 +1052,7 @@ const KokSearch = () => {
           <div className="no-results">
             <div className="no-results-icon">🔍</div>
             <h3>검색 결과가 없습니다</h3>
-            <p>"{searchQuery}"에 대한 콕 검색 결과를 찾을 수 없습니다.</p>
+            <p>"{searchQuery}"에 대한 검색 결과를 찾을 수 없습니다.</p>
           </div>
         )}
       </div>
