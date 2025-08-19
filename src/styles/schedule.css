@@ -1,10 +1,12 @@
 /* 편성표 페이지 기본 스타일 */
 .schedule-page {
-  min-height: 100vh;
+  height: 100vh; /* 전체 화면 높이 사용 */
   background-color: #ffffff;
   display: flex;
   flex-direction: column;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  max-width: 100vw; /* 화면 너비를 넘지 않도록 */
+  overflow: hidden; /* 전체 페이지 스크롤 방지 */
 }
 
 /* 검색 헤더 */
@@ -15,6 +17,7 @@
   position: sticky;
   top: 0;
   z-index: 100;
+  max-width: 100%; /* 화면 너비를 넘지 않도록 */
 }
 
 .search-container {
@@ -48,7 +51,6 @@
 
 .schedule-search-button:hover {
   background-color: #e8e8e8;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .schedule-search-button .search-placeholder {
@@ -84,18 +86,129 @@
   background-color: #f5f5f5;
 }
 
-/* 메인 콘텐츠 */
+/* 메인 콘텐츠 영역 조정 */
 .schedule-content {
   flex: 1;
+  overflow: hidden; /* 전체 스크롤 방지 */
+  margin-top: 0;
+  background-color: #ffffff;
+  max-width: 100%; /* 화면 너비를 넘지 않도록 */
+}
+
+/* 편성표 메인 영역 */
+.schedule-main-area {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  max-width: 100%; /* 화면 너비를 넘지 않도록 */
+  overflow: hidden; /* 스크롤 방지 */
+}
+
+/* 시간대 컨테이너 */
+.time-slots-container {
+  background: #ffffff;
+  border-bottom: 1px solid #e5e5e5;
+  padding: 16px 0;
+}
+
+/* 편성표 메인 콘텐츠 */
+.schedule-main-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  max-width: 100%; /* 화면 너비를 넘지 않도록 */
+  width: 100%; /* 전체 너비 사용 */
+}
+
+/* 왼쪽 사이드바 */
+.left-sidebar {
+  width: 100px; /* 너비를 100px로 줄임 */
+  background: #f8f9fa;
+  border-right: 1px solid #e5e5e5;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0; /* 크기가 줄어들지 않도록 */
+  min-width: 100px; /* 최소 너비를 100px로 조정 */
+  max-width: 100px; /* 최대 너비를 100px로 조정 */
+  height: 100%; /* 전체 높이 사용 */
+}
+
+.channel-list {
+  flex: 1;
   overflow-y: auto;
-  padding-bottom: 80px; /* 하단 네비게이션 공간 */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 16px;
+  height: 100%; /* 전체 높이 사용 */
+}
+
+.channel-list::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.channel-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 8px;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.channel-item:hover {
+  background-color: rgba(233, 30, 99, 0.1);
+}
+
+.schedule-channel-logo {
+  width: 100%;
+  /* height: 80px; */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* padding: 4px; */
+}
+
+.schedule-channel-logo img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.channel-name {
+  font-size: 10px;
+  color: #333;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+
+.channel-number {
+  font-size: 8px;
+  color: #666;
+  font-weight: 500;
+}
+
+/* 편성표 콘텐츠 메인 */
+.schedule-content-main {
+  flex: 1;
+  overflow-y: auto; /* 세로 스크롤만 허용 */
+  background-color: #ffffff;
+  /* max-width 제한 제거하여 전체 너비 사용 */
+  overflow-x: hidden; /* 가로 스크롤 방지 */
+  height: 100%; /* 전체 높이 사용 */
 }
 
 /* 날짜 캘린더 */
 .date-calendar {
   background: #ffffff;
-  padding: 16px;
   border-bottom: 1px solid #e5e5e5;
+  width: 100%;
 }
 
 .calendar-dates {
@@ -115,18 +228,23 @@
   min-width: 44px;
 }
 
-.calendar-date:hover {
-  background-color: #f5f5f5;
+.calendar-date.today {
+  color: #E91E63;
+  font-weight: 600;
+  background-color: rgba(233, 30, 99, 0.1);
+  border-radius: 4px;
 }
 
 .calendar-date.selected {
-  background-color: #007AFF;
-  color: white;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  background-color: #E91E63 !important;
+  border-radius: 4px;
 }
 
-.calendar-date.today {
-  background-color: #FF3B30;
-  color: white;
+.calendar-date:hover {
+  background-color: rgba(233, 30, 99, 0.05);
+  cursor: pointer;
 }
 
 .date-number {
@@ -143,20 +261,70 @@
 /* 시간대 표시 */
 .time-slots {
   display: flex;
-  justify-content: space-between;
-  padding: 0 8px;
+  overflow-x: auto;
+  padding: 0 16px;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  gap: 0;
+  min-width: 100%;
+  position: relative;
+}
+
+.time-slots::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
 .time-slot {
   font-size: 12px;
   color: #666;
   text-align: center;
-  min-width: 44px;
+  min-width: 60px;
+  padding: 8px 4px;
+  flex-shrink: 0;
+  border-right: 1px solid #f0f0f0;
+  position: relative;
+}
+
+.time-slot:last-child {
+  border-right: none;
+}
+
+.time-slot.current-time {
+  color: #E91E63;
+  font-weight: 600;
+  background-color: rgba(233, 30, 99, 0.1);
+  border-radius: 4px;
+}
+
+.time-slot.selected-time {
+  color: #ffffff;
+  font-weight: 600;
+  background-color: #E91E63;
+  border-radius: 4px;
+}
+
+.time-slot:hover {
+  background-color: rgba(233, 30, 99, 0.05);
+  cursor: pointer;
+}
+
+/* 시간대 스크롤 가이드 */
+.time-slots::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 20px;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.8));
+  pointer-events: none;
+  z-index: 1;
 }
 
 /* 편성표 타임라인 */
 .schedule-timeline {
   padding: 16px;
+  min-height: 100%; /* 최소 높이 설정 */
 }
 
 .schedule-program {
@@ -205,12 +373,13 @@
 }
 
 .program-left {
-  width: 60px;
+  width: 80px;
   background: #f8f9fa;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 4px;
+  padding: 12px 8px;
+  border-right: 1px solid #e5e5e5;
 }
 
 .channel-logos {
@@ -249,7 +418,7 @@
   font-weight: 600;
 }
 
-/* 상품 이미지 */
+/* 상품 이미지 (기존 스타일 - 호환성 유지) */
 .product-image {
   width: 120px;
   height: 80px;
@@ -268,13 +437,6 @@
 /* 상품 정보 */
 .product-info {
   max-width: calc(100% - 140px);
-}
-
-.product-name {
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
-  margin: 0 0 4px 0;
 }
 
 .product-description {
@@ -303,7 +465,7 @@
 }
 
 .discount-rate {
-  background: #FF3B30;
+  background: #FA5F8C;
   color: white;
   padding: 2px 6px;
   border-radius: 4px;
@@ -372,6 +534,31 @@
 
 /* 반응형 디자인 */
 @media (max-width: 768px) {
+  .schedule-main-container {
+    flex-direction: column;
+  }
+  
+  .left-sidebar {
+    width: 100%; /* 모바일에서는 전체 너비 사용 */
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid #e5e5e5;
+    max-width: 100%; /* 최대 너비 제한 해제 */
+  }
+  
+  .channel-list {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 12px;
+    gap: 16px;
+  }
+  
+  .channel-item {
+    min-width: 80px;
+    margin-bottom: 0;
+  }
+  
   .schedule-search-header {
     padding: 8px 12px;
   }
@@ -389,6 +576,16 @@
     font-size: 14px;
   }
   
+  .time-slots {
+    padding: 0 4px;
+  }
+  
+  .time-slot {
+    min-width: 50px;
+    font-size: 11px;
+    padding: 6px 2px;
+  }
+  
   .schedule-timeline {
     padding: 12px;
   }
@@ -404,6 +601,29 @@
   
   .product-info {
     max-width: calc(100% - 120px);
+  }
+  
+  /* 새로운 스케줄 아이템 반응형 스타일 */
+  .schedule-item {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  
+  .schedule-image {
+    width: 100px;
+    height: 70px;
+  }
+  
+  .schedule-content {
+    gap: 12px;
+  }
+  
+  .schedule-info {
+    gap: 6px;
+  }
+
+  .schedule-content-main {
+    max-width: 100%; /* 모바일에서는 전체 너비 사용 */
   }
 }
 
@@ -423,4 +643,199 @@
 
 .schedule-content::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
+}
+
+/* 새로운 스케줄 아이템 스타일 */
+.schedule-item {
+  /* display: flex; */
+  margin-bottom: 16px;
+  padding: 16px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /* 내용이 상자 밖으로 나가지 않도록 */
+}
+.left-sidebar.left-sidebar.left-sidebar
+.schedule-content {
+  display: flex;
+  width: 100%;
+  gap: 16px;
+  align-items: flex-start;
+  flex-direction: column;
+}
+
+.schedule-image {
+  position: relative;
+  width: 100%;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  flex-direction: column;
+}
+
+.schedule-image img {
+  width: 100%;
+  height: calc(100% - 40px); /* 상태 배지 높이만큼 제외 */
+  object-fit: cover; /* 비율 유지하면서 영역에 맞춤 */
+  margin-top: 40px; /* 상태 배지 아래에 위치 */
+}
+
+.status-badge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 30%;
+  height: 40px;
+  padding: 8px 12px;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+  z-index: 10;
+}
+
+.status-live {
+  background-color: #FE1F1F;
+  color: white;
+  text-align: center;
+}
+
+.status-upcoming {
+  /* background-color: #95a5a6; */
+  color: #838383;
+  text-align: left;
+}
+
+.status-ended {
+  /* background-color: #95a5a6; */
+  color: #838383;
+  text-align: left;
+}
+
+.status-unknown {
+  /* background-color: #95a5a6; */
+  color: #838383;
+  text-align: left;
+}
+
+.schedule-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.channel-info {
+  margin-top: 8px;
+  margin-bottom: 8px;
+  text-align: left;
+}
+
+.schedule-channel-name {
+  font-size: 14px;
+  /* font-weight: 700; */
+  color: #000000;
+}
+
+/* 상품 메타 정보 */
+.product-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.live-id, .product-id {
+  font-size: 11px;
+  color: #999;
+  background: #f5f5f5;
+  padding: 2px 6px;
+  border-radius: 3px;
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.schedule-product-meta {
+  margin-bottom: 8px;
+}
+
+.schedule-product-name {
+  font-size: 14px;
+  color: #838383;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.schedule-original-price {
+  font-size: 14px;
+  color: #838383;
+  text-decoration: line-through;
+  margin-bottom: 8px;
+}
+
+.schedule-price-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.schedule-discount-display {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.schedule-discount-rate {
+  font-size: 20px;
+  color: #FA5F8C;
+  font-weight: 700;
+}
+
+.schedule-discount-price {
+  font-size: 16px;
+  color: #838383;
+  font-weight: 600;
+}
+
+.schedule-wishlist-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.schedule-wishlist-btn:hover {
+  border-color: #E91E63;
+  background-color: #fff5f5;
+}
+
+.heart-button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.heart-icon {
+  width: 16px;
+  height: 16px;
+  transition: all 0.2s ease;
+}
+
+.wishlist-icon {
+  font-size: 14px;
+  color: #666;
 }
