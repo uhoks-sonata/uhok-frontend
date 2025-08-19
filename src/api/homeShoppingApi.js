@@ -11,8 +11,8 @@ export const homeShoppingApi = {
       const response = await api.get('/api/homeshopping/schedule', {
         params: { page, size }
       });
-      console.log('✅ 편성표 조회 API 응답:', response.data);
-      return response.data;
+      console.log('✅ 편성표 조회 API 응답:', response);
+      return response; // response.data가 아닌 response 전체 반환
     } catch (error) {
       console.error('❌ 편성표 조회 실패:', error);
       throw error;
