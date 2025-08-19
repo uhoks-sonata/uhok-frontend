@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import BottomNav from '../../layout/BottomNav';
 import HeaderNavSchedule from '../../layout/HeaderNavSchedule';
 import { useUser } from '../../contexts/UserContext';
+import { homeShoppingApi } from '../../api/homeShoppingApi';
 import '../../styles/schedule.css';
 
 const Schedule = () => {
@@ -12,6 +13,9 @@ const Schedule = () => {
   // 편성표 관련 상태
   const [selectedDate, setSelectedDate] = useState(26); // 현재 선택된 날짜
   const [searchQuery, setSearchQuery] = useState('');
+  const [scheduleData, setScheduleData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   
   // 날짜 데이터 (일주일)
   const weekDates = [
@@ -26,42 +30,45 @@ const Schedule = () => {
   
   // 시간대 데이터
   const timeSlots = ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00'];
-  
-  // 더미 편성표 데이터
-  const scheduleData = [
-    {
-      id: 1,
-      time: '10:00',
-      endTime: '11:30',
-      channel: 'CJ온스타일',
-      title: 'CJ온스타일',
-      product: '에버콜라겐',
-      description: '에버콜라겐 타임어택놀 A 18개월 + 카무트효소스페셜',
-      originalPrice: 300000,
-      salePrice: 180000,
-      discount: '17%',
-      isLive: true,
-      ageLimit: '18',
-      image: '/test1.png',
-      wishlist: false
-    },
-    {
-      id: 2,
-      time: '11:30',
-      endTime: '13:00',
-      channel: 'CJ온스타일',
-      title: 'CJ온스타일',
-      product: '에버콜라겐',
-      description: 'LIVE 예정',
-      originalPrice: 300000,
-      salePrice: 180000,
-      discount: '17%',
-      isLive: false,
-      ageLimit: '18',
-      image: '/test2.png',
-      wishlist: false
-    }
-  ];
+
+  // 편성표 데이터 가져오기
+  useEffect(() => {
+    const fetchScheduleData = async () => {
+      try {
+        setLoading(true);
+        const response = await homeShoppingApi.getSchedule(1, 20);
+        
+        console.log('홈쇼핑 편성표 API 응답:', response);
+        
+        // API 응답 데이터를 UI 형식으로 변환
+        const apiSchedule = (response.schedule || []).map(item => ({
+          id: item.homeshopping_id || item.id,
+          time: item.start_time || '00:00',
+          endTime: item.end_time || '00:00',
+          channel: item.store_name || item.channel_name || '홈쇼핑',
+          title: item.store_name || item.channel_name || '홈쇼핑',
+          product: item.product_name || item.title || '상품명 없음',
+          description: item.product_description || item.description || '상품 설명 없음',
+          originalPrice: item.original_price || 0,
+          salePrice: item.discounted_price || item.sale_price || 0,
+          discount: item.discount_rate ? `${item.discount_rate}%` : '0%',
+          isLive: item.is_live || false,
+          ageLimit: item.age_limit || '18',
+          image: item.thumbnail || item.product_image || null,
+          wishlist: item.is_wishlisted || false
+        }));
+        
+        setScheduleData(apiSchedule);
+      } catch (error) {
+        console.error('홈쇼핑 편성표 데이터 가져오기 실패:', error);
+        setError('편성표 데이터를 불러오는데 실패했습니다.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchScheduleData();
+  }, []);
 
   // 위시리스트 토글
   const toggleWishlist = (itemId) => {
@@ -129,7 +136,27 @@ const Schedule = () => {
 
         {/* 편성표 목록 */}
         <div className="schedule-timeline">
-          {scheduleData.map((item) => (
+          {loading && (
+            <div className="loading-container">
+              <div className="loading-spinner"></div>
+              <p>편성표를 불러오는 중...</p>
+            </div>
+          )}
+          
+          {error && (
+            <div className="error-container">
+              <p>{error}</p>
+              <button onClick={() => window.location.reload()}>다시 시도</button>
+            </div>
+          )}
+          
+          {!loading && !error && scheduleData.length === 0 && (
+            <div className="empty-container">
+              <p>오늘의 편성표가 없습니다.</p>
+            </div>
+          )}
+          
+          {!loading && !error && scheduleData.map((item) => (
             <div key={item.id} className="schedule-program">
               {/* 시간 표시 */}
               <div className="program-time">
@@ -144,7 +171,7 @@ const Schedule = () => {
                   {/* 채널 로고들 */}
                   <div className="channel-logos">
                     {Array.from({ length: 12 }, (_, i) => (
-                      <div key={i} className="channel-logo">CJ온스타일</div>
+                      <div key={i} className="channel-logo">{item.channel}</div>
                     ))}
                   </div>
                 </div>
@@ -155,7 +182,14 @@ const Schedule = () => {
                   
                   {/* 상품 이미지 */}
                   <div className="product-image">
-                    <img src={item.image} alt={item.product} />
+                    <img 
+                      src={item.image || 'https://via.placeholder.com/300x300/CCCCCC/666666?text=No+Image'} 
+                      alt={item.product}
+                      onError={(e) => {
+                        e.target.src = 'https://via.placeholder.com/300x300/CCCCCC/666666?text=No+Image';
+                        e.target.onerror = null;
+                      }}
+                    />
                   </div>
                   
                   {/* 상품 정보 */}

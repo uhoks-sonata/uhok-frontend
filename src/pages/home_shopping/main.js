@@ -140,65 +140,45 @@ const Main = () => {
         const date = today.toISOString().split('T')[0]; // YYYY-MM-DD 형식
         const time = `${today.getHours()}:${String(today.getMinutes()).padStart(2, '0')}`; // HH:MM 형식
         
-        setScheduleData({
-          date: date, // 날짜 정보 (API에서 받아옴)
-          time: time, // 시간 정보 (API에서 받아옴)
-          channel_id: null, // 채널 아이디 (API에서 받아옴)
-          schedule: [ // 스케줄 목록 (API에서 받아옴)
-            {
-              홈쇼핑_아이디: 1, // 홈쇼핑 아이디 (API에서 받아옴)
-              홈쇼핑명: 'NS플러스', // 홈쇼핑명 (API에서 받아옴)
-              채널명: 'NS플러스 홈쇼핑', // 채널명 (API에서 받아옴)
-              채널로고: '/test1.png', // 채널로고 (API에서 받아옴)
-              원가: '27,800원', // 원가 (API에서 받아옴)
-              할인율: '51%', // 할인율 (API에서 받아옴)
-              할인된가격: '13,600원', // 할인된가격 (API에서 받아옴)
-              시작시간: '16:30', // 시작시간 (API에서 받아옴)
-              썸네일: '/test1.png', // 썸네일 (API에서 받아옴)
-              알림여부: true, // 알림여부 (API에서 받아옴)
-              상품명: '농팜 | [농팜] (1+1) 당일제조 전라도식 김치 파김치 500g' // 상품명 (API에서 받아옴)
-            },
-            {
-              홈쇼핑_아이디: 2, // 홈쇼핑 아이디 (API에서 받아옴)
-              홈쇼핑명: '현대홈쇼핑', // 홈쇼핑명 (API에서 받아옴)
-              채널명: '현대홈쇼핑', // 채널명 (API에서 받아옴)
-              채널로고: '/test2.png', // 채널로고 (API에서 받아옴)
-              원가: '27,800원', // 원가 (API에서 받아옴)
-              할인율: '51%', // 할인율 (API에서 받아옴)
-              할인된가격: '13,600원', // 할인된가격 (API에서 받아옴)
-              시작시간: '16:41', // 시작시간 (API에서 받아옴)
-              썸네일: '/test2.png', // 썸네일 (API에서 받아옴)
-              알림여부: false, // 알림여부 (API에서 받아옴)
-              상품명: '농팜 | [농팜] (1+1) 당일제조 전라도식 김치 파김치 500g' // 상품명 (API에서 받아옴)
-            },
-            {
-              홈쇼핑_아이디: 3, // 홈쇼핑 아이디 (API에서 받아옴)
-              홈쇼핑명: '플러스샵', // 홈쇼핑명 (API에서 받아옴)
-              채널명: '플러스샵', // 채널명 (API에서 받아옴)
-              채널로고: '/test3.png', // 채널로고 (API에서 받아옴)
-              원가: '27,800원', // 원가 (API에서 받아옴)
-              할인율: '51%', // 할인율 (API에서 받아옴)
-              할인된가격: '13,600원', // 할인된가격 (API에서 받아옴)
-              시작시간: '18:40', // 시작시간 (API에서 받아옴)
-              썸네일: '/test3.png', // 썸네일 (API에서 받아옴)
-              알림여부: true, // 알림여부 (API에서 받아옴)
-              상품명: '농팜 | [농팜] (1+1) 당일제조 전라도식 김치 파김치 500g' // 상품명 (API에서 받아옴)
-            },
-            {
-              홈쇼핑_아이디: 4, // 홈쇼핑 아이디 (API에서 받아옴)
-              홈쇼핑명: '공영홈쇼핑', // 홈쇼핑명 (API에서 받아옴)
-              채널명: '공영홈쇼핑', // 채널명 (API에서 받아옴)
-              채널로고: '/test1.png', // 채널로고 (API에서 받아옴)
-              원가: '27,800원', // 원가 (API에서 받아옴)
-              할인율: '51%', // 할인율 (API에서 받아옴)
-              할인된가격: '13,600원', // 할인된가격 (API에서 받아옴)
-              시작시간: '20:00', // 시작시간 (API에서 받아옴)
-              썸네일: '/test1.png', // 썸네일 (API에서 받아옴)
-              알림여부: false, // 알림여부 (API에서 받아옴)
-              상품명: '농팜 | [농팜] (1+1) 당일제조 전라도식 김치 파김치 500g' // 상품명 (API에서 받아옴)
-            }
-          ]
-        });
+        // 실제 API에서 편성표 데이터를 가져오기
+        try {
+          const response = await api.get('/api/homeshopping/schedule', {
+            params: { page: 1, size: 20 }
+          });
+          
+          console.log('홈쇼핑 편성표 API 응답:', response.data);
+          
+          // API 응답 데이터를 UI 형식으로 변환
+          const apiSchedule = (response.data.schedule || []).map(item => ({
+            홈쇼핑_아이디: item.homeshopping_id || item.id,
+            홈쇼핑명: item.homeshopping_name || item.store_name || '홈쇼핑',
+            채널명: item.channel_name || item.store_name || '홈쇼핑',
+            채널로고: item.channel_logo || getBrandLogo(item.homeshopping_name || item.store_name),
+            원가: item.original_price ? `${item.original_price.toLocaleString()}원` : '0원',
+            할인율: item.discount_rate ? `${item.discount_rate}%` : '0%',
+            할인된가격: item.discounted_price ? `${item.discounted_price.toLocaleString()}원` : '0원',
+            시작시간: item.start_time || '00:00',
+            썸네일: item.thumbnail || item.product_image || null,
+            알림여부: item.notification_enabled || false,
+            상품명: item.product_name || item.title || '상품명 없음'
+          }));
+          
+          setScheduleData({
+            date: response.data.date || date,
+            time: response.data.time || time,
+            channel_id: response.data.channel_id || null,
+            schedule: apiSchedule
+          });
+        } catch (apiError) {
+          console.error('홈쇼핑 편성표 API 호출 실패:', apiError);
+          // API 실패 시 기본 데이터 사용
+          setScheduleData({
+            date: date,
+            time: time,
+            channel_id: null,
+            schedule: []
+          });
+        }
       } finally {
         // try-catch 블록이 끝나면 항상 로딩 상태를 false로 설정합니다
         setLoading(false);
