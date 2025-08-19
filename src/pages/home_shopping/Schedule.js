@@ -10,19 +10,45 @@ const Schedule = () => {
   const { user, isLoggedIn } = useUser();
   
   // 편성표 관련 상태
-  const [selectedDate, setSelectedDate] = useState(26); // 현재 선택된 날짜
+  const [selectedDate, setSelectedDate] = useState(null); // 현재 선택된 날짜
   const [searchQuery, setSearchQuery] = useState('');
   
-  // 날짜 데이터 (일주일)
-  const weekDates = [
-    { date: 23, day: '월' },
-    { date: 24, day: '화' },
-    { date: 25, day: '수' },
-    { date: 26, day: '목', isToday: true },
-    { date: 27, day: '금' },
-    { date: 28, day: '토' },
-    { date: 27, day: '일' }
-  ];
+  // 현재 날짜를 기준으로 일주일 날짜 데이터 생성
+  const [weekDates, setWeekDates] = useState([]);
+  
+  // 날짜 데이터 초기화
+  useEffect(() => {
+    const today = new Date();
+    const currentDay = today.getDay(); // 0: 일요일, 1: 월요일, ..., 6: 토요일
+    
+    // 월요일을 시작으로 하는 주의 시작일 계산
+    const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() + mondayOffset);
+    
+    const weekData = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(monday);
+      date.setDate(monday.getDate() + i);
+      
+      const isToday = date.toDateString() === today.toDateString();
+      
+             weekData.push({
+         date: date.getDate(),
+         day: ['월', '화', '수', '목', '금', '토', '일'][i],
+         fullDate: date,
+         isToday: isToday,
+         dateKey: date.toDateString() // 날짜 비교를 위한 고유 키
+       });
+      
+      // 오늘 날짜라면 selectedDate 설정
+      if (isToday) {
+        setSelectedDate(date.toDateString());
+      }
+    }
+    
+    setWeekDates(weekData);
+  }, []);
   
   // 시간대 데이터
   const timeSlots = ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00'];
@@ -107,8 +133,22 @@ const Schedule = () => {
               {weekDates.map((item, index) => (
                 <div 
                   key={index}
-                  className={`calendar-date ${item.isToday ? 'today' : ''} ${selectedDate === item.date ? 'selected' : ''}`}
-                  onClick={() => setSelectedDate(item.date)}
+                  className={`calendar-date ${item.isToday ? 'today' : ''} ${selectedDate === item.dateKey ? 'selected' : ''}`}
+                  onClick={() => {
+                    if (item.isToday) {
+                      // 오늘 날짜 클릭 시
+                      if (selectedDate === item.dateKey) {
+                        // 이미 선택된 상태라면 선택 해제
+                        setSelectedDate(null);
+                      } else {
+                        // 선택되지 않은 상태라면 선택
+                        setSelectedDate(item.dateKey);
+                      }
+                    } else {
+                      // 다른 날짜 클릭 시 해당 날짜 선택
+                      setSelectedDate(item.dateKey);
+                    }
+                  }}
                 >
                   <div className="date-number">{item.date}</div>
                   <div className="date-day">{item.day}</div>

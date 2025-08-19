@@ -48,7 +48,6 @@
 
 .schedule-search-button:hover {
   background-color: #e8e8e8;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .schedule-search-button .search-placeholder {
@@ -119,14 +118,14 @@
   background-color: #f5f5f5;
 }
 
-.calendar-date.selected {
-  background-color: #007AFF;
-  color: white;
+.calendar-date.today {
+  color: #333;
+  font-weight: 600;
 }
 
-.calendar-date.today {
-  background-color: #FF3B30;
-  color: white;
+.calendar-date.selected {
+  color: #E91E63 !important;
+  font-weight: 700 !important;
 }
 
 .date-number {
@@ -201,7 +200,6 @@
   background: #ffffff;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .program-left {
