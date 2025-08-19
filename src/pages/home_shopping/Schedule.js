@@ -24,9 +24,6 @@ const Schedule = () => {
   // 편성표 관련 상태
   const [selectedDate, setSelectedDate] = useState(null); // 현재 선택된 날짜
   const [searchQuery, setSearchQuery] = useState('');
-  const [scheduleData, setScheduleData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   
   // 현재 날짜를 기준으로 일주일 날짜 데이터 생성
   const [weekDates, setWeekDates] = useState([]);
