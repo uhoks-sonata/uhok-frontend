@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HeaderNavWishList from '../../layout/HeaderNavWishList';
 import BottomNav from '../../layout/BottomNav';
@@ -25,18 +25,34 @@ const WishList = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('homeshopping'); // 'homeshopping' 또는 'shopping'
   const [unlikedProducts, setUnlikedProducts] = useState(new Set()); // 찜 해제된 상품 ID들을 저장
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태 추가
+  const hasInitialized = useRef(false); // 중복 실행 방지용 ref
   const navigate = useNavigate();
+
+  // 로그인 상태 확인 함수
+  const checkLoginStatus = () => {
+    const token = localStorage.getItem('access_token');
+    const isLoggedInStatus = !!token;
+    setIsLoggedIn(isLoggedInStatus);
+    return isLoggedInStatus;
+  };
 
   // 찜한 상품 목록을 가져오는 함수
   const fetchWishlistData = async () => {
+    // 로그인하지 않은 경우 알림 후 이전 화면으로 돌아가기
+    if (!checkLoginStatus()) {
+      alert('로그인이 필요한 서비스입니다.');
+      window.history.back();
+      return;
+    }
+
     try {
       setLoading(true);
       
       // 토큰 확인
       const token = localStorage.getItem('access_token');
       if (!token) {
-        console.log('토큰이 없어서 로그인 페이지로 이동');
-        window.location.href = '/';
+        alert('로그인이 필요한 서비스입니다.');
         return;
       }
 
@@ -67,10 +83,9 @@ const WishList = () => {
     } catch (err) {
       console.error('찜한 상품 목록 로딩 실패:', err);
       
-      // 401 에러 (인증 실패) 시 로그인 페이지로 이동
+      // 401 에러 (인증 실패) 시 이전 화면으로 돌아가기
       if (err.response?.status === 401) {
-        alert('로그인이 필요합니다.');
-        window.location.href = '/';
+        alert('로그인이 필요한 서비스입니다.');
         return;
       }
       
@@ -249,7 +264,23 @@ const WishList = () => {
   );
 
   useEffect(() => {
-    fetchWishlistData();
+    // 이미 초기화되었으면 리턴
+    if (hasInitialized.current) {
+      return;
+    }
+    
+    // 초기화 플래그 설정
+    hasInitialized.current = true;
+    
+    // 로그인 상태 확인 후 조건부로 API 호출 (중복 실행 방지)
+    const loginStatus = checkLoginStatus();
+    if (loginStatus) {
+      fetchWishlistData();
+    } else {
+      // 로그인하지 않은 경우 알림 후 이전 화면으로 돌아가기
+      alert('로그인이 필요한 서비스입니다.');
+      window.history.back();
+    }
     
     // 페이지를 벗어날 때 찜 상태 동기화
     return () => {
@@ -257,7 +288,7 @@ const WishList = () => {
       console.log('위시리스트 페이지를 벗어납니다. 찜 상태를 동기화합니다.');
       // 여기서 필요한 정리 작업을 수행할 수 있습니다
     };
-  }, []);
+  }, []); // 빈 의존성 배열로 한 번만 실행
 
   if (loading) {
     return (

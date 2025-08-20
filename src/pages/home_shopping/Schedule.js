@@ -34,6 +34,10 @@ const Schedule = () => {
   const [error, setError] = useState(null);
   const [unlikedProducts, setUnlikedProducts] = useState(new Set()); // 찜 해제된 상품 ID들을 저장
   
+  // 라이브 스트림 관련 상태
+  const [liveStreamData, setLiveStreamData] = useState({});
+  const [isStreamLoading, setIsStreamLoading] = useState(false);
+  
   // ref 선언
   const timeSlotsRef = useRef(null);
   
@@ -231,6 +235,73 @@ const Schedule = () => {
     return timeSlots.findIndex(time => time === currentTime);
   };
 
+  // 상품 클릭 핸들러 - 상품 상세 페이지로 이동
+  const handleProductClick = async (productId) => {
+    try {
+      console.log('상품 클릭:', productId);
+      
+      // 상품 분류 확인 (식재료/완제품)
+      const classificationResponse = await homeShoppingApi.checkProductClassification(productId);
+      console.log('상품 분류:', classificationResponse);
+      
+      // 상품 상세 정보 가져오기
+      const productDetail = await homeShoppingApi.getProductDetail(productId);
+      console.log('상품 상세:', productDetail);
+      
+      // 상품 상세 페이지로 이동 (상품 ID와 분류 정보 전달)
+      navigate(`/homeshopping/product/${productId}`, {
+        state: {
+          productDetail,
+          isIngredient: classificationResponse.is_ingredient,
+          fromSchedule: true
+        }
+      });
+      
+    } catch (error) {
+      console.error('상품 상세 정보 가져오기 실패:', error);
+      // 에러가 발생해도 상품 상세 페이지로 이동 (기본 정보만으로)
+      navigate(`/homeshopping/product/${productId}`, {
+        state: {
+          fromSchedule: true
+        }
+      });
+    }
+  };
+
+  // 라이브 스트림 URL 가져오기
+  const getLiveStreamUrl = async (productId) => {
+    try {
+      setIsStreamLoading(true);
+      const streamData = await homeShoppingApi.getLiveStreamUrl(productId);
+      setLiveStreamData(prev => ({
+        ...prev,
+        [productId]: streamData
+      }));
+      return streamData;
+    } catch (error) {
+      console.error('라이브 스트림 URL 가져오기 실패:', error);
+      return null;
+    } finally {
+      setIsStreamLoading(false);
+    }
+  };
+
+  // 라이브 스트림 재생
+  const handleLiveStream = async (productId) => {
+    try {
+      const streamData = await getLiveStreamUrl(productId);
+      if (streamData && streamData.stream_url) {
+        // 새 창에서 라이브 스트림 열기
+        window.open(streamData.stream_url, '_blank', 'width=800,height=600');
+      } else {
+        alert('현재 라이브 스트림을 사용할 수 없습니다.');
+      }
+    } catch (error) {
+      console.error('라이브 스트림 재생 실패:', error);
+      alert('라이브 스트림을 재생할 수 없습니다.');
+    }
+  };
+
   // 위시리스트 토글
   const toggleWishlist = async (itemId) => {
     try {
@@ -260,14 +331,25 @@ const Schedule = () => {
     }
   };
 
+  // 로그인 상태 확인 함수
+  const checkLoginStatus = () => {
+    const token = localStorage.getItem('access_token');
+    return !!token;
+  };
+
   // 찜 토글 함수 (홈쇼핑 상품용)
   const handleHeartToggle = async (productId) => {
+    // 로그인하지 않은 경우 API 호출 건너뜀
+    if (!checkLoginStatus()) {
+      alert('로그인이 필요한 서비스입니다.');
+      return;
+    }
+
     try {
       // 토큰 확인
       const token = localStorage.getItem('access_token');
       if (!token) {
-        console.log('토큰이 없어서 로그인 페이지로 이동');
-        window.location.href = '/';
+        alert('로그인이 필요한 서비스입니다.');
         return;
       }
 
@@ -377,6 +459,33 @@ const Schedule = () => {
         {statusText}
       </div>
     );
+  };
+
+  // 라이브 스트림 버튼 렌더링
+  const renderLiveStreamButton = (item) => {
+    const now = new Date();
+    const liveStart = new Date(`${item.live_date} ${item.live_start_time}`);
+    const liveEnd = new Date(`${item.live_date} ${item.live_end_time}`);
+    
+    // 현재 방송 중인지 확인
+    const isCurrentlyLive = now >= liveStart && now <= liveEnd;
+    
+    if (isCurrentlyLive) {
+      return (
+        <button 
+          className="live-stream-btn"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleLiveStream(item.product_id);
+          }}
+          disabled={isStreamLoading}
+        >
+          {isStreamLoading ? '로딩 중...' : '라이브 시청'}
+        </button>
+      );
+    }
+    
+    return null;
   };
 
   // 왼쪽 탭 렌더링
@@ -528,7 +637,12 @@ const Schedule = () => {
         {filteredScheduleData.map((item) => {
           console.log('스케줄 아이템 product_id:', item.product_id, typeof item.product_id);
           return (
-            <div key={item.live_id} className="schedule-item">
+            <div 
+              key={item.live_id} 
+              className="schedule-item"
+              onClick={() => handleProductClick(item.product_id)}
+              style={{ cursor: 'pointer' }}
+            >
               {/* 방송 시간 표시 */}
               <div className="schedule-time-range">
                 <span className="time-range">
@@ -540,6 +654,7 @@ const Schedule = () => {
                 <div className="schedule-image">
                   <img src={item.thumb_img_url} alt={item.product_name} />
                   {renderStatusBadge(item)}
+                  {renderLiveStreamButton(item)}
                 </div>
                 <div className="schedule-info">
                   <div className="channel-info">

@@ -1,35 +1,47 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HeaderNavNoti from '../../layout/HeaderNavNoti';
 import BottomNav from '../../layout/BottomNav';
 import Loading from '../../components/Loading';
 import '../../styles/notification.css';
 import api from '../api';
-import { ensureToken } from '../../utils/authUtils';
+
+import { homeShoppingApi } from '../../api/homeShoppingApi';
 
 const Notification = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('homeshopping'); // 'homeshopping' 또는 'shopping'
+  const [activeTab, setActiveTab] = useState('all'); // 'all', 'homeshopping', 'broadcast', 'shopping'
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태 추가
+  const isInitialLoadRef = useRef(false); // 중복 호출 방지용 ref
 
+  // 로그인 상태 확인 함수
+  const checkLoginStatus = () => {
+    const token = localStorage.getItem('access_token');
+    const isLoggedInStatus = !!token;
+    setIsLoggedIn(isLoggedInStatus);
+    return isLoggedInStatus;
+  };
 
+  // 홈쇼핑 통합 알림 API 호출 (주문 + 방송)
+  const fetchHomeShoppingAllNotifications = async (limit = 100) => {
+    // 로그인하지 않은 경우 알림 후 이전 화면으로 돌아가기
+    if (!checkLoginStatus()) {
+      alert('로그인이 필요한 서비스입니다.');
+      window.history.back();
+      return;
+    }
 
-  // 홈쇼핑 알림 API 호출 (주문 알림만 조회)
-  const fetchHomeShoppingNotifications = async (limit = 20) => {
     try {
-      console.log('홈쇼핑 주문 알림 API 호출 시작...');
-      await ensureToken();
+      console.log('홈쇼핑 통합 알림 API 호출 시작...');
       
-      const response = await api.get('/api/homeshopping/notifications/orders', {
-        params: { limit, offset: 0 }
-      });
+      const response = await homeShoppingApi.getAllNotifications(limit, 0);
+      console.log('홈쇼핑 통합 알림 API 응답:', response);
       
-      console.log('홈쇼핑 주문 알림 API 응답:', response.data);
-      
-      if (response.data) {
-        const transformedNotifications = response.data.notifications.map(notification => ({
+      if (response && response.notifications) {
+        const transformedNotifications = response.notifications.map(notification => ({
           id: notification.notification_id,
           type: notification.notification_type,
           title: notification.title,
@@ -47,51 +59,39 @@ const Notification = () => {
           homeshoppingOrderId: notification.homeshopping_order_id,
           statusId: notification.status_id,
           productName: notification.product_name,
-          orderStatus: notification.title // title에 주문 상태 정보가 들어있음
+          orderStatus: notification.title
         }));
         
         setNotifications(transformedNotifications);
       }
     } catch (err) {
-      console.error('홈쇼핑 주문 알림 데이터 로딩 실패:', err);
-      setError('홈쇼핑 주문 알림을 불러올 수 없습니다. 잠시 후 다시 시도해주세요.');
+      console.error('홈쇼핑 통합 알림 데이터 로딩 실패:', err);
+      // 401 에러는 api.js 인터셉터에서 처리되므로 여기서는 추가 처리하지 않음
       setNotifications([]);
     }
   };
 
-  // 탭 변경 시 알림 데이터 로드
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-    setLoading(true);
-    setError(null);
-    
-    if (tab === 'homeshopping') {
-      fetchHomeShoppingNotifications();
-    } else {
-      fetchShoppingNotifications();
+  // 홈쇼핑 주문 알림 API 호출
+  const fetchHomeShoppingOrderNotifications = async (limit = 20) => {
+    // 로그인하지 않은 경우 알림 후 이전 화면으로 돌아가기
+    if (!checkLoginStatus()) {
+      alert('로그인이 필요한 서비스입니다.');
+      window.history.back();
+      return;
     }
-    
-    setLoading(false);
-  };
 
-  // 쇼핑몰 알림 API 호출
-  const fetchShoppingNotifications = async (limit = 20) => {
     try {
-      console.log('쇼핑몰 알림 API 호출 시작...');
-      await ensureToken();
+      console.log('홈쇼핑 주문 알림 API 호출 시작...');
       
-      const response = await api.get('/api/orders/kok/notifications/history', {
-        params: { limit, offset: 0 }
-      });
+      const response = await homeShoppingApi.getOrderNotifications(limit, 0);
+      console.log('홈쇼핑 주문 알림 API 응답:', response);
       
-      console.log('쇼핑몰 알림 API 응답:', response.data);
-      
-      if (response.data) {
-        const transformedNotifications = response.data.notifications.map(notification => ({
+      if (response && response.notifications) {
+        const transformedNotifications = response.notifications.map(notification => ({
           id: notification.notification_id,
-          type: notification.order_status,
-          title: notification.title || notification.notification_message,
-          message: notification.message || notification.notification_message,
+          type: notification.notification_type,
+          title: notification.title,
+          message: notification.message,
           time: new Date(notification.created_at).toLocaleString('ko-KR', {
             year: 'numeric',
             month: '2-digit',
@@ -99,42 +99,212 @@ const Notification = () => {
             hour: '2-digit',
             minute: '2-digit'
           }),
-          isRead: false, // API 응답에 is_read 필드가 없으므로 기본값 false
+          isRead: notification.is_read,
+          relatedEntityType: notification.related_entity_type,
+          relatedEntityId: notification.related_entity_id,
+          homeshoppingOrderId: notification.homeshopping_order_id,
+          statusId: notification.status_id,
           productName: notification.product_name,
-          orderStatus: notification.order_status_name
+          orderStatus: notification.title
         }));
         
         setNotifications(transformedNotifications);
       }
-          } catch (err) {
-        console.error('쇼핑몰 알림 데이터 로딩 실패:', err);
-        setError('콕 주문 알림을 불러올 수 없습니다. 잠시 후 다시 시도해주세요.');
-        setNotifications([]);
+    } catch (err) {
+      console.error('홈쇼핑 주문 알림 데이터 로딩 실패:', err);
+      // 401 에러는 api.js 인터셉터에서 처리되므로 여기서는 추가 처리하지 않음
+      setNotifications([]);
+    }
+  };
+
+  // 홈쇼핑 방송 알림 API 호출
+  const fetchHomeShoppingBroadcastNotifications = async (limit = 20) => {
+    // 로그인하지 않은 경우 알림 후 이전 화면으로 돌아가기
+    if (!checkLoginStatus()) {
+      alert('로그인이 필요한 서비스입니다.');
+      window.history.back();
+      return;
+    }
+
+    try {
+      console.log('홈쇼핑 방송 알림 API 호출 시작...');
+      
+      const response = await homeShoppingApi.getBroadcastNotifications(limit, 0);
+      console.log('홈쇼핑 방송 알림 API 응답:', response);
+      
+      if (response && response.notifications) {
+        const transformedNotifications = response.notifications.map(notification => ({
+          id: notification.notification_id,
+          type: notification.notification_type,
+          title: notification.title,
+          message: notification.message,
+          time: new Date(notification.created_at).toLocaleString('ko-KR', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+          }),
+          isRead: notification.is_read,
+          relatedEntityType: notification.related_entity_type,
+          relatedEntityId: notification.related_entity_id,
+          homeshoppingOrderId: notification.homeshopping_order_id,
+          statusId: notification.status_id,
+          productName: notification.product_name,
+          orderStatus: notification.title
+        }));
+        
+        setNotifications(transformedNotifications);
       }
+    } catch (err) {
+      console.error('홈쇼핑 방송 알림 데이터 로딩 실패:', err);
+      // 401 에러는 api.js 인터셉터에서 처리되므로 여기서는 추가 처리하지 않음
+      setNotifications([]);
+    }
+  };
+
+  // 탭 변경 시 알림 데이터 로드
+  const handleTabChange = async (tab) => {
+    setActiveTab(tab);
+    setLoading(true);
+    setError(null);
+    
+    try {
+      switch (tab) {
+        case 'all':
+          await fetchHomeShoppingAllNotifications();
+          break;
+        case 'homeshopping':
+          await fetchHomeShoppingOrderNotifications();
+          break;
+        case 'broadcast':
+          await fetchHomeShoppingBroadcastNotifications();
+          break;
+        case 'shopping':
+          await fetchShoppingNotifications();
+          break;
+        default:
+          await fetchHomeShoppingAllNotifications();
+      }
+    } catch (error) {
+      console.error('알림 데이터 로드 실패:', error);
+      // 401 에러는 api.js 인터셉터에서 처리되므로 여기서는 추가 처리하지 않음
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 쇼핑몰 알림 API 호출
+  const fetchShoppingNotifications = async (limit = 20) => {
+    // 로그인하지 않은 경우 알림 후 이전 화면으로 돌아가기
+    if (!checkLoginStatus()) {
+      alert('로그인이 필요한 서비스입니다.');
+      window.history.back();
+      return;
+    }
+
+    try {
+      console.log('쇼핑몰 알림 API 호출 시작...');
+      
+      const response = await api.get('/api/kok/notifications', {
+        params: {
+          limit: limit,
+          offset: 0
+        }
+      });
+      
+      console.log('쇼핑몰 알림 API 응답:', response.data);
+      
+      if (response.data && response.data.notifications) {
+        const transformedNotifications = response.data.notifications.map(notification => ({
+          id: notification.notification_id,
+          type: notification.notification_type,
+          title: notification.title,
+          message: notification.message,
+          time: new Date(notification.created_at).toLocaleString('ko-KR', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+          }),
+          isRead: notification.is_read,
+          relatedEntityType: notification.related_entity_type,
+          relatedEntityId: notification.related_entity_id
+        }));
+        
+        setNotifications(transformedNotifications);
+      }
+    } catch (err) {
+      console.error('쇼핑몰 알림 데이터 로딩 실패:', err);
+      // 401 에러는 api.js 인터셉터에서 처리되므로 여기서는 추가 처리하지 않음
+      setNotifications([]);
+    }
   };
 
   useEffect(() => {
+    // 중복 호출 방지
+    if (isInitialLoadRef.current) {
+      return;
+    }
+    isInitialLoadRef.current = true;
+
     const loadNotifications = async () => {
       setLoading(true);
       setError(null);
       
-      // 토큰 확인
-      const token = localStorage.getItem('access_token');
-      if (!token) {
-        console.log('토큰이 없어서 로그인 페이지로 이동');
-        window.location.href = '/';
+      // 로그인 상태 확인 후 조건부로 API 호출
+      const loginStatus = checkLoginStatus();
+      if (loginStatus) {
+        // 기본적으로 홈쇼핑 통합 알림 로드 (토큰 체크는 api.js 인터셉터에서 처리)
+        await fetchHomeShoppingAllNotifications();
+      } else {
+        // 로그인하지 않은 경우 알림 후 이전 화면으로 돌아가기
+        alert('로그인이 필요한 서비스입니다.');
+        window.history.back();
         return;
       }
-      
-      // 기본적으로 홈쇼핑 알림 로드
-      await fetchHomeShoppingNotifications();
       setLoading(false);
     };
 
     loadNotifications();
   }, []);
 
+  // 알림 타입에 따른 아이콘 렌더링
+  const renderNotificationIcon = (type) => {
+    switch (type) {
+      case 'order_status':
+        return (
+          <div className="notification-icon order-icon">
+            📦
+          </div>
+        );
+      case 'broadcast_start':
+        return (
+          <div className="notification-icon broadcast-icon">
+            📺
+          </div>
+        );
+      default:
+        return (
+          <div className="notification-icon default-icon">
+            🔔
+          </div>
+        );
+    }
+  };
 
+  // 알림 타입에 따른 배경색 렌더링
+  const getNotificationTypeClass = (type) => {
+    switch (type) {
+      case 'order_status':
+        return 'notification-order';
+      case 'broadcast_start':
+        return 'notification-broadcast';
+      default:
+        return 'notification-default';
+    }
+  };
 
   if (loading) {
     return (
@@ -160,10 +330,22 @@ const Notification = () => {
         {/* 탭 네비게이션 */}
         <div className="notification-tabs">
           <button 
+            className={`notification-tab-button ${activeTab === 'all' ? 'active' : ''}`}
+            onClick={() => handleTabChange('all')}
+          >
+            전체
+          </button>
+          <button 
             className={`notification-tab-button ${activeTab === 'homeshopping' ? 'active' : ''}`}
             onClick={() => handleTabChange('homeshopping')}
           >
-            홈쇼핑
+            주문
+          </button>
+          <button 
+            className={`notification-tab-button ${activeTab === 'broadcast' ? 'active' : ''}`}
+            onClick={() => handleTabChange('broadcast')}
+          >
+            방송
           </button>
           <button 
             className={`notification-tab-button ${activeTab === 'shopping' ? 'active' : ''}`}
@@ -179,13 +361,6 @@ const Notification = () => {
             <p>{error}</p>
           </div>
         )}
-
-        {/* 알림 헤더
-        <div className="notification-header">
-          <div className="notification-summary">
-            <h2>{activeTab === 'homeshopping' ? '홈쇼핑' : '콕 주문'} 알림</h2>
-          </div>
-        </div> */}
 
         {/* 알림 목록 */}
         <div className="notification-list">
@@ -205,32 +380,37 @@ const Notification = () => {
                 />
               </svg>
               <h3>알림이 없습니다</h3>
-              <p>{activeTab === 'homeshopping' ? '홈쇼핑' : '콕 주문'} 새로운 알림이 오면 여기에 표시됩니다.</p>
+              <p>
+                {activeTab === 'all' && '새로운 알림이 오면 여기에 표시됩니다.'}
+                {activeTab === 'homeshopping' && '홈쇼핑 주문 알림이 오면 여기에 표시됩니다.'}
+                {activeTab === 'broadcast' && '홈쇼핑 방송 알림이 오면 여기에 표시됩니다.'}
+                {activeTab === 'shopping' && '콕 주문 알림이 오면 여기에 표시됩니다.'}
+              </p>
             </div>
           ) : (
             notifications.map(notification => (
               <div 
                 key={notification.id}
-                className={`notification-item ${!notification.isRead ? 'unread' : ''}`}
+                className={`notification-item ${!notification.isRead ? 'unread' : ''} ${getNotificationTypeClass(notification.type)}`}
               >
-                                 <div className="notification-content-body">
-                   <div className="notification-status">
-                     {activeTab === 'shopping' && notification.orderStatus 
-                       ? notification.orderStatus 
-                       : (activeTab === 'homeshopping' && notification.orderStatus)
-                       ? notification.orderStatus
-                       : notification.title}
-                   </div>
-                   {(activeTab === 'shopping' || (activeTab === 'homeshopping' && notification.productName)) && notification.productName && (
-                     <div className="notification-product">
-                       {notification.productName}
-                     </div>
-                   )}
-                   <div className="notification-message">
-                     {notification.message}
-                   </div>
-
-                 </div>
+                {renderNotificationIcon(notification.type)}
+                <div className="notification-content-body">
+                  <div className="notification-status">
+                    {activeTab === 'shopping' && notification.orderStatus 
+                      ? notification.orderStatus 
+                      : (activeTab === 'homeshopping' && notification.orderStatus)
+                      ? notification.orderStatus
+                      : notification.title}
+                  </div>
+                  {(activeTab === 'shopping' || (activeTab === 'homeshopping' && notification.productName)) && notification.productName && (
+                    <div className="notification-product">
+                      {notification.productName}
+                    </div>
+                  )}
+                  <div className="notification-message">
+                    {notification.message}
+                  </div>
+                </div>
                 <div className="notification-time">
                   {notification.time}
                 </div>

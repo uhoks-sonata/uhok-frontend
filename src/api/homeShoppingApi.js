@@ -34,15 +34,41 @@ export const homeShoppingApi = {
     }
   },
 
-  // 상품 추천
-  getProductRecommendations: async (productId) => {
+  // 상품 기반 콕 상품 및 레시피 추천
+  getKokRecommendations: async (productId) => {
     try {
-      console.log('💡 상품 추천 API 요청:', { productId });
-      const response = await api.get(`/api/homeshopping/product/${productId}/recommendations`);
-      console.log('✅ 상품 추천 API 응답:', response.data);
+      console.log('💡 콕 상품 추천 API 요청:', { productId });
+      const response = await api.get(`/api/homeshopping/product/${productId}/kok-recommendations`);
+      console.log('✅ 콕 상품 추천 API 응답:', response.data);
       return response.data;
     } catch (error) {
-      console.error('❌ 상품 추천 실패:', error);
+      console.error('❌ 콕 상품 추천 실패:', error);
+      throw error;
+    }
+  },
+
+  // 상품 분류 확인 (식재료/완제품)
+  checkProductClassification: async (productId) => {
+    try {
+      console.log('🏷️ 상품 분류 확인 API 요청:', { productId });
+      const response = await api.get(`/api/homeshopping/product/${productId}/check`);
+      console.log('✅ 상품 분류 확인 API 응답:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('❌ 상품 분류 확인 실패:', error);
+      throw error;
+    }
+  },
+
+  // 레시피 추천 (식재료인 경우)
+  getRecipeRecommendations: async (productId) => {
+    try {
+      console.log('👨‍🍳 레시피 추천 API 요청:', { productId });
+      const response = await api.get(`/api/homeshopping/product/${productId}/recipe-recommendations`);
+      console.log('✅ 레시피 추천 API 응답:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('❌ 레시피 추천 실패:', error);
       throw error;
     }
   },
@@ -91,10 +117,12 @@ export const homeShoppingApi = {
   },
 
   // 검색어 조회
-  getSearchHistory: async (limit = 50) => {
+  getSearchHistory: async (limit = 5) => {
     try {
-      console.log('📋 검색어 조회 API 요청');
-      const response = await api.get('/api/homeshopping/search/history');
+      console.log('📋 검색어 조회 API 요청:', { limit });
+      const response = await api.get('/api/homeshopping/search/history', {
+        params: { limit }
+      });
       console.log('✅ 검색어 조회 API 응답:', response.data);
       return response.data;
     } catch (error) {
@@ -150,37 +178,49 @@ export const homeShoppingApi = {
     }
   },
 
-  // ===== 주문 관련 =====
+  // ===== 알림 관련 =====
   
-  // 홈쇼핑 주문 생성
-  createOrder: async (productId, quantity = 1) => {
+  // 주문 알림 조회
+  getOrderNotifications: async (limit = 20, offset = 0) => {
     try {
-      console.log('🛒 홈쇼핑 주문 생성 API 요청:', { productId, quantity });
-      const response = await api.post('/api/homeshopping/order', {
-        product_id: productId,
-        quantity
+      console.log('📦 주문 알림 조회 API 요청:', { limit, offset });
+      const response = await api.get('/api/homeshopping/notifications/orders', {
+        params: { limit, offset }
       });
-      console.log('✅ 홈쇼핑 주문 생성 API 응답:', response.data);
+      console.log('✅ 주문 알림 조회 API 응답:', response.data);
       return response.data;
     } catch (error) {
-      console.error('❌ 홈쇼핑 주문 생성 실패:', error);
+      console.error('❌ 주문 알림 조회 실패:', error);
       throw error;
     }
   },
 
-  // ===== 알림 관련 =====
-  
-  // 알림 내역 조회
-  getNotifications: async (limit = 100, offset = 0) => {
+  // 방송 알림 조회
+  getBroadcastNotifications: async (limit = 20, offset = 0) => {
     try {
-      console.log('🔔 알림 내역 API 요청:', { limit, offset });
-      const response = await api.get('/api/homeshopping/notifications/history', {
+      console.log('📺 방송 알림 조회 API 요청:', { limit, offset });
+      const response = await api.get('/api/homeshopping/notifications/broadcasts', {
         params: { limit, offset }
       });
-      console.log('✅ 알림 내역 API 응답:', response.data);
+      console.log('✅ 방송 알림 조회 API 응답:', response.data);
       return response.data;
     } catch (error) {
-      console.error('❌ 알림 내역 조회 실패:', error);
+      console.error('❌ 방송 알림 조회 실패:', error);
+      throw error;
+    }
+  },
+
+  // 알림 내역 통합 조회 (주문 + 방송)
+  getAllNotifications: async (limit = 100, offset = 0) => {
+    try {
+      console.log('🔔 모든 알림 내역 API 요청:', { limit, offset });
+      const response = await api.get('/api/homeshopping/notifications/all', {
+        params: { limit, offset }
+      });
+      console.log('✅ 모든 알림 내역 API 응답:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('❌ 모든 알림 내역 조회 실패:', error);
       throw error;
     }
   }

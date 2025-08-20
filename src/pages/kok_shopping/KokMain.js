@@ -7,7 +7,6 @@ import Loading from '../../components/Loading';
 import HeaderNavMain from '../../layout/HeaderNavKokMain';
 import '../../styles/kok_main.css';
 import api from '../api';
-import { ensureToken } from '../../utils/authUtils';
 import { useUser } from '../../contexts/UserContext';
 
 // 상품 데이터 import (할인 특가와 판매율 높은 상품만)
@@ -36,32 +35,15 @@ const KokMain = () => {
       console.log('API 엔드포인트: /api/kok/discounted');
       console.log('요청 파라미터:', { page: 1, size: 20 });
       
-      // 토큰 확인
-      const token = localStorage.getItem('access_token');
-      if (!token) {
-        console.error('❌ 토큰이 없습니다. 로그인이 필요합니다.');
-        navigate('/login');
-        return;
-      }
-      
       const response = await api.get('/api/kok/discounted', {
         baseURL: '', // 프록시 사용
         params: {
           page: 1,
           size: 20
-        },
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
         }
       });
       
-      console.log('📤 API 요청 헤더:', {
-        'Authorization': token ? `Bearer ${token.substring(0, 20)}...` : '토큰 없음',
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      });
+      console.log('📤 API 요청 헤더: 공개 엔드포인트 - 토큰 없음');
       console.log('📤 API 요청 URL:', '/api/kok/discounted');
       console.log('📤 API 요청 파라미터:', { page: 1, size: 20 });
       
@@ -138,33 +120,17 @@ const KokMain = () => {
       console.log('API 엔드포인트: /api/kok/top-selling');
       console.log('요청 파라미터:', { page: 1, size: 20, sort_by: 'review_count' });
       
-      // 토큰 확인
-      const token = localStorage.getItem('access_token');
-      if (!token) {
-        console.error('❌ 토큰이 없습니다. 로그인이 필요합니다.');
-        navigate('/login');
-        return;
-      }
-      
+      // 공개 엔드포인트이므로 토큰 검증 없이 진행
       const response = await api.get('/api/kok/top-selling', {
         baseURL: '', // 프록시 사용
         params: {
           page: 1,
           size: 20,
           sort_by: 'review_count' // 리뷰 개수 순으로 정렬 (기본값)
-        },
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
         }
       });
       
-      console.log('📤 API 요청 헤더:', {
-        'Authorization': token ? `Bearer ${token.substring(0, 20)}...` : '토큰 없음',
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      });
+      console.log('📤 API 요청 헤더: 공개 엔드포인트 - 토큰 없음');
       console.log('📤 API 요청 URL:', '/api/kok/top-selling');
       console.log('📤 API 요청 파라미터:', { page: 1, size: 20, sort_by: 'review_count' });
       
@@ -241,47 +207,15 @@ const KokMain = () => {
       console.log('API 엔드포인트: /api/kok/store-best-items');
       console.log('요청 파라미터:', { sort_by: 'review_count' });
       
-      // 현재 사용자 정보 확인
-      const token = localStorage.getItem('access_token');
-      if (!token) {
-        console.error('❌ 토큰이 없습니다. 로그인이 필요합니다.');
-        navigate('/login');
-        return;
-      }
-      
-      if (token) {
-        try {
-          const tokenParts = token.split('.');
-          if (tokenParts.length === 3) {
-            const payload = JSON.parse(atob(tokenParts[1]));
-            console.log('🔑 현재 사용자 정보:', {
-              user_id: payload.sub || payload.user_id,
-              email: payload.email,
-              exp: new Date(payload.exp * 1000).toISOString()
-            });
-          }
-        } catch (e) {
-          console.log('토큰에서 사용자 정보를 추출할 수 없습니다:', e);
-        }
-      }
-      
+      // 공개 엔드포인트이므로 토큰 검증 없이 진행
       const response = await api.get('/api/kok/store-best-items', {
         baseURL: '', // 프록시 사용
         params: {
           sort_by: 'review_count' // 리뷰 개수 순으로 정렬 (기본값)
-        },
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
         }
       });
       
-      console.log('📤 API 요청 헤더:', {
-        'Authorization': token ? `Bearer ${token.substring(0, 20)}...` : '토큰 없음',
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      });
+      console.log('📤 API 요청 헤더: 공개 엔드포인트 - 토큰 없음');
       console.log('📤 API 요청 URL:', '/api/kok/store-best-items');
       console.log('📤 API 요청 파라미터:', { sort_by: 'review_count' });
       
@@ -460,34 +394,8 @@ const KokMain = () => {
       try {
         setKokLoading(true);
         
-        // 토큰 확인 및 검증
-        const token = localStorage.getItem('access_token');
-        const tokenType = localStorage.getItem('token_type');
-        
-        console.log('KokMain - 토큰 정보 확인:', {
-          hasToken: !!token,
-          tokenType: tokenType,
-          tokenPreview: token ? token.substring(0, 20) + '...' : '없음'
-        });
-        
-        if (!token) {
-          console.log('토큰이 없어서 로그인 페이지로 이동');
-          window.location.href = '/';
-          return;
-        }
-        
-        // 토큰 유효성 검증 (JWT 형식 확인)
-        const tokenParts = token.split('.');
-        if (tokenParts.length !== 3) {
-          console.warn('잘못된 토큰 형식, 로그인 페이지로 이동');
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('token_type');
-          window.location.href = '/';
-          return;
-        }
-        
-        // 토큰이 유효하면 API 호출
-        await ensureToken();
+        // 공개 페이지이므로 토큰 검증 없이 API 호출
+        console.log('KokMain - 공개 페이지로 접근, 토큰 검증 없이 진행');
         
         await Promise.all([
           fetchKokProducts(),

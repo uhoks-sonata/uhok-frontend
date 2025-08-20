@@ -103,6 +103,10 @@ const Login = () => {
         }
         
         console.log('로그인 성공 - 백엔드 토큰 저장 완료:', userData);
+        console.log('저장된 토큰 확인:', {
+          access_token: localStorage.getItem('access_token'),
+          token_type: localStorage.getItem('token_type')
+        });
         // 로그인 성공 시 메인 페이지로 이동
         navigate('/main');
       } else {

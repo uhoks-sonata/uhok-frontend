@@ -10,7 +10,7 @@ import emptyHeartIcon from '../../assets/heart_empty.png';
 import filledHeartIcon from '../../assets/heart_filled.png';
 import CartButton from '../../components/CartButton';
 import api from '../api';
-import { ensureToken } from '../../utils/authUtils';
+
 
 const KokProductDetail = () => {
   const { productId } = useParams();
@@ -53,7 +53,7 @@ const KokProductDetail = () => {
       setKokLoading(true);
       console.log(`상품 기본 정보 API 호출: /api/kok/product/${productId}/info`);
       const response = await api.get(`/api/kok/product/${productId}/info`);
-      console.log('상품 기본 정보 API 응답:', response.data);
+             console.log('상품 기본 정보 API 응답:', response.data);
       return response.data;
     } catch (err) {
       console.error('KOK 상품 기본 정보 로딩 실패:', err);
@@ -173,24 +173,27 @@ const KokProductDetail = () => {
       try {
         setKokLoading(true);
         
-        // 토큰이 없으면 임시 로그인 시도
-        await ensureToken();
+        // ensureToken 호출 제거 - 실제 로그인된 상태에서만 API 호출
         
         // 먼저 KOK API에서 기본 정보를 가져와보고, 실패하면 기존 데이터 사용
         const kokProductInfo = await fetchKokProductInfo(productId);
         
         if (kokProductInfo) {
-          // KOK API 기본 정보를 기존 구조에 맞게 변환
-          const convertedKokProduct = {
-            id: kokProductInfo.kok_product_id,
-            name: kokProductInfo.kok_product_name,
-            originalPrice: kokProductInfo.kok_product_price,
-            discountPrice: kokProductInfo.kok_discounted_price,
-            discountRate: kokProductInfo.kok_discount_rate,
-            image: kokProductInfo.kok_thumbnail,
-            rating: kokProductInfo.kok_review_score || 0,
-            reviewCount: kokProductInfo.kok_review_cnt || 0
-          };
+                     // KOK API 기본 정보를 기존 구조에 맞게 변환 (KokMain.js와 동일한 방식)
+           
+           const convertedKokProduct = {
+             id: kokProductInfo.kok_product_id,
+             name: kokProductInfo.kok_product_name,
+             originalPrice: kokProductInfo.kok_product_price,
+             discountPrice: kokProductInfo.kok_discounted_price,
+             discountRate: kokProductInfo.kok_discount_rate,
+             image: kokProductInfo.kok_thumbnail || 'https://via.placeholder.com/300x300/CCCCCC/666666?text=No+Image',
+             rating: 0, // API에서 별도로 제공되지 않음
+             reviewCount: kokProductInfo.kok_review_cnt || 0,
+             storeName: kokProductInfo.kok_store_name
+           };
+           
+
           setKokProduct(convertedKokProduct);
           
           // 백엔드에서 제공하는 찜 상태 설정
@@ -305,7 +308,7 @@ const KokProductDetail = () => {
               originalPrice: 0,
               discountPrice: 0,
               discountRate: 0,
-              image: "",
+              image: 'https://via.placeholder.com/300x300/CCCCCC/666666?text=No+Image',
               rating: 0,
               reviewCount: 0
             };
@@ -385,8 +388,8 @@ const KokProductDetail = () => {
       
       const token = localStorage.getItem('access_token');
       if (!token) {
-        alert('로그인이 필요합니다.');
-        navigate('/');
+        alert('로그인이 필요한 서비스입니다.');
+        window.history.back();
         return;
       }
 
@@ -419,8 +422,7 @@ const KokProductDetail = () => {
       console.error('장바구니 추가 실패:', error);
       
       if (error.response?.status === 401) {
-        alert('로그인이 필요합니다.');
-        navigate('/');
+        alert('로그인이 필요한 서비스입니다.');
       } else if (error.response?.status === 400) {
         alert('이미 장바구니에 있는 상품입니다.');
       } else {
@@ -438,8 +440,7 @@ const KokProductDetail = () => {
       
       const token = localStorage.getItem('access_token');
       if (!token) {
-        alert('로그인이 필요합니다.');
-        navigate('/');
+        alert('로그인이 필요한 서비스입니다.');
         return;
       }
 
@@ -580,8 +581,7 @@ const KokProductDetail = () => {
       console.error('❌ 주문하기 처리 실패:', error);
       
       if (error.response?.status === 401) {
-        alert('로그인이 필요합니다.');
-        navigate('/');
+        alert('로그인이 필요한 서비스입니다.');
       } else {
         alert('주문 처리에 실패했습니다. 다시 시도해주세요.');
       }
@@ -595,8 +595,7 @@ const KokProductDetail = () => {
       // API 호출을 위한 토큰 확인
       const token = localStorage.getItem('access_token');
       if (!token) {
-        console.log('토큰이 없어서 로그인 페이지로 이동');
-        window.location.href = '/';
+        alert('로그인이 필요한 서비스입니다.');
         return;
       }
 
@@ -633,8 +632,7 @@ const KokProductDetail = () => {
       
       // 에러 발생 시 사용자에게 알림
       if (error.response?.status === 401) {
-        alert('로그인이 필요합니다.');
-        window.location.href = '/';
+        alert('로그인이 필요한 서비스입니다.');
       } else {
         alert('찜 기능을 사용할 수 없습니다. 다시 시도해주세요.');
       }
@@ -932,23 +930,33 @@ const KokProductDetail = () => {
       />
       
       <div className="product-content">
-        {/* 제품 이미지 */}
-        <div className="product-image-section" style={{ 
-          marginBottom: '24px',
-          width: '100%',
-          maxWidth: '448px'
-        }}>
-          <img 
-            src={kokProduct.image} 
-            alt={kokProduct.name}
-            style={{ 
-              width: '100%', 
-              height: '300px', 
-              objectFit: 'cover',
-              borderRadius: '8px'
-            }}
-          />
-        </div>
+                 {/* 제품 이미지 */}
+                   <div className="product-image-section" style={{ 
+            marginBottom: '24px',
+            width: '100%',
+            maxWidth: '448px',
+            minHeight: '300px',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+
+                       <img 
+              src={kokProduct.image}
+              alt={kokProduct.name}
+              style={{ 
+                width: '100%', 
+                height: '300px', 
+                objectFit: 'cover',
+                borderRadius: '8px',
+                display: 'block',
+                maxWidth: '100%',
+                minHeight: '300px'
+              }}
+                           
+             
+           />
+           
+         </div>
 
         {/* 제품 정보 */}
         <div className="product-info" style={{ 

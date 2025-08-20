@@ -27,7 +27,6 @@
 .notification-tabs {
   display: flex;
   background-color: #ffffff;
-  /* border-bottom: 2px solid #e0e0e0; */
   flex-shrink: 0;
   position: relative;
   z-index: 10;
@@ -35,22 +34,22 @@
   min-height: 48px;
   box-shadow: none;
   margin: 0;
-  padding: 20px;
-  gap: 12px;
+  padding: 16px;
+  gap: 8px;
+  overflow-x: auto;
 }
 
 .notification-tab-button {
-  flex: 1;
+  flex-shrink: 0;
   background-color: #F2F2F2;
   border: none;
-  padding: 16px 8px;
+  padding: 12px 16px;
   font-size: 14px;
   font-weight: 500;
   color: #333;
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
-  width: 210px;
   height: 40px;
   display: flex;
   align-items: center;
@@ -58,7 +57,9 @@
   text-align: center;
   user-select: none;
   margin: 0;
-  border-radius: 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+  min-width: 80px;
 }
 
 .notification-tab-button:hover {
@@ -98,164 +99,139 @@
   padding: 20px;
   background-color: #ffffff;
   border-bottom: 1px solid #e0e0e0;
-  margin-bottom: 8px;
 }
 
 .notification-summary h2 {
+  margin: 0;
   font-size: 18px;
-  font-weight: bold;
+  font-weight: 600;
   color: #333;
-  margin: 0 0 4px 0;
-}
-
-.unread-badge {
-  background-color: #FA5F8C;
-  color: white;
-  font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-weight: 500;
-}
-
-.mark-all-read-btn {
-  background: none;
-  border: 1px solid #FA5F8C;
-  color: #FA5F8C;
-  padding: 6px 12px;
-  border-radius: 16px;
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.mark-all-read-btn:hover {
-  background-color: #FA5F8C;
-  color: white;
 }
 
 /* 알림 목록 */
 .notification-list {
-  background-color: #ffffff;
+  padding: 0 20px;
 }
 
+/* 알림 아이템 */
 .notification-item {
   display: flex;
   align-items: flex-start;
-  padding: 16px 20px;
+  padding: 16px 0;
   border-bottom: 1px solid #f0f0f0;
-  cursor: pointer;
   transition: background-color 0.2s ease;
   position: relative;
+  gap: 12px;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
 }
 
 .notification-item:hover {
-  background-color: #ffffff;
+  background-color: #f8f9fa;
 }
 
 .notification-item.unread {
-  background-color: #ffffff;
+  background-color: #f0f8ff;
 }
 
 .notification-item.unread::before {
   content: '';
   position: absolute;
   left: 0;
-  top: 0;
-  bottom: 0;
+  top: 50%;
+  transform: translateY(-50%);
   width: 4px;
-  background-color: #FA5F8C;
+  height: 20px;
+  background-color: #007AFF;
+  border-radius: 2px;
 }
 
+/* 알림 아이콘 */
 .notification-icon {
-  font-size: 24px;
-  margin-right: 12px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
   flex-shrink: 0;
-  margin-top: 2px;
 }
 
+.notification-icon.order-icon {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.notification-icon.broadcast-icon {
+  background-color: #fff3e0;
+  color: #f57c00;
+}
+
+.notification-icon.default-icon {
+  background-color: #f3e5f5;
+  color: #7b1fa2;
+}
+
+/* 알림 타입별 배경색 */
+.notification-item.notification-order {
+  border-left: 4px solid #1976d2;
+}
+
+.notification-item.notification-broadcast {
+  border-left: 4px solid #f57c00;
+}
+
+.notification-item.notification-default {
+  border-left: 4px solid #7b1fa2;
+}
+
+/* 알림 콘텐츠 */
 .notification-content-body {
   flex: 1;
   min-width: 0;
 }
 
-.notification-title {
-  font-size: 15px;
+.notification-status {
+  font-size: 16px;
   font-weight: 600;
   color: #333;
   margin-bottom: 4px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.notification-status {
-  font-size: 16px;
-  font-weight: bold;
-  color: #000000;
-  margin-bottom: 10px;
   line-height: 1.3;
 }
 
 .notification-product {
   font-size: 14px;
-  color: #000000;
-  margin-bottom: 6px;
-  line-height: 1.4;
-  word-break: break-word;
-}
-
-.notification-entity-info {
-  font-size: 12px;
   color: #666;
   margin-bottom: 4px;
-  padding: 2px 8px;
-  background-color: #f5f5f5;
-  border-radius: 12px;
-  display: inline-block;
   font-weight: 500;
-}
-
-.unread-dot {
-  width: 6px;
-  height: 6px;
-  background-color: #FA5F8C;
-  border-radius: 50%;
-  flex-shrink: 0;
 }
 
 .notification-message {
   font-size: 14px;
-  color: #999;
+  color: #666;
   line-height: 1.4;
-  margin-bottom: 6px;
-  word-break: break-word;
+  margin-bottom: 8px;
 }
 
 .notification-time {
   font-size: 12px;
   color: #999;
-}
-
-.notification-arrow {
-  color: #ccc;
-  font-size: 16px;
-  margin-left: 8px;
+  text-align: right;
   flex-shrink: 0;
+  min-width: 80px;
 }
 
 /* 알림 없음 상태 */
 .no-notifications {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 20px;
   text-align: center;
-  background-color: #ffffff;
+  padding: 60px 20px;
+  color: #666;
 }
 
 .no-notifications-icon {
-  font-size: 48px;
   margin-bottom: 16px;
   opacity: 0.5;
 }
@@ -276,35 +252,70 @@
 
 /* 반응형 디자인 */
 @media (max-width: 480px) {
-  .notification-page {
-    max-width: 100%;
+  .notification-tabs {
+    padding: 12px;
+    gap: 6px;
   }
   
-  .notification-header {
-    padding: 16px;
+  .notification-tab-button {
+    padding: 10px 12px;
+    font-size: 13px;
+    min-width: 70px;
   }
   
-  .notification-summary h2 {
-    font-size: 16px;
+  .notification-list {
+    padding: 0 16px;
   }
   
   .notification-item {
-    padding: 14px 16px;
+    padding: 12px 0;
+    gap: 10px;
   }
   
-  .notification-title {
-    font-size: 14px;
+  .notification-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+  
+  .notification-status {
+    font-size: 15px;
   }
   
   .notification-message {
     font-size: 13px;
   }
   
-  .no-notifications {
-    padding: 40px 16px;
+  .notification-time {
+    font-size: 11px;
+    min-width: 70px;
+  }
+}
+
+@media (max-width: 360px) {
+  .notification-tabs {
+    padding: 8px;
+    gap: 4px;
   }
   
-  .no-notifications h3 {
+  .notification-tab-button {
+    padding: 8px 10px;
+    font-size: 12px;
+    min-width: 60px;
+  }
+  
+  .notification-list {
+    padding: 0 12px;
+  }
+  
+  .notification-item {
+    padding: 10px 0;
+    gap: 8px;
+  }
+  
+  .notification-icon {
+    width: 32px;
+    height: 32px;
     font-size: 16px;
   }
 }

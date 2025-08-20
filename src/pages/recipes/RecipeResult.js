@@ -26,6 +26,8 @@ const RecipeResult = () => {
   const [hasMoreCombinations, setHasMoreCombinations] = useState(false);
   // 에러 상태 관리
   const [error, setError] = useState('');
+  // 초기화 상태 관리
+  const [isInitialized, setIsInitialized] = useState(false);
   
   // 조합별로 결과를 캐싱하여 중복 요청 방지
   const combinationCache = useMemo(() => new Map(), []);
@@ -92,6 +94,7 @@ const RecipeResult = () => {
         setCombinationNumber(1);
         setHasMoreCombinations(false);
         setLoading(false);
+        setIsInitialized(true);
         return;
       }
       
@@ -116,11 +119,12 @@ const RecipeResult = () => {
       }
       
       setLoading(false);
+      setIsInitialized(true);
     } else {
       // state가 없으면 이전 페이지로 이동
       navigate('/recipes');
     }
-  }, [location.state, navigate, combinationCache]);
+  }, [location.state, navigate, combinationCache, isInitialized]);
 
   const handleBack = () => {
     navigate('/recipes');

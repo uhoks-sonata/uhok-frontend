@@ -31,7 +31,7 @@ console.log('API 설정:', {
   timeout: 30000
 });
 
-// 요청 인터셉터: 인증이 필요한 요청에만 토큰 첨부
+// 요청 인터셉터: 토큰 자동 추가 및 로그인 상태 확인
 api.interceptors.request.use(
   (config) => {
     console.log('🔍 API 요청 시작:', {
@@ -40,77 +40,41 @@ api.interceptors.request.use(
       params: config.params,
       headers: config.headers
     });
-    
-    // 인증이 필요하지 않은 엔드포인트 목록
-    const publicEndpoints = [
-      '/api/user/login',
-      '/api/user/signup',
-      '/api/user/signup/email/check',
-      '/log',
-      '/api/recipes/by-ingredients',
-      '/api/recipes/search',
-      '/api/recipes/kok',
-      '/api/recipes/home-shopping'
-    ];
-    
-    // 현재 요청이 공개 엔드포인트인지 확인
-    const isPublicEndpoint = publicEndpoints.some(endpoint => 
-      config.url === endpoint || config.url.endsWith(endpoint)
-    );
-    
-    if (isPublicEndpoint) {
-      // 공개 엔드포인트는 토큰 없이 요청
-      console.log('공개 엔드포인트 요청 - 토큰 제외:', {
+
+    // 토큰이 있는 경우 헤더에 추가
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      console.log('✅ API 요청 - 토큰 있음:', {
         url: config.url,
         method: config.method
       });
-      return config;
-    }
-    
-    // 인증이 필요한 엔드포인트는 토큰 추가
-    const token = localStorage.getItem('access_token');
-    if (token) {
-      // 백엔드 JWT 토큰 형식 검증 (header.payload.signature)
-      const tokenParts = token.split('.');
-      if (tokenParts.length === 3) {
-        try {
-          // JWT 헤더 디코딩 시도 (간단한 검증)
-          const header = JSON.parse(atob(tokenParts[0]));
-          if (header.alg && header.typ === 'JWT') {
-            // 토큰 만료 시간 확인
-            if (isTokenExpired(token)) {
-              console.warn('토큰이 만료되었습니다, 토큰 제거');
-              localStorage.removeItem('access_token');
-              localStorage.removeItem('token_type');
-              // 토큰이 만료된 경우 요청에서 Authorization 헤더 제거
-              delete config.headers.Authorization;
-            } else {
-              config.headers.Authorization = `Bearer ${token}`;
-              console.log('유효한 JWT 토큰으로 요청 전송');
-            }
-          } else {
-            console.warn('잘못된 JWT 헤더 형식, 토큰 제거');
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('token_type');
-            delete config.headers.Authorization;
-          }
-        } catch (error) {
-          console.warn('JWT 토큰 디코딩 실패, 토큰 제거:', error);
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('token_type');
-          delete config.headers.Authorization;
-        }
-      } else {
-        console.warn('잘못된 토큰 형식 (JWT가 아님), 토큰 제거:', token);
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('token_type');
-        delete config.headers.Authorization;
-      }
+      config.headers.Authorization = `Bearer ${token}`;
     } else {
       console.log('API 요청 - 토큰 없음:', {
         url: config.url,
         method: config.method
       });
+      
+      // 인증이 필요한 페이지에서 토큰이 없으면 요청을 중단
+      const currentPath = window.location.pathname;
+      const authRequiredPaths = [
+        '/notifications',
+        '/cart',
+        '/wishlist',
+        '/mypage',
+        '/orderlist',
+        '/kok/payment',
+        '/recipes'
+      ];
+      
+      const isAuthRequiredPath = authRequiredPaths.some(path => currentPath.startsWith(path));
+      
+      if (isAuthRequiredPath) {
+        console.log('인증이 필요한 페이지에서 토큰 없음, 요청 중단:', currentPath);
+        alert('로그인이 필요한 서비스입니다.');
+        // 확인 버튼을 누르면 제자리에 유지
+        return Promise.reject(new Error('토큰이 없어서 요청을 중단합니다.'));
+      }
     }
     return config;
   },
@@ -146,40 +110,20 @@ api.interceptors.response.use(
       console.warn('500 에러는 서버 측 문제입니다. 백엔드 개발자에게 문의하세요.');
     }
     
-    // 401 에러 처리 (인증 실패)
+    // 401 에러 처리 (인증 실패) - 요청 인터셉터에서 이미 처리했으므로 간소화
     if (error.response?.status === 401) {
-      // 현재 페이지가 인증이 필요하지 않은 페이지인지 확인
-      const currentPath = window.location.pathname;
-      const publicPaths = ['/', '/signup', '/recipes', '/recipes/by-ingredients'];
-      
-      // 주문내역 페이지와 마이페이지는 401 에러 시 리다이렉트하지 않음 (더미 데이터 사용)
-      const isPublicPath = publicPaths.some(path => currentPath.startsWith(path)) || 
-                          currentPath.startsWith('/orderlist') || 
-                          currentPath.startsWith('/mypage');
-      
-      if (isPublicPath) {
-        // 인증이 필요하지 않은 페이지나 주문내역/마이페이지에서는 401 에러를 무시
-        console.log('401 에러 발생하지만 리다이렉트하지 않습니다:', currentPath);
-        return Promise.reject(error);
-      }
-      
-      // 그 외 인증이 필요한 페이지에서만 로그인 페이지로 리다이렉트
-      console.log('인증이 필요한 페이지에서 401 에러 발생, 로그인 페이지로 리다이렉트:', currentPath);
-      console.log('에러 상세:', {
-        status: error.response.status,
-        statusText: error.response.statusText,
-        data: error.response.data
+      console.log('401 에러 발생:', {
+        url: error.config?.url,
+        method: error.config?.method,
+        currentPath: window.location.pathname
       });
       
       // 토큰 제거
       localStorage.removeItem('access_token');
       localStorage.removeItem('token_type');
       
-      // 로그인 페이지로 리다이렉트
-      if (window.location.pathname !== '/') {
-        console.log('로그인 페이지로 리다이렉트');
-        window.location.href = '/';
-      }
+      // 요청 인터셉터에서 이미 처리했으므로 여기서는 추가 처리하지 않음
+      return Promise.reject(error);
     }
     
     // 404 에러 처리 (API 엔드포인트 없음)

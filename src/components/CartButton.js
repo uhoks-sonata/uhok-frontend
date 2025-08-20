@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../pages/api';
-import { ensureToken, notifyServerStatus } from '../utils/authUtils';
+import { notifyServerStatus } from '../utils/authUtils';
 import cartIcon from '../assets/icon-park-outline_weixin-market.png';
 
 const CartButton = ({ 
@@ -31,13 +31,11 @@ const CartButton = ({
         return;
       }
       
-      // 토큰 확인 및 갱신
-      await ensureToken();
+      // 토큰 확인 (ensureToken 호출 제거)
       const token = localStorage.getItem('access_token');
       
       if (!token) {
-        alert('로그인이 필요합니다.');
-        navigate('/login');
+        alert('로그인이 필요한 서비스입니다.');
         return;
       }
 
@@ -87,8 +85,7 @@ const CartButton = ({
       });
       
       if (error.response?.status === 401) {
-        alert('로그인이 필요합니다.');
-        navigate('/login');
+        alert('로그인이 필요한 서비스입니다.');
       } else if (error.response?.status === 409) {
         alert('이미 장바구니에 있는 상품입니다.');
       } else if (error.response?.status === 400) {

@@ -1,5 +1,6 @@
 // React와 필요한 훅들을 가져옵니다
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 // 상단 네비게이션 컴포넌트를 가져옵니다
 import HeaderNavMypage from '../../layout/HeaderNavMypage';
 // 하단 네비게이션 컴포넌트를 가져옵니다
@@ -26,8 +27,11 @@ import testImage2 from '../../assets/test/test2.png';
 
 // 마이페이지 메인 컴포넌트를 정의합니다
 const MyPage = () => {
+  // 페이지 이동을 위한 navigate 훅
+  const navigate = useNavigate();
   // 사용자 정보 가져오기
   const { user, isLoggedIn } = useUser();
+  const hasInitialized = useRef(false); // 중복 호출 방지용 ref
   
   // 유저 정보를 저장할 상태를 초기화합니다 (API에서 받아옴)
   const [userData, setUserData] = useState({
@@ -104,8 +108,30 @@ const MyPage = () => {
     });
   };
 
+  // 로그인 상태 확인 - 로그인하지 않은 경우에도 페이지 접근 허용
+  useEffect(() => {
+    if (!isLoggedIn) {
+      console.log('로그인하지 않은 상태로 마이페이지 접근');
+      // 로그인하지 않은 경우에도 페이지에 머무름 (이전 화면으로 돌아가지 않음)
+    }
+  }, []); // 빈 의존성 배열로 변경하여 한 번만 실행
+
   // 백엔드 API에서 마이페이지 데이터를 가져오는 useEffect를 정의합니다
   useEffect(() => {
+    // 이미 초기화되었으면 리턴
+    if (hasInitialized.current) {
+      return;
+    }
+    
+    // 초기화 플래그 설정
+    hasInitialized.current = true;
+
+    // 로그인되지 않은 경우 API 호출하지 않음
+    if (!isLoggedIn) {
+      console.log('로그인하지 않은 상태: 마이페이지 API 호출 건너뜀');
+      setLoading(false);
+      return;
+    }
     // 비동기 함수로 마이페이지 데이터를 가져옵니다
     const fetchMyPageData = async () => {
       try {
@@ -114,6 +140,24 @@ const MyPage = () => {
         setError(null); // 에러 상태 초기화
         
         console.log('마이페이지 데이터 로딩 시작...');
+        
+        // 토큰 확인 및 검증
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+          alert('로그인이 필요한 서비스입니다.');
+          setLoading(false);
+          return;
+        }
+        
+        // 토큰 유효성 검증 (JWT 형식 확인)
+        const tokenParts = token.split('.');
+        if (tokenParts.length !== 3) {
+          console.warn('잘못된 토큰 형식, 제자리에 유지');
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('token_type');
+          setLoading(false);
+          return;
+        }
         
         // 모든 API 호출을 개별적으로 처리하여 하나가 실패해도 다른 것은 계속 진행
         let userData = null;
@@ -129,8 +173,16 @@ const MyPage = () => {
           console.log('사용자 정보 조회 성공:', userData);
         } catch (err) {
           console.error('사용자 정보 조회 실패:', err);
-          // 에러 발생 시 임시 데이터 사용
-          setMockData();
+          // 401 에러인 경우 이전 화면으로 돌아가기
+          if (err.response?.status === 401) {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('token_type');
+            alert('로그인이 필요한 서비스입니다.');
+            setLoading(false);
+            return;
+          }
+          // 다른 에러인 경우 에러 상태 설정
+          setError('사용자 정보를 불러오는데 실패했습니다.');
           setLoading(false);
           return;
         }
@@ -144,7 +196,11 @@ const MyPage = () => {
         } catch (err) {
           console.error('최근 주문 조회 실패:', err);
           if (err.response?.status === 401) {
-            console.log('401 에러 - 로그인이 필요합니다.');
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('token_type');
+            alert('로그인이 필요한 서비스입니다.');
+            setLoading(false);
+            return;
           }
           ordersData = { orders: [] };
         }
@@ -158,7 +214,11 @@ const MyPage = () => {
         } catch (err) {
           console.error('주문 개수 조회 실패:', err);
           if (err.response?.status === 401) {
-            console.log('401 에러 - 로그인이 필요합니다.');
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('token_type');
+            alert('로그인이 필요한 서비스입니다.');
+            setLoading(false);
+            return;
           } else if (err.response?.status === 404) {
             console.log('404 에러 - 주문 개수 API 엔드포인트가 존재하지 않습니다.');
           }
@@ -193,16 +253,16 @@ const MyPage = () => {
       } catch (err) {
         // 예상치 못한 에러가 발생한 경우
         console.error('마이페이지 데이터 로딩 중 예상치 못한 에러:', err);
-        setMockData();
+        setError('마이페이지 데이터를 불러오는데 실패했습니다.');
       } finally {
         // try-catch 블록이 끝나면 항상 로딩 상태를 false로 설정합니다
         setLoading(false);
       }
     };
 
-    // 컴포넌트가 마운트될 때 데이터를 가져오는 함수를 실행합니다
-    fetchMyPageData();
-  }, []); // 빈 배열을 의존성으로 설정하여 컴포넌트 마운트 시에만 실행됩니다
+                             // 컴포넌트가 마운트될 때 데이터를 가져오는 함수를 실행합니다
+       fetchMyPageData();
+     }, []); // 빈 의존성 배열로 변경
 
   // 주문 내역 클릭 시 실행되는 핸들러 함수를 정의합니다
   const handleOrderHistoryClick = async () => {
@@ -210,20 +270,17 @@ const MyPage = () => {
       console.log('주문 내역 클릭');
       
       // 로그인 상태 확인
-      const accessToken = localStorage.getItem('access_token');
-      if (!accessToken) {
-        console.log('로그인되지 않은 상태에서 주문내역 페이지로 이동');
-        // 로그인되지 않아도 주문내역 페이지로 이동 (더미 데이터 표시)
-      } else {
-        console.log('로그인된 상태에서 주문내역 페이지로 이동');
+      if (!isLoggedIn) {
+        console.log('로그인되지 않은 상태에서 주문내역 클릭');
+        alert('로그인이 필요한 서비스입니다.');
+        return;
       }
       
-      // 주문 내역 페이지로 이동합니다
-      window.location.href = '/orderlist';
+      console.log('로그인된 상태에서 주문내역 페이지로 이동');
+      // 주문 내역 페이지로 이동합니다 (React Router 사용)
+      navigate('/orderlist');
     } catch (error) {
       console.error('주문 내역 클릭 에러:', error);
-      // 에러가 발생해도 페이지 이동은 계속 진행
-      window.location.href = '/orderlist';
     }
   };
 
@@ -245,13 +302,19 @@ const MyPage = () => {
   // 알림 클릭 시 실행되는 핸들러 함수를 정의합니다
   const handleNotificationClick = () => {
     console.log('알림 클릭');
-    window.location.href = '/notifications';
+    navigate('/notifications');
   };
 
   // 장바구니 클릭 시 실행되는 핸들러 함수를 정의합니다
   const handleCartClick = () => {
     console.log('장바구니 클릭');
-    window.location.href = '/cart';
+    navigate('/cart');
+  };
+
+  // 로그인 핸들러 함수를 정의합니다
+  const handleLogin = () => {
+    console.log('로그인 페이지로 이동');
+    navigate('/login');
   };
 
   // 로그아웃 핸들러 함수를 정의합니다
@@ -263,7 +326,7 @@ const MyPage = () => {
       const accessToken = localStorage.getItem('access_token');
       if (!accessToken) {
         console.log('토큰이 없어서 바로 홈페이지로 이동');
-        window.location.href = '/';
+        navigate('/');
         return;
       }
 
@@ -278,7 +341,7 @@ const MyPage = () => {
       alert('로그아웃이 완료되었습니다.');
       
       // 홈페이지로 이동
-      window.location.href = '/';
+      navigate('/');
       
     } catch (error) {
       console.error('로그아웃 실패:', error);
@@ -291,7 +354,7 @@ const MyPage = () => {
       alert('로그아웃 중 오류가 발생했습니다. 다시 시도해주세요.');
       
       // 홈페이지로 이동
-      window.location.href = '/';
+      navigate('/');
     }
   };
 
@@ -337,24 +400,42 @@ const MyPage = () => {
             
             {/* 유저 정보 */}
             <div className="user-details">
-              {/* 유저 이름을 표시합니다 (API에서 받아옴) */}
-              <div className="user-name">{userData.username} 님</div>
-              {/* 유저 이메일을 표시합니다 (API에서 받아옴) */}
-              <div className="user-email">{userData.email}</div>
+              {isLoggedIn ? (
+                <>
+                  {/* 유저 이름을 표시합니다 (API에서 받아옴) */}
+                  <div className="user-name">{userData.username} 님</div>
+                  {/* 유저 이메일을 표시합니다 (API에서 받아옴) */}
+                  <div className="user-email">{userData.email}</div>
+                </>
+              ) : (
+                <>
+                  {/* 로그인하지 않은 경우 기본 메시지 */}
+                  <div className="user-name">로그인이 필요합니다</div>
+                  <div className="user-email">로그인하여 개인화된 서비스를 이용하세요</div>
+                </>
+              )}
             </div>
             
-            {/* 로그아웃 버튼 */}
+            {/* 로그인/로그아웃 버튼 */}
             <div className="logout-container">
-              <button className="logout-button" onClick={handleLogout}>
-                로그아웃
-              </button>
+              {isLoggedIn ? (
+                <button className="logout-button" onClick={handleLogout}>
+                  로그아웃
+                </button>
+              ) : (
+                <button className="login-button" onClick={handleLogin}>
+                  로그인
+                </button>
+              )}
             </div>
           </div>
           
           {/* 주문 내역 링크 */}
           <div className="order-history-link" onClick={handleOrderHistoryClick}>
             <span className="order-history-text">주문 내역</span>
-            <span className="order-count">{userData.orderCount} &gt;</span>
+            <span className="order-count">
+              {isLoggedIn ? `${userData.orderCount} >` : '로그인 필요 >'}
+            </span>
           </div>
         </div>
 
