@@ -40,6 +40,24 @@
   overflow-x: hidden;
 }
 
+/* 스크롤바 스타일링 */
+.kok-product-list-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.kok-product-list-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.kok-product-list-content::-webkit-scrollbar-thumb {
+  background: #e0e0e0;
+  border-radius: 4px;
+}
+
+.kok-product-list-content::-webkit-scrollbar-thumb:hover {
+  background: #bbb;
+}
+
 .kok-section-header {
   margin-bottom: 0px;
   padding: 8px;

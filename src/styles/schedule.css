@@ -589,20 +589,20 @@
 
 /* 스크롤바 스타일링 */
 .schedule-content::-webkit-scrollbar {
-  width: 4px;
+  width: 4px; /* 4px 유지 */
 }
 
 .schedule-content::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: transparent; /* #f1f1f1에서 투명으로 변경 */
 }
 
 .schedule-content::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 2px;
+  background: #e0e0e0; /* #c1c1c1에서 #e0e0e0으로 변경 */
+  border-radius: 4px; /* 2px에서 4px로 변경 */
 }
 
 .schedule-content::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+  background: #bbb; /* #a8a8a8에서 #bbb로 변경 */
 }
 
 /* 새로운 스케줄 아이템 스타일 */
@@ -839,21 +839,20 @@
 
 /* 스크롤바 스타일 */
 .schedule-content-main::-webkit-scrollbar {
-  width: 6px;
+  width: 4px; /* 4px 유지 */
 }
 
 .schedule-content-main::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
+  background: transparent; /* #f1f1f1에서 투명으로 변경 */
 }
 
 .schedule-content-main::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 3px;
+  background: #e0e0e0; /* #c1c1c1에서 #e0e0e0으로 변경 */
+  border-radius: 4px; /* 4px 유지 */
 }
 
 .schedule-content-main::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+  background: #bbb; /* #a8a8a8에서 #bbb로 변경 */
 }
 
 /* 반응형 디자인 */

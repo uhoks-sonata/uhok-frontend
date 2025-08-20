@@ -305,7 +305,27 @@
 /* ===== 검색 결과 ===== */
 
 .search-results {
-  padding-top: 10px;
+  overflow-y: auto;
+  height: calc(100vh - 185px);
+  max-height: calc(100vh - 170px);
+}
+
+/* 스크롤바 스타일링 */
+.search-results::-webkit-scrollbar {
+  width: 4px;
+}
+
+.search-results::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.search-results::-webkit-scrollbar-thumb {
+  background: #e0e0e0;
+  border-radius: 4px;
+}
+
+.search-results::-webkit-scrollbar-thumb:hover {
+  background: #bbb;
 }
 
 .results-header {

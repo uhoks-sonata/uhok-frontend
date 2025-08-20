@@ -33,21 +33,20 @@
 
 /* payment-content의 스크롤바 스타일 (Chrome, Safari, Edge) */
 .payment-content::-webkit-scrollbar {
-  width: 8px;
+  width: 4px; /* 8px에서 4px로 변경 */
 }
 
 .payment-content::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
+  background: transparent; /* #f1f1f1에서 투명으로 변경 */
 }
 
 .payment-content::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
+  background: #e0e0e0; /* #c1c1c1에서 #e0e0e0으로 변경 */
+  border-radius: 4px; /* 4px 유지 */
 }
 
 .payment-content::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+  background: #bbb; /* #a8a8a8에서 #bbb로 변경 */
 }
 
 /* .payment-title {
@@ -468,6 +467,11 @@
     scrollbar-width: none; /* Firefox에서 스크롤바 숨김 */
     -ms-overflow-style: none; /* IE/Edge에서 스크롤바 숨김 */
   }
+
+  /* 모바일에서 스크롤바 너비 조정 - payment-content용 */
+  .payment-content::-webkit-scrollbar {
+    width: 3px; /* 4px에서 3px로 변경 */
+  }
 }
 
 /* 테스트 컴포넌트 스타일 */
@@ -518,21 +522,20 @@
 }
 
 .test-result pre::-webkit-scrollbar {
-  width: 6px;
+  width: 4px; /* 8px에서 4px로 변경 */
 }
 
 .test-result pre::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
+  background: transparent; /* #f1f1f1에서 투명으로 변경 */
 }
 
 .test-result pre::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 3px;
+  background: #e0e0e0; /* #c1c1c1에서 #e0e0e0으로 변경 */
+  border-radius: 4px; /* 4px 유지 */
 }
 
 .test-result pre::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+  background: #bbb; /* #a8a8a8에서 #bbb로 변경 */
 }
 
 .api-info {

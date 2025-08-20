@@ -447,3 +447,25 @@
 .recipe-main-content {
   padding-bottom: 80px; /* 하단 네비게이션 높이만큼 패딩 추가 */
 }
+
+.recipe-recommendation-content {
+  overflow-y: auto;
+}
+
+/* 스크롤바 스타일링 */
+.recipe-recommendation-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.recipe-recommendation-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.recipe-recommendation-content::-webkit-scrollbar-thumb {
+  background: #e0e0e0;
+  border-radius: 4px;
+}
+
+.recipe-recommendation-content::-webkit-scrollbar-thumb:hover {
+  background: #bbb;
+}

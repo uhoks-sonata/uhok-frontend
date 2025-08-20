@@ -19,24 +19,24 @@
 
 /* 스크롤바 스타일링 */
 .recipe-content-scrollable::-webkit-scrollbar {
-  width: 8px;
+  width: 4px; /* 8px에서 4px로 변경 */
   margin-right: 4px;
 }
 
 .recipe-content-scrollable::-webkit-scrollbar-track {
-  background: #f8f9fa;
+  background: transparent; /* #f8f9fa에서 투명으로 변경 */
   border-radius: 4px;
   margin: 4px 0 86px 0;
 }
 
 .recipe-content-scrollable::-webkit-scrollbar-thumb {
-  background: #dee2e6;
-  border-radius: 4px;
-  border: 1px solid #f8f9fa;
+  background: #e0e0e0; /* #dee2e6에서 #e0e0e0으로 변경 */
+  border-radius: 4px; /* 4px 유지 */
+  border: 1px solid transparent; /* #f8f9fa에서 투명으로 변경 */
 }
 
 .recipe-content-scrollbar-thumb:hover {
-  background: #adb5bd;
+  background: #bbb; /* #adb5bd에서 #bbb로 변경 */
 }
 
 /* 로딩 상태 */
@@ -411,17 +411,16 @@
 }
 
 .kok-products-carousel::-webkit-scrollbar {
-  height: 4px;
+  width: 4px; /* 8px에서 4px로 변경 */
 }
 
 .kok-products-carousel::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 2px;
+  background: transparent; /* #f1f1f1에서 투명으로 변경 */
 }
 
 .kok-products-carousel::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 2px;
+  background: #e0e0e0; /* #c1c1c1에서 #e0e0e0으로 변경 */
+  border-radius: 4px; /* 4px 유지 */
 }
 
 .kok-product-card {

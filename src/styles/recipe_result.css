@@ -124,20 +124,20 @@
 
 /* Webkit 브라우저 스크롤바 스타일링 */
 .recipe-list::-webkit-scrollbar {
-  width: 4px; /* 스크롤바 너비 */
+  width: 4px; /* 8px에서 4px로 변경 */
 }
 
 .recipe-list::-webkit-scrollbar-track {
-  background: transparent; /* 스크롤바 트랙 배경 */
+  background: transparent; /* #f1f1f1에서 투명으로 변경 */
 }
 
 .recipe-list::-webkit-scrollbar-thumb {
-  background: #e0e0e0; /* 스크롤바 썸 색상 */
-  border-radius: 4px; /* 스크롤바 모서리 둥글게 */
+  background: #e0e0e0; /* #c1c1c1에서 #e0e0e0으로 변경 */
+  border-radius: 4px; /* 4px 유지 */
 }
 
 .recipe-list::-webkit-scrollbar-thumb:hover {
-  background: #bbb; /* 호버 시 스크롤바 색상 */
+  background: #bbb; /* #a8a8a8에서 #bbb로 변경 */
 }
 
 .recipe-card {
