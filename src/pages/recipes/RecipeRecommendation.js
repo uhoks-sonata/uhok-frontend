@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BottomNav from '../../layout/BottomNav';
 import HeaderNavRecipeRecommendation from '../../layout/HeaderNavRecipeRecommendation';
@@ -20,6 +20,31 @@ const RecipeRecommendation = () => {
   const [recipeInput, setRecipeInput] = useState('');
   const [recipeSearchType, setRecipeSearchType] = useState('name');
   const [isLoading, setIsLoading] = useState(false);
+  const hasInitialized = useRef(false); // 중복 실행 방지용 ref
+
+  // 로그인 상태 확인 함수
+  const checkLoginStatus = () => {
+    const accessToken = localStorage.getItem('access_token');
+    return !!accessToken;
+  };
+
+  // 페이지 로드 시 로그인 상태 확인 (중복 실행 방지)
+  useEffect(() => {
+    // 이미 초기화되었으면 리턴
+    if (hasInitialized.current) {
+      return;
+    }
+    
+    // 초기화 플래그 설정
+    hasInitialized.current = true;
+    
+    const isLoggedIn = checkLoginStatus();
+    if (!isLoggedIn) {
+      alert('로그인이 필요한 서비스입니다.');
+      window.history.back();
+      return;
+    }
+  }, []); // 빈 의존성 배열로 한 번만 실행
 
   const handleBack = () => {
     navigate(-1);

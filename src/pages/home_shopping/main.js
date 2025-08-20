@@ -82,31 +82,7 @@ const Main = () => {
     // 비동기 함수로 편성표 데이터를 가져옵니다
     const fetchScheduleData = async () => {
       try {
-        // 토큰 확인 및 검증
-        const token = localStorage.getItem('access_token');
-        const tokenType = localStorage.getItem('token_type');
-        
-        console.log('Main - 토큰 정보 확인:', {
-          hasToken: !!token,
-          tokenType: tokenType,
-          tokenPreview: token ? token.substring(0, 20) + '...' : '없음'
-        });
-        
-        if (!token) {
-          console.log('토큰이 없어서 로그인 페이지로 이동');
-          window.location.href = '/';
-          return;
-        }
-        
-        // 토큰 유효성 검증 (JWT 형식 확인)
-        const tokenParts = token.split('.');
-        if (tokenParts.length !== 3) {
-          console.warn('잘못된 토큰 형식, 로그인 페이지로 이동');
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('token_type');
-          window.location.href = '/';
-          return;
-        }
+        console.log('Main - 편성표 데이터 로딩 시작');
         
         // 로딩 상태를 true로 설정합니다
         setLoading(true);

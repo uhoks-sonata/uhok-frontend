@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HeaderNavCart from '../../layout/HeaderNavCart';
 import BottomNav from '../../layout/BottomNav';
@@ -21,25 +21,49 @@ const Cart = () => {
   const [isRecipeLoading, setIsRecipeLoading] = useState(false); // 레시피 추천 로딩 상태
   const [recipeRecommendations, setRecipeRecommendations] = useState([]); // 레시피 추천 데이터
   const [recipeLoading, setRecipeLoading] = useState(false); // 레시피 API 로딩 상태
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태 추가
   const navigate = useNavigate();
+  const isInitialLoadRef = useRef(false); // 중복 호출 방지용 ref
+
+  // 로그인 상태 확인 함수
+  const checkLoginStatus = () => {
+    const token = localStorage.getItem('access_token');
+    const isLoggedInStatus = !!token;
+    setIsLoggedIn(isLoggedInStatus);
+    return isLoggedInStatus;
+  };
 
   useEffect(() => {
-    loadCartItems();
-    loadLikedProducts();
+    // 중복 호출 방지
+    if (isInitialLoadRef.current) {
+      return;
+    }
+    isInitialLoadRef.current = true;
+
+    // 로그인 상태 확인 후 조건부로 API 호출
+    const loginStatus = checkLoginStatus();
+    if (loginStatus) {
+      loadCartItems();
+    } else {
+      // 로그인하지 않은 경우 알림 후 이전 화면으로 돌아가기
+      alert('로그인이 필요한 서비스입니다.');
+      window.history.back();
+      return;
+    }
   }, []);
 
   // 찜한 상품 목록을 가져오는 함수
   const loadLikedProducts = async () => {
-    try {
-      const token = localStorage.getItem('access_token');
-      if (!token) return;
+    // 로그인하지 않은 경우 API 호출 건너뜀
+    if (!checkLoginStatus()) {
+      console.log('로그인하지 않은 상태: 찜 상품 API 호출 건너뜀');
+      return;
+    }
 
+    try {
       const response = await api.get('/api/kok/likes', {
         params: {
           limit: 50
-        },
-        headers: {
-          'Authorization': `Bearer ${token}`
         }
       });
       
@@ -57,8 +81,7 @@ const Cart = () => {
     try {
       const token = localStorage.getItem('access_token');
       if (!token) {
-        console.log('토큰이 없어서 로그인 페이지로 이동');
-        window.location.href = '/';
+        alert('로그인이 필요한 서비스입니다.');
         return;
       }
 
@@ -119,10 +142,9 @@ const Cart = () => {
     } catch (error) {
       console.error('찜 토글 실패:', error);
       
-      // 401 에러 (인증 실패) 시 로그인 페이지로 이동
+      // 401 에러 (인증 실패) 시 제자리에 유지
       if (error.response?.status === 401) {
-        alert('로그인이 필요합니다.');
-        window.location.href = '/';
+        alert('로그인이 필요한 서비스입니다.');
         return;
       }
       
@@ -132,16 +154,27 @@ const Cart = () => {
   };
 
   const loadCartItems = async () => {
+    // 로그인하지 않은 경우 API 호출 건너뜀
+    if (!checkLoginStatus()) {
+      console.log('로그인하지 않은 상태: 장바구니 API 호출 건너뜀');
+      setCartItems([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       
-      // 실제 API 호출
+      // 실제 API 호출 (토큰 체크는 api.js 인터셉터에서 처리)
       const response = await cartApi.getCartItems();
       const items = response.cart_items || [];
       
       setCartItems(items);
       // 모든 아이템을 기본적으로 선택
       setSelectedItems(new Set(items.map(item => item.kok_cart_id)));
+      
+      // 장바구니 로딩 성공 후 찜한 상품 목록도 로딩
+      await loadLikedProducts();
     } catch (error) {
       console.error('장바구니 데이터 로딩 실패:', error);
       setCartItems([]);

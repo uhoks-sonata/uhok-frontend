@@ -8,7 +8,7 @@ import UpBtn from '../../components/UpBtn';
 import emptyHeartIcon from '../../assets/heart_empty.png';
 import filledHeartIcon from '../../assets/heart_filled.png';
 import api from '../api';
-import { ensureToken } from '../../utils/authUtils';
+import { kokApi } from '../../api/kokApi';
 
 const KokProductListPage = () => {
   const { sectionType } = useParams();
@@ -124,13 +124,18 @@ const KokProductListPage = () => {
     }
   };
 
+  // 로그인 상태 확인 함수
+  const checkLoginStatus = () => {
+    const token = localStorage.getItem('access_token');
+    return !!token;
+  };
+
   useEffect(() => {
     const loadKokProducts = async () => {
       console.log('🔄 초기 상품 로딩 시작');
       
-      try {
-        // 토큰이 없으면 임시 로그인 시도
-        await ensureToken();
+             try {
+         // ensureToken 호출 제거 - 실제 로그인된 상태에서만 API 호출
         
         switch (sectionType) {
           case 'discount':
@@ -159,6 +164,13 @@ const KokProductListPage = () => {
             setKokSectionTitle('제품 목록');
             setHasMore(false);
             console.log('❌ 알 수 없는 섹션 타입:', sectionType);
+        }
+        
+        // 로그인 상태 확인 후 찜한 상품 목록 로드
+        if (checkLoginStatus()) {
+          await loadLikedProducts();
+        } else {
+          console.log('로그인하지 않은 상태: 찜 상품 API 호출 건너뜀');
         }
       } catch (error) {
         console.error('❌ 상품 로딩 중 오류:', error);
@@ -293,32 +305,106 @@ const KokProductListPage = () => {
     navigate(`/kok/product/${productId}`);
   };
 
-  const handleKokWishlistClick = (productId, event) => {
+  // 찜한 상품 목록을 가져오는 함수
+  const loadLikedProducts = async () => {
+    // 로그인하지 않은 경우 API 호출 건너뜀
+    if (!checkLoginStatus()) {
+      console.log('로그인하지 않은 상태: 찜 상품 API 호출 건너뜀');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        console.log('토큰이 없어서 찜한 상품 목록을 로드하지 않습니다.');
+        return;
+      }
+
+      console.log('🔄 찜한 상품 목록 로딩 시작');
+      const response = await kokApi.getLikedProducts(100); // 충분히 많은 수량
+      console.log('✅ 찜한 상품 목록 로딩 완료:', response);
+      
+      if (response && response.liked_products) {
+        const likedProductIds = new Set(
+          response.liked_products.map(product => product.kok_product_id || product.id)
+        );
+        setKokWishlistedProducts(likedProductIds);
+        console.log('✅ 찜한 상품 ID 목록 설정 완료:', likedProductIds);
+      }
+    } catch (error) {
+      console.error('❌ 찜한 상품 목록 로딩 실패:', error);
+      
+      // 401 에러인 경우 토큰이 만료되었거나 유효하지 않음
+      if (error.response?.status === 401) {
+        console.log('401 에러 - 토큰이 만료되었거나 유효하지 않음');
+        // 토큰 제거
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        // 찜한 상품 목록 초기화
+        setKokWishlistedProducts(new Set());
+      }
+      // 에러가 발생해도 페이지는 정상적으로 표시되도록 함
+    }
+  };
+
+  const handleKokWishlistClick = async (productId, event) => {
     event.stopPropagation();
     
-    // 애니메이션 클래스 추가
-    const heartIcon = event.currentTarget;
-    if (heartIcon) {
-      if (kokWishlistedProducts.has(productId)) {
-        // 찜 해제 애니메이션
-        heartIcon.classList.add('unliked');
-        setTimeout(() => heartIcon.classList.remove('unliked'), 400);
+    // 토큰 확인
+    const token = localStorage.getItem('access_token');
+          if (!token) {
+        alert('로그인이 필요한 서비스입니다.');
+        return;
+      }
+    
+    try {
+      // 찜 토글 API 호출
+      const response = await kokApi.toggleProductLike(productId);
+      console.log('찜 토글 응답:', response);
+      
+      // 찜 토글 성공 후 하트 아이콘 상태 변경
+      if (response) {
+        console.log('찜 토글 성공! 하트 아이콘 상태를 변경합니다.');
+        
+        // 애니메이션 클래스 추가
+        const heartIcon = event.currentTarget;
+        if (heartIcon) {
+          if (kokWishlistedProducts.has(productId)) {
+            // 찜 해제 애니메이션
+            heartIcon.classList.add('unliked');
+            setTimeout(() => heartIcon.classList.remove('unliked'), 400);
+          } else {
+            // 찜 추가 애니메이션
+            heartIcon.classList.add('liked');
+            setTimeout(() => heartIcon.classList.remove('liked'), 600);
+          }
+        }
+        
+        // 로컬 상태 업데이트
+        setKokWishlistedProducts(prev => {
+          const newSet = new Set(prev);
+          if (newSet.has(productId)) {
+            newSet.delete(productId);
+          } else {
+            newSet.add(productId);
+          }
+          return newSet;
+        });
+      }
+    } catch (error) {
+      console.error('찜 토글 실패:', error);
+      
+      // 에러 처리
+      if (error.response?.status === 401) {
+        console.log('401 에러 - 토큰이 만료되었거나 유효하지 않음');
+        // 토큰 제거
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        alert('로그인이 필요한 서비스입니다.');
       } else {
-        // 찜 추가 애니메이션
-        heartIcon.classList.add('liked');
-        setTimeout(() => heartIcon.classList.remove('liked'), 600);
+        alert('찜 기능에 실패했습니다. 다시 시도해주세요.');
       }
     }
-    
-    setKokWishlistedProducts(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(productId)) {
-        newSet.delete(productId);
-      } else {
-        newSet.add(productId);
-      }
-      return newSet;
-    });
   };
 
   return (

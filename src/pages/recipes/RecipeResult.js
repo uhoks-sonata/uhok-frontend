@@ -124,7 +124,7 @@ const RecipeResult = () => {
       // state가 없으면 이전 페이지로 이동
       navigate('/recipes');
     }
-  }, [location.state, navigate, combinationCache]);
+  }, [location.state, navigate, combinationCache, isInitialized]);
 
   const handleBack = () => {
     navigate('/recipes');

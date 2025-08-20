@@ -1,5 +1,6 @@
 // React와 필요한 훅들을 가져옵니다
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 // 상단 네비게이션 컴포넌트를 가져옵니다
 import HeaderNavMypage from '../../layout/HeaderNavMypage';
 // 하단 네비게이션 컴포넌트를 가져옵니다
@@ -13,6 +14,10 @@ import '../../styles/logout.css';
 import { userApi } from '../../api/userApi';
 // orderApi import
 import { orderApi } from '../../api/orderApi';
+// kokApi import
+import { kokApi } from '../../api/kokApi';
+// homeShoppingApi import
+import { homeShoppingApi } from '../../api/homeShoppingApi';
 // 사용자 Context import
 import { useUser } from '../../contexts/UserContext';
 // 기본 사용자 아이콘 이미지를 가져옵니다
@@ -26,8 +31,11 @@ import testImage2 from '../../assets/test/test2.png';
 
 // 마이페이지 메인 컴포넌트를 정의합니다
 const MyPage = () => {
+  // 페이지 이동을 위한 navigate 훅
+  const navigate = useNavigate();
   // 사용자 정보 가져오기
-  const { user, isLoggedIn } = useUser();
+  const { user, isLoggedIn, isLoading: userContextLoading } = useUser();
+  const hasInitialized = useRef(false); // 중복 호출 방지용 ref
   
   // 유저 정보를 저장할 상태를 초기화합니다 (API에서 받아옴)
   const [userData, setUserData] = useState({
@@ -55,9 +63,39 @@ const MyPage = () => {
     return price.toLocaleString('ko-KR') + '원';
   };
 
+  // 상품 정보를 가져오는 함수 (현재 사용하지 않음)
+  const fetchProductInfo = async (productId, type) => {
+    try {
+      if (type === 'kok') {
+        const productInfo = await kokApi.getProductInfo(productId);
+        return {
+          product_name: productInfo.kok_product_name || `콕 상품 ${productId}`,
+          product_description: productInfo.kok_product_description || '콕 상품입니다',
+          product_image: productInfo.kok_thumbnail || testImage1,
+          brand_name: productInfo.kok_store_name || '콕 스토어'
+        };
+      } else if (type === 'homeshopping') {
+        const productInfo = await homeShoppingApi.getProductDetail(productId);
+        return {
+          product_name: productInfo.product_name || `홈쇼핑 상품 ${productId}`,
+          product_description: productInfo.product_description || '홈쇼핑 상품입니다',
+          product_image: productInfo.product_image || testImage2,
+          brand_name: productInfo.brand_name || '홈쇼핑'
+        };
+      }
+    } catch (error) {
+      // 에러 시 기본값 반환
+      return {
+        product_name: type === 'kok' ? `콕 상품 ${productId}` : `홈쇼핑 상품 ${productId}`,
+        product_description: type === 'kok' ? '콕 상품입니다' : '홈쇼핑 상품입니다',
+        product_image: type === 'kok' ? testImage1 : testImage2,
+        brand_name: type === 'kok' ? '콕 스토어' : '홈쇼핑'
+      };
+    }
+  };
+
   // 임시 데이터를 설정하는 함수
   const setMockData = () => {
-    console.log('임시 데이터를 사용합니다.');
     setUserData({
       user_id: 101,
       username: '홍길동',
@@ -104,8 +142,31 @@ const MyPage = () => {
     });
   };
 
+  // 로그인 상태 확인 - 로그인하지 않은 경우에도 페이지 접근 허용
+  useEffect(() => {
+    // 로그인하지 않은 경우에도 페이지에 머무름 (이전 화면으로 돌아가지 않음)
+  }, []); // 빈 의존성 배열로 변경하여 한 번만 실행
+
   // 백엔드 API에서 마이페이지 데이터를 가져오는 useEffect를 정의합니다
   useEffect(() => {
+    // 이미 초기화되었으면 리턴
+    if (hasInitialized.current) {
+      return;
+    }
+    
+    // UserContext 초기화가 완료될 때까지 기다림
+    if (userContextLoading) {
+      return;
+    }
+    
+    // 초기화 플래그 설정
+    hasInitialized.current = true;
+
+    // 로그인되지 않은 경우 API 호출하지 않음
+    if (!isLoggedIn) {
+      setLoading(false);
+      return;
+    }
     // 비동기 함수로 마이페이지 데이터를 가져옵니다
     const fetchMyPageData = async () => {
       try {
@@ -113,7 +174,22 @@ const MyPage = () => {
         setLoading(true);
         setError(null); // 에러 상태 초기화
         
-        console.log('마이페이지 데이터 로딩 시작...');
+        // 토큰 확인 및 검증
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+          alert('로그인이 필요한 서비스입니다.');
+          setLoading(false);
+          return;
+        }
+        
+        // 토큰 유효성 검증 (JWT 형식 확인)
+        const tokenParts = token.split('.');
+        if (tokenParts.length !== 3) {
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('token_type');
+          setLoading(false);
+          return;
+        }
         
         // 모든 API 호출을 개별적으로 처리하여 하나가 실패해도 다른 것은 계속 진행
         let userData = null;
@@ -123,154 +199,166 @@ const MyPage = () => {
         
         // 사용자 정보 조회 (API 명세서에 맞춘 처리)
         try {
-          console.log('사용자 정보 조회 중...');
           const userResponse = await userApi.getProfile();
           userData = userResponse;
-          console.log('사용자 정보 조회 성공:', userData);
         } catch (err) {
-          console.error('사용자 정보 조회 실패:', err);
-          // 에러 발생 시 임시 데이터 사용
-          setMockData();
-          setLoading(false);
-          return;
+          // 401 에러인 경우 이전 화면으로 돌아가기
+          if (err.response?.status === 401) {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('token_type');
+            alert('로그인이 필요한 서비스입니다.');
+            setLoading(false);
+            return;
+          }
+          // 다른 에러인 경우 임시 데이터 사용
+          userData = {
+            user_id: 101,
+            username: '테스트 사용자',
+            email: 'test@example.com',
+            created_at: '2025-01-01T00:00:00.000Z'
+          };
         }
         
-        // 최근 주문 조회 (실제 API 호출)
+                // 최근 주문 조회 (실제 API 호출)
         try {
-          console.log('최근 주문 조회 중...');
           const recentOrdersResponse = await orderApi.getRecentOrders(7);
           ordersData = recentOrdersResponse;
-          console.log('최근 주문 조회 성공:', ordersData);
+          
+          // 날짜 필터링 로직 추가
+          if (ordersData && ordersData.orders && ordersData.orders.length > 0) {
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+            // 시간을 00:00:00으로 설정하여 날짜만 비교
+            sevenDaysAgo.setHours(0, 0, 0, 0);
+            
+            const filteredOrders = ordersData.orders.filter(order => {
+              if (order.order_date) {
+                const orderDate = new Date(order.order_date);
+                // 주문 날짜도 시간을 00:00:00으로 설정
+                orderDate.setHours(0, 0, 0, 0);
+                return orderDate >= sevenDaysAgo;
+              }
+              return false;
+            });
+            
+            ordersData.orders = filteredOrders;
+          }
         } catch (err) {
-          console.error('최근 주문 조회 실패:', err);
           if (err.response?.status === 401) {
-            console.log('401 에러 - 로그인이 필요합니다.');
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('token_type');
+            alert('로그인이 필요한 서비스입니다.');
+            setLoading(false);
+            return;
           }
           ordersData = { orders: [] };
         }
         
         // 주문 개수 조회 (실제 API 호출)
         try {
-          console.log('주문 개수 조회 중...');
           const orderCountResponse = await orderApi.getOrderCount();
           orderCount = orderCountResponse.order_count || 0;
-          console.log('주문 개수 조회 성공:', orderCount);
         } catch (err) {
-          console.error('주문 개수 조회 실패:', err);
           if (err.response?.status === 401) {
-            console.log('401 에러 - 로그인이 필요합니다.');
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('token_type');
+            alert('로그인이 필요한 서비스입니다.');
+            setLoading(false);
+            return;
           } else if (err.response?.status === 404) {
-            console.log('404 에러 - 주문 개수 API 엔드포인트가 존재하지 않습니다.');
+            // 404 에러 - 주문 개수 API 엔드포인트가 존재하지 않습니다.
           }
           orderCount = 0;
         }
         
         // 레시피 정보 조회 (현재는 임시 데이터 사용)
         try {
-          console.log('레시피 정보 조회 중...');
           // TODO: 레시피 API 구현 시 실제 API 호출로 교체
           recipeData = { purchasedRecipe: null, similarRecipes: [] };
-          console.log('레시피 정보 조회 성공:', recipeData);
         } catch (err) {
-          console.error('레시피 정보 조회 실패:', err);
           // 422 에러나 다른 에러가 발생해도 기본값으로 설정
           recipeData = { purchasedRecipe: null, similarRecipes: [] };
         }
         
-        // 파싱된 데이터를 상태에 저장합니다
-        setUserData({
-          user_id: userData.user_id,
-          username: userData.username,
-          email: userData.email,
-          created_at: userData.created_at,
-          orderCount: orderCount,
-          recentOrders: ordersData || []
-        });
+                 // 파싱된 데이터를 상태에 저장합니다
+         setUserData({
+           user_id: userData.user_id,
+           username: userData.username,
+           email: userData.email,
+           created_at: userData.created_at,
+           orderCount: orderCount,
+           recentOrders: ordersData.orders || [] // orders 배열만 저장
+         });
         
         setRecipeData(recipeData);
-        console.log('마이페이지 데이터 로딩 완료');
         
       } catch (err) {
         // 예상치 못한 에러가 발생한 경우
-        console.error('마이페이지 데이터 로딩 중 예상치 못한 에러:', err);
-        setMockData();
+        setError('마이페이지 데이터를 불러오는데 실패했습니다.');
       } finally {
         // try-catch 블록이 끝나면 항상 로딩 상태를 false로 설정합니다
         setLoading(false);
       }
     };
 
-    // 컴포넌트가 마운트될 때 데이터를 가져오는 함수를 실행합니다
-    fetchMyPageData();
-  }, []); // 빈 배열을 의존성으로 설정하여 컴포넌트 마운트 시에만 실행됩니다
+                                                          // 컴포넌트가 마운트될 때 데이터를 가져오는 함수를 실행합니다
+        fetchMyPageData();
+      }, [userContextLoading, isLoggedIn]); // UserContext 상태 변화 감지
 
   // 주문 내역 클릭 시 실행되는 핸들러 함수를 정의합니다
   const handleOrderHistoryClick = async () => {
     try {
-      console.log('주문 내역 클릭');
-      
       // 로그인 상태 확인
-      const accessToken = localStorage.getItem('access_token');
-      if (!accessToken) {
-        console.log('로그인되지 않은 상태에서 주문내역 페이지로 이동');
-        // 로그인되지 않아도 주문내역 페이지로 이동 (더미 데이터 표시)
-      } else {
-        console.log('로그인된 상태에서 주문내역 페이지로 이동');
+      if (!isLoggedIn) {
+        alert('로그인이 필요한 서비스입니다.');
+        return;
       }
       
-      // 주문 내역 페이지로 이동합니다
-      window.location.href = '/orderlist';
+      // 주문 내역 페이지로 이동합니다 (React Router 사용)
+      navigate('/orderlist');
     } catch (error) {
-      console.error('주문 내역 클릭 에러:', error);
-      // 에러가 발생해도 페이지 이동은 계속 진행
-      window.location.href = '/orderlist';
+      // 에러 처리
     }
   };
 
   // 레시피 클릭 시 실행되는 핸들러 함수를 정의합니다
   const handleRecipeClick = async (recipeId) => {
     try {
-      console.log('레시피 클릭:', recipeId);
-      
       // TODO: 레시피 상세 정보 조회 API 구현 시 실제 API 호출로 교체
-      console.log('레시피 상세 정보 조회 기능은 추후 구현 예정입니다.');
-      
       // 레시피 상세 페이지로 이동하는 기능을 구현할 예정입니다
       // window.location.href = `/recipe-detail/${recipeId}`;
     } catch (error) {
-      console.error('레시피 클릭 에러:', error);
+      // 에러 처리
     }
   };
 
   // 알림 클릭 시 실행되는 핸들러 함수를 정의합니다
   const handleNotificationClick = () => {
-    console.log('알림 클릭');
-    window.location.href = '/notifications';
+    navigate('/notifications');
   };
 
   // 장바구니 클릭 시 실행되는 핸들러 함수를 정의합니다
   const handleCartClick = () => {
-    console.log('장바구니 클릭');
-    window.location.href = '/cart';
+    navigate('/cart');
+  };
+
+  // 로그인 핸들러 함수를 정의합니다
+  const handleLogin = () => {
+    navigate('/login');
   };
 
   // 로그아웃 핸들러 함수를 정의합니다
   const handleLogout = async () => {
     try {
-      console.log('로그아웃 시작');
-      
       // 현재 access token 가져오기
       const accessToken = localStorage.getItem('access_token');
       if (!accessToken) {
-        console.log('토큰이 없어서 바로 홈페이지로 이동');
-        window.location.href = '/';
+        navigate('/');
         return;
       }
 
       // 백엔드 로그아웃 API 호출 (API 명세서에 맞춘 처리)
       const response = await userApi.logout();
-
-      console.log('로그아웃 API 응답:', response);
       
       // 로컬 스토리지에서 토큰 제거 (userApi에서 이미 처리됨)
       
@@ -278,11 +366,9 @@ const MyPage = () => {
       alert('로그아웃이 완료되었습니다.');
       
       // 홈페이지로 이동
-      window.location.href = '/';
+      navigate('/');
       
     } catch (error) {
-      console.error('로그아웃 실패:', error);
-      
       // API 호출 실패 시에도 로컬 토큰은 제거
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
@@ -291,7 +377,7 @@ const MyPage = () => {
       alert('로그아웃 중 오류가 발생했습니다. 다시 시도해주세요.');
       
       // 홈페이지로 이동
-      window.location.href = '/';
+      navigate('/');
     }
   };
 
@@ -337,24 +423,42 @@ const MyPage = () => {
             
             {/* 유저 정보 */}
             <div className="user-details">
-              {/* 유저 이름을 표시합니다 (API에서 받아옴) */}
-              <div className="user-name">{userData.username} 님</div>
-              {/* 유저 이메일을 표시합니다 (API에서 받아옴) */}
-              <div className="user-email">{userData.email}</div>
+              {isLoggedIn ? (
+                <>
+                  {/* 유저 이름을 표시합니다 (API에서 받아옴) */}
+                  <div className="user-name">{userData.username} 님</div>
+                  {/* 유저 이메일을 표시합니다 (API에서 받아옴) */}
+                  <div className="user-email">{userData.email}</div>
+                </>
+              ) : (
+                <>
+                  {/* 로그인하지 않은 경우 기본 메시지 */}
+                  <div className="user-name">로그인이 필요합니다</div>
+                  <div className="user-email">로그인하여 개인화된 서비스를 이용하세요</div>
+                </>
+              )}
             </div>
             
-            {/* 로그아웃 버튼 */}
+            {/* 로그인/로그아웃 버튼 */}
             <div className="logout-container">
-              <button className="logout-button" onClick={handleLogout}>
-                로그아웃
-              </button>
+              {isLoggedIn ? (
+                <button className="logout-button" onClick={handleLogout}>
+                  로그아웃
+                </button>
+              ) : (
+                <button className="login-button" onClick={handleLogin}>
+                  로그인
+                </button>
+              )}
             </div>
           </div>
           
           {/* 주문 내역 링크 */}
           <div className="order-history-link" onClick={handleOrderHistoryClick}>
             <span className="order-history-text">주문 내역</span>
-            <span className="order-count">{userData.orderCount} &gt;</span>
+            <span className="order-count">
+              {isLoggedIn ? `${userData.orderCount} >` : '로그인 필요 >'}
+            </span>
           </div>
         </div>
 
@@ -382,13 +486,14 @@ const MyPage = () => {
                 
                               return (
                 <div key={orderId} className="mypage-order-item">
-                  {/* 주문 정보 헤더 */}
-                  <div className="mypage-order-header">
-                    {/* 주문 날짜를 표시합니다 (API에서 받아옴) */}
-                    <span className="mypage-order-date">{firstOrder.order_date}</span>
-                    {/* 주문번호를 표시합니다 (API에서 받아옴) */}
-                    <span className="mypage-order-number">주문번호 {orderId}</span>
-                  </div>
+                                     {/* 주문 정보 헤더 */}
+                   <div className="mypage-order-header">
+                     {/* 주문 날짜와 주문번호를 한 줄로 표시합니다 */}
+                     <div className="order-info-container">
+                       <span className="mypage-order-date">{firstOrder.order_date}</span>
+                       <span className="mypage-order-number">주문번호 {orderId}</span>
+                     </div>
+                   </div>
                     
                     {/* 배송 상태 카드 */}
                     <div className="delivery-status-card">
@@ -398,69 +503,37 @@ const MyPage = () => {
                         <span className="delivery-date">{firstOrder.order_date} 도착</span>
                       </div>
                       
-                                             {/* 상품 정보들 - 같은 주문번호의 모든 상품을 표시합니다 */}
-                       {(() => {
-                         const allItems = [];
-                         
-                         // kok_orders 처리
-                         if (orders[0].kok_orders && orders[0].kok_orders.length > 0) {
-                           orders[0].kok_orders.forEach((kokOrder, index) => {
-                             allItems.push({
-                               type: 'kok',
-                               product_id: kokOrder.kok_product_id,
-                               product_name: `콕 상품 ${kokOrder.kok_product_id}`,
-                               product_description: '콕 상품입니다',
-                               product_price: kokOrder.order_price,
-                               product_quantity: kokOrder.quantity,
-                               product_image: testImage1
-                             });
-                           });
-                         }
-                         
-                         // homeshopping_orders 처리
-                         if (orders[0].homeshopping_orders && orders[0].homeshopping_orders.length > 0) {
-                           orders[0].homeshopping_orders.forEach((homeOrder, index) => {
-                             allItems.push({
-                               type: 'homeshopping',
-                               product_id: homeOrder.product_id,
-                               product_name: `홈쇼핑 상품 ${homeOrder.product_id}`,
-                               product_description: '홈쇼핑 상품입니다',
-                               product_price: homeOrder.order_price,
-                               product_quantity: homeOrder.quantity,
-                               product_image: testImage2
-                             });
-                           });
-                         }
-                         
-                         return allItems.map((item, index) => (
-                           <div key={`${orderId}-${index}`} className="mypage-product-info">
-                             {/* 상품 이미지를 표시합니다 */}
-                             <div className="mypage-product-image">
-                               <img src={item.product_image} alt={item.product_name} />
-                             </div>
-                             
-                             {/* 상품 상세 정보 */}
-                             <div className="mypage-product-details">
-                               {/* 상품명을 표시합니다 */}
-                               <div className="mypage-product-name" title={item.product_name}>
-                                 {item.product_name.length > 20 
-                                   ? `${item.product_name.substring(0, 20)}...`
-                                   : item.product_name
+                                                                     {/* 상품 정보들 - 실제 데이터 구조에 맞게 표시 */}
+                        {orders.map((order, index) => (
+                          <div key={`${orderId}-${index}`} className="mypage-product-info">
+                            {/* 상품 이미지를 표시합니다 */}
+                            <div className="mypage-product-image">
+                              <img src={order.product_image || testImage1} alt={order.product_name} />
+                            </div>
+                            
+                            {/* 상품 상세 정보 */}
+                            <div className="mypage-product-details">
+                                                             {/* 상품명을 표시합니다 */}
+                               <div className="mypage-product-name" title={order.product_name}>
+                                 {order.product_name && order.product_name.length > 50 
+                                   ? `${order.product_name.substring(0, 50)}...`
+                                   : order.product_name || '상품명 없음'
                                  }
                                </div>
-                               {/* 상품 설명을 표시합니다 */}
-                               <div className="mypage-product-description" title={item.product_description}>
-                                 {item.product_description.length > 20 
-                                   ? `${item.product_description.substring(0, 20)}...`
-                                   : item.product_description
-                                 }
-                               </div>
-                               {/* 가격과 수량을 표시합니다 */}
-                               <div className="mypage-product-price">{formatPrice(item.product_price)} · {item.product_quantity}개</div>
-                             </div>
-                           </div>
-                         ));
-                       })()}
+                              {/* 가격과 수량을 표시합니다 */}
+                              <div className="mypage-product-price">
+                                {formatPrice(order.price || 0)} · {order.quantity || 1}개
+                              </div>
+                              {/* 레시피 관련 정보가 있으면 표시 */}
+                              {order.recipe_related && order.recipe_title && (
+                                <div className="recipe-info">
+                                  <div className="recipe-title">{order.recipe_title}</div>
+                                  <div className="recipe-rating">★{order.recipe_rating || 0} 스크랩 {order.recipe_scrap_count || 0}</div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
                       
                       {/* 레시피 관련 버튼들 */}
                       <div className="recipe-buttons">

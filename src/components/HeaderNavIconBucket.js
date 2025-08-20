@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { cartApi } from '../api/cartApi';
 import '../styles/header_nav_Icon_bucket.css';
 
@@ -16,21 +16,51 @@ const HeaderNavIconBucket = ({
   style = {},
 }) => {
   const [cartItemCount, setCartItemCount] = useState(0);
+  const hasInitialized = useRef(false); // 중복 호출 방지용 ref
+
+  // 로그인 상태 확인 함수
+  const checkLoginStatus = () => {
+    const token = localStorage.getItem('access_token');
+    return !!token;
+  };
 
   useEffect(() => {
+    // 이미 초기화되었으면 리턴
+    if (hasInitialized.current) {
+      return;
+    }
+    
+    // 초기화 플래그 설정
+    hasInitialized.current = true;
+
     const loadCartCount = async () => {
+      // 로그인하지 않은 상태면 API 호출 건너뛰기
+      if (!checkLoginStatus()) {
+        console.log('로그인하지 않은 상태: 장바구니 상품 수 API 호출 건너뜀');
+        setCartItemCount(0);
+        return;
+      }
+
       try {
         const response = await cartApi.getCartItems();
         const items = response.cart_items || [];
         setCartItemCount(items.length);
       } catch (error) {
         console.error('장바구니 상품 수 로딩 실패:', error);
+        
+        // 401 에러인 경우 토큰이 만료되었거나 유효하지 않음
+        if (error.response?.status === 401) {
+          console.log('401 에러 - 토큰이 만료되었거나 유효하지 않음');
+          // 토큰 제거
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+        }
         setCartItemCount(0);
       }
     };
 
     loadCartCount();
-  }, []);
+  }, []); // 빈 의존성 배열로 변경
 
   return (
     <div className="hn-bucket-container" style={{ position: 'relative' }}>

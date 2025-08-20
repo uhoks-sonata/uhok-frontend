@@ -16,6 +16,7 @@ import Notification from './pages/user/Notification';
 import Main from './pages/home_shopping/main';
 import Schedule from './pages/home_shopping/Schedule';
 import HomeShoppingSearch from './pages/home_shopping/HomeShoppingSearch';
+import HomeShoppingProductDetail from './pages/home_shopping/HomeShoppingProductDetail';
 
 // KOK 쇼핑 관련 페이지
 import KokMain from './pages/kok_shopping/KokMain';
@@ -59,10 +60,12 @@ function App() {
               {/* 라우트 정의 컨테이너 */}
               <Routes>
               {/* ===== 메인 페이지 라우트 ===== */}
-              {/* 루트 경로 (/) - 로그인 페이지 */}
-              <Route path="/" element={<Login />} />  
+              {/* 루트 경로 (/) - 메인 페이지 */}
+              <Route path="/" element={<Main />} />  
               
               {/* ===== 사용자 인증 라우트 ===== */}
+              {/* 로그인 경로 (/login) - 로그인 페이지 */}
+              <Route path="/login" element={<Login />} />
               {/* 회원가입 경로 (/signup) - 회원가입 페이지 */}
               <Route path="/signup" element={<Signup />} />
               
@@ -73,6 +76,8 @@ function App() {
               <Route path="/schedule" element={<Schedule />} />
               {/* 홈쇼핑 검색 경로 (/homeshopping/search) - HomeShoppingSearch 페이지로 설정 */}
               <Route path="/homeshopping/search" element={<HomeShoppingSearch />} />
+              {/* 홈쇼핑 상품 상세 경로 (/homeshopping/product/:productId) - HomeShoppingProductDetail 페이지로 설정 */}
+              <Route path="/homeshopping/product/:productId" element={<HomeShoppingProductDetail />} />
               {/* ===== KOK 라우트 ===== */}
 
               {/* KOK 메인 경로 (/kok) - KOK 메인 페이지 */}
