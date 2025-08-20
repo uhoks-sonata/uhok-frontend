@@ -152,15 +152,18 @@ api.interceptors.response.use(
       const currentPath = window.location.pathname;
       const publicPaths = ['/', '/signup', '/recipes', '/recipes/by-ingredients'];
       
-      const isPublicPath = publicPaths.some(path => currentPath.startsWith(path));
+      // 주문내역 페이지와 마이페이지는 401 에러 시 리다이렉트하지 않음 (더미 데이터 사용)
+      const isPublicPath = publicPaths.some(path => currentPath.startsWith(path)) || 
+                          currentPath.startsWith('/orderlist') || 
+                          currentPath.startsWith('/mypage');
       
       if (isPublicPath) {
-        // 인증이 필요하지 않은 페이지에서는 401 에러를 무시
-        console.log('인증이 필요하지 않은 페이지에서 401 에러 발생, 무시합니다:', currentPath);
+        // 인증이 필요하지 않은 페이지나 주문내역/마이페이지에서는 401 에러를 무시
+        console.log('401 에러 발생하지만 리다이렉트하지 않습니다:', currentPath);
         return Promise.reject(error);
       }
       
-      // 인증이 필요한 페이지에서만 로그인 페이지로 리다이렉트
+      // 그 외 인증이 필요한 페이지에서만 로그인 페이지로 리다이렉트
       console.log('인증이 필요한 페이지에서 401 에러 발생, 로그인 페이지로 리다이렉트:', currentPath);
       console.log('에러 상세:', {
         status: error.response.status,

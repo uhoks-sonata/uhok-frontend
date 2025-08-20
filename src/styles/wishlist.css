@@ -8,8 +8,9 @@
 
 .wishlist-content {
   flex: 1;
-  overflow-y: auto;
-  padding: 16px;
+  overflow-y: auto;padding-top: 5px;
+  height: calc(100vh - 185px);
+  max-height: calc(100vh - 185px);
 }
 
 /* 탭 네비게이션 스타일 */

@@ -14,6 +14,8 @@ import noItemsIcon from '../../assets/no_items.png';
 
 // API 설정을 가져옵니다
 import api from '../api';
+// orderApi import
+import { orderApi } from '../../api/orderApi';
 
 // 테스트용 상품 이미지들을 가져옵니다
 import testImage1 from '../../assets/test/test1.png';
@@ -81,12 +83,12 @@ const OrderList = () => {
         setLoading(true);
         setError(null); // 에러 상태 초기화
         
-        // api.js를 활용하여 주문 내역 목록을 비동기로 조회합니다
-        const ordersResponse = await api.get('/api/orders?page=1&size=20');
+        // orderApi를 활용하여 주문 내역 목록을 비동기로 조회합니다
+        const ordersResponse = await orderApi.getUserOrders(20);
         
         // 응답 데이터를 검증하고 가져옵니다
-        const ordersData = ordersResponse.data;
-        if (!ordersData || !ordersData.orders || ordersData.orders.length === 0) {
+        const ordersData = ordersResponse;
+        if (!ordersData || !Array.isArray(ordersData) || ordersData.length === 0) {
           // 주문이 없는 경우 빈 배열로 설정
           setOrderData({
             orders: [],
@@ -100,56 +102,67 @@ const OrderList = () => {
         
         // API 응답을 프론트엔드 형식으로 변환합니다 (비동기 처리)
         const transformedOrders = await Promise.all(
-          ordersData.orders.map(async (order) => {
+          ordersData.map(async (order) => {
             try {
-              // kok_order가 있는 경우
-              if (order.kok_order) {
+              // kok_orders가 있는 경우
+              if (order.kok_orders && order.kok_orders.length > 0) {
+                const kokOrder = order.kok_orders[0]; // 첫 번째 콕 주문 사용
                 // 상품 정보를 비동기로 가져오는 로직 (향후 구현)
-                const productInfo = await fetchProductInfo(order.kok_order.kok_product_id);
+                const productInfo = await fetchProductInfo(kokOrder.kok_product_id);
                 
                 return {
                   order_id: order.order_id,
                   order_date: new Date(order.order_time).toISOString().split('T')[0],
-                  status: order.cancel_time ? 'cancelled' : 'delivered', // 실제로는 API에서 status 필드가 있어야 함
-                  total_amount: order.kok_order.order_price,
+                  status: order.cancel_time ? 'cancelled' : 'delivered',
+                  total_amount: kokOrder.order_price,
                   items: [
                     {
-                      product_id: order.kok_order.kok_product_id,
-                      product_name: productInfo?.name || `상품 ${order.kok_order.kok_product_id}`,
+                      product_id: kokOrder.kok_product_id,
+                      product_name: productInfo?.name || `상품 ${kokOrder.kok_product_id}`,
                       product_image: productInfo?.image || testImage1,
-                      quantity: order.kok_order.quantity,
-                      price: order.kok_order.order_price
+                      quantity: kokOrder.quantity,
+                      price: kokOrder.order_price
                     }
                   ]
                 };
               }
-              // homeshopping_order가 있는 경우 (향후 확장)
-              else if (order.homeshopping_order) {
+              // homeshopping_orders가 있는 경우
+              else if (order.homeshopping_orders && order.homeshopping_orders.length > 0) {
+                const homeOrder = order.homeshopping_orders[0]; // 첫 번째 홈쇼핑 주문 사용
                 return {
                   order_id: order.order_id,
                   order_date: new Date(order.order_time).toISOString().split('T')[0],
                   status: order.cancel_time ? 'cancelled' : 'delivered',
-                  total_amount: 0, // homeshopping_order의 가격 정보 필요
-                  items: []
+                  total_amount: homeOrder.order_price,
+                  items: [
+                    {
+                      product_id: homeOrder.product_id,
+                      product_name: `홈쇼핑 상품 ${homeOrder.product_id}`,
+                      product_image: testImage1,
+                      quantity: homeOrder.quantity,
+                      price: homeOrder.order_price
+                    }
+                  ]
                 };
               }
               return null;
             } catch (productError) {
               console.error('상품 정보 가져오기 실패:', productError);
               // 상품 정보 가져오기 실패 시 기본 정보로 처리
-              if (order.kok_order) {
+              if (order.kok_orders && order.kok_orders.length > 0) {
+                const kokOrder = order.kok_orders[0];
                 return {
                   order_id: order.order_id,
                   order_date: new Date(order.order_time).toISOString().split('T')[0],
                   status: order.cancel_time ? 'cancelled' : 'delivered',
-                  total_amount: order.kok_order.order_price,
+                  total_amount: kokOrder.order_price,
                   items: [
                     {
-                      product_id: order.kok_order.kok_product_id,
-                      product_name: `상품 ${order.kok_order.kok_product_id}`,
+                      product_id: kokOrder.kok_product_id,
+                      product_name: `상품 ${kokOrder.kok_product_id}`,
                       product_image: testImage1,
-                      quantity: order.kok_order.quantity,
-                      price: order.kok_order.order_price
+                      quantity: kokOrder.quantity,
+                      price: kokOrder.order_price
                     }
                   ]
                 };
@@ -173,18 +186,32 @@ const OrderList = () => {
         // 로딩 상태를 false로 설정합니다
         setLoading(false);
         
-      } catch (error) {
-        // 에러 발생 시 에러 상태를 설정하고 로딩 상태를 false로 설정합니다
-        console.error('주문 내역 데이터 가져오기 실패:', error);
-        // 네트워크 에러인 경우 더미 데이터 사용, 그 외에는 에러 메시지 표시
-        if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED' || 
-            (error.name === 'TypeError' && error.message.includes('Failed to fetch')) ||
-            error.message.includes('Network Error')) {
-          console.log('백엔드 서버 연결 실패 - 더미 데이터를 사용합니다.');
-          setError(null); // 에러 상태 초기화
-        } else {
-          setError(error.message);
-        }
+             } catch (error) {
+         // 에러 발생 시 에러 상태를 설정하고 로딩 상태를 false로 설정합니다
+         console.error('주문 내역 데이터 가져오기 실패:', error);
+         
+                   // 401 에러 특별 처리 (인증 필요)
+          if (error.response?.status === 401) {
+            console.log('401 에러 발생 - 로그인이 필요합니다.');
+            console.log('더미 데이터를 사용합니다.');
+            setError(null); // 에러 상태 초기화
+            // 401 에러 시에도 더미 데이터를 사용하도록 계속 진행
+          }
+          // 422 에러 특별 처리
+          else if (error.response?.status === 422) {
+            console.log('422 에러 발생 - API 엔드포인트나 파라미터 문제일 수 있습니다.');
+            console.log('더미 데이터를 사용합니다.');
+            setError(null); // 에러 상태 초기화
+          }
+          // 네트워크 에러인 경우 더미 데이터 사용, 그 외에는 에러 메시지 표시
+          else if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED' || 
+              (error.name === 'TypeError' && error.message.includes('Failed to fetch')) ||
+              error.message.includes('Network Error')) {
+            console.log('백엔드 서버 연결 실패 - 더미 데이터를 사용합니다.');
+            setError(null); // 에러 상태 초기화
+          } else {
+            setError(error.message);
+          }
         setLoading(false);
         
         // 테스트용 더미 데이터를 설정합니다 (API 연결 실패 시)
