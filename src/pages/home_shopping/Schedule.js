@@ -144,30 +144,44 @@ const Schedule = () => {
         // 컴포넌트가 마운트된 상태에서만 상태 업데이트
         if (isMounted) {
           console.log('📺 API 응답 전체:', response);
+          console.log('📺 API 응답 data:', response.data);
           console.log('📺 API 응답 schedules:', response.data?.schedules);
           
-          if (response && response.data && response.data.schedules) {
-            console.log('✅ schedules 배열 길이:', response.data.schedules.length);
-            console.log('✅ 첫 번째 schedule:', response.data.schedules[0]);
+          // 응답 구조 확인
+          if (response && response.data) {
+            console.log('✅ response.data 존재');
             
-            // 가격 데이터 상세 로그
-            const firstItem = response.data.schedules[0];
-            console.log('💰 가격 데이터 상세:');
-            console.log('  - original_price:', firstItem.original_price, typeof firstItem.original_price);
-            console.log('  - discounted_price:', firstItem.discounted_price, typeof firstItem.discounted_price);
-            console.log('  - discount_rate:', firstItem.discount_rate, typeof firstItem.discount_rate);
-            
-            // 첫 번째 아이템의 모든 필드 확인
-            console.log('🔍 첫 번째 아이템 전체 필드:');
-            console.log(Object.keys(firstItem));
-            console.log('📋 첫 번째 아이템 전체 데이터:', JSON.stringify(firstItem, null, 2));
-            
-            setScheduleData(response.data.schedules);
+            // schedules가 직접 있는 경우
+            if (response.data.schedules) {
+              console.log('✅ schedules 배열 발견:', response.data.schedules);
+              console.log('✅ schedules 배열 길이:', response.data.schedules.length);
+              
+              if (response.data.schedules.length > 0) {
+                const firstItem = response.data.schedules[0];
+                console.log('✅ 첫 번째 schedule:', firstItem);
+                console.log('🔍 첫 번째 아이템 전체 필드:', Object.keys(firstItem));
+                setScheduleData(response.data.schedules);
+              } else {
+                console.log('⚠️ schedules 배열이 비어있음');
+                setScheduleData([]);
+              }
+            } 
+            // schedules가 data 안에 중첩된 경우
+            else if (response.data.data && response.data.data.schedules) {
+              console.log('✅ 중첩된 schedules 발견:', response.data.data.schedules);
+              console.log('✅ 중첩된 schedules 길이:', response.data.data.schedules.length);
+              setScheduleData(response.data.data.schedules);
+            }
+            // 다른 구조의 경우
+            else {
+              console.log('❌ schedules를 찾을 수 없음');
+              console.log('🔍 response.data의 모든 키:', Object.keys(response.data));
+              console.log('📋 response.data 전체:', JSON.stringify(response.data, null, 2));
+              setScheduleData([]);
+            }
           } else {
-            console.log('❌ API 응답에 schedules가 없음');
+            console.log('❌ response.data가 없음');
             console.log('❌ response:', response);
-            console.log('❌ response.data:', response?.data);
-            console.log('❌ response.data.schedules:', response?.data?.schedules);
             setScheduleData([]);
           }
         }
@@ -435,8 +449,19 @@ const Schedule = () => {
 
   // 편성표 목록 렌더링
   const renderScheduleList = () => {
+    console.log('🔍 renderScheduleList 호출됨');
+    console.log('📊 scheduleData:', scheduleData);
+    console.log('📊 scheduleData.length:', scheduleData?.length);
+    
     if (!scheduleData || scheduleData.length === 0) {
-      return <div className="no-schedule">방송 일정이 없습니다.</div>;
+      console.log('❌ 편성표 데이터가 없음');
+      return (
+        <div className="no-schedule">
+          <p>방송 일정이 없습니다.</p>
+          <p>데이터 로딩 중이거나 API 응답에 문제가 있을 수 있습니다.</p>
+          <button onClick={() => window.location.reload()}>새로고침</button>
+        </div>
+      );
     }
 
     // 선택된 날짜와 시간에 따라 편성표 필터링
@@ -482,8 +507,10 @@ const Schedule = () => {
 
     return (
       <div className="schedule-timeline">
+
+
         {/* 필터링 정보 표시 */}
-        {(selectedDate || selectedTime) && (
+        {/* {(selectedDate || selectedTime) && (
           <div className="schedule-filter-info">
             <span className="filter-label">필터링:</span>
             {selectedDate && (
@@ -510,64 +537,53 @@ const Schedule = () => {
               필터 초기화
             </button>
           </div>
-        )}
-
-        {/* 전체 방송 시간 범위를 위에 표시 */}
-        <div className="schedule-time-header">
-          <span className="time-range">
-            {filteredScheduleData.length > 0 ? 
-              `${filteredScheduleData[0]?.live_start_time?.substring(0, 5) || '--:--'} ~ ${filteredScheduleData[0]?.live_end_time?.substring(0, 5) || '--:--'}` : 
-              '--:-- ~ --:--'
-            }
-          </span>
-          <span className="schedule-count">
-            총 {filteredScheduleData.length}개 방송
-          </span>
-        </div>
+        )} */}
         
         {filteredScheduleData.map((item) => {
           console.log('스케줄 아이템 product_id:', item.product_id, typeof item.product_id);
           return (
-            <div key={item.live_id} className="schedule-item">
-              {/* 방송 시간 표시 */}
+            <div key={item.live_id} className="schedule-item-wrapper">
+              {/* 방송 시간 표시 - 회색 박스 위에 위치 */}
               <div className="schedule-time-range">
                 <span className="time-range">
                   {item.live_start_time?.substring(0, 5) || '--:--'} ~ {item.live_end_time?.substring(0, 5) || '--:--'}
                 </span>
               </div>
-              
-              <div className="schedule-content">
-                <div className="schedule-image">
-                  <img src={item.thumb_img_url} alt={item.product_name} />
-                  {renderStatusBadge(item)}
-                </div>
-                <div className="schedule-info">
-                  <div className="channel-info">
-                    <span className="schedule-channel-name">{item.homeshopping_name}</span>
+
+              <div className="schedule-item">
+                <div className="schedule-content">
+                  <div className="schedule-image">
+                    <img src={item.thumb_img_url} alt={item.product_name} />
+                    {renderStatusBadge(item)}
                   </div>
-                  <div className="schedule-product-meta">
-                    <div className="schedule-product-name">{item.product_name}</div>
-                  </div>
-                  <div className="schedule-price-info">
-                    <div className="schedule-original-price">{item.original_price?.toLocaleString() || '0'}원</div>
-                    <div className="schedule-discount-display">
-                      <span className="schedule-discount-rate">{item.discount_rate || '0'}%</span>
-                      <span className="schedule-discount-price">{item.discounted_price?.toLocaleString() || '0'}원</span>
+                  <div className="schedule-info">
+                    <div className="channel-info">
+                      <span className="schedule-channel-name">{item.homeshopping_name}</span>
                     </div>
-                    <div className="schedule-wishlist-btn">
-                      <button 
-                        className="heart-button"
-                        data-product-id={item.product_id}
-                        onClick={(e) => {
-                          e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
-                          handleHeartToggle(item.product_id);
-                        }}>
-                        <img 
-                          src={unlikedProducts.has(item.product_id) ? emptyHeartIcon : filledHeartIcon} 
-                          alt="찜 토글" 
-                          className="heart-icon"
-                        />
-                      </button>
+                    <div className="schedule-product-meta">
+                      <div className="schedule-product-name">{item.product_name}</div>
+                    </div>
+                    <div className="schedule-price-info">
+                      <div className="schedule-original-price">{item.original_price?.toLocaleString() || '0'}원</div>
+                      <div className="schedule-discount-display">
+                        <span className="schedule-discount-rate">{item.discount_rate || '0'}%</span>
+                        <span className="schedule-discount-price">{item.discounted_price?.toLocaleString() || '0'}원</span>
+                      </div>
+                      <div className="schedule-wishlist-btn">
+                        <button 
+                          className="heart-button"
+                          data-product-id={item.product_id}
+                          onClick={(e) => {
+                            e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
+                            handleHeartToggle(item.product_id);
+                          }}>
+                          <img 
+                            src={unlikedProducts.has(item.product_id) ? emptyHeartIcon : filledHeartIcon} 
+                            alt="찜 토글" 
+                            className="heart-icon"
+                          />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -123,6 +123,8 @@
   max-width: 100%; /* 화면 너비를 넘지 않도록 */
   width: 100%; /* 전체 너비 사용 */
   overflow: hidden; /* 스크롤 방지 */
+  height: calc(100vh - 200px); /* 헤더, 날짜, 시간 높이를 제외한 고정 높이 */
+  min-height: 500px; /* 최소 높이 보장 */
 }
 
 /* 왼쪽 사이드바 */
@@ -135,7 +137,8 @@
   flex-shrink: 0; /* 크기가 줄어들지 않도록 */
   min-width: 100px; /* 최소 너비를 100px로 조정 */
   max-width: 100px; /* 최대 너비를 100px로 조정 */
-  height: 100%; /* 전체 높이 사용 */
+  height: calc(100vh - 200px); /* 헤더, 날짜, 시간 높이를 제외한 고정 높이 */
+  min-height: 500px; /* 최소 높이 보장 */
   overflow: hidden; /* 스크롤 방지 */
 }
 
@@ -150,6 +153,7 @@
   justify-content: flex-start;
   gap: 16px;
   height: 100%; /* 전체 높이 사용 */
+  min-height: 500px; /* 최소 높이 보장 */
 }
 
 .channel-list::-webkit-scrollbar {
@@ -209,6 +213,7 @@
   overflow-x: hidden; /* 가로 스크롤 방지 */
   height: 100%; /* 전체 높이 사용 */
   max-height: calc(100vh - 200px); /* 헤더, 날짜, 시간 높이를 제외한 최대 높이 */
+  min-height: 500px; /* 최소 높이 보장 */
 }
 
 /* 날짜 캘린더 */
@@ -706,9 +711,24 @@
 }
 
 /* 새로운 스케줄 아이템 스타일 */
+.schedule-item-wrapper {
+  margin-bottom: 16px;
+}
+
+.schedule-time-range {
+  margin-bottom: 8px;
+  padding: 8px 0;
+}
+
+.schedule-time-range .time-range {
+  font-size: 14px;
+  font-weight: 500;
+  color: #000000;
+  padding: 6px 0;
+}
+
 .schedule-item {
   /* display: flex; */
-  margin-bottom: 16px;
   padding: 16px;
   background: #fff;
   border-radius: 8px;
@@ -745,43 +765,41 @@
   color: #333;
   flex: 1;
 }
-.left-sidebar.left-sidebar.left-sidebar
 .schedule-content {
   display: flex;
   width: 100%;
   gap: 16px;
   align-items: flex-start;
-  flex-direction: column;
 }
 
 .schedule-image {
   position: relative;
-  width: 100%;
+  width: 120px;
+  height: 120px;
   flex-shrink: 0;
   overflow: hidden;
   border-radius: 8px;
-  flex-direction: column;
 }
 
 .schedule-image img {
   width: 100%;
-  height: calc(100% - 40px); /* 상태 배지 높이만큼 제외 */
-  object-fit: cover; /* 비율 유지하면서 영역에 맞춤 */
-  margin-top: 40px; /* 상태 배지 아래에 위치 */
+  height: 100%;
+  object-fit: cover;
 }
 
 .status-badge {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 32%;
-  height: 30px;
-  padding: 5px 12px;
-  border-radius: 16px;
-  font-size: 14px;
+  top: 8px;
+  left: 8px;
+  width: auto;
+  height: 24px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
   font-weight: bold;
   text-align: center;
   z-index: 10;
+  white-space: nowrap;
 }
 
 .status-live {
@@ -928,4 +946,32 @@
 .wishlist-icon {
   font-size: 14px;
   color: #666;
+}
+
+/* 편성표 없음 메시지 */
+.no-schedule {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+}
+
+.no-schedule p {
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.no-schedule button {
+  margin-top: 16px;
+  padding: 8px 16px;
+  background: #E91E63;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.no-schedule button:hover {
+  background: #C2185B;
 }
