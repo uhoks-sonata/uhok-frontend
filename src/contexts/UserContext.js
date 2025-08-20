@@ -77,7 +77,9 @@ export const UserProvider = ({ children }) => {
       console.log('UserContext - 로컬 스토리지에 토큰이 없습니다.');
     }
     
+    // 항상 로딩 상태를 false로 설정
     setIsLoading(false);
+    console.log('UserContext - 초기화 완료, isLoading: false');
   }, []);
 
   // 로그인 함수
