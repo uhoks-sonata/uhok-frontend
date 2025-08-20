@@ -214,7 +214,7 @@ const KokPayment = () => {
     setErrorMessage('');
 
     try {
-      // 1. 주문 생성 API 호출
+      // 1. 주문 생성 API 호출 (장바구니에서 온 주문만 처리)
       if (orderInfo?.fromCart && orderInfo?.cartItems) {
         // API 명세서에 맞는 형식으로 데이터 변환
         const selectedItems = orderInfo.cartItems.map(item => ({
@@ -235,8 +235,8 @@ const KokPayment = () => {
         // 결제 처리 시뮬레이션 (2초 대기)
         await new Promise(resolve => setTimeout(resolve, 2000));
       } else {
-        // 단일 상품인 경우 기존 방식 사용
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        // 장바구니에서 온 주문이 아닌 경우 에러 처리
+        throw new Error('장바구니에서 온 주문만 처리할 수 있습니다.');
       }
 
       // 2. 결제 확인 처리
