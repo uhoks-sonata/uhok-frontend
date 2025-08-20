@@ -80,6 +80,27 @@ const Schedule = () => {
   // 선택된 시간 상태
   const [selectedTime, setSelectedTime] = useState(null);
   
+  // 시간 클릭 핸들러
+  const handleTimeClick = (time) => {
+    if (selectedTime === time) {
+      setSelectedTime(null); // 같은 시간을 다시 클릭하면 선택 해제
+    } else {
+      setSelectedTime(time); // 새로운 시간 선택
+      
+      // 선택한 시간을 두 번째 위치에 보이도록 스크롤 조정
+      setTimeout(() => {
+        if (timeSlotsRef.current) {
+          const timeIndex = timeSlots.findIndex(t => t === time);
+          if (timeIndex !== -1) {
+            const timeSlotWidth = 60; // 각 시간 슬롯의 너비
+            const scrollPosition = Math.max(0, (timeIndex - 1) * timeSlotWidth);
+            timeSlotsRef.current.scrollLeft = scrollPosition;
+          }
+        }
+      }, 100);
+    }
+  };
+  
   // 시간대 데이터 - 01:00부터 24시간 생성
   const getTimeSlots = () => {
     const timeSlots = [];
@@ -94,6 +115,36 @@ const Schedule = () => {
   };
 
   const timeSlots = getTimeSlots();
+  
+  // 날짜와 시간에 따른 스케줄 필터링 함수
+  const getFilteredScheduleData = () => {
+    if (!scheduleData || scheduleData.length === 0) return [];
+    
+    let filteredData = [...scheduleData];
+    
+    // 날짜 필터링
+    if (selectedDate) {
+      const selectedDateObj = new Date(selectedDate);
+      filteredData = filteredData.filter(item => {
+        const itemDate = new Date(item.live_date);
+        return itemDate.toDateString() === selectedDateObj.toDateString();
+      });
+    }
+    
+    // 시간 필터링
+    if (selectedTime) {
+      const [selectedHour] = selectedTime.split(':').map(Number);
+      filteredData = filteredData.filter(item => {
+        const [itemStartHour] = item.live_start_time.split(':').map(Number);
+        const [itemEndHour] = item.live_end_time.split(':').map(Number);
+        
+        // 선택된 시간이 방송 시간 범위에 포함되는지 확인
+        return selectedHour >= itemStartHour && selectedHour < itemEndHour;
+      });
+    }
+    
+    return filteredData;
+  };
   
   // 날짜 데이터 초기화
   useEffect(() => {
@@ -144,44 +195,49 @@ const Schedule = () => {
         // 컴포넌트가 마운트된 상태에서만 상태 업데이트
         if (isMounted) {
           console.log('📺 API 응답 전체:', response);
-          console.log('📺 API 응답 data:', response.data);
           console.log('📺 API 응답 schedules:', response.data?.schedules);
           
-          // 응답 구조 확인
-          if (response && response.data) {
-            console.log('✅ response.data 존재');
+          if (response && response.data && response.data.schedules) {
+            console.log('✅ schedules 배열 길이:', response.data.schedules.length);
+            console.log('✅ 첫 번째 schedule:', response.data.schedules[0]);
             
-            // schedules가 직접 있는 경우
-            if (response.data.schedules) {
-              console.log('✅ schedules 배열 발견:', response.data.schedules);
-              console.log('✅ schedules 배열 길이:', response.data.schedules.length);
+            // 가격 데이터 상세 로그
+            const firstItem = response.data.schedules[0];
+            console.log('💰 가격 데이터 상세:');
+            console.log('  - original_price:', firstItem.original_price, typeof firstItem.original_price);
+            console.log('  - discounted_price:', firstItem.discounted_price, typeof firstItem.discounted_price);
+            console.log('  - discount_rate:', firstItem.discount_rate, typeof firstItem.discount_rate);
+            
+            // 첫 번째 아이템의 모든 필드 확인
+            console.log('🔍 첫 번째 아이템 전체 필드:');
+            console.log(Object.keys(firstItem));
+            console.log('📋 첫 번째 아이템 전체 데이터:', JSON.stringify(firstItem, null, 2));
+            
+            // API 응답에 status 필드가 없으므로 계산해서 추가
+            const schedulesWithStatus = response.data.schedules.map(item => {
+              const now = new Date();
+              const liveStart = new Date(`${item.live_date} ${item.live_start_time}`);
+              const liveEnd = new Date(`${item.live_date} ${item.live_end_time}`);
               
-              if (response.data.schedules.length > 0) {
-                const firstItem = response.data.schedules[0];
-                console.log('✅ 첫 번째 schedule:', firstItem);
-                console.log('🔍 첫 번째 아이템 전체 필드:', Object.keys(firstItem));
-                setScheduleData(response.data.schedules);
-              } else {
-                console.log('⚠️ schedules 배열이 비어있음');
-                setScheduleData([]);
+              let status = 'LIVE 예정';
+              if (now >= liveStart && now <= liveEnd) {
+                status = 'LIVE';
+              } else if (now > liveEnd) {
+                status = '종료';
               }
-            } 
-            // schedules가 data 안에 중첩된 경우
-            else if (response.data.data && response.data.data.schedules) {
-              console.log('✅ 중첩된 schedules 발견:', response.data.data.schedules);
-              console.log('✅ 중첩된 schedules 길이:', response.data.data.schedules.length);
-              setScheduleData(response.data.data.schedules);
-            }
-            // 다른 구조의 경우
-            else {
-              console.log('❌ schedules를 찾을 수 없음');
-              console.log('🔍 response.data의 모든 키:', Object.keys(response.data));
-              console.log('📋 response.data 전체:', JSON.stringify(response.data, null, 2));
-              setScheduleData([]);
-            }
+              
+              return {
+                ...item,
+                status
+              };
+            });
+            
+            setScheduleData(schedulesWithStatus);
           } else {
-            console.log('❌ response.data가 없음');
+            console.log('❌ API 응답에 schedules가 없음');
             console.log('❌ response:', response);
+            console.log('❌ response.data:', response?.data);
+            console.log('❌ response.data.schedules:', response?.data?.schedules);
             setScheduleData([]);
           }
         }
@@ -206,27 +262,20 @@ const Schedule = () => {
     };
   }, []); // selectedDate 의존성 제거
   
-  // 시간대 스크롤 위치 조정 (현재 시간이 적절한 위치에 보이도록)
+  // 시간대 스크롤 위치 조정 (현재 시간이 두 번째 위치에 오도록)
   useEffect(() => {
     if (timeSlotsRef.current) {
       const currentTimeIndex = getCurrentTimeIndex();
       if (currentTimeIndex !== -1) {
-        // 현재 시간이 중앙에 오도록 스크롤 조정
+        // 현재 시간이 두 번째 위치에 오도록 스크롤 조정
         const timeSlotWidth = 60; // 각 시간대의 너비
-        const scrollPosition = Math.max(0, (currentTimeIndex - 2) * timeSlotWidth);
+        const scrollPosition = Math.max(0, (currentTimeIndex - 1) * timeSlotWidth);
         timeSlotsRef.current.scrollLeft = scrollPosition;
       }
     }
   }, [timeSlots]);
   
-  // 시간 클릭 핸들러
-  const handleTimeClick = (time) => {
-    setSelectedTime(time);
-    console.log('선택된 시간:', time);
-    
-    // TODO: 선택된 시간에 해당하는 편성표 데이터 로드
-    // fetchScheduleDataByTime(time);
-  };
+
 
   // 현재 시간 가져오기
   const getCurrentTime = () => {
@@ -357,33 +406,26 @@ const Schedule = () => {
   };
 
   // 방송 상태 표시 함수
-  const renderStatusBadge = (item) => {
-    const now = new Date();
-    const liveStart = new Date(`${item.live_date} ${item.live_start_time}`);
-    const liveEnd = new Date(`${item.live_date} ${item.live_end_time}`);
-    
+  const renderStatusBadge = (status) => {
     let statusText = '';
     let statusClass = '';
     
-    // 현재 시간이 방송 시작 시간보다 이전이면 "방송 예정"
-    if (now < liveStart) {
-      statusText = '방송 예정';
-      statusClass = 'status-upcoming';
-    }
-    // 현재 시간이 방송 시작과 종료 시간 사이에 있으면 "LIVE"
-    else if (now >= liveStart && now <= liveEnd) {
-      statusText = 'LIVE';
-      statusClass = 'status-live';
-    }
-    // 현재 시간이 방송 종료 시간보다 이후면 "방송 종료"
-    else if (now > liveEnd) {
-      statusText = '방송 종료';
-      statusClass = 'status-ended';
-    }
-    // 기본값
-    else {
-      statusText = '알 수 없음';
-      statusClass = 'status-unknown';
+    switch (status) {
+      case 'live':
+        statusText = 'LIVE';
+        statusClass = 'status-live';
+        break;
+      case 'live 예정':
+        statusText = 'LIVE 예정';
+        statusClass = 'status-upcoming';
+        break;
+      case '종료':
+        statusText = '종료';
+        statusClass = 'status-ended';
+        break;
+      default:
+        statusText = '알 수 없음';
+        statusClass = 'status-unknown';
     }
     
     return (
@@ -447,124 +489,55 @@ const Schedule = () => {
     return null;
   };
 
-  // 편성표 목록 렌더링
+    // 편성표 목록 렌더링
   const renderScheduleList = () => {
-    console.log('🔍 renderScheduleList 호출됨');
-    console.log('📊 scheduleData:', scheduleData);
-    console.log('📊 scheduleData.length:', scheduleData?.length);
+    const filteredData = getFilteredScheduleData();
     
-    if (!scheduleData || scheduleData.length === 0) {
-      console.log('❌ 편성표 데이터가 없음');
-      return (
-        <div className="no-schedule">
-          <p>방송 일정이 없습니다.</p>
-          <p>데이터 로딩 중이거나 API 응답에 문제가 있을 수 있습니다.</p>
-          <button onClick={() => window.location.reload()}>새로고침</button>
-        </div>
-      );
-    }
-
-    // 선택된 날짜와 시간에 따라 편성표 필터링
-    let filteredScheduleData = scheduleData;
-
-    // 1. 날짜 필터링
-    if (selectedDate) {
-      filteredScheduleData = filteredScheduleData.filter(item => {
-        const itemDate = new Date(item.live_date);
-        const selectedDateObj = new Date(selectedDate);
-        return itemDate.toDateString() === selectedDateObj.toDateString();
-      });
-    }
-
-    // 2. 시간 필터링
-    if (selectedTime) {
-      const selectedHour = parseInt(selectedTime.split(':')[0]);
-      filteredScheduleData = filteredScheduleData.filter(item => {
-        const startHour = parseInt(item.live_start_time.split(':')[0]);
-        const endHour = parseInt(item.live_end_time.split(':')[0]);
-        
-        // 선택된 시간이 방송 시간 범위에 포함되는지 확인
-        return selectedHour >= startHour && selectedHour <= endHour;
-      });
-    }
-
-    // 필터링된 데이터가 없으면 메시지 표시
-    if (filteredScheduleData.length === 0) {
-      let message = '방송 일정이 없습니다.';
-      if (selectedDate && selectedTime) {
-        message = `${selectedDate} ${selectedTime}에 해당하는 방송 일정이 없습니다.`;
-      } else if (selectedDate) {
-        message = `${selectedDate}에 해당하는 방송 일정이 없습니다.`;
-      } else if (selectedTime) {
-        message = `${selectedTime}에 해당하는 방송 일정이 없습니다.`;
+    if (!filteredData || filteredData.length === 0) {
+      if (selectedDate || selectedTime) {
+        return <div className="no-schedule">선택한 날짜/시간에 방송 일정이 없습니다.</div>;
       }
-      return <div className="no-schedule">{message}</div>;
+      return <div className="no-schedule">방송 일정이 없습니다.</div>;
     }
 
-    // 전체 방송 시간 범위 계산 (필터링된 데이터 기준)
-    const startTime = filteredScheduleData[0]?.live_start_time?.substring(0, 5) || '';
-    const endTime = filteredScheduleData[filteredScheduleData.length - 1]?.live_end_time?.substring(0, 5) || '';
+    // 전체 방송 시간 범위 계산
+    const startTime = filteredData[0]?.live_start_time?.substring(0, 5) || '';
+    const endTime = filteredData[filteredData.length - 1]?.live_end_time?.substring(0, 5) || '';
 
     return (
       <div className="schedule-timeline">
-
-
-        {/* 필터링 정보 표시 */}
-        {/* {(selectedDate || selectedTime) && (
-          <div className="schedule-filter-info">
-            <span className="filter-label">필터링:</span>
-            {selectedDate && (
-              <span className="filter-date">
-                {new Date(selectedDate).toLocaleDateString('ko-KR', { 
-                  month: 'long', 
-                  day: 'numeric',
-                  weekday: 'long'
-                })}
-              </span>
-            )}
-            {selectedTime && (
-              <span className="filter-time">
-                {selectedTime}
-              </span>
-            )}
-            <button 
-              className="clear-filter-btn"
-              onClick={() => {
-                setSelectedDate(null);
-                setSelectedTime(null);
-              }}
-            >
-              필터 초기화
-            </button>
-          </div>
-        )} */}
-        
-        {filteredScheduleData.map((item) => {
+        {filteredData.map((item) => {
           console.log('스케줄 아이템 product_id:', item.product_id, typeof item.product_id);
+          
+          // 각 아이템의 방송 시간 계산
+          const itemStartTime = item.live_start_time?.substring(0, 5) || '';
+          const itemEndTime = item.live_end_time?.substring(0, 5) || '';
+          
           return (
             <div key={item.live_id} className="schedule-item-wrapper">
-              {/* 방송 시간 표시 - 회색 박스 위에 위치 */}
-              <div className="schedule-time-range">
+              {/* 각 홈쇼핑마다 시간 범위를 흰색 박스 밖에 표시 */}
+              <div className="schedule-time-header">
                 <span className="time-range">
-                  {item.live_start_time?.substring(0, 5) || '--:--'} ~ {item.live_end_time?.substring(0, 5) || '--:--'}
+                  {itemStartTime} ~ {itemEndTime}
                 </span>
               </div>
-
+              
               <div className="schedule-item">
                 <div className="schedule-content">
-                  <div className="schedule-image">
-                    <img src={item.thumb_img_url} alt={item.product_name} />
-                    {renderStatusBadge(item)}
+                <div className="schedule-image">
+                  <img src={item.thumb_img_url} alt={item.product_name} />
+                  {renderStatusBadge(item.status)}
+                </div>
+                <div className="schedule-info">
+                  <div className="channel-info">
+                    <span className="schedule-channel-name">{item.homeshopping_name}</span>
                   </div>
-                  <div className="schedule-info">
-                    <div className="channel-info">
-                      <span className="schedule-channel-name">{item.homeshopping_name}</span>
-                    </div>
-                    <div className="schedule-product-meta">
-                      <div className="schedule-product-name">{item.product_name}</div>
-                    </div>
-                    <div className="schedule-price-info">
-                      <div className="schedule-original-price">{item.original_price?.toLocaleString() || '0'}원</div>
+                  <div className="schedule-product-meta">
+                    <div className="schedule-product-name">{item.product_name}</div>
+                  </div>
+                  <div className="schedule-price-info">
+                    <div className="schedule-original-price">{item.original_price?.toLocaleString() || '0'}원</div>
+                    <div className="schedule-price-row">
                       <div className="schedule-discount-display">
                         <span className="schedule-discount-rate">{item.discount_rate || '0'}%</span>
                         <span className="schedule-discount-price">{item.discounted_price?.toLocaleString() || '0'}원</span>
@@ -589,11 +562,12 @@ const Schedule = () => {
                 </div>
               </div>
             </div>
-          );
-        })}
-      </div>
-    );
-  };
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
   return (
     <div className="schedule-page">
@@ -663,9 +637,10 @@ const Schedule = () => {
             <div className="schedule-main-content">
               {/* 왼쪽 사이드바 */}
               {renderLeftSidebar()}
-              
               {/* 편성표 콘텐츠 */}
               <div className="schedule-content-main">
+                
+                
                 {/* 에러 메시지 */}
                 {renderErrorMessage()}
                 
