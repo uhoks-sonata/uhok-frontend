@@ -625,22 +625,20 @@
 
 /* 스크롤바 스타일 - 더 명확하게 표시 */
 .kok-tab-content-container::-webkit-scrollbar {
-  width: 6px; /* 스크롤바 너비 */
+  width: 4px; /* 8px에서 4px로 변경 */
 }
 
 .kok-tab-content-container::-webkit-scrollbar-track {
-  background: transparent; /* 투명 트랙 */
-  border-radius: 3px;
+  background: transparent; /* #f1f1f1에서 투명으로 변경 */
 }
 
 .kok-tab-content-container::-webkit-scrollbar-thumb {
-  background: #e0e0e0; /* 스크롤바 색상 */
-  border-radius: 3px;
-  transition: background-color 0.2s;
+  background: #e0e0e0; /* #c1c1c1에서 #e0e0e0으로 변경 */
+  border-radius: 4px; /* 4px 유지 */
 }
 
 .kok-tab-content-container::-webkit-scrollbar-thumb:hover {
-  background: #bbb; /* 호버 시 색상 */
+  background: #bbb; /* #a8a8a8에서 #bbb로 변경 */
 }
 
 /* Firefox 스크롤바 스타일 */
@@ -652,4 +650,49 @@
 /* 스크롤바가 항상 표시되도록 강제 */
 .kok-tab-content-container {
   scrollbar-gutter: stable;
+} 
+
+/* 모바일 최적화 */
+@media (max-width: 768px) {
+  .kok-product-detail {
+    padding-bottom: 70px;
+  }
+  
+  .kok-product-images {
+    height: 300px;
+  }
+  
+  .kok-product-info {
+    padding: 16px;
+  }
+  
+  .kok-product-title {
+    font-size: 20px;
+  }
+  
+  .kok-product-price {
+    font-size: 18px;
+  }
+  
+  .kok-product-description {
+    font-size: 14px;
+  }
+  
+  .kok-tab-buttons {
+    padding: 0 16px;
+  }
+  
+  .kok-tab-button {
+    font-size: 14px;
+    padding: 12px 16px;
+  }
+  
+  .kok-tab-content {
+    padding: 16px;
+  }
+  
+  /* 모바일에서 스크롤바 너비 조정 */
+  .kok-tab-content-container::-webkit-scrollbar {
+    width: 3px; /* 4px에서 3px로 변경 */
+  }
 } 
