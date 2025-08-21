@@ -13,6 +13,24 @@
   max-height: calc(100vh - 185px);
 }
 
+/* 스크롤바 스타일링 */
+.wishlist-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.wishlist-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.wishlist-content::-webkit-scrollbar-thumb {
+  background: #e0e0e0;
+  border-radius: 4px;
+}
+
+.wishlist-content::-webkit-scrollbar-thumb:hover {
+  background: #bbb;
+}
+
 /* 탭 네비게이션 스타일 */
 .tab-navigation {
   display: flex;

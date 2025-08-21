@@ -203,7 +203,7 @@ const KokPayment = () => {
     setCardHolderName('홍길동');
   }, [location]);
 
-  // 결제 처리 함수 (비동기)
+  // 결제 처리 함수 (비동기) - 새로운 백엔드 중심 API 사용
   const handlePayment = async () => {
     if (!validatePaymentForm()) {
       return;
@@ -214,40 +214,129 @@ const KokPayment = () => {
     setErrorMessage('');
 
     try {
-      // 1. 주문 생성 API 호출 (장바구니에서 온 주문만 처리)
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        throw new Error('로그인이 필요한 서비스입니다.');
+      }
+
+      // 1. 주문 생성 API 호출
+      console.log('🚀 결제하기 - 주문 생성 시작');
+      console.log('🔍 API 호출: POST /api/orders/kok/carts/order');
+      
+      let orderId;
+      
       if (orderInfo?.fromCart && orderInfo?.cartItems) {
-        // API 명세서에 맞는 형식으로 데이터 변환
+        // 장바구니에서 온 주문인 경우
         const selectedItems = orderInfo.cartItems.map(item => ({
           cart_id: item.kok_cart_id,
           quantity: item.kok_quantity
         }));
         
-        // 주문 생성 API 호출
-        const orderResult = await orderApi.createKokOrder(selectedItems);
+        const requestData = {
+          selected_items: selectedItems
+        };
+        
+        console.log('🔍 장바구니 주문 요청 데이터:', requestData);
+        console.log('🔍 장바구니 아이템 상세:', orderInfo.cartItems);
+        
+        const orderResponse = await api.post('/api/orders/kok/carts/order', requestData, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        console.log('✅ 주문 생성 성공:', orderResponse.data);
+        orderId = orderResponse.data.order_id;
         
         // 주문 정보 업데이트
         setOrderInfo(prev => ({
           ...prev,
-          orderId: orderResult.order_id,
-          totalAmount: orderResult.total_amount
+          orderId: orderId,
+          totalAmount: orderResponse.data.total_amount
         }));
-        
-        // 결제 처리 시뮬레이션 (2초 대기)
-        await new Promise(resolve => setTimeout(resolve, 2000));
       } else {
-        // 장바구니에서 온 주문이 아닌 경우 에러 처리
-        throw new Error('장바구니에서 온 주문만 처리할 수 있습니다.');
+        // 단일 상품 주문인 경우 (상품 상세에서 바로 주문)
+        const orderData = {
+          kok_product_id: parseInt(orderInfo?.productId || orderInfo?.kokOrderId?.split('-')[1]),
+          kok_quantity: orderInfo?.quantity || 1,
+          recipe_id: 0
+        };
+        
+        console.log('🔍 단일 상품 주문 요청 데이터:', orderData);
+        console.log('🔍 주문 정보 상세:', orderInfo);
+        
+        const orderResponse = await api.post('/api/orders/kok/carts/order', orderData, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        console.log('✅ 주문 생성 성공:', orderResponse.data);
+        orderId = orderResponse.data.order_id;
       }
 
-      // 2. 결제 확인 처리
-      await handlePaymentConfirmation();
+      if (!orderId) {
+        throw new Error('주문 ID를 받지 못했습니다.');
+      }
+
+      // 2. 결제 요청 & 확인 API 호출
+      console.log('🔍 API 호출: POST /api/orders/{order_id}/payment/confirm/v1');
+      
+      const paymentResponse = await api.post(`/api/orders/${orderId}/payment/confirm/v1`, {}, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      console.log('✅ 결제 완료 응답:', paymentResponse.data);
+
+      // 3. 상태 자동 업데이트 API 호출
+      console.log('🔍 API 호출: POST /api/orders/kok/{kok_order_id}/auto-update');
+      
+      const updateResponse = await api.post(`/api/orders/kok/${orderId}/auto-update`, {}, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      console.log('✅ 상태 자동 업데이트 완료:', updateResponse.data);
+
+      // 4. 결제 완료 처리
+      setPaymentStatus('completed');
+      alert('결제가 완료되었습니다!');
+      
+      // 5. 주문내역 페이지로 이동
+      console.log('🚀 결제 완료 - 주문내역 페이지로 이동');
+      window.location.href = 'http://localhost:3001/orderlist';
 
     } catch (error) {
-      console.error('결제 처리 실패:', error);
+      console.error('❌ 결제 처리 실패:', error);
+      console.error('❌ 에러 응답 데이터:', error.response?.data);
+      console.error('❌ 에러 상태 코드:', error.response?.status);
       setPaymentStatus('failed');
       
       // API 오류 메시지 처리
-      if (error.response?.data?.message) {
+      if (error.response?.status === 401) {
+        setErrorMessage('로그인이 필요한 서비스입니다.');
+      } else if (error.response?.status === 422) {
+        const errorDetails = error.response.data?.message || error.response.data?.error || '데이터 형식이 올바르지 않습니다.';
+        setErrorMessage(`주문 생성 실패: ${errorDetails}`);
+        console.error('❌ 422 에러 상세:', error.response.data);
+        
+        // 필드 누락 에러 상세 분석
+        if (error.response.data?.detail && Array.isArray(error.response.data.detail)) {
+          error.response.data.detail.forEach((err, index) => {
+            console.error(`❌ 필드 에러 ${index + 1}:`, {
+              type: err.type,
+              location: err.loc,
+              message: err.msg,
+              input: err.input
+            });
+          });
+        }
+      } else if (error.response?.status === 400) {
+        setErrorMessage('결제 처리에 실패했습니다: ' + (error.response.data?.message || '잘못된 요청입니다.'));
+      } else if (error.response?.data?.message) {
         setErrorMessage(`결제 처리 실패: ${error.response.data.message}`);
       } else if (error.message) {
         setErrorMessage(`결제 처리 실패: ${error.message}`);
