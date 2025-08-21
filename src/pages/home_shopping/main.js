@@ -11,6 +11,8 @@ import Loading from '../../components/Loading';
 import '../../styles/main.css';
 // API 설정을 가져옵니다
 import api from '../api';
+// 홈쇼핑 API를 가져옵니다
+import { homeShoppingApi } from '../../api/homeShoppingApi';
 // 사용자 Context import
 import { useUser } from '../../contexts/UserContext';
 
@@ -93,68 +95,141 @@ const Main = () => {
         const date = today.toISOString().split('T')[0]; // YYYY-MM-DD 형식
         const hour = today.getHours(); // 현재 시간
         
-        // 현재 백엔드에 해당 API가 없으므로 임시 데이터를 사용
-        console.log('편성표 API 엔드포인트가 없어 임시 데이터를 사용합니다.');
-        throw new Error('API 엔드포인트가 존재하지 않습니다.');
+        // 오늘 날짜 문자열 생성 (if-else 블록 밖에서 공통으로 사용)
+        const todayString = today.toISOString().split('T')[0]; // YYYY-MM-DD 형식
+        
+        // 더미데이터를 사용하는 함수 정의
+        const loadDummyData = () => {
+          console.log('더미데이터를 사용합니다.');
+          const dummySchedule = [
+            {
+              홈쇼핑_아이디: 'dummy1',
+              홈쇼핑명: 'CJONSTYLE',
+              채널명: 'CJONSTYLE [CH 8]',
+              채널로고: getBrandLogo('publicshopping'),
+              원가: '15,000원',
+              할인율: '51%',
+              할인된가격: '13,600원',
+              시작시간: '16:30',
+              썸네일: 'https://via.placeholder.com/120x140/4CAF50/FFFFFF?text=파김치',
+              알림여부: false,
+              상품명: '농팜 | [농팜] (1+1) 당일제조 전라도식 김치 파김치 500g'
+            },
+            {
+              홈쇼핑_아이디: 'dummy2',
+              홈쇼핑명: 'CJONSTYLE',
+              채널명: 'CJONSTYLE [CH 8]',
+              채널로고: getBrandLogo('publicshopping'),
+              원가: '15,000원',
+              할인율: '51%',
+              할인된가격: '13,600원',
+              시작시간: '16:41',
+              썸네일: 'https://via.placeholder.com/120x140/4CAF50/FFFFFF?text=파김치',
+              알림여부: false,
+              상품명: '농팜 | [농팜] (1+1) 당일제조 전라도식 김치 파김치 500g'
+            },
+            {
+              홈쇼핑_아이디: 'dummy3',
+              홈쇼핑명: 'CJONSTYLE',
+              채널명: 'CJONSTYLE [CH 8]',
+              채널로고: getBrandLogo('publicshopping'),
+              원가: '15,000원',
+              할인율: '51%',
+              할인된가격: '13,600원',
+              시작시간: '18:40',
+              썸네일: 'https://via.placeholder.com/120x140/4CAF50/FFFFFF?text=파김치',
+              알림여부: false,
+              상품명: '농팜 | [농팜] (1+1) 당일제조 전라도식 김치 파김치 500g'
+            },
+            {
+              홈쇼핑_아이디: 'dummy4',
+              홈쇼핑명: 'CJONSTYLE',
+              채널명: 'CJONSTYLE [CH 8]',
+              채널로고: getBrandLogo('publicshopping'),
+              원가: '15,000원',
+              할인율: '51%',
+              할인된가격: '13,600원',
+              시작시간: '20:00',
+              썸네일: 'https://via.placeholder.com/120x140/4CAF50/FFFFFF?text=파김치',
+              알림여부: false,
+              상품명: '농팜 | [농팜] (1+1) 당일제조 전라도식 김치 파김치 500g'
+            }
+          ];
+          
+          setScheduleData({
+            date: todayString,
+            time: `${today.getHours()}:${String(today.getMinutes()).padStart(2, '0')}`,
+            channel_id: null,
+            schedule: dummySchedule
+          });
+        };
+        
+        // 홈쇼핑 편성표 API 호출 (오늘 날짜 데이터만)
+        const response = await homeShoppingApi.getSchedule(1, 20);
+        
+        console.log('홈쇼핑 편성표 API 응답:', response.data);
+        
+        if (response && response.data && response.data.schedules && response.data.schedules.length > 0) {
+          // 오늘 날짜의 데이터만 필터링
+          
+          const todaySchedules = response.data.schedules.filter(item => {
+            const itemDate = new Date(item.live_date);
+            const itemDateString = itemDate.toISOString().split('T')[0];
+            return itemDateString === todayString;
+          });
+          
+          console.log('오늘 날짜 편성표:', todaySchedules);
+          
+          // 오늘 날짜 데이터가 있는 경우에만 API 데이터 사용
+          if (todaySchedules.length > 0) {
+            // API 응답 데이터를 UI 형식으로 변환
+            const apiSchedule = todaySchedules.map(item => ({
+              홈쇼핑_아이디: item.homeshopping_id || item.id,
+              홈쇼핑명: item.homeshopping_name || item.store_name || '홈쇼핑',
+              채널명: item.channel_name || item.store_name || '홈쇼핑',
+              채널로고: item.channel_logo || getBrandLogo(item.homeshopping_name || item.store_name),
+              원가: item.original_price ? `${item.original_price.toLocaleString()}원` : '0원',
+              할인율: item.discount_rate ? `${item.discount_rate}%` : '0%',
+              할인된가격: item.discounted_price ? `${item.discounted_price.toLocaleString()}원` : '0원',
+              시작시간: item.live_start_time ? item.live_start_time.substring(0, 5) : '00:00',
+              썸네일: item.thumb_img_url || item.thumbnail || item.product_image || null,
+              알림여부: item.notification_enabled || false,
+              상품명: item.product_name || item.title || '상품명 없음'
+            }));
+            
+            setScheduleData({
+              date: todayString,
+              time: `${today.getHours()}:${String(today.getMinutes()).padStart(2, '0')}`,
+              channel_id: null,
+              schedule: apiSchedule
+            });
+                     } else {
+             // API 데이터는 있지만 오늘 날짜 데이터가 없는 경우 더미데이터 사용
+             console.log('API 데이터는 있지만 오늘 날짜 데이터가 없어서 더미데이터를 사용합니다.');
+             loadDummyData();
+           }
+                 } else {
+           // API 데이터가 없을 때 더미데이터 사용 (디자인 테스트용)
+           console.log('API 데이터가 없어서 더미데이터를 사용합니다.');
+           loadDummyData();
+         }
         
       } catch (err) {
         // 에러가 발생하면 콘솔에 에러를 출력하고 에러 상태를 설정합니다
         console.error('편성표 데이터 로딩 실패:', err);
+        setError('편성표 데이터를 불러오는데 실패했습니다.');
         
-        // 404 에러는 API 엔드포인트가 없음을 의미하므로 임시 데이터 사용
-        if (err.response?.status === 404) {
-          console.log('편성표 API 엔드포인트가 없습니다. 임시 데이터를 사용합니다.');
-        } else {
-          setError('편성표 데이터를 불러오는데 실패했습니다.');
-        }
-        
-        // API 연결 실패 시 에러 대신 임시 데이터를 사용한다는 로그를 출력합니다
-        console.log('임시 데이터를 사용합니다.');
-        
-        // 임시 데이터를 상태에 설정합니다 (API 연결 전까지 사용) - API 명세서 구조에 맞춰 수정
+        // 에러 시 빈 데이터로 설정
         const today = new Date();
-        const date = today.toISOString().split('T')[0]; // YYYY-MM-DD 형식
-        const time = `${today.getHours()}:${String(today.getMinutes()).padStart(2, '0')}`; // HH:MM 형식
+        const date = today.toISOString().split('T')[0];
+        const time = `${today.getHours()}:${String(today.getMinutes()).padStart(2, '0')}`;
         
-        // 실제 API에서 편성표 데이터를 가져오기
-        try {
-          const response = await api.get('/api/homeshopping/schedule', {
-            params: { page: 1, size: 20 }
-          });
-          
-          console.log('홈쇼핑 편성표 API 응답:', response.data);
-          
-          // API 응답 데이터를 UI 형식으로 변환
-          const apiSchedule = (response.data.schedule || []).map(item => ({
-            홈쇼핑_아이디: item.homeshopping_id || item.id,
-            홈쇼핑명: item.homeshopping_name || item.store_name || '홈쇼핑',
-            채널명: item.channel_name || item.store_name || '홈쇼핑',
-            채널로고: item.channel_logo || getBrandLogo(item.homeshopping_name || item.store_name),
-            원가: item.original_price ? `${item.original_price.toLocaleString()}원` : '0원',
-            할인율: item.discount_rate ? `${item.discount_rate}%` : '0%',
-            할인된가격: item.discounted_price ? `${item.discounted_price.toLocaleString()}원` : '0원',
-            시작시간: item.start_time || '00:00',
-            썸네일: item.thumbnail || item.product_image || null,
-            알림여부: item.notification_enabled || false,
-            상품명: item.product_name || item.title || '상품명 없음'
-          }));
-          
-          setScheduleData({
-            date: response.data.date || date,
-            time: response.data.time || time,
-            channel_id: response.data.channel_id || null,
-            schedule: apiSchedule
-          });
-        } catch (apiError) {
-          console.error('홈쇼핑 편성표 API 호출 실패:', apiError);
-          // API 실패 시 기본 데이터 사용
-          setScheduleData({
-            date: date,
-            time: time,
-            channel_id: null,
-            schedule: []
-          });
-        }
+        setScheduleData({
+          date: date,
+          time: time,
+          channel_id: null,
+          schedule: []
+        });
       } finally {
         // try-catch 블록이 끝나면 항상 로딩 상태를 false로 설정합니다
         setLoading(false);
@@ -216,7 +291,7 @@ const Main = () => {
         />
         
         {/* 메인 콘텐츠 영역 */}
-        <div className="schedule-content">
+        <div className="main-schedule-content">
           <Loading message="편성표를 불러오는 중 ..." />
         </div>
         {/* 하단 네비게이션을 렌더링합니다 */}
@@ -236,7 +311,7 @@ const Main = () => {
         />
         
         {/* 메인 콘텐츠 영역 */}
-        <div className="schedule-content">
+        <div className="main-schedule-content">
           {/* 에러 메시지를 표시합니다 */}
           <div className="error">오류: {error}</div>
         </div>
@@ -255,159 +330,146 @@ const Main = () => {
         onScheduleClick={handleScheduleClick}
       />
 
-      {/* 메인 콘텐츠 */}
-      <div className="schedule-content">
-        {/* 날짜 및 방송 상태 */}
-        <div className="schedule-header-info">
-          {/* 날짜를 표시합니다 (API에서 받아옴) */}
-          <div className="date">{scheduleData.date}</div>
-          {/* 방송 상태를 표시합니다 */}
-          <div className="broadcast-status">방송 중</div>
-        </div>
+                    {/* 메인 콘텐츠 */}
+       <div className="main-schedule-content">
+         {/* 편성표가 없을 때 메시지 표시 */}
+         {scheduleData.schedule.length === 0 ? (
+           <div className="no-schedule-message">
+             <div className="no-schedule-date">{scheduleData.date}</div>
+             <div className="no-schedule-text">편성된 방송이 없습니다.</div>
+           </div>
+         ) : (
+           <>
+             {/* 날짜 정보 (편성표가 있을 때만 표시) */}
+             <div className="schedule-header-info">
+               {/* 날짜를 표시합니다 (API에서 받아옴) */}
+               <div className="date">{scheduleData.date}</div>
+             </div>
+                                       {/* 방송 중 섹션 */}
+             {onAirItems.length > 0 && (
+               <>
+                 <div className="main-section-title">방송 중</div>
+                 <div className="main-product-cards">
+                   {onAirItems.map((item) => (
+                     <div
+                       key={item.홈쇼핑_아이디}
+                       className="main-product-card"
+                       onClick={() => handleProductClick(item.홈쇼핑_아이디)}
+                     >
+                       {/* 시간 헤더 */}
+                       <div className="main-time-overlay">{item.시작시간}</div>
+                       
+                       {/* 카드 내부 레이아웃 컨테이너 */}
+                       <div className="main-card-layout">
+                         
+                         {/* 왼쪽: 상품 이미지 */}
+                         <div className="main-product-image-container">
+                           {/* 상품 이미지 컨테이너 */}
+                           <div className="main-product-image">
+                             {/* 상품 이미지를 표시합니다 */}
+                             <img src={item.썸네일} alt={item.상품명} />
+                           </div>
+                         </div>
+                         
+                         {/* 오른쪽: 상품 정보 */}
+                         <div className="main-product-info">
+                           {/* 상품 상세 정보 컨테이너 */}
+                           <div className="main-product-details">
+                             {/* 가격 정보 컨테이너 */}
+                             <div className="main-price-info">
+                               {/* 할인율을 표시합니다 */}
+                               <span className="main-discount">{item.할인율}</span>
+                               {/* 할인된 가격을 표시합니다 */}
+                               <span className="main-price">{item.할인된가격}</span>
+                             </div>
+                             {/* 브랜드 정보 컨테이너 */}
+                             <div className="main-brand-info">
+                               {/* 브랜드 로고 컨테이너 */}
+                               <div className="main-brand-logo">
+                                 {/* 브랜드 로고 이미지 */}
+                                 <img
+                                   src={getBrandLogo(item.홈쇼핑명)}
+                                   alt={item.홈쇼핑명}
+                                   className="main-brand-image"
+                                 />
+                               </div>
+                               {/* 채널 번호를 표시합니다 */}
+                               <span className="main-channel">CH 8</span>
+                             </div>
+                             {/* 상품명을 표시합니다 */}
+                             <div className="main-product-name">{item.상품명}</div>
+                           </div>
+                         </div>
+                       </div>
+                     </div>
+                   ))}
+                 </div>
+               </>
+             )}
 
-        {/* 방송 중 섹션 */}
-        <div 
-          className="schedule-section on-air"
-          style={{
-            '--on-air-image': onAirItems.length > 0 ? `url(${onAirItems[0].썸네일})` : 'none'
-          }}
-        >
-          {/* 섹션 제목
-          <h3 className="section-title">방송 중</h3> */}
-          {/* 상품 카드들을 담는 컨테이너 */}
-          <div className="product-cards">
-            {/* 방송 중인 상품들을 map으로 순회하며 렌더링합니다 (API에서 받아옴) */}
-            {onAirItems.map((item) => (
-              <div
-                key={item.홈쇼핑_아이디} // 홈쇼핑 아이디 (API에서 받아옴)
-                className="product-card"
-                onClick={() => handleProductClick(item.홈쇼핑_아이디)}
-              >
-                {/* 카드 내부 레이아웃 컨테이너 */}
-                <div className="card-layout">
-                  {/* 왼쪽: 날짜/방송 상태 */}
-                  <div className="status-info">
-                    {/* 방송 상태 텍스트 */}
-                    <div className="broadcast-status">방송 중</div>
-                  </div>
-                  
-                  {/* 중앙: 상품 정보 */}
-                  <div className="product-info">
-                    {/* 상품 상세 정보 컨테이너 */}
-                    <div className="product-details">
-                      {/* 가격 정보 컨테이너 */}
-                      <div className="price-info">
-                        {/* 할인율을 표시합니다 (API에서 받아옴) */}
-                        <span className="discount">{item.할인율}</span>
-                        {/* 할인된 가격을 표시합니다 (API에서 받아옴) */}
-                        <span className="price">{item.할인된가격}</span>
-                      </div>
-                      {/* 브랜드 정보 컨테이너 */}
-                      <div className="brand-info">
-                        {/* 브랜드 로고 컨테이너 */}
-                        <div className="brand-logo">
-                          {/* 브랜드 로고 이미지 (API에서 받아온 홈쇼핑명으로 매핑) */}
-                          <img
-                            src={getBrandLogo(item.홈쇼핑명)}
-                            alt={item.홈쇼핑명}
-                            className="brand-image"
-                          />
-                        </div>
-                        {/* 채널명을 표시합니다 (API에서 받아옴) */}
-                        <span className="channel">{item.채널명}</span>
-                      </div>
-                      {/* 상품명을 표시합니다 (API에서 받아옴) */}
-                      <div className="product-name">{item.상품명}</div>
-                    </div>
-                  </div>
-                  
-                  {/* 오른쪽: 상품 이미지 (시간 표시 포함) */}
-                  <div className="product-image-container">
-                    {/* 시간 오버레이를 표시합니다 (API에서 받아옴) */}
-                    <div className="time-overlay">{item.시작시간}</div>
-                    {/* 상품 이미지 컨테이너 */}
-                    <div className="product-image">
-                      {/* 상품 이미지를 표시합니다 (API에서 받아옴) */}
-                      <img src={item.썸네일} alt={item.상품명} />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* 방송예정 섹션 */}
-        <div 
-          className="schedule-section on-air"
-          style={{
-            '--on-air-image': scheduledItems.length > 0 ? `url(${scheduledItems[0].썸네일})` : 'none'
-          }}
-        >
-          {/* 섹션 제목
-          <h3 className="section-title">방송예정</h3> */}
-          {/* 상품 카드들을 담는 컨테이너 */}
-          <div className="product-cards">
-            {/* 방송 예정인 상품들을 map으로 순회하며 렌더링합니다 (API에서 받아옴) */}
-            {scheduledItems.map((item) => (
-              <div
-                key={item.홈쇼핑_아이디} // 홈쇼핑 아이디 (API에서 받아옴)
-                className="product-card"
-                onClick={() => handleProductClick(item.홈쇼핑_아이디)}
-              >
-                {/* 카드 내부 레이아웃 컨테이너 */}
-                <div className="card-layout">
-                  {/* 왼쪽: 날짜/방송 상태 */}
-                  <div className="status-info">
-                    {/* 방송 상태 텍스트 */}
-                    <div className="broadcast-status scheduled">방송예정</div>
-                  </div>
-                  
-                  {/* 중앙: 상품 정보 */}
-                  <div className="product-info">
-                    {/* 상품 상세 정보 컨테이너 */}
-                    <div className="product-details">
-                      {/* 가격 정보 컨테이너 */}
-                      <div className="price-info">
-                        {/* 할인율을 표시합니다 (API에서 받아옴) */}
-                        <span className="discount">{item.할인율}</span>
-                        {/* 할인된 가격을 표시합니다 (API에서 받아옴) */}
-                        <span className="price">{item.할인된가격}</span>
-                      </div>
-                      {/* 브랜드 정보 컨테이너 */}
-                      <div className="brand-info">
-                        {/* 브랜드 로고 컨테이너 */}
-                        <div className="brand-logo">
-                          {/* 브랜드 로고 이미지 (API에서 받아온 홈쇼핑명으로 매핑) */}
-                          <img
-                            src={getBrandLogo(item.홈쇼핑명)}
-                            alt={item.홈쇼핑명}
-                            className="brand-image"
-                          />
-                        </div>
-                        {/* 채널명을 표시합니다 (API에서 받아옴) */}
-                        <span className="channel">{item.채널명}</span>
-                      </div>
-                      {/* 상품명을 표시합니다 (API에서 받아옴) */}
-                      <div className="product-name">{item.상품명}</div>
-                    </div>
-                  </div>
-                  
-                  {/* 오른쪽: 상품 이미지 (시간 표시 포함) */}
-                  <div className="product-image-container">
-                    {/* 시간 오버레이를 표시합니다 (API에서 받아옴) */}
-                    <div className="time-overlay">{item.시작시간}</div>
-                    {/* 상품 이미지 컨테이너 */}
-                    <div className="product-image">
-                      {/* 상품 이미지를 표시합니다 (API에서 받아옴) */}
-                      <img src={item.썸네일} alt={item.상품명} />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+                                                       {/* 방송 예정 섹션 */}
+               {scheduledItems.length > 0 && (
+                 <>
+                   <div className="main-section-title">방송 예정</div>
+                   <div className="main-product-cards">
+                     {scheduledItems.map((item) => (
+                       <div
+                         key={item.홈쇼핑_아이디}
+                         className="main-product-card"
+                         onClick={() => handleProductClick(item.홈쇼핑_아이디)}
+                       >
+                         {/* 시간 헤더 */}
+                         <div className="main-time-overlay">{item.시작시간}</div>
+                         
+                         {/* 카드 내부 레이아웃 컨테이너 */}
+                         <div className="main-card-layout">
+                           
+                           {/* 왼쪽: 상품 이미지 */}
+                           <div className="main-product-image-container">
+                             {/* 상품 이미지 컨테이너 */}
+                             <div className="main-product-image">
+                               {/* 상품 이미지를 표시합니다 */}
+                               <img src={item.썸네일} alt={item.상품명} />
+                             </div>
+                           </div>
+                           
+                           {/* 오른쪽: 상품 정보 */}
+                           <div className="main-product-info">
+                             {/* 상품 상세 정보 컨테이너 */}
+                             <div className="main-product-details">
+                               {/* 가격 정보 컨테이너 */}
+                               <div className="main-price-info">
+                                 {/* 할인율을 표시합니다 */}
+                                 <span className="main-discount">{item.할인율}</span>
+                                 {/* 할인된 가격을 표시합니다 */}
+                                 <span className="main-price">{item.할인된가격}</span>
+                               </div>
+                               {/* 브랜드 정보 컨테이너 */}
+                               <div className="main-brand-info">
+                                 {/* 브랜드 로고 컨테이너 */}
+                                 <div className="main-brand-logo">
+                                   {/* 브랜드 로고 이미지 */}
+                                   <img
+                                     src={getBrandLogo(item.홈쇼핑명)}
+                                     alt={item.홈쇼핑명}
+                                     className="main-brand-image"
+                                   />
+                                 </div>
+                                 {/* 채널 번호를 표시합니다 */}
+                                 <span className="main-channel">CH 8</span>
+                               </div>
+                               {/* 상품명을 표시합니다 */}
+                               <div className="main-product-name">{item.상품명}</div>
+                             </div>
+                           </div>
+                         </div>
+                       </div>
+                     ))}
+                   </div>
+                 </>
+               )}
+           </>
+         )}
       </div>
 
       {/* 하단 네비게이션 */}
