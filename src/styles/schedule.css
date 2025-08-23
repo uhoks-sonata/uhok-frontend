@@ -7,6 +7,7 @@
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   max-width: 100vw; /* 화면 너비를 넘지 않도록 */
   overflow: hidden; /* 전체 페이지 스크롤 방지 */
+  padding-bottom: 80px; /* 하단 네비게이션과의 여백 */
 }
 
 /* 검색 헤더 */
@@ -389,7 +390,7 @@
 
 /* 편성표 타임라인 */
 .schedule-timeline {
-  padding: 16px 16px 32px 16px; /* 상단 16px, 좌우 16px, 하단 32px */
+  padding: 16px 16px 80px 16px; /* 상단 16px, 좌우 16px, 하단 80px로 증가 */
   min-height: 100%; /* 최소 높이 설정 */
 }
 
@@ -747,10 +748,18 @@
   margin-top: 0; /* 상태 배지와 겹치도록 */
 }
 
-.status-badge {
+.status-badges-container {
   position: absolute;
   top: 8px;
   left: 8px;
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+  z-index: 10;
+  align-items: center;
+}
+
+.status-badge {
   width: auto;
   min-width: 50px;
   height: 24px;
@@ -759,7 +768,18 @@
   font-size: 12px;
   font-weight: bold;
   text-align: center;
-  z-index: 10;
+}
+
+.promotion-type-badge {
+  width: auto;
+  min-width: 40px;
+  height: 18px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 14px;
 }
 
 .status-live {
@@ -784,6 +804,17 @@
   background-color: #3498db;
   color: white;
   text-align: center;
+}
+
+/* 프로모션 타입 배지 색상 */
+.promotion-type-badge.main-product {
+  background-color: #FF6B35;
+  color: white;
+}
+
+.promotion-type-badge.sub-product {
+  background-color: #6C757D;
+  color: white;
 }
 
 .schedule-info {
@@ -924,6 +955,7 @@
   /* background-color: #fafafa; */
   border-radius: 12px;
   margin: 20px;
+  margin-bottom: 100px; /* 하단 여백 추가 */
 }
 
 .no-schedule-content {

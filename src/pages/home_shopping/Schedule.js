@@ -32,7 +32,7 @@ const Schedule = () => {
   const [scheduleData, setScheduleData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [unlikedProducts, setUnlikedProducts] = useState(new Set()); // 찜 해제된 상품 ID들을 저장
+  const [wishlistedProducts, setWishlistedProducts] = useState(new Set()); // 찜된 상품 ID들을 저장
   
   // 라이브 스트림 관련 상태
   const [liveStreamData, setLiveStreamData] = useState({});
@@ -464,7 +464,7 @@ const Schedule = () => {
         console.log('찜 토글 성공! 하트 아이콘 상태만 변경합니다.');
         
         // 하트 아이콘 상태만 토글 (즉시 피드백)
-        setUnlikedProducts(prev => {
+        setWishlistedProducts(prev => {
           const newSet = new Set(prev);
           if (newSet.has(productId)) {
             // 찜 해제된 상태에서 찜 추가
@@ -515,7 +515,7 @@ const Schedule = () => {
   };
 
   // 방송 상태 표시 함수
-  const renderStatusBadge = (status) => {
+  const renderStatusBadge = (status, promotionType) => {
     let statusText = '';
     let statusClass = '';
     
@@ -539,8 +539,15 @@ const Schedule = () => {
     }
     
     return (
-      <div className={`status-badge ${statusClass}`}>
-        {statusText}
+      <div className="status-badges-container">
+        <div className={`status-badge ${statusClass}`}>
+          {statusText}
+        </div>
+        {promotionType && (
+          <div className={`promotion-type-badge ${promotionType === 'main' ? 'main-product' : 'sub-product'}`}>
+            {promotionType === 'main' ? '메인상품' : '서브상품'}
+          </div>
+        )}
       </div>
     );
   };
@@ -701,7 +708,7 @@ const Schedule = () => {
                 <div className="schedule-content">
                 <div className="schedule-image">
                   <img src={item.thumb_img_url} alt={item.product_name} />
-                  {renderStatusBadge(item.status)}
+                  {renderStatusBadge(item.status, item.promotion_type)}
                 </div>
                 <div className="schedule-info">
                   <div className="channel-info">
@@ -726,7 +733,7 @@ const Schedule = () => {
                             handleHeartToggle(item.product_id);
                           }}>
                           <img 
-                            src={unlikedProducts.has(item.product_id) ? emptyHeartIcon : filledHeartIcon} 
+                            src={wishlistedProducts.has(item.product_id) ? emptyHeartIcon : filledHeartIcon} 
                             alt="찜 토글" 
                             className="heart-icon"
                           />
@@ -740,9 +747,11 @@ const Schedule = () => {
           </div>
         );
       })}
-    </div>
-  );
-};
+        {/* 편성표 목록 아래 여백 추가 */}
+        <div style={{ height: '20px' }}></div>
+      </div>
+    );
+  };
 
   return (
     <div className="schedule-page">
