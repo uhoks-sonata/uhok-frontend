@@ -180,6 +180,31 @@
   align-items: center;
   justify-content: center;
   /* padding: 4px; */
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.schedule-channel-logo.selected-channel {
+  border: 2px solid #E91E63;
+  box-shadow: 0 4px 8px rgba(233, 30, 99, 0.3);
+  transform: scale(1.05);
+}
+
+.channel-selection-indicator {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 20px;
+  height: 20px;
+  background-color: #E91E63;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .schedule-channel-logo img {
@@ -738,7 +763,7 @@
 }
 
 .status-live {
-  background-color: #FF69B4;
+  background-color: #FE1F1F;
   color: white;
   text-align: center;
 }
@@ -756,7 +781,7 @@
 }
 
 .status-unknown {
-  background-color: #95a5a6;
+  background-color: #3498db;
   color: white;
   text-align: center;
 }
@@ -887,4 +912,34 @@
 .wishlist-icon {
   font-size: 14px;
   color: #666;
+}
+
+/* 방송 일정 없음 스타일 */
+.no-schedule-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  padding: 40px 20px;
+  /* background-color: #fafafa; */
+  border-radius: 12px;
+  margin: 20px;
+}
+
+.no-schedule-content {
+  text-align: center;
+  max-width: 300px;
+}
+
+.no-schedule-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.no-schedule-subtitle {
+  font-size: 14px;
+  color: #999;
+  line-height: 1.4;
 }

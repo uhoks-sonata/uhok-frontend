@@ -165,7 +165,8 @@ const Main = () => {
         };
         
         // 홈쇼핑 편성표 API 호출 (오늘 날짜 데이터만)
-        const response = await homeShoppingApi.getSchedule(1, 20);
+        // getSchedule 함수에서 자동으로 오늘 날짜를 설정하므로 파라미터로 전달하지 않음
+        const response = await homeShoppingApi.getSchedule();
         
         console.log('홈쇼핑 편성표 API 응답:', response.data);
         
@@ -188,9 +189,9 @@ const Main = () => {
               홈쇼핑명: item.homeshopping_name || item.store_name || '홈쇼핑',
               채널명: item.channel_name || item.store_name || '홈쇼핑',
               채널로고: item.channel_logo || getBrandLogo(item.homeshopping_name || item.store_name),
-              원가: item.original_price ? `${item.original_price.toLocaleString()}원` : '0원',
-              할인율: item.discount_rate ? `${item.discount_rate}%` : '0%',
-              할인된가격: item.discounted_price ? `${item.discounted_price.toLocaleString()}원` : '0원',
+              원가: item.sale_price ? `${item.sale_price.toLocaleString()}원` : '0원',
+              할인율: item.dc_rate ? `${item.dc_rate}%` : '0%',
+              할인된가격: item.dc_price ? `${item.dc_price.toLocaleString()}원` : '0원',
               시작시간: item.live_start_time ? item.live_start_time.substring(0, 5) : '00:00',
               썸네일: item.thumb_img_url || item.thumbnail || item.product_image || null,
               알림여부: item.notification_enabled || false,

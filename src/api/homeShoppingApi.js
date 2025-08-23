@@ -5,12 +5,21 @@ export const homeShoppingApi = {
   // ===== 편성표 관련 =====
   
   // 편성표 조회
-  getSchedule: async (page = 1, size = 20) => {
+  getSchedule: async (liveDate = null) => {
     try {
-      console.log('📺 편성표 조회 API 요청:', { page, size });
-      const response = await api.get('/api/homeshopping/schedule', {
-        params: { page, size }
-      });
+      // liveDate가 없으면 오늘 날짜로 설정
+      const today = new Date();
+      const formattedDate = liveDate || today.toISOString().split('T')[0]; // yyyy-mm-dd 형식
+      
+      console.log('📺 편성표 조회 API 요청:', { live_date: formattedDate });
+      
+      // API 요청 시 날짜 파라미터만 전달
+      const params = {};
+      if (liveDate) {
+        params.live_date = formattedDate;
+      }
+      
+      const response = await api.get('/api/homeshopping/schedule', { params });
       console.log('✅ 편성표 조회 API 응답:', response);
       return response; // response.data가 아닌 response 전체 반환
     } catch (error) {

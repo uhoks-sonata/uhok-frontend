@@ -83,6 +83,8 @@ const Schedule = () => {
   
   // 선택된 시간 상태
   const [selectedTime, setSelectedTime] = useState(null);
+  // 선택된 홈쇼핑 상태
+  const [selectedHomeshopping, setSelectedHomeshopping] = useState(null);
   
   // 시간 클릭 핸들러
   const handleTimeClick = (time) => {
@@ -90,27 +92,15 @@ const Schedule = () => {
       setSelectedTime(null); // 같은 시간을 다시 클릭하면 선택 해제
     } else {
       setSelectedTime(time); // 새로운 시간 선택
-      
-      // 선택한 시간을 두 번째 위치에 보이도록 스크롤 조정
-      setTimeout(() => {
-        if (timeSlotsRef.current) {
-          const timeIndex = timeSlots.findIndex(t => t === time);
-          if (timeIndex !== -1) {
-            const timeSlotWidth = 60; // 각 시간 슬롯의 너비
-            const scrollPosition = Math.max(0, (timeIndex - 1) * timeSlotWidth);
-            timeSlotsRef.current.scrollLeft = scrollPosition;
-          }
-        }
-      }, 100);
     }
   };
   
-  // 시간대 데이터 - 01:00부터 24시간 생성
+  // 시간대 데이터 - 00:00부터 23:00까지 24시간 생성
   const getTimeSlots = () => {
     const timeSlots = [];
     
-    // 01:00부터 24:00까지 24시간 생성
-    for (let i = 1; i <= 24; i++) {
+    // 00:00부터 23:00까지 24시간 생성
+    for (let i = 0; i < 24; i++) {
       const hour = i.toString().padStart(2, '0');
       timeSlots.push(`${hour}:00`);
     }
@@ -126,16 +116,16 @@ const Schedule = () => {
     
     let filteredData = [...scheduleData];
     
-    // 날짜 필터링
-    if (selectedDate) {
-      const selectedDateObj = new Date(selectedDate);
+    // 날짜 필터링 제거 - API에서 이미 선택된 날짜의 데이터를 반환하므로
+    
+    // 홈쇼핑 필터링 - 선택된 홈쇼핑의 상품만 표시
+    if (selectedHomeshopping) {
       filteredData = filteredData.filter(item => {
-        const itemDate = new Date(item.live_date);
-        return itemDate.toDateString() === selectedDateObj.toDateString();
+        return item.homeshopping_id === selectedHomeshopping.id;
       });
     }
     
-    // 시간 필터링
+    // 시간 필터링 - 선택된 시간에 해당하는 방송만 표시
     if (selectedTime) {
       const [selectedHour] = selectedTime.split(':').map(Number);
       filteredData = filteredData.filter(item => {
@@ -143,6 +133,7 @@ const Schedule = () => {
         const [itemEndHour] = item.live_end_time.split(':').map(Number);
         
         // 선택된 시간이 방송 시간 범위에 포함되는지 확인
+        // 시작 시간 <= 선택된 시간 < 종료 시간
         return selectedHour >= itemStartHour && selectedHour < itemEndHour;
       });
     }
@@ -193,40 +184,91 @@ const Schedule = () => {
         setIsLoading(true);
         setError(null);
         
-        // API는 page, size 파라미터만 받음 (selectedDate는 사용하지 않음)
-        const response = await homeShoppingApi.getSchedule(1, 20);
+        // 선택된 날짜가 있으면 해당 날짜로, 없으면 오늘 날짜로 데이터를 가져옴
+        let targetDate = null;
+        if (selectedDate) {
+          // selectedDate는 "Wed Jan 23 2025" 형식이므로 직접 파싱
+          const selectedDateObj = new Date(selectedDate);
+          // 로컬 시간대 기준으로 날짜 생성 (시간대 문제 방지)
+          const year = selectedDateObj.getFullYear();
+          const month = String(selectedDateObj.getMonth() + 1).padStart(2, '0');
+          const day = String(selectedDateObj.getDate()).padStart(2, '0');
+          targetDate = `${year}-${month}-${day}`; // yyyy-mm-dd 형식
+          
+          console.log('📅 날짜 변환 정보:', {
+            selectedDate,
+            selectedDateObj,
+            targetDate,
+            year,
+            month,
+            day
+          });
+        }
+        
+        console.log('🔍 API 호출 전 정보:', {
+          selectedDate,
+          targetDate,
+          selectedDateObj: selectedDate ? new Date(selectedDate) : null,
+          currentTime: new Date().toISOString(),
+          requestUrl: `/api/homeshopping/schedule${targetDate ? `?live_date=${targetDate}` : ''}`
+        });
+        
+        const response = await homeShoppingApi.getSchedule(targetDate);
         
         // 컴포넌트가 마운트된 상태에서만 상태 업데이트
         if (isMounted) {
           console.log('📺 API 응답 전체:', response);
+          console.log('📺 API 응답 데이터:', response.data);
+          console.log('📺 API 응답 데이터 타입:', typeof response.data);
+          console.log('📺 API 응답 데이터 키들:', response.data ? Object.keys(response.data) : '데이터 없음');
           console.log('📺 API 응답 schedules:', response.data?.schedules);
+          console.log('📺 API 응답 schedules 타입:', typeof response.data?.schedules);
+          console.log('📺 API 응답 schedules 길이:', response.data?.schedules?.length);
           
           if (response && response.data && response.data.schedules) {
             console.log('✅ schedules 배열 길이:', response.data.schedules.length);
             console.log('✅ 첫 번째 schedule:', response.data.schedules[0]);
             
-            // 가격 데이터 상세 로그
-            const firstItem = response.data.schedules[0];
-            console.log('💰 가격 데이터 상세:');
-            console.log('  - original_price:', firstItem.original_price, typeof firstItem.original_price);
-            console.log('  - discounted_price:', firstItem.discounted_price, typeof firstItem.discounted_price);
-            console.log('  - discount_rate:', firstItem.discount_rate, typeof firstItem.discount_rate);
-            
-            // 첫 번째 아이템의 모든 필드 확인
-            console.log('🔍 첫 번째 아이템 전체 필드:');
-            console.log(Object.keys(firstItem));
-            console.log('📋 첫 번째 아이템 전체 데이터:', JSON.stringify(firstItem, null, 2));
+            // 가격 데이터 상세 로그 (안전하게 처리)
+            if (response.data.schedules.length > 0) {
+              const firstItem = response.data.schedules[0];
+              console.log('💰 가격 데이터 상세:');
+              console.log('  - sale_price:', firstItem.sale_price, typeof firstItem.sale_price);
+              console.log('  - dc_price:', firstItem.dc_price, typeof firstItem.dc_price);
+              console.log('  - dc_rate:', firstItem.dc_rate, typeof firstItem.dc_rate);
+              
+              // 첫 번째 아이템의 모든 필드 확인
+              console.log('🔍 첫 번째 아이템 전체 필드:');
+              console.log(Object.keys(firstItem));
+              console.log('📋 첫 번째 아이템 전체 데이터:', JSON.stringify(firstItem, null, 2));
+            } else {
+              console.log('📋 schedules 배열이 비어있음');
+            }
             
             // API 응답에 status 필드가 없으므로 계산해서 추가
+            // 선택된 날짜와 현재 시간을 기준으로 방송 상태 판단
             const schedulesWithStatus = response.data.schedules.map(item => {
               const now = new Date();
-              const liveStart = new Date(`${item.live_date} ${item.live_start_time}`);
-              const liveEnd = new Date(`${item.live_date} ${item.live_end_time}`);
+              const targetDateObj = targetDate ? new Date(targetDate) : new Date();
+              targetDateObj.setHours(0, 0, 0, 0); // 선택된 날짜의 시작 (00:00:00)
+              
+              // 방송 날짜를 선택된 날짜로 설정하여 시간만 비교
+              const liveStart = new Date(targetDateObj);
+              const [startHour, startMinute] = item.live_start_time.split(':').map(Number);
+              liveStart.setHours(startHour, startMinute, 0, 0);
+              
+              const liveEnd = new Date(targetDateObj);
+              const [endHour, endMinute] = item.live_end_time.split(':').map(Number);
+              liveEnd.setHours(endHour, endMinute, 0, 0);
+              
+              // 현재 시간을 선택된 날짜 기준으로 설정
+              const currentTime = new Date(targetDateObj);
+              currentTime.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
               
               let status = 'LIVE 예정';
-              if (now >= liveStart && now <= liveEnd) {
+              if (currentTime >= liveStart && currentTime <= liveEnd) {
                 status = 'LIVE';
-              } else if (now > liveEnd) {
+              } else if (currentTime > liveEnd) {
                 status = '종료';
               }
               
@@ -264,20 +306,9 @@ const Schedule = () => {
     return () => {
       isMounted = false;
     };
-  }, []); // selectedDate 의존성 제거
+  }, [selectedDate]); // selectedDate가 변경될 때마다 API 재호출
   
-  // 시간대 스크롤 위치 조정 (현재 시간이 두 번째 위치에 오도록)
-  useEffect(() => {
-    if (timeSlotsRef.current) {
-      const currentTimeIndex = getCurrentTimeIndex();
-      if (currentTimeIndex !== -1) {
-        // 현재 시간이 두 번째 위치에 오도록 스크롤 조정
-        const timeSlotWidth = 60; // 각 시간대의 너비
-        const scrollPosition = Math.max(0, (currentTimeIndex - 1) * timeSlotWidth);
-        timeSlotsRef.current.scrollLeft = scrollPosition;
-      }
-    }
-  }, [timeSlots]);
+
   
 
 
@@ -292,11 +323,7 @@ const Schedule = () => {
     return time === getCurrentTime();
   };
 
-  // 현재 시간이 시간대 배열에서 몇 번째 위치인지 찾기
-  const getCurrentTimeIndex = () => {
-    const currentTime = getCurrentTime();
-    return timeSlots.findIndex(time => time === currentTime);
-  };
+
 
   // 상품 클릭 핸들러 - 상품 상세 페이지로 이동
   const handleProductClick = async (productId) => {
@@ -493,21 +520,22 @@ const Schedule = () => {
     let statusClass = '';
     
     switch (status) {
-      case 'live':
+      case 'LIVE':
         statusText = 'LIVE';
         statusClass = 'status-live';
         break;
-      case 'live 예정':
+      case 'LIVE 예정':
         statusText = 'LIVE 예정';
         statusClass = 'status-upcoming';
         break;
       case '종료':
-        statusText = '종료';
+        statusText = 'LIVE 종료';
         statusClass = 'status-ended';
         break;
       default:
-        statusText = '알 수 없음';
-        statusClass = 'status-unknown';
+        // 기본값도 방영예정으로 설정
+        statusText = '방영예정';
+        statusClass = 'status-upcoming';
     }
     
     return (
@@ -520,11 +548,24 @@ const Schedule = () => {
   // 라이브 스트림 버튼 렌더링
   const renderLiveStreamButton = (item) => {
     const now = new Date();
-    const liveStart = new Date(`${item.live_date} ${item.live_start_time}`);
-    const liveEnd = new Date(`${item.live_date} ${item.live_end_time}`);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // 오늘 날짜의 시작 (00:00:00)
+    
+    // 방송 날짜를 오늘 날짜로 설정하여 시간만 비교
+    const liveStart = new Date(today);
+    const [startHour, startMinute] = item.live_start_time.split(':').map(Number);
+    liveStart.setHours(startHour, startMinute, 0, 0);
+    
+    const liveEnd = new Date(today);
+    const [endHour, endMinute] = item.live_end_time.split(':').map(Number);
+    liveEnd.setHours(endHour, endMinute, 0, 0);
+    
+    // 현재 시간을 오늘 날짜 기준으로 설정
+    const currentTime = new Date(today);
+    currentTime.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
     
     // 현재 방송 중인지 확인
-    const isCurrentlyLive = now >= liveStart && now <= liveEnd;
+    const isCurrentlyLive = currentTime >= liveStart && currentTime <= liveEnd;
     
     if (isCurrentlyLive) {
       return (
@@ -552,6 +593,15 @@ const Schedule = () => {
         name: channel.name,
         channel: channel.channel
       });
+      
+      // 같은 홈쇼핑을 다시 클릭하면 선택 해제, 다르면 선택
+      if (selectedHomeshopping && selectedHomeshopping.id === channel.id) {
+        setSelectedHomeshopping(null);
+        console.log('홈쇼핑 선택 해제:', channel.name);
+      } else {
+        setSelectedHomeshopping(channel);
+        console.log('홈쇼핑 선택:', channel.name);
+      }
     };
 
     return (
@@ -560,11 +610,14 @@ const Schedule = () => {
           {homeshoppingChannels.map((channel) => (
             <div key={channel.id} className="channel-item">
               <div 
-                className="schedule-channel-logo"
+                className={`schedule-channel-logo ${selectedHomeshopping && selectedHomeshopping.id === channel.id ? 'selected-channel' : ''}`}
                 onClick={() => handleChannelClick(channel)}
                 style={{ cursor: 'pointer' }}
               >
                 <img src={channel.logo} alt={channel.name} />
+                {selectedHomeshopping && selectedHomeshopping.id === channel.id && (
+                  <div className="channel-selection-indicator">✓</div>
+                )}
               </div>
             </div>
           ))}
@@ -579,7 +632,6 @@ const Schedule = () => {
       return (
         <div className="error-message">
           <p>{error}</p>
-          <button onClick={() => window.location.reload()}>새로고침</button>
         </div>
       );
     }
@@ -603,10 +655,24 @@ const Schedule = () => {
     const filteredData = getFilteredScheduleData();
     
     if (!filteredData || filteredData.length === 0) {
-      if (selectedDate || selectedTime) {
-        return <div className="no-schedule">선택한 날짜/시간에 방송 일정이 없습니다.</div>;
+      let subtitle = '';
+      
+      if (selectedHomeshopping) {
+        subtitle = `${selectedHomeshopping.name}의 방송 일정이 없습니다`;
+      } else if (selectedDate || selectedTime) {
+        subtitle = '선택한 날짜/시간에 방송 예정인 프로그램이 없습니다';
+      } else {
+        subtitle = '오늘은 방송 예정인 프로그램이 없습니다';
       }
-      return <div className="no-schedule">방송 일정이 없습니다.</div>;
+      
+      return (
+        <div className="no-schedule-container">
+          <div className="no-schedule-content">
+            <div className="no-schedule-title">방송 일정이 없습니다</div>
+            <div className="no-schedule-subtitle">{subtitle}</div>
+          </div>
+        </div>
+      );
     }
 
     // 전체 방송 시간 범위 계산
@@ -645,11 +711,11 @@ const Schedule = () => {
                     <div className="schedule-product-name">{item.product_name}</div>
                   </div>
                   <div className="schedule-price-info">
-                    <div className="schedule-original-price">{item.original_price?.toLocaleString() || '0'}원</div>
+                    <div className="schedule-original-price">{item.sale_price?.toLocaleString() || '0'}원</div>
                     <div className="schedule-price-row">
                       <div className="schedule-discount-display">
-                        <span className="schedule-discount-rate">{item.discount_rate || '0'}%</span>
-                        <span className="schedule-discount-price">{item.discounted_price?.toLocaleString() || '0'}원</span>
+                        <span className="schedule-discount-rate">{item.dc_rate || '0'}%</span>
+                        <span className="schedule-discount-price">{item.dc_price?.toLocaleString() || '0'}원</span>
                       </div>
                       <div className="schedule-wishlist-btn">
                         <button 
@@ -711,9 +777,9 @@ const Schedule = () => {
                           console.log('오늘 날짜 선택:', item.dateKey);
                         }
                       } else {
-                        // 다른 날짜 클릭 시 해당 날짜 선택
+                        // 다른 날짜 클릭 시 해당 날짜 선택 (API 재호출)
                         setSelectedDate(item.dateKey);
-                        console.log('날짜 선택:', item.dateKey);
+                        console.log('날짜 선택 (API 호출):', item.dateKey);
                       }
                     }}
                   >
