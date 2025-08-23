@@ -733,7 +733,7 @@ const Schedule = () => {
                             handleHeartToggle(item.product_id);
                           }}>
                           <img 
-                            src={wishlistedProducts.has(item.product_id) ? emptyHeartIcon : filledHeartIcon} 
+                            src={wishlistedProducts.has(item.product_id) ? filledHeartIcon : emptyHeartIcon} 
                             alt="찜 토글" 
                             className="heart-icon"
                           />
