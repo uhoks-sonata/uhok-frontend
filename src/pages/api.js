@@ -27,7 +27,7 @@ const api = axios.create({
 
 // API 설정 로깅
 console.log('API 설정:', {
-  baseURL: '프록시 사용 (/api -> localhost:9000)',
+  baseURL: '프록시 사용',
   timeout: 30000
 });
 

@@ -162,9 +162,9 @@ export const notifyServerStatus = async () => {
   if (!isHealthy) {
     console.warn('백엔드 서버에 연결할 수 없습니다.');
     console.warn('다음을 확인해주세요:');
-    console.warn('1. 백엔드 서버가 실행 중인지 확인');
-    console.warn('2. 프록시 설정이 올바른지 확인 (setupProxy.js)');
-    console.warn('3. 백엔드 서버 포트가 9000인지 확인');
+          console.warn('1. 백엔드 서버가 실행 중인지 확인');
+      console.warn('2. 프록시 설정이 올바른지 확인 (setupProxy.js)');
+      console.warn('3. 백엔드 서버가 실행 중인지 확인');
   }
   return isHealthy;
 };
