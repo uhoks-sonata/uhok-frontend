@@ -43,22 +43,20 @@ const Main = () => {
   // 에러 상태를 관리합니다 (null: 에러 없음, string: 에러 메시지)
   const [error, setError] = useState(null);
 
-  // 브랜드명에 따른 로고 이미지를 반환하는 함수를 정의합니다
-  const getBrandLogo = (brandName) => {
-    // 브랜드명과 로고 이미지를 매핑하는 객체를 정의합니다
+  // homeshopping_id에 따른 로고 이미지를 반환하는 함수를 정의합니다
+  const getLogoByHomeshoppingId = (homeshoppingId) => {
+    // homeshopping_id와 로고 이미지를 매핑하는 객체를 정의합니다
     const brandLogos = {
-      'publicshopping': homeshopping_logo_publicshopping, // 공영홈쇼핑
-      'plusshop': homeshoppingLogoPlusshop, // 플러스샵
-      'nsplus': homeshoppingLogoNsplus, // NS플러스
-      'ns': homeshoppingLogoNs, // NS홈쇼핑
-      'hyundai': homeshoppingLogoHyundai, // 현대홈쇼핑
-      'homeandshopping': homeshoppingLogoHomeandshopping, // 홈앤쇼핑
+      1: homeshoppingLogoHomeandshopping, // 홈앤쇼핑
+      2: homeshoppingLogoHyundai, // 현대홈쇼핑
+      3: homeshoppingLogoPlusshop, // 현대홈쇼핑+샵
+      4: homeshoppingLogoNs, // NS홈쇼핑
+      5: homeshoppingLogoNsplus, // NS샵+
+      6: homeshopping_logo_publicshopping, // 공영쇼핑
     };
     
-    // 브랜드명을 소문자로 변환하여 매칭합니다 (대소문자 구분 없이)
-    const brandKey = brandName.toLowerCase();
-    // 매칭되는 로고가 있으면 반환하고, 없으면 공영홈쇼핑 로고를 기본값으로 반환합니다
-    return brandLogos[brandKey] || brandLogos['publicshopping'];
+    // homeshopping_id로 매칭되는 로고가 있으면 반환하고, 없으면 공영홈쇼핑 로고를 기본값으로 반환합니다
+    return brandLogos[homeshoppingId] || homeshopping_logo_publicshopping;
   };
 
   // 사용자 정보가 변경될 때마다 콘솔에 출력 (디버깅용)
@@ -98,72 +96,6 @@ const Main = () => {
         // 오늘 날짜 문자열 생성 (if-else 블록 밖에서 공통으로 사용)
         const todayString = today.toISOString().split('T')[0]; // YYYY-MM-DD 형식
         
-        // 더미데이터를 사용하는 함수 정의
-        const loadDummyData = () => {
-          console.log('더미데이터를 사용합니다.');
-          const dummySchedule = [
-            {
-              홈쇼핑_아이디: 'dummy1',
-              홈쇼핑명: 'CJONSTYLE',
-              채널명: 'CJONSTYLE [CH 8]',
-              채널로고: getBrandLogo('publicshopping'),
-              원가: '15,000원',
-              할인율: '51%',
-              할인된가격: '13,600원',
-              시작시간: '16:30',
-              썸네일: 'https://via.placeholder.com/120x140/4CAF50/FFFFFF?text=파김치',
-              알림여부: false,
-              상품명: '농팜 | [농팜] (1+1) 당일제조 전라도식 김치 파김치 500g'
-            },
-            {
-              홈쇼핑_아이디: 'dummy2',
-              홈쇼핑명: 'CJONSTYLE',
-              채널명: 'CJONSTYLE [CH 8]',
-              채널로고: getBrandLogo('publicshopping'),
-              원가: '15,000원',
-              할인율: '51%',
-              할인된가격: '13,600원',
-              시작시간: '16:41',
-              썸네일: 'https://via.placeholder.com/120x140/4CAF50/FFFFFF?text=파김치',
-              알림여부: false,
-              상품명: '농팜 | [농팜] (1+1) 당일제조 전라도식 김치 파김치 500g'
-            },
-            {
-              홈쇼핑_아이디: 'dummy3',
-              홈쇼핑명: 'CJONSTYLE',
-              채널명: 'CJONSTYLE [CH 8]',
-              채널로고: getBrandLogo('publicshopping'),
-              원가: '15,000원',
-              할인율: '51%',
-              할인된가격: '13,600원',
-              시작시간: '18:40',
-              썸네일: 'https://via.placeholder.com/120x140/4CAF50/FFFFFF?text=파김치',
-              알림여부: false,
-              상품명: '농팜 | [농팜] (1+1) 당일제조 전라도식 김치 파김치 500g'
-            },
-            {
-              홈쇼핑_아이디: 'dummy4',
-              홈쇼핑명: 'CJONSTYLE',
-              채널명: 'CJONSTYLE [CH 8]',
-              채널로고: getBrandLogo('publicshopping'),
-              원가: '15,000원',
-              할인율: '51%',
-              할인된가격: '13,600원',
-              시작시간: '20:00',
-              썸네일: 'https://via.placeholder.com/120x140/4CAF50/FFFFFF?text=파김치',
-              알림여부: false,
-              상품명: '농팜 | [농팜] (1+1) 당일제조 전라도식 김치 파김치 500g'
-            }
-          ];
-          
-          setScheduleData({
-            date: todayString,
-            time: `${today.getHours()}:${String(today.getMinutes()).padStart(2, '0')}`,
-            channel_id: null,
-            schedule: dummySchedule
-          });
-        };
-        
         // 홈쇼핑 편성표 API 호출 (오늘 날짜 데이터만)
         // getSchedule 함수에서 자동으로 오늘 날짜를 설정하므로 파라미터로 전달하지 않음
         const response = await homeShoppingApi.getSchedule();
@@ -187,8 +119,9 @@ const Main = () => {
             const apiSchedule = todaySchedules.map(item => ({
               홈쇼핑_아이디: item.homeshopping_id || item.id,
               홈쇼핑명: item.homeshopping_name || item.store_name || '홈쇼핑',
-              채널명: item.channel_name || item.store_name || '홈쇼핑',
-              채널로고: item.channel_logo || getBrandLogo(item.homeshopping_name || item.store_name),
+              채널명: item.homeshopping_name || item.store_name || '홈쇼핑',
+              채널로고: item.channel_logo || getLogoByHomeshoppingId(item.homeshopping_id || item.id),
+              채널번호: item.homeshopping_channel || item.channel_number || item.channel || '채널',
               원가: item.sale_price ? `${item.sale_price.toLocaleString()}원` : '0원',
               할인율: item.dc_rate ? `${item.dc_rate}%` : '0%',
               할인된가격: item.dc_price ? `${item.dc_price.toLocaleString()}원` : '0원',
@@ -204,16 +137,26 @@ const Main = () => {
               channel_id: null,
               schedule: apiSchedule
             });
-                     } else {
-             // API 데이터는 있지만 오늘 날짜 데이터가 없는 경우 더미데이터 사용
-             console.log('API 데이터는 있지만 오늘 날짜 데이터가 없어서 더미데이터를 사용합니다.');
-             loadDummyData();
-           }
-                 } else {
-           // API 데이터가 없을 때 더미데이터 사용 (디자인 테스트용)
-           console.log('API 데이터가 없어서 더미데이터를 사용합니다.');
-           loadDummyData();
-         }
+          } else {
+            // 오늘 날짜 데이터가 없는 경우 빈 배열로 설정
+            console.log('오늘 날짜 편성표 데이터가 없습니다.');
+            setScheduleData({
+              date: todayString,
+              time: `${today.getHours()}:${String(today.getMinutes()).padStart(2, '0')}`,
+              channel_id: null,
+              schedule: []
+            });
+          }
+        } else {
+          // API 데이터가 없을 때 빈 배열로 설정
+          console.log('API 데이터가 없습니다.');
+          setScheduleData({
+            date: todayString,
+            time: `${today.getHours()}:${String(today.getMinutes()).padStart(2, '0')}`,
+            channel_id: null,
+            schedule: []
+          });
+        }
         
       } catch (err) {
         // 에러가 발생하면 콘솔에 에러를 출력하고 에러 상태를 설정합니다
@@ -351,9 +294,9 @@ const Main = () => {
                <>
                  <div className="main-section-title">방송 중</div>
                  <div className="main-product-cards">
-                   {onAirItems.map((item) => (
+                   {onAirItems.map((item, index) => (
                      <div
-                       key={item.홈쇼핑_아이디}
+                       key={`onair-${item.홈쇼핑_아이디}-${index}`}
                        className="main-product-card"
                        onClick={() => handleProductClick(item.홈쇼핑_아이디)}
                      >
@@ -376,6 +319,22 @@ const Main = () => {
                          <div className="main-product-info">
                            {/* 상품 상세 정보 컨테이너 */}
                            <div className="main-product-details">
+                             {/* 브랜드 정보 컨테이너 */}
+                             <div className="main-brand-info">
+                               {/* 브랜드 로고 컨테이너 */}
+                               <div className="main-brand-logo">
+                                 {/* 브랜드 로고 이미지 */}
+                                 <img
+                                   src={item.채널로고}
+                                   alt={item.홈쇼핑명}
+                                   className="main-brand-image"
+                                 />
+                               </div>
+                               {/* 채널 번호를 표시합니다 */}
+                               <span className="main-channel">[CH {item.채널번호}]</span>
+                             </div>
+                             {/* 상품명을 표시합니다 */}
+                             <div className="main-product-name">{item.상품명}</div>
                              {/* 가격 정보 컨테이너 */}
                              <div className="main-price-info">
                                {/* 할인율을 표시합니다 */}
@@ -383,22 +342,6 @@ const Main = () => {
                                {/* 할인된 가격을 표시합니다 */}
                                <span className="main-price">{item.할인된가격}</span>
                              </div>
-                             {/* 브랜드 정보 컨테이너 */}
-                             <div className="main-brand-info">
-                               {/* 브랜드 로고 컨테이너 */}
-                               <div className="main-brand-logo">
-                                 {/* 브랜드 로고 이미지 */}
-                                 <img
-                                   src={getBrandLogo(item.홈쇼핑명)}
-                                   alt={item.홈쇼핑명}
-                                   className="main-brand-image"
-                                 />
-                               </div>
-                               {/* 채널 번호를 표시합니다 */}
-                               <span className="main-channel">CH 8</span>
-                             </div>
-                             {/* 상품명을 표시합니다 */}
-                             <div className="main-product-name">{item.상품명}</div>
                            </div>
                          </div>
                        </div>
@@ -413,9 +356,9 @@ const Main = () => {
                  <>
                    <div className="main-section-title">방송 예정</div>
                    <div className="main-product-cards">
-                     {scheduledItems.map((item) => (
+                     {scheduledItems.map((item, index) => (
                        <div
-                         key={item.홈쇼핑_아이디}
+                         key={`scheduled-${item.홈쇼핑_아이디}-${index}`}
                          className="main-product-card"
                          onClick={() => handleProductClick(item.홈쇼핑_아이디)}
                        >
@@ -438,6 +381,22 @@ const Main = () => {
                            <div className="main-product-info">
                              {/* 상품 상세 정보 컨테이너 */}
                              <div className="main-product-details">
+                               {/* 브랜드 정보 컨테이너 */}
+                               <div className="main-brand-info">
+                                 {/* 브랜드 로고 컨테이너 */}
+                                 <div className="main-brand-logo">
+                                   {/* 브랜드 로고 이미지 */}
+                                   <img
+                                     src={item.채널로고}
+                                     alt={item.홈쇼핑명}
+                                     className="main-brand-image"
+                                   />
+                                 </div>
+                                 {/* 채널 번호를 표시합니다 */}
+                                 <span className="main-channel">[CH {item.채널번호}]</span>
+                               </div>
+                               {/* 상품명을 표시합니다 */}
+                               <div className="main-product-name">{item.상품명}</div>
                                {/* 가격 정보 컨테이너 */}
                                <div className="main-price-info">
                                  {/* 할인율을 표시합니다 */}
@@ -445,22 +404,6 @@ const Main = () => {
                                  {/* 할인된 가격을 표시합니다 */}
                                  <span className="main-price">{item.할인된가격}</span>
                                </div>
-                               {/* 브랜드 정보 컨테이너 */}
-                               <div className="main-brand-info">
-                                 {/* 브랜드 로고 컨테이너 */}
-                                 <div className="main-brand-logo">
-                                   {/* 브랜드 로고 이미지 */}
-                                   <img
-                                     src={getBrandLogo(item.홈쇼핑명)}
-                                     alt={item.홈쇼핑명}
-                                     className="main-brand-image"
-                                   />
-                                 </div>
-                                 {/* 채널 번호를 표시합니다 */}
-                                 <span className="main-channel">CH 8</span>
-                               </div>
-                               {/* 상품명을 표시합니다 */}
-                               <div className="main-product-name">{item.상품명}</div>
                              </div>
                            </div>
                          </div>

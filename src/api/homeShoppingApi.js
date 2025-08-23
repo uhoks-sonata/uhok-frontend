@@ -13,17 +13,100 @@ export const homeShoppingApi = {
       
       console.log('📺 편성표 조회 API 요청:', { live_date: formattedDate });
       
-      // API 요청 시 날짜 파라미터만 전달
+      // API 요청 시 날짜 파라미터만 전달 (limit 파라미터 제거)
       const params = {};
       if (liveDate) {
         params.live_date = formattedDate;
       }
+      
+      // limit 파라미터 제거 - 백엔드에서 지원하지 않을 수 있음
+      // params.limit = 10000; // 백엔드에서 limit을 지원한다면 이 줄을 활성화
       
       const response = await api.get('/api/homeshopping/schedule', { params });
       console.log('✅ 편성표 조회 API 응답:', response);
       return response; // response.data가 아닌 response 전체 반환
     } catch (error) {
       console.error('❌ 편성표 조회 실패:', error);
+      throw error;
+    }
+  },
+
+  // 편성표 전체 데이터 조회 (페이지네이션을 통한 모든 데이터 수집)
+  getScheduleAll: async (liveDate = null) => {
+    try {
+      // liveDate가 없으면 오늘 날짜로 설정
+      const today = new Date();
+      const formattedDate = liveDate || today.toISOString().split('T')[0]; // yyyy-mm-dd 형식
+      
+      console.log('📺 편성표 전체 데이터 조회 시작:', { live_date: formattedDate });
+      
+      let allSchedules = [];
+      let page = 1;
+      let hasMore = true;
+      const pageSize = 100; // 한 번에 가져올 데이터 개수
+      let lastResponse = null; // 마지막 응답을 저장할 변수
+      
+      // 페이지네이션을 통해 모든 데이터 수집
+      while (hasMore) {
+        const params = {
+          page: page,
+          size: pageSize
+        };
+        
+        if (liveDate) {
+          params.live_date = formattedDate;
+        }
+        
+        console.log(`📺 편성표 페이지 ${page} 조회:`, params);
+        
+        const response = await api.get('/api/homeshopping/schedule', { params });
+        lastResponse = response; // 마지막 응답 저장
+        
+        if (response && response.data && response.data.schedules) {
+          const schedules = response.data.schedules;
+          allSchedules = [...allSchedules, ...schedules];
+          
+          console.log(`📺 페이지 ${page} 데이터 수:`, schedules.length);
+          
+          // 더 이상 데이터가 없거나 페이지 크기보다 적으면 종료
+          if (schedules.length === 0 || schedules.length < pageSize) {
+            hasMore = false;
+          } else {
+            page++;
+          }
+        } else {
+          console.log(`📺 페이지 ${page}에 데이터 없음`);
+          hasMore = false;
+        }
+      }
+      
+      console.log('✅ 편성표 전체 데이터 조회 완료:', {
+        totalPages: page - 1,
+        totalSchedules: allSchedules.length,
+        live_date: formattedDate
+      });
+      
+      // 마지막 응답이 있으면 그 구조를 사용하고, 없으면 기본 구조 생성
+      if (lastResponse) {
+        const finalResponse = {
+          ...lastResponse,
+          data: {
+            ...lastResponse.data,
+            schedules: allSchedules
+          }
+        };
+        return finalResponse;
+      } else {
+        // 응답이 없는 경우 기본 구조 반환
+        return {
+          data: {
+            schedules: allSchedules
+          }
+        };
+      }
+      
+    } catch (error) {
+      console.error('❌ 편성표 전체 데이터 조회 실패:', error);
       throw error;
     }
   },

@@ -26,7 +26,6 @@
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  padding-bottom: 16px;
 }
 
 .date {
@@ -42,6 +41,7 @@
 
 /* 섹션 제목 스타일 */
 .main-section-title {
+  margin-top: 16px;
   font-size: 17px;
   color: #333333;
   margin-bottom: 16px;
@@ -146,13 +146,13 @@
 
 .main-discount {
   color: #FA5F8C;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
 }
 
 .main-price {
-  font-size: 20px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 500;
   color: #333333;
 }
 
@@ -163,7 +163,7 @@
 }
 
 .main-brand-logo {
-  width: 41px;
+  width: 70px;
   height: 41px;
 }
 
@@ -180,14 +180,14 @@
 
 .main-product-name {
   font-size: 16px;
-  color: #333333;
+  color: #4c4c5cb3;
   line-height: 1.4;
 }
 
 .main-product-image-container {
   position: relative;
-  width: 30%;
-  height: 160px;
+  width: 141px;
+  height: 141px;
   flex-shrink: 0;
 }
 
@@ -228,7 +228,7 @@
   
   .schedule-header-info {
     /* margin: 0 16px 16px 16px; */
-    padding: 12px;
+    /* padding: 12px; */
   }
   
   .schedule-section.on-air {
@@ -245,7 +245,8 @@
   }
   
   .main-product-image-container {
-    height: 120px;
+    width: 141px;
+    height: 141px;
   }
   
   .main-product-image {
@@ -258,6 +259,6 @@
   }
   
   .main-price {
-    font-size: 16px;
+    font-size: 13px;
   }
 }

@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BottomNav from '../../layout/BottomNav';
 import HeaderNavSchedule from '../../layout/HeaderNavSchedule';
 import { useUser } from '../../contexts/UserContext';
 import { homeShoppingApi } from '../../api/homeShoppingApi';
 import api from '../../pages/api';
+import Loading from '../../components/Loading';
 import emptyHeartIcon from '../../assets/heart_empty.png';
 import filledHeartIcon from '../../assets/heart_filled.png';
 import '../../styles/schedule.css';
@@ -38,8 +39,180 @@ const Schedule = () => {
   const [liveStreamData, setLiveStreamData] = useState({});
   const [isStreamLoading, setIsStreamLoading] = useState(false);
   
+  // 상품 상세 정보 로딩 상태
+  const [isProductDetailLoading, setIsProductDetailLoading] = useState(false);
+  const [loadingProductId, setLoadingProductId] = useState(null);
+  
+  // 찜 토글 로딩 상태
+  const [isWishlistLoading, setIsWishlistLoading] = useState(false);
+  const [loadingWishlistProductId, setLoadingWishlistProductId] = useState(null);
+  
+  // 무한 스크롤 관련 상태
+  const [hasMoreData, setHasMoreData] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(50); // 한 번에 가져올 상품 개수
+  
   // ref 선언
   const timeSlotsRef = useRef(null);
+  const scheduleContentRef = useRef(null);
+  
+  // 스크롤 이벤트 핸들러
+  const handleScroll = useCallback(() => {
+    if (!scheduleContentRef.current || isLoadingMore || !hasMoreData) return;
+    
+    const { scrollTop, scrollHeight, clientHeight } = scheduleContentRef.current;
+    
+    // 스크롤이 하단에 가까워지면 더 많은 데이터 로딩
+    if (scrollTop + clientHeight >= scrollHeight - 100) {
+      loadMoreData();
+    }
+  }, [isLoadingMore, hasMoreData]);
+  
+  // 더 많은 데이터 로딩
+  const loadMoreData = async () => {
+    if (isLoadingMore || !hasMoreData) return;
+    
+    try {
+      setIsLoadingMore(true);
+      const nextPage = currentPage + 1;
+      
+      // 선택된 날짜가 있으면 해당 날짜로, 없으면 오늘 날짜로 데이터를 가져옴
+      let targetDate = null;
+      if (selectedDate) {
+        const selectedDateObj = new Date(selectedDate);
+        const year = selectedDateObj.getFullYear();
+        const month = String(selectedDateObj.getMonth() + 1).padStart(2, '0');
+        const day = String(selectedDateObj.getDate()).padStart(2, '0');
+        targetDate = `${year}-${month}-${day}`;
+      }
+      
+      console.log(`📺 추가 데이터 로딩 - 페이지 ${nextPage}:`, { targetDate, pageSize });
+      
+      // 페이지네이션 파라미터를 포함하여 API 호출
+      const params = {
+        page: nextPage,
+        size: pageSize
+      };
+      
+      if (targetDate) {
+        params.live_date = targetDate;
+      }
+      
+      const response = await api.get('/api/homeshopping/schedule', { params });
+      
+      if (response && response.data && response.data.schedules) {
+        const newSchedules = response.data.schedules;
+        console.log(`✅ 추가 데이터 로딩 완료 - 페이지 ${nextPage}:`, newSchedules.length, '개');
+        
+        if (newSchedules.length > 0) {
+          // API 명세에 따른 데이터 구조 검증
+          const validatedNewSchedules = newSchedules.map(item => {
+            // 필수 필드 검증 및 기본값 설정
+            const validatedItem = {
+              live_id: item.live_id || 0,
+              homeshopping_id: item.homeshopping_id || 0,
+              homeshopping_name: item.homeshopping_name || '홈쇼핑',
+              homeshopping_channel: item.homeshopping_channel || 1,
+              live_date: item.live_date || targetDate || new Date().toISOString().split('T')[0],
+              live_start_time: item.live_start_time || '00:00:00',
+              live_end_time: item.live_end_time || '01:00:00',
+              promotion_type: item.promotion_type || '일반',
+              product_id: item.product_id || 0,
+              product_name: item.product_name || '상품명 없음',
+              thumb_img_url: item.thumb_img_url || '',
+              sale_price: item.sale_price || 0,
+              dc_price: item.dc_price || item.sale_price || 0,
+              dc_rate: item.dc_rate || 0
+            };
+            
+            // 할인율이 0이면 할인가격을 정가와 동일하게 설정
+            if (validatedItem.dc_rate === 0) {
+              validatedItem.dc_rate = 0;
+              validatedItem.dc_price = validatedItem.sale_price;
+            }
+            
+            // 방송 상태 계산
+            const now = new Date();
+            const targetDateObj = targetDate ? new Date(targetDate) : new Date();
+            targetDateObj.setHours(0, 0, 0, 0);
+            
+            const liveStart = new Date(targetDateObj);
+            const [startHour, startMinute] = validatedItem.live_start_time.split(':').map(Number);
+            liveStart.setHours(startHour, startMinute, 0, 0);
+            
+            const liveEnd = new Date(targetDateObj);
+            const [endHour, endMinute] = validatedItem.live_end_time.split(':').map(Number);
+            liveEnd.setHours(endHour, endMinute, 0, 0);
+            
+            const currentTime = new Date(targetDateObj);
+            currentTime.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
+            
+            let status = 'LIVE 예정';
+            if (currentTime >= liveStart && currentTime <= liveEnd) {
+              status = 'LIVE';
+            } else if (currentTime > liveEnd) {
+              status = '종료';
+            }
+            
+            return {
+              ...validatedItem,
+              status
+            };
+          });
+          
+          console.log(`✅ 검증된 추가 데이터:`, validatedNewSchedules.length, '개');
+          
+          // 새로운 데이터를 기존 데이터에 추가
+          setScheduleData(prev => {
+            const combinedData = [...prev, ...validatedNewSchedules];
+            console.log(`📊 전체 데이터 개수: ${combinedData.length}개`);
+            return combinedData;
+          });
+          
+          setCurrentPage(nextPage);
+          
+          // 더 이상 데이터가 없으면 hasMoreData를 false로 설정
+          if (validatedNewSchedules.length < pageSize) {
+            setHasMoreData(false);
+            console.log('📋 더 이상 로딩할 데이터가 없습니다.');
+          }
+        } else {
+          setHasMoreData(false);
+          console.log('📋 더 이상 로딩할 데이터가 없습니다.');
+        }
+      } else {
+        setHasMoreData(false);
+        console.log('📋 API 응답에 데이터가 없습니다.');
+      }
+      
+    } catch (error) {
+      console.error('❌ 추가 데이터 로딩 실패:', error);
+      
+      // 에러 타입에 따른 구체적인 메시지 제공
+      let errorMessage = '추가 데이터를 가져올 수 없습니다.';
+      
+      if (error.response?.status === 500) {
+        errorMessage = '서버 내부 오류가 발생했습니다.';
+      } else if (error.response?.status === 404) {
+        errorMessage = '더 이상 데이터가 없습니다.';
+      } else if (error.response?.status === 401) {
+        errorMessage = '로그인이 필요합니다.';
+      } else if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+        errorMessage = '요청 시간이 초과되었습니다.';
+      }
+      
+      console.error('에러 상세:', errorMessage);
+      
+      // 에러가 발생해도 무한 스크롤을 계속 시도할 수 있도록 hasMoreData는 유지
+      // 하지만 너무 많은 에러가 발생하면 hasMoreData를 false로 설정
+      if (error.response?.status === 404) {
+        setHasMoreData(false);
+      }
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
   
   // 홈쇼핑사 데이터
   const homeshoppingChannels = [
@@ -80,6 +253,18 @@ const Schedule = () => {
       channel: 20
     }
   ];
+
+  // homeshopping_id로 로고 찾기
+  const getLogoByHomeshoppingId = (homeshoppingId) => {
+    const channel = homeshoppingChannels.find(ch => ch.id === homeshoppingId);
+    return channel ? channel.logo : homeshoppingLogoPublicshopping; // 기본값으로 공영쇼핑 로고
+  };
+
+  // homeshopping_id로 채널 정보 찾기
+  const getChannelInfoByHomeshoppingId = (homeshoppingId) => {
+    const channel = homeshoppingChannels.find(ch => ch.id === homeshoppingId);
+    return channel || homeshoppingChannels[5]; // 기본값으로 공영쇼핑
+  };
   
   // 선택된 시간 상태
   const [selectedTime, setSelectedTime] = useState(null);
@@ -178,11 +363,17 @@ const Schedule = () => {
   // 스케줄 데이터 가져오기
   useEffect(() => {
     let isMounted = true;
+    let retryCount = 0;
+    const maxRetries = 3;
     
     const fetchData = async () => {
       try {
         setIsLoading(true);
         setError(null);
+        
+        // 무한 스크롤 상태 초기화
+        setCurrentPage(1);
+        setHasMoreData(true);
         
         // 선택된 날짜가 있으면 해당 날짜로, 없으면 오늘 날짜로 데이터를 가져옴
         let targetDate = null;
@@ -210,10 +401,23 @@ const Schedule = () => {
           targetDate,
           selectedDateObj: selectedDate ? new Date(selectedDate) : null,
           currentTime: new Date().toISOString(),
-          requestUrl: `/api/homeshopping/schedule${targetDate ? `?live_date=${targetDate}` : ''}`
+          requestUrl: `/api/homeshopping/schedule${targetDate ? `?live_date=${targetDate}` : ''}`,
+          retryCount,
+          page: 1,
+          size: pageSize
         });
         
-        const response = await homeShoppingApi.getSchedule(targetDate);
+        // 첫 번째 페이지 데이터 가져오기 (페이지네이션 파라미터 포함)
+        const params = {
+          page: 1,
+          size: pageSize
+        };
+        
+        if (targetDate) {
+          params.live_date = targetDate;
+        }
+        
+        const response = await api.get('/api/homeshopping/schedule', { params });
         
         // 컴포넌트가 마운트된 상태에서만 상태 업데이트
         if (isMounted) {
@@ -229,9 +433,41 @@ const Schedule = () => {
             console.log('✅ schedules 배열 길이:', response.data.schedules.length);
             console.log('✅ 첫 번째 schedule:', response.data.schedules[0]);
             
+            // API 명세에 따른 데이터 구조 검증
+            const schedules = response.data.schedules;
+            const validatedSchedules = schedules.map(item => {
+              // 필수 필드 검증 및 기본값 설정
+              const validatedItem = {
+                live_id: item.live_id || 0,
+                homeshopping_id: item.homeshopping_id || 0,
+                homeshopping_name: item.homeshopping_name || '홈쇼핑',
+                homeshopping_channel: item.homeshopping_channel || 1,
+                live_date: item.live_date || targetDate || new Date().toISOString().split('T')[0],
+                live_start_time: item.live_start_time || '00:00:00',
+                live_end_time: item.live_end_time || '01:00:00',
+                promotion_type: item.promotion_type || '일반',
+                product_id: item.product_id || 0,
+                product_name: item.product_name || '상품명 없음',
+                thumb_img_url: item.thumb_img_url || '',
+                sale_price: item.sale_price || 0,
+                dc_price: item.dc_price || item.sale_price || 0,
+                dc_rate: item.dc_rate || 0
+              };
+              
+              // 할인율이 0이면 할인가격을 정가와 동일하게 설정
+              if (validatedItem.dc_rate === 0) {
+                validatedItem.dc_price = validatedItem.sale_price;
+              }
+              
+              return validatedItem;
+            });
+            
+            console.log('✅ 검증된 schedules 데이터:', validatedSchedules.length, '개');
+            console.log('✅ 첫 번째 검증된 아이템:', validatedSchedules[0]);
+            
             // 가격 데이터 상세 로그 (안전하게 처리)
-            if (response.data.schedules.length > 0) {
-              const firstItem = response.data.schedules[0];
+            if (validatedSchedules.length > 0) {
+              const firstItem = validatedSchedules[0];
               console.log('💰 가격 데이터 상세:');
               console.log('  - sale_price:', firstItem.sale_price, typeof firstItem.sale_price);
               console.log('  - dc_price:', firstItem.dc_price, typeof firstItem.dc_price);
@@ -247,7 +483,7 @@ const Schedule = () => {
             
             // API 응답에 status 필드가 없으므로 계산해서 추가
             // 선택된 날짜와 현재 시간을 기준으로 방송 상태 판단
-            const schedulesWithStatus = response.data.schedules.map(item => {
+            const schedulesWithStatus = validatedSchedules.map(item => {
               const now = new Date();
               const targetDateObj = targetDate ? new Date(targetDate) : new Date();
               targetDateObj.setHours(0, 0, 0, 0); // 선택된 날짜의 시작 (00:00:00)
@@ -279,19 +515,65 @@ const Schedule = () => {
             });
             
             setScheduleData(schedulesWithStatus);
+            
+            // 더 많은 데이터가 있는지 확인
+            if (validatedSchedules.length < pageSize) {
+              setHasMoreData(false);
+              console.log('📋 첫 페이지에서 모든 데이터를 가져왔습니다.');
+            } else {
+              setHasMoreData(true);
+              console.log('📋 더 많은 데이터가 있을 수 있습니다. 스크롤하여 확인하세요.');
+            }
+            
+            retryCount = 0; // 성공 시 재시도 카운트 리셋
           } else {
             console.log('❌ API 응답에 schedules가 없음');
             console.log('❌ response:', response);
             console.log('❌ response.data:', response?.data);
             console.log('❌ response.data.schedules:', response?.data?.schedules);
             setScheduleData([]);
+            setHasMoreData(false);
           }
         }
         
       } catch (error) {
         if (isMounted) {
           console.error('스케줄 데이터 가져오기 실패:', error);
-          setError('스케줄 데이터를 가져올 수 없습니다.');
+          
+          // 에러 타입에 따른 구체적인 메시지 제공
+          let errorMessage = '스케줄 데이터를 가져올 수 없습니다.';
+          
+          if (error.response?.status === 500) {
+            if (error.response.data?.includes('Proxy error') || error.response.data?.includes('ECONNRESET')) {
+              errorMessage = '서버 연결에 문제가 있습니다. 잠시 후 다시 시도해주세요.';
+            } else {
+              errorMessage = '서버 내부 오류가 발생했습니다. 관리자에게 문의해주세요.';
+            }
+          } else if (error.response?.status === 404) {
+            errorMessage = '편성표 정보를 찾을 수 없습니다.';
+          } else if (error.response?.status === 401) {
+            errorMessage = '로그인이 필요합니다.';
+          } else if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+            errorMessage = '요청 시간이 초과되었습니다. 네트워크 상태를 확인해주세요.';
+          }
+          
+          // 재시도 로직
+          if (retryCount < maxRetries && (error.response?.status === 500 || error.code === 'ECONNABORTED')) {
+            retryCount++;
+            console.log(`🔄 편성표 API 재시도 ${retryCount}/${maxRetries}`);
+            
+            // 3초 후 재시도
+            setTimeout(() => {
+              if (isMounted) {
+                fetchData();
+              }
+            }, 3000);
+            
+            errorMessage = `서버 연결 문제로 재시도 중입니다... (${retryCount}/${maxRetries})`;
+          }
+          
+          setError(errorMessage);
+          setHasMoreData(false);
         }
       } finally {
         if (isMounted) {
@@ -306,10 +588,19 @@ const Schedule = () => {
     return () => {
       isMounted = false;
     };
-  }, [selectedDate]); // selectedDate가 변경될 때마다 API 재호출
+  }, [selectedDate, pageSize]); // selectedDate와 pageSize가 변경될 때마다 API 재호출
   
-
-  
+  // 스크롤 이벤트 리스너 추가/제거
+  useEffect(() => {
+    const scheduleContent = scheduleContentRef.current;
+    if (scheduleContent) {
+      scheduleContent.addEventListener('scroll', handleScroll);
+      
+      return () => {
+        scheduleContent.removeEventListener('scroll', handleScroll);
+      };
+    }
+  }, [handleScroll]);
 
 
   // 현재 시간 가져오기
@@ -329,6 +620,10 @@ const Schedule = () => {
   const handleProductClick = async (productId) => {
     try {
       console.log('상품 클릭:', productId);
+      
+      // 로딩 상태 시작
+      setIsProductDetailLoading(true);
+      setLoadingProductId(productId);
       
       // 상품 분류 확인 (식재료/완제품)
       const classificationResponse = await homeShoppingApi.checkProductClassification(productId);
@@ -355,6 +650,10 @@ const Schedule = () => {
           fromSchedule: true
         }
       });
+    } finally {
+      // 로딩 상태 종료
+      setIsProductDetailLoading(false);
+      setLoadingProductId(null);
     }
   };
 
@@ -429,6 +728,11 @@ const Schedule = () => {
 
   // 찜 토글 함수 (홈쇼핑 상품용)
   const handleHeartToggle = async (productId) => {
+    // 로딩 중이거나 이미 처리 중인 상품인 경우 중복 클릭 방지
+    if (isWishlistLoading || loadingWishlistProductId === productId) {
+      return;
+    }
+    
     // 로그인하지 않은 경우 API 호출 건너뜀
     if (!checkLoginStatus()) {
       alert('로그인이 필요한 서비스입니다.');
@@ -436,6 +740,10 @@ const Schedule = () => {
     }
 
     try {
+      // 로딩 상태 시작
+      setIsWishlistLoading(true);
+      setLoadingWishlistProductId(productId);
+      
       // 토큰 확인
       const token = localStorage.getItem('access_token');
       if (!token) {
@@ -506,6 +814,10 @@ const Schedule = () => {
       
       // 다른 에러의 경우 사용자에게 알림
       alert('찜 상태 변경에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      // 로딩 상태 종료
+      setIsWishlistLoading(false);
+      setLoadingWishlistProductId(null);
     }
   };
 
@@ -584,7 +896,11 @@ const Schedule = () => {
           }}
           disabled={isStreamLoading}
         >
-          {isStreamLoading ? '로딩 중...' : '라이브 시청'}
+          {isStreamLoading ? (
+            <Loading message="로딩 중..." containerStyle={{ padding: '0', margin: '0' }} />
+          ) : (
+            '라이브 시청'
+          )}
         </button>
       );
     }
@@ -649,8 +965,8 @@ const Schedule = () => {
   const renderLoading = () => {
     if (isLoading) {
       return (
-        <div className="loading-message">
-          <p>편성표를 불러오는 중...</p>
+        <div className="schedule-loading-container">
+          <Loading message="편성표를 불러오는 중..." />
         </div>
       );
     }
@@ -687,13 +1003,21 @@ const Schedule = () => {
     const endTime = filteredData[filteredData.length - 1]?.live_end_time?.substring(0, 5) || '';
 
     return (
-      <div className="schedule-timeline">
+      <div className="schedule-timeline" ref={scheduleContentRef}>
         {filteredData.map((item) => {
           console.log('스케줄 아이템 product_id:', item.product_id, typeof item.product_id);
           
           // 각 아이템의 방송 시간 계산
           const itemStartTime = item.live_start_time?.substring(0, 5) || '';
           const itemEndTime = item.live_end_time?.substring(0, 5) || '';
+          
+          // 할인율이 0인 경우 할인가격을 정가와 동일하게 표시
+          const displayDcPrice = item.dc_rate > 0 ? item.dc_price : item.sale_price;
+          const displayDcRate = item.dc_rate > 0 ? item.dc_rate : 0;
+          
+          // homeshopping_id에 해당하는 로고와 채널 정보 가져오기
+          const channelLogo = getLogoByHomeshoppingId(item.homeshopping_id);
+          const channelInfo = getChannelInfoByHomeshoppingId(item.homeshopping_id);
           
           return (
             <div key={item.live_id} className="schedule-item-wrapper">
@@ -702,27 +1026,60 @@ const Schedule = () => {
                 <span className="time-range">
                   {itemStartTime} ~ {itemEndTime}
                 </span>
+                {/* 홈쇼핑 채널 정보 추가 */}
+                <span className="channel-info-display">
+                  채널 {item.homeshopping_channel}
+                </span>
               </div>
               
               <div className="schedule-item">
                 <div className="schedule-content">
                 <div className="schedule-image">
-                  <img src={item.thumb_img_url} alt={item.product_name} />
+                  {isProductDetailLoading && loadingProductId === item.product_id ? (
+                    <div className="product-loading-overlay">
+                      <Loading message="로딩 중..." containerStyle={{ padding: '10px', margin: '0' }} />
+                    </div>
+                  ) : (
+                    <img 
+                      src={item.thumb_img_url || '/placeholder-image.png'} 
+                      alt={item.product_name || '상품 이미지'} 
+                      onError={(e) => {
+                        e.target.src = '/placeholder-image.png';
+                        e.target.alt = '이미지 로드 실패';
+                      }}
+                    />
+                  )}
                   {renderStatusBadge(item.status, item.promotion_type)}
                 </div>
                 <div className="schedule-info">
                   <div className="channel-info">
+                    {/* 홈쇼핑 로고 표시 */}
+                    <div className="schedule-channel-logo-small">
+                      <img src={channelLogo} alt={channelInfo.name} />
+                    </div>
                     <span className="schedule-channel-name">{item.homeshopping_name}</span>
+                    {/* 홈쇼핑 ID 표시 (디버깅용, 필요시 제거) */}
+                    <span className="schedule-channel-id">(ID: {item.homeshopping_id})</span>
                   </div>
                   <div className="schedule-product-meta">
                     <div className="schedule-product-name">{item.product_name}</div>
+                    {/* 상품 ID 표시 (디버깅용, 필요시 제거) */}
+                    <div className="schedule-product-id">상품 ID: {item.product_id}</div>
                   </div>
                   <div className="schedule-price-info">
-                    <div className="schedule-original-price">{item.sale_price?.toLocaleString() || '0'}원</div>
+                    <div className="schedule-original-price">
+                      {item.sale_price?.toLocaleString() || '0'}원
+                    </div>
                     <div className="schedule-price-row">
                       <div className="schedule-discount-display">
-                        <span className="schedule-discount-rate">{item.dc_rate || '0'}%</span>
-                        <span className="schedule-discount-price">{item.dc_price?.toLocaleString() || '0'}원</span>
+                        {displayDcRate > 0 ? (
+                          <>
+                            <span className="schedule-discount-rate">{displayDcRate}%</span>
+                            <span className="schedule-discount-price">{displayDcPrice?.toLocaleString() || '0'}원</span>
+                          </>
+                        ) : (
+                          <span className="schedule-no-discount">할인 없음</span>
+                        )}
                       </div>
                       <div className="schedule-wishlist-btn">
                         <button 
@@ -731,12 +1088,18 @@ const Schedule = () => {
                           onClick={(e) => {
                             e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
                             handleHeartToggle(item.product_id);
-                          }}>
-                          <img 
-                            src={wishlistedProducts.has(item.product_id) ? filledHeartIcon : emptyHeartIcon} 
-                            alt="찜 토글" 
-                            className="heart-icon"
-                          />
+                          }}
+                          disabled={isWishlistLoading && loadingWishlistProductId === item.product_id}
+                        >
+                          {isWishlistLoading && loadingWishlistProductId === item.product_id ? (
+                            <Loading message="" containerStyle={{ padding: '0', margin: '0', width: '20px', height: '20px' }} />
+                          ) : (
+                            <img 
+                              src={wishlistedProducts.has(item.product_id) ? filledHeartIcon : emptyHeartIcon} 
+                              alt="찜 토글" 
+                              className="heart-icon"
+                            />
+                          )}
                         </button>
                       </div>
                     </div>
@@ -747,9 +1110,24 @@ const Schedule = () => {
           </div>
         );
       })}
-        {/* 편성표 목록 아래 여백 추가 */}
-        <div style={{ height: '20px' }}></div>
-      </div>
+       
+       {/* 추가 데이터 로딩 상태 표시 */}
+       {isLoadingMore && (
+         <div className="loading-more-container">
+           <Loading message="더 많은 상품을 불러오는 중..." />
+         </div>
+       )}
+       
+       {/* 더 이상 데이터가 없음을 표시 */}
+       {!hasMoreData && scheduleData.length > 0 && (
+         <div className="no-more-data-container">
+           <p>모든 상품을 불러왔습니다.</p>
+         </div>
+       )}
+       
+       {/* 편성표 목록 아래 여백 추가 */}
+       <div style={{ height: '20px' }}></div>
+     </div>
     );
   };
 
