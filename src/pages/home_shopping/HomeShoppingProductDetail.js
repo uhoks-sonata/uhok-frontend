@@ -17,7 +17,8 @@ const HomeShoppingProductDetail = () => {
   
   // 상태 관리
   const [productDetail, setProductDetail] = useState(null);
-  const [isIngredient, setIsIngredient] = useState(false);
+  const [detailInfos, setDetailInfos] = useState([]);
+  const [productImages, setProductImages] = useState([]);
   const [isLiked, setIsLiked] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -25,6 +26,7 @@ const HomeShoppingProductDetail = () => {
   const [isStreamLoading, setIsStreamLoading] = useState(false);
   const [kokRecommendations, setKokRecommendations] = useState([]);
   const [recipeRecommendations, setRecipeRecommendations] = useState([]);
+  const [activeTab, setActiveTab] = useState('info'); // 탭 상태 관리
   
   // 상품 상세 정보 가져오기
   useEffect(() => {
@@ -38,27 +40,18 @@ const HomeShoppingProductDetail = () => {
         // 상품 상세 정보 가져오기
         const detailResponse = await homeShoppingApi.getProductDetail(productId);
         console.log('✅ 상품 상세 정보:', detailResponse);
-        setProductDetail(detailResponse.product);
-        setIsLiked(detailResponse.product?.is_liked || false);
         
-        // 상품 분류 확인 (식재료/완제품)
-        try {
-          const classificationResponse = await homeShoppingApi.checkProductClassification(productId);
-          console.log('🏷️ 상품 분류:', classificationResponse);
-          setIsIngredient(classificationResponse.is_ingredient);
+        if (detailResponse && detailResponse.product) {
+          setProductDetail(detailResponse.product);
+          setIsLiked(detailResponse.product.is_liked || false);
           
-          // 식재료인 경우 레시피 추천 가져오기
-          if (classificationResponse.is_ingredient) {
-            try {
-              const recipeResponse = await homeShoppingApi.getRecipeRecommendations(productId);
-              console.log('👨‍🍳 레시피 추천:', recipeResponse);
-              setRecipeRecommendations(recipeResponse.recipes || []);
-            } catch (recipeError) {
-              console.error('레시피 추천 가져오기 실패:', recipeError);
-            }
+          // 상세 정보와 이미지 설정
+          if (detailResponse.detail_infos) {
+            setDetailInfos(detailResponse.detail_infos);
           }
-        } catch (classificationError) {
-          console.error('상품 분류 확인 실패:', classificationError);
+          if (detailResponse.images) {
+            setProductImages(detailResponse.images);
+          }
         }
         
         // 콕 상품 추천 가져오기
@@ -131,11 +124,6 @@ const HomeShoppingProductDetail = () => {
     navigate(`/kok/product/${kokProductId}`);
   };
   
-  // 레시피 상세로 이동
-  const handleRecipeClick = (recipeId) => {
-    navigate(`/recipes/${recipeId}`);
-  };
-  
   // 방송 상태 확인
   const getBroadcastStatus = () => {
     if (!productDetail) return null;
@@ -145,11 +133,11 @@ const HomeShoppingProductDetail = () => {
     const liveEnd = new Date(`${productDetail.live_date} ${productDetail.live_end_time}`);
     
     if (now < liveStart) {
-      return { status: 'upcoming', text: '방송 예정' };
+      return { status: 'upcoming', text: '방송 예정', icon: '📺' };
     } else if (now >= liveStart && now <= liveEnd) {
-      return { status: 'live', text: 'LIVE' };
+      return { status: 'live', text: 'LIVE', icon: '🔴' };
     } else {
-      return { status: 'ended', text: '방송 종료' };
+      return { status: 'ended', text: '방송 종료', icon: '⏹️' };
     }
   };
   
@@ -158,7 +146,9 @@ const HomeShoppingProductDetail = () => {
     return (
       <div className="homeshopping-product-detail-page">
         <HeaderNavBackBtn onBackClick={() => navigate(-1)} />
-        <Loading />
+        <div className="loading-container">
+          <Loading message="상품 정보를 불러오는 중..." />
+        </div>
       </div>
     );
   }
@@ -168,9 +158,13 @@ const HomeShoppingProductDetail = () => {
     return (
       <div className="homeshopping-product-detail-page">
         <HeaderNavBackBtn onBackClick={() => navigate(-1)} />
-        <div className="error-message">
-          <p>{error}</p>
-          <button onClick={() => window.location.reload()}>새로고침</button>
+        <div className="error-container">
+          <div className="error-icon">⚠️</div>
+          <h2 className="error-title">상품 정보를 불러올 수 없습니다</h2>
+          <p className="error-message">{error}</p>
+          <button className="retry-button" onClick={() => window.location.reload()}>
+            다시 시도
+          </button>
         </div>
       </div>
     );
@@ -181,8 +175,13 @@ const HomeShoppingProductDetail = () => {
     return (
       <div className="homeshopping-product-detail-page">
         <HeaderNavBackBtn onBackClick={() => navigate(-1)} />
-        <div className="no-product">
-          <p>상품 정보를 찾을 수 없습니다.</p>
+        <div className="no-product-container">
+          <div className="no-product-icon">❓</div>
+          <h2 className="no-product-title">상품을 찾을 수 없습니다</h2>
+          <p className="no-product-message">요청하신 상품 정보가 존재하지 않습니다.</p>
+          <button className="back-button" onClick={() => navigate(-1)}>
+            이전 페이지로 돌아가기
+          </button>
         </div>
       </div>
     );
@@ -196,40 +195,32 @@ const HomeShoppingProductDetail = () => {
       <HeaderNavBackBtn onBackClick={() => navigate(-1)} />
       
       <div className="product-detail-container">
-        {/* 상품 이미지 */}
+        {/* 상품 이미지 섹션 */}
         <div className="product-image-section">
-          <img 
-            src={productDetail.thumb_img_url} 
-            alt={productDetail.product_name}
-            className="product-image"
-          />
-          
-          {/* 방송 상태 배지 */}
-          {broadcastStatus && (
-            <div className={`broadcast-status ${broadcastStatus.status}`}>
-              {broadcastStatus.text}
-            </div>
-          )}
-          
-          {/* 라이브 스트림 버튼 */}
-          {broadcastStatus?.status === 'live' && streamData?.stream_url && (
-            <button 
-              className="live-stream-button"
-              onClick={handleLiveStream}
-              disabled={isStreamLoading}
-            >
-              {isStreamLoading ? '로딩 중...' : '라이브 시청'}
-            </button>
-          )}
-        </div>
-        
-        {/* 상품 정보 */}
-        <div className="product-info-section">
-          <div className="product-header">
-            <h1 className="product-name">{productDetail.product_name}</h1>
+          <div className="image-container">
+            <img 
+              src={productDetail.thumb_img_url || '/placeholder-image.png'} 
+              alt={productDetail.product_name}
+              className="product-image"
+              onError={(e) => {
+                e.target.src = '/placeholder-image.png';
+                e.target.alt = '이미지 로드 실패';
+              }}
+            />
+            
+            {/* 방송 상태 배지 */}
+            {broadcastStatus && (
+              <div className={`broadcast-status ${broadcastStatus.status}`}>
+                <span className="status-icon">{broadcastStatus.icon}</span>
+                <span className="status-text">{broadcastStatus.text}</span>
+              </div>
+            )}
+            
+            {/* 찜 버튼 */}
             <button 
               className={`like-button ${isLiked ? 'liked' : ''}`}
               onClick={handleLikeToggle}
+              title={isLiked ? '찜 해제' : '찜 추가'}
             >
               <img 
                 src={isLiked ? filledHeartIcon : emptyHeartIcon} 
@@ -239,125 +230,204 @@ const HomeShoppingProductDetail = () => {
             </button>
           </div>
           
-          <div className="product-meta">
-            <span className="store-name">{productDetail.store_name}</span>
-            {isIngredient && <span className="ingredient-badge">식재료</span>}
+          {/* 라이브 스트림 버튼 */}
+          {broadcastStatus?.status === 'live' && streamData?.stream_url && (
+            <button 
+              className="live-stream-button"
+              onClick={handleLiveStream}
+              disabled={isStreamLoading}
+            >
+              <span className="live-icon">🔴</span>
+              {isStreamLoading ? '로딩 중...' : '라이브 시청하기'}
+            </button>
+          )}
+        </div>
+        
+        {/* 상품 기본 정보 */}
+        <div className="product-basic-info">
+          <div className="product-header">
+            <h1 className="product-name">{productDetail.product_name}</h1>
+            <div className="product-meta">
+              <span className="store-name">{productDetail.store_name || '홈쇼핑'}</span>
+            </div>
           </div>
           
           {/* 가격 정보 */}
           <div className="price-section">
-            <div className="original-price">
-              {productDetail.sale_price?.toLocaleString()}원
-            </div>
-            <div className="discount-info">
-              <span className="discount-rate">{productDetail.dc_rate}%</span>
-              <span className="discounted-price">
-                {productDetail.dc_price?.toLocaleString()}원
-              </span>
-            </div>
-          </div>
-          
-          {/* 방송 정보 */}
-          <div className="broadcast-info">
-            <h3>방송 정보</h3>
-            <div className="broadcast-details">
-              <p>방송일: {productDetail.live_date}</p>
-              <p>방송시간: {productDetail.live_start_time} ~ {productDetail.live_end_time}</p>
-            </div>
+            {productDetail.dc_rate > 0 ? (
+              <>
+                <div className="original-price">
+                  {productDetail.sale_price?.toLocaleString()}원
+                </div>
+                <div className="discount-info">
+                  <span className="discount-rate">{productDetail.dc_rate}% 할인</span>
+                  <span className="discounted-price">
+                    {productDetail.dc_price?.toLocaleString()}원
+                  </span>
+                </div>
+              </>
+            ) : (
+              <div className="no-discount-price">
+                {productDetail.sale_price?.toLocaleString()}원
+              </div>
+            )}
           </div>
         </div>
         
-        {/* 상품 상세 정보 */}
-        {productDetail.detail_infos && productDetail.detail_infos.length > 0 && (
-          <div className="product-details-section">
-            <h3>상품 상세 정보</h3>
-            <div className="detail-info">
-              {productDetail.detail_infos.map((info, index) => (
-                <div key={index} className="detail-item">
-                  {Object.entries(info).map(([key, value]) => (
-                    <div key={key} className="detail-row">
-                      <span className="detail-label">{key}:</span>
-                      <span className="detail-value">{value}</span>
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* 탭 네비게이션 */}
+        <div className="tab-navigation">
+          <button 
+            className={`tab-button ${activeTab === 'info' ? 'active' : ''}`}
+            onClick={() => setActiveTab('info')}
+          >
+            상품 정보
+          </button>
+          <button 
+            className={`tab-button ${activeTab === 'broadcast' ? 'active' : ''}`}
+            onClick={() => setActiveTab('broadcast')}
+          >
+            방송 정보
+          </button>
+          <button 
+            className={`tab-button ${activeTab === 'recommendations' ? 'active' : ''}`}
+            onClick={() => setActiveTab('recommendations')}
+          >
+            추천
+          </button>
+        </div>
         
-        {/* 상품 이미지 */}
-        {productDetail.images && productDetail.images.length > 0 && (
-          <div className="product-images-section">
-            <h3>상품 이미지</h3>
-            <div className="image-gallery">
-              {productDetail.images.map((imageGroup, index) => (
-                <div key={index} className="image-group">
-                  {Object.entries(imageGroup).map(([key, imageUrl]) => (
-                    <img 
-                      key={key}
-                      src={imageUrl} 
-                      alt={`상품 이미지 ${index + 1}`}
-                      className="gallery-image"
-                    />
-                  ))}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-        
-        {/* 콕 상품 추천 */}
-        {kokRecommendations.length > 0 && (
-          <div className="kok-recommendations-section">
-            <h3>유사한 콕 상품</h3>
-            <div className="kok-products">
-              {kokRecommendations.map((product) => (
-                <div 
-                  key={product.product_id} 
-                  className="kok-product-card"
-                  onClick={() => handleKokProductClick(product.product_id)}
-                >
-                  <img 
-                    src={product.thumb_img_url} 
-                    alt={product.product_name}
-                    className="kok-product-image"
-                  />
-                  <div className="kok-product-info">
-                    <h4 className="kok-product-name">{product.product_name}</h4>
-                    <p className="kok-product-price">{product.price?.toLocaleString()}원</p>
+        {/* 탭 콘텐츠 */}
+        <div className="tab-content">
+          {/* 상품 정보 탭 */}
+          {activeTab === 'info' && (
+            <div className="product-info-tab">
+              {/* 상품 상세 정보 */}
+              {detailInfos && detailInfos.length > 0 && (
+                <div className="detail-info-section">
+                  <h3 className="section-title">상품 상세 정보</h3>
+                  <div className="detail-info-grid">
+                    {detailInfos.map((info, index) => (
+                      <div key={index} className="detail-info-item">
+                        {Object.entries(info).map(([key, value]) => (
+                          <div key={key} className="detail-row">
+                            <span className="detail-label">{key}</span>
+                            <span className="detail-value">{value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-        
-        {/* 레시피 추천 (식재료인 경우) */}
-        {isIngredient && recipeRecommendations.length > 0 && (
-          <div className="recipe-recommendations-section">
-            <h3>이 식재료로 만드는 레시피</h3>
-            <div className="recipe-list">
-              {recipeRecommendations.map((recipe) => (
-                <div 
-                  key={recipe.recipe_id} 
-                  className="recipe-card"
-                  onClick={() => handleRecipeClick(recipe.recipe_id)}
-                >
-                  <img 
-                    src={recipe.thumb_img_url} 
-                    alt={recipe.recipe_name}
-                    className="recipe-image"
-                  />
-                  <div className="recipe-info">
-                    <h4 className="recipe-name">{recipe.recipe_name}</h4>
-                    <p className="recipe-description">{recipe.description}</p>
+              )}
+              
+              {/* 상품 이미지 갤러리 */}
+              {productImages && productImages.length > 0 && (
+                <div className="image-gallery-section">
+                  <h3 className="section-title">상품 이미지</h3>
+                  <div className="image-gallery">
+                    {productImages.map((imageGroup, index) => (
+                      <div key={index} className="image-group">
+                        {Object.entries(imageGroup).map(([key, imageUrl]) => (
+                          <img 
+                            key={key}
+                            src={imageUrl} 
+                            alt={`상품 이미지 ${index + 1}`}
+                            className="gallery-image"
+                            onClick={() => window.open(imageUrl, '_blank')}
+                          />
+                        ))}
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
+              )}
+              
+              {/* 상세 정보나 이미지가 없는 경우 */}
+              {(!detailInfos || detailInfos.length === 0) && 
+               (!productImages || productImages.length === 0) && (
+                <div className="no-detail-info">
+                  <div className="no-detail-icon">📋</div>
+                  <p className="no-detail-text">상품 상세 정보가 없습니다</p>
+                </div>
+              )}
             </div>
-          </div>
-        )}
+          )}
+          
+          {/* 방송 정보 탭 */}
+          {activeTab === 'broadcast' && (
+            <div className="broadcast-info-tab">
+              <div className="broadcast-details">
+                <div className="broadcast-item">
+                  <span className="broadcast-label">방송일</span>
+                  <span className="broadcast-value">{productDetail.live_date}</span>
+                </div>
+                <div className="broadcast-item">
+                  <span className="broadcast-label">방송시간</span>
+                  <span className="broadcast-value">
+                    {productDetail.live_start_time} ~ {productDetail.live_end_time}
+                  </span>
+                </div>
+                <div className="broadcast-item">
+                  <span className="broadcast-label">매장명</span>
+                  <span className="broadcast-value">{productDetail.store_name}</span>
+                </div>
+              </div>
+              
+              {/* 방송 상태 정보 */}
+              {broadcastStatus && (
+                <div className="broadcast-status-info">
+                  <h3 className="section-title">방송 상태</h3>
+                  <div className={`status-display ${broadcastStatus.status}`}>
+                    <span className="status-icon">{broadcastStatus.icon}</span>
+                    <span className="status-text">{broadcastStatus.text}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* 추천 탭 */}
+          {activeTab === 'recommendations' && (
+            <div className="recommendations-tab">
+              {/* 콕 상품 추천 */}
+              {kokRecommendations.length > 0 && (
+                <div className="kok-recommendations-section">
+                  <h3 className="section-title">유사한 콕 상품</h3>
+                  <div className="kok-products-grid">
+                    {kokRecommendations.map((product) => (
+                      <div 
+                        key={product.product_id} 
+                        className="kok-product-card"
+                        onClick={() => handleKokProductClick(product.product_id)}
+                      >
+                        <img 
+                          src={product.thumb_img_url || '/placeholder-image.png'} 
+                          alt={product.product_name}
+                          className="kok-product-image"
+                          onError={(e) => {
+                            e.target.src = '/placeholder-image.png';
+                          }}
+                        />
+                        <div className="kok-product-info">
+                          <h4 className="kok-product-name">{product.product_name}</h4>
+                          <p className="kok-product-price">{product.price?.toLocaleString()}원</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* 추천이 없는 경우 */}
+              {kokRecommendations.length === 0 && (
+                <div className="no-recommendations">
+                  <div className="no-recommendations-icon">💡</div>
+                  <p className="no-recommendations-text">아직 추천 상품이 없습니다</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
       
       <BottomNav />

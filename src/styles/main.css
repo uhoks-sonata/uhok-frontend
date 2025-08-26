@@ -21,6 +21,24 @@
   padding-bottom: 20px;
 }
 
+/* 스크롤바 스타일링 */
+.main-schedule-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.main-schedule-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.main-schedule-content::-webkit-scrollbar-thumb {
+  background: #e0e0e0;
+  border-radius: 4px;
+}
+
+.main-schedule-content::-webkit-scrollbar-thumb:hover {
+  background: #bbb;
+}
+
 /* 날짜 정보 */
 .schedule-header-info {
   background-color: antiquewhite;
@@ -181,7 +199,7 @@
 
 .main-product-name {
   font-size: 16px;
-  color: #4c4c5cb3;
+  color: #2f3542;
   line-height: 1.4;
 }
 

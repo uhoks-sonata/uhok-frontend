@@ -161,9 +161,7 @@ const Schedule = () => {
   const [isProductDetailLoading, setIsProductDetailLoading] = useState(false);
   const [loadingProductId, setLoadingProductId] = useState(null);
   
-  // 찜 토글 로딩 상태
-  const [isWishlistLoading, setIsWishlistLoading] = useState(false);
-  const [loadingWishlistProductId, setLoadingWishlistProductId] = useState(null);
+
   
   // 무한 스크롤 관련 상태
   const [hasMoreData, setHasMoreData] = useState(true);
@@ -440,6 +438,29 @@ const Schedule = () => {
     setWeekDates(weekData);
   }, []);
   
+  // 찜 상태 초기화 함수
+  const initializeWishlistStatus = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+
+      // 사용자의 찜한 홈쇼핑 상품 목록 가져오기
+      const response = await api.get('/api/homeshopping/likes', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.data && response.data.liked_products) {
+        const likedProductIds = new Set(response.data.liked_products.map(product => product.product_id));
+        setWishlistedProducts(likedProductIds);
+        console.log('찜 상태 초기화 완료:', likedProductIds.size, '개 상품');
+      }
+    } catch (error) {
+      console.error('찜 상태 초기화 실패:', error);
+    }
+  };
+
   // 스케줄 데이터 가져오기
   useEffect(() => {
     let isMounted = true;
@@ -594,18 +615,21 @@ const Schedule = () => {
               };
             });
             
-            setScheduleData(schedulesWithStatus);
-            
-            // 더 많은 데이터가 있는지 확인
-            if (validatedSchedules.length < pageSize) {
-              setHasMoreData(false);
-              console.log('📋 첫 페이지에서 모든 데이터를 가져왔습니다.');
-            } else {
-              setHasMoreData(true);
-              console.log('📋 더 많은 데이터가 있을 수 있습니다. 스크롤하여 확인하세요.');
-            }
-            
-            retryCount = 0; // 성공 시 재시도 카운트 리셋
+                         setScheduleData(schedulesWithStatus);
+             
+             // 더 많은 데이터가 있는지 확인
+             if (validatedSchedules.length < pageSize) {
+               setHasMoreData(false);
+               console.log('📋 첫 페이지에서 모든 데이터를 가져왔습니다.');
+             } else {
+               setHasMoreData(true);
+               console.log('📋 더 많은 데이터가 있을 수 있습니다. 스크롤하여 확인하세요.');
+             }
+             
+             // 스케줄 데이터 로딩 완료 후 찜 상태 초기화
+             initializeWishlistStatus();
+             
+             retryCount = 0; // 성공 시 재시도 카운트 리셋
           } else {
             console.log('❌ API 응답에 schedules가 없음');
             console.log('❌ response:', response);
@@ -806,37 +830,18 @@ const Schedule = () => {
     return !!token;
   };
 
-  // 찜 토글 함수 (홈쇼핑 상품용)
+  // 찜 토글 함수 (홈쇼핑 상품용) - WishList.js와 동일한 방식
   const handleHeartToggle = async (productId) => {
-    // 로딩 중이거나 이미 처리 중인 상품인 경우 중복 클릭 방지
-    if (isWishlistLoading || loadingWishlistProductId === productId) {
-      return;
-    }
-    
-    // 로그인하지 않은 경우 API 호출 건너뜀
-    if (!checkLoginStatus()) {
-      alert('로그인이 필요한 서비스입니다.');
-      return;
-    }
-
     try {
-      // 로딩 상태 시작
-      setIsWishlistLoading(true);
-      setLoadingWishlistProductId(productId);
-      
       // 토큰 확인
       const token = localStorage.getItem('access_token');
       if (!token) {
-        alert('로그인이 필요한 서비스입니다.');
+        console.log('토큰이 없어서 로그인 페이지로 이동');
+        window.location.href = '/';
         return;
       }
 
-      console.log('찜 토글 시도 - productId:', productId);
-      console.log('사용 중인 토큰:', token.substring(0, 20) + '...');
-      console.log('전달할 데이터:', { product_id: productId });
-      console.log('productId 타입:', typeof productId);
-
-      // 홈쇼핑 상품 찜 토글 API 호출
+      // 찜 토글 API 호출
       const response = await api.post('/api/homeshopping/likes/toggle', {
         product_id: productId
       }, {
@@ -847,7 +852,7 @@ const Schedule = () => {
 
       console.log('찜 토글 응답:', response.data);
 
-      // 찜 토글 성공 후 하트 아이콘만 즉시 변경
+      // 찜 토글 성공 후 하트 아이콘만 즉시 변경 (위시리스트 데이터는 동기화하지 않음)
       if (response.data) {
         console.log('찜 토글 성공! 하트 아이콘 상태만 변경합니다.');
         
@@ -874,16 +879,12 @@ const Schedule = () => {
             heartButton.style.transform = 'scale(1)';
           }, 150);
         }
+        
+        // 위시리스트 데이터는 즉시 동기화하지 않음
+        // 페이지 벗어나거나 새로고침할 때 동기화됨
       }
-      
     } catch (err) {
       console.error('찜 토글 실패:', err);
-      console.error('에러 상세 정보:', {
-        status: err.response?.status,
-        statusText: err.response?.statusText,
-        data: err.response?.data,
-        message: err.message
-      });
       
       // 401 에러 (인증 실패) 시 로그인 페이지로 이동
       if (err.response?.status === 401) {
@@ -894,10 +895,6 @@ const Schedule = () => {
       
       // 다른 에러의 경우 사용자에게 알림
       alert('찜 상태 변경에 실패했습니다. 다시 시도해주세요.');
-    } finally {
-      // 로딩 상태 종료
-      setIsWishlistLoading(false);
-      setLoadingWishlistProductId(null);
     }
   };
 
@@ -1106,13 +1103,13 @@ const Schedule = () => {
                 <span className="time-range">
                   {itemStartTime} ~ {itemEndTime}
                 </span>
-                {/* 홈쇼핑 채널 정보 추가 */}
-                <span className="channel-info-display">
-                  채널 {item.homeshopping_channel}
-                </span>
+                                 {/* 홈쇼핑 채널 정보 추가 */}
+                 <span className="channel-info-display">
+                   [CH {item.homeshopping_channel}]
+                 </span>
               </div>
               
-              <div className="schedule-item">
+              <div className="schedule-item" onClick={() => handleProductClick(item.product_id)}>
                 <div className="schedule-content">
                 <div className="schedule-image">
                   {isProductDetailLoading && loadingProductId === item.product_id ? (
@@ -1150,36 +1147,34 @@ const Schedule = () => {
                     </div>
                     <div className="schedule-price-row">
                       <div className="schedule-discount-display">
-                        {displayDcRate > 0 ? (
-                          <>
-                            <span className="schedule-discount-rate">{displayDcRate}%</span>
-                            <span className="schedule-discount-price">{displayDcPrice?.toLocaleString() || '0'}원</span>
-                          </>
-                        ) : (
-                          <span className="schedule-no-discount">할인 없음</span>
-                        )}
+                                                 {displayDcRate > 0 ? (
+                           <>
+                             <span className="schedule-discount-rate">{displayDcRate}%</span>
+                             <span className="schedule-discount-price discount-price-normal">{displayDcPrice?.toLocaleString() || '0'}원</span>
+                           </>
+                         ) : (
+                           <>
+                             <span className="schedule-no-discount">할인 없음</span>
+                             <span className="schedule-discount-price discount-price-normal">{displayDcPrice?.toLocaleString() || '0'}원</span>
+                           </>
+                         )}
                       </div>
-                      <div className="schedule-wishlist-btn">
-                        <button 
-                          className="heart-button"
-                          data-product-id={item.product_id}
-                          onClick={(e) => {
-                            e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
-                            handleHeartToggle(item.product_id);
-                          }}
-                          disabled={isWishlistLoading && loadingWishlistProductId === item.product_id}
-                        >
-                          {isWishlistLoading && loadingWishlistProductId === item.product_id ? (
-                            <Loading message="" containerStyle={{ padding: '0', margin: '0', width: '20px', height: '20px' }} />
-                          ) : (
-                            <img 
-                              src={wishlistedProducts.has(item.product_id) ? filledHeartIcon : emptyHeartIcon} 
-                              alt="찜 토글" 
-                              className="heart-icon"
-                            />
-                          )}
-                        </button>
-                      </div>
+                                             <div className="schedule-wishlist-btn">
+                         <button 
+                           className="heart-button"
+                           data-product-id={item.product_id}
+                           onClick={(e) => {
+                             e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
+                             handleHeartToggle(item.product_id);
+                           }}
+                         >
+                           <img 
+                             src={wishlistedProducts.has(item.product_id) ? filledHeartIcon : emptyHeartIcon} 
+                             alt="찜 토글" 
+                             className="heart-icon"
+                           />
+                         </button>
+                       </div>
                     </div>
                   </div>
                 </div>
@@ -1287,8 +1282,8 @@ const Schedule = () => {
                 {/* 로딩 상태 */}
                 {renderLoading()}
                 
-                {/* 편성표 목록 */}
-                {renderScheduleList()}
+                {/* 편성표 목록 - 로딩 중이 아닐 때만 표시 */}
+                {!isLoading && renderScheduleList()}
               </div>
             </div>
           </div>
