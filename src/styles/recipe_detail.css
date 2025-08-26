@@ -252,14 +252,45 @@
   gap: 16px;
 }
 
+.rating-input-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
 .my-rating-label {
   font-size: 14px;
   color: #666;
+  white-space: nowrap;
 }
 
 .star-input {
   display: flex;
   gap: 8px;
+  flex: 1;
+}
+
+.rating-submit-btn {
+  background-color: #FA5F8C;
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.rating-submit-btn:hover:not(:disabled) {
+  background-color: #e04a7a;
+}
+
+.rating-submit-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
 }
 
 .star-btn {
@@ -268,8 +299,8 @@
   font-size: 24px;
   cursor: pointer;
   padding: 4px;
-  transition: transform 0.2s ease;
-  color: #ddd;
+  transition: all 0.2s ease;
+  color: #ddd; /* 기본 회색 */
 }
 
 .star-btn:hover {
@@ -277,7 +308,7 @@
 }
 
 .star-btn.active {
-  color: #FA5F8C;
+  color: #FA5F8C; /* 핑크색 */
 }
 
 /* 재료 섹션 */

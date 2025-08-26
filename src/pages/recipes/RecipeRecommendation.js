@@ -127,17 +127,6 @@ const RecipeRecommendation = () => {
           return;
         }
         
-        // 실제 API 호출로 변경
-        const ingredients = selectedIngredients.map((i) => i.name);
-        const allHaveAmountAndUnit = selectedIngredients.every((i) => i.amount != null && i.unit);
-        const amount = allHaveAmountAndUnit ? selectedIngredients.map((i) => {
-          // 숫자를 문자열로 변환하고, 정수인 경우 소수점 제거
-          const num = parseFloat(i.amount);
-          // 백엔드에서 문자열을 기대하므로 확실하게 문자열로 변환
-          return String(Number.isInteger(num) ? Math.floor(num) : num);
-        }) : undefined;
-        const unit = allHaveAmountAndUnit ? selectedIngredients.map((i) => String(i.unit)) : undefined;
-
         // API 요청 파라미터 로깅
         const apiParams = {
           ingredients: selectedIngredients, // ingredient 객체 배열 전달
@@ -146,18 +135,9 @@ const RecipeRecommendation = () => {
         };
         console.log('소진희망재료 API 요청 파라미터:', apiParams);
         console.log('선택된 재료들:', selectedIngredients);
-        
-        // amount 배열의 각 요소 타입 확인
-        if (amount) {
-          console.log('Amount 배열 타입 확인:', amount.map((a, i) => ({
-            index: i,
-            value: a,
-            type: typeof a,
-            isString: typeof a === 'string'
-          })));
-        }
 
-        const { recipes, total, page } = await recipeApi.getRecipesByIngredients(apiParams);
+        const response = await recipeApi.getRecipesByIngredients(apiParams);
+        const { recipes, total, page } = response;
         
         console.log('소진희망재료 API 응답:', { recipes, total, page });
         
@@ -172,23 +152,8 @@ const RecipeRecommendation = () => {
           });
         }
 
-        // 백엔드 응답 데이터를 API 명세서 형식에 맞게 변환
-        const normalizedRecipes = recipes.map(recipe => ({
-          recipe_id: recipe.RECIPE_ID || recipe.recipe_id,
-          recipe_title: recipe.RECIPE_TITLE || recipe.COOKING_NAME || recipe.recipe_title || recipe.cooking_name,
-          cooking_name: recipe.COOKING_NAME || recipe.cooking_name,
-          scrap_count: recipe.SCRAP_COUNT || recipe.scrap_count,
-          cooking_case_name: recipe.COOKING_CASE_NAME || recipe.cooking_case_name,
-          cooking_category_name: recipe.COOKING_CATEGORY_NAME || recipe.cooking_category_name,
-          cooking_introduction: recipe.COOKING_INTRODUCTION || recipe.cooking_introduction,
-          number_of_serving: recipe.NUMBER_OF_SERVING || recipe.number_of_serving,
-          thumbnail_url: recipe.THUMBNAIL_URL || recipe.thumbnail_url,
-          recipe_url: recipe.RECIPE_URL || recipe.recipe_url,
-          matched_ingredient_count: recipe.matched_ingredient_count || 0,
-          total_ingredients_count: recipe.total_ingredients_count || 0,
-          // used_ingredients 필드 추가 (백엔드에서 반환하는 경우)
-          used_ingredients: recipe.used_ingredients || []
-        }));
+        // API 응답 데이터를 정규화
+        const normalizedRecipes = recipes.map(recipe => recipeApi.normalizeRecipeData(recipe));
 
         console.log('정규화된 레시피 데이터:', normalizedRecipes);
 
@@ -197,7 +162,8 @@ const RecipeRecommendation = () => {
             recipes: normalizedRecipes,
             total,
             page,
-            ingredients: selectedIngredients
+            ingredients: selectedIngredients,
+            searchType: 'ingredient' // 검색 타입 추가
           }
         });
         
@@ -210,15 +176,28 @@ const RecipeRecommendation = () => {
         
         console.log('레시피명/식재료명으로 레시피 추천 받기:', recipeInput, recipeSearchType);
         const method = recipeSearchType === 'ingredient' ? 'ingredient' : 'recipe';
-                 const { recipes, page, total } = await recipeApi.searchRecipes({ recipe: recipeInput, page: 1, size: 15, method });
+        
+        const response = await recipeApi.searchRecipes({ 
+          recipe: recipeInput, 
+          page: 1, 
+          size: 15, 
+          method 
+        });
+        
+        const { recipes, page, total } = response;
         console.log('API 응답:', { recipes, page, total });
+        
+        // API 응답 데이터를 정규화
+        const normalizedRecipes = recipes.map(recipe => recipeApi.normalizeRecipeData(recipe));
+        
         // 결과 페이지로 이동하며 검색결과 전달 (state 기반)
         navigate('/recipes/result', {
           state: {
-            recipes,
+            recipes: normalizedRecipes,
             total,
             page,
             ingredients: [],
+            searchType: 'keyword' // 검색 타입 추가
           },
         });
       }
@@ -233,6 +212,7 @@ const RecipeRecommendation = () => {
             total: 0,
             page: 1,
             ingredients: selectedIngredients,
+            searchType: 'ingredient', // 검색 타입 추가
             error: true,
             errorMessage: '검색 중 오류가 발생했습니다. 다시 시도해주세요.'
           }

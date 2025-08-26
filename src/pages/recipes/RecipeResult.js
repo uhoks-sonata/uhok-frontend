@@ -28,6 +28,8 @@ const RecipeResult = () => {
   const [error, setError] = useState('');
   // 초기화 상태 관리
   const [isInitialized, setIsInitialized] = useState(false);
+  // 검색 타입 관리
+  const [searchType, setSearchType] = useState('ingredient'); // 기본값: 소진 희망 재료
   
   // 조합별로 결과를 캐싱하여 중복 요청 방지
   const combinationCache = useMemo(() => new Map(), []);
@@ -104,6 +106,7 @@ const RecipeResult = () => {
       setCurrentPage(initialPage);
       setCombinationNumber(location.state.combination_number || 1);
       setHasMoreCombinations(location.state.has_more_combinations || false);
+      setSearchType(location.state.searchType || 'ingredient'); // 검색 타입 설정
       
       // 초기 데이터를 캐시에 저장
       if (initialRecipes.length > 0) {
@@ -172,9 +175,12 @@ const RecipeResult = () => {
       });
       
       if (response && response.recipes) {
+        // API 응답 데이터를 정규화
+        const normalizedRecipes = response.recipes.map(recipe => recipeApi.normalizeRecipeData(recipe));
+        
         // 응답 데이터를 캐시에 저장
         const cacheData = {
-          recipes: response.recipes,
+          recipes: normalizedRecipes,
           combination_number: response.combination_number || page,
           has_more_combinations: response.has_more_combinations || false,
           total: response.total || 0
@@ -182,7 +188,7 @@ const RecipeResult = () => {
         combinationCache.set(cacheKey, cacheData);
         
         // 상태 업데이트
-        setRecipes(response.recipes);
+        setRecipes(normalizedRecipes);
         setCurrentPage(page);
         setCombinationNumber(response.combination_number || page);
         setHasMoreCombinations(response.has_more_combinations || false);
@@ -271,122 +277,147 @@ const RecipeResult = () => {
 
 
 
-      {/* 레시피 목록 */}
-      <main className="recipe-list">
-        {loading && (
-          <div className="loading-overlay">
-            <Loading message="새로운 조합을 생성 중... 잠시만 기다려주세요." />
-          </div>
-        )}
-        {!loading && error && (
-          <div className="recipe-card">
-            <div className="recipe-info">
-              <h3>오류가 발생했습니다</h3>
-              <p>{error}</p>
-              <button 
-                className="retry-btn" 
-                onClick={() => navigate('/recipes')}
-              >
-                다시 시도하기
-              </button>
-            </div>
-          </div>
-        )}
-        {!loading && !error && recipes.length > 0 && (
-          sortedRecipes.map((recipe, idx) => {
-            // 배열 형태의 데이터를 객체로 변환
-            let recipeObj = recipe;
-            if (Array.isArray(recipe)) {
-              recipeObj = {
-                recipe_id: recipe[0],
-                recipe_title: recipe[1],
-                cooking_name: recipe[2],
-                scrap_count: recipe[3],
-                cooking_case_name: recipe[4],
-                cooking_category_name: recipe[5],
-                cooking_introduction: recipe[6],
-                number_of_serving: recipe[7],
-                thumbnail_url: recipe[8],
-                recipe_url: recipe[9],
-                matched_ingredient_count: recipe[10],
-                used_ingredients: Array.isArray(recipe[11]) ? recipe[11] : []
-              };
-            }
-            
-            // 실제 일치하는 재료 수 계산
-            const actualMatchedCount = Array.isArray(recipeObj.used_ingredients) ? 
-              recipeObj.used_ingredients.filter(usedIng => 
-                displayIngredients.some(displayIng => {
-                  const displayName = typeof displayIng === 'string' ? displayIng : displayIng.name || '';
-                  return usedIng && usedIng.material_name && displayName.toLowerCase().includes(usedIng.material_name.toLowerCase()) ||
-                         usedIng && usedIng.material_name && usedIng.material_name.toLowerCase().includes(displayName.toLowerCase());
-                })
-              ).length : 0;
-            
-            // 디버깅을 위한 콘솔 로그
-            console.log('Recipe object:', recipeObj);
-            console.log('matched_ingredient_count:', recipeObj.matched_ingredient_count);
-            console.log('total_ingredients_count:', recipeObj.total_ingredients_count);
-            console.log('used_ingredients:', recipeObj.used_ingredients);
-            console.log('used_ingredients type:', typeof recipeObj.used_ingredients);
-            console.log('used_ingredients isArray:', Array.isArray(recipeObj.used_ingredients));
-            console.log('Actual matched count:', actualMatchedCount);
-            
-            return (
-              <div key={recipeObj.recipe_id || recipeObj.id || idx} className="recipe-card" onClick={() => handleRecipeClick(recipeObj)}>
-                <div className="recipe-image">
-                  <img src={getRecipeImageSrc(recipeObj, idx)} alt={recipeObj.recipe_title || recipeObj.name || '레시피'} onError={(e)=>{ e.currentTarget.src = fallbackImg; }} />
-                </div>
-                <div className="recipe-info">
-                  <h3 className="recipe-name">{recipeObj.recipe_title || recipeObj.name}</h3>
-                  <div className="recipe-stats">
-                    <span className="serving serving-small">{recipeObj.number_of_serving}</span>
-                    <span className="separator"> | </span>
-                    <span className="scrap-count">
-                      <img className="bookmark-icon" src={bookmarkIcon} alt="북마크" />
-                      <span className="bookmark-count">{recipeObj.scrap_count || recipeObj.scrapCount || 0}</span>
-                    </span>
-                  </div>
-                  {typeof recipeObj.matched_ingredient_count === 'number' && (
-                    <div className="matched-ingredients">
-                      <span className="matched-count">{actualMatchedCount}개 재료 일치</span>
-                      <span className="separator"> | </span>
-                      <span className="total-ingredients">재료 총 {recipeObj.total_ingredients_count || (Array.isArray(recipeObj.used_ingredients) ? recipeObj.used_ingredients.length : 0)}개</span>
-                    </div>
-                  )}
-                  <p className="recipe-description" title={recipeObj.cooking_introduction || ''}>
-                    {recipeObj.cooking_introduction || ''}
-                  </p>
-                </div>
-              </div>
-            );
-          })
-        )}
-        {!loading && !error && recipes.length === 0 && (
-          <div className="no-results">
-            <p>검색 결과가 없습니다.</p>
-            <p>다른 재료로 다시 시도해보세요.</p>
-          </div>
-        )}
-      </main>
-
-      {/* 페이지네이션 */}
-      {recipes.length > 0 && (
-        <div className="pagination-section">
-          <div className="pagination-buttons">
-            {[1, 2, 3].map((page) => (
-              <button
-                key={page}
-                className={`pagination-btn ${currentPage === page ? 'active' : ''}`}
-                onClick={() => handlePageChange(page)}
-                disabled={loading}
-              >
-                {page}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+             {/* 레시피 목록 */}
+       <main className="recipe-list">
+         {loading && (
+           <div className="loading-overlay">
+             <Loading message="새로운 조합을 생성 중... 잠시만 기다려주세요." />
+           </div>
+         )}
+         {!loading && error && (
+           <div className="recipe-card">
+             <div className="recipe-info">
+               <h3>오류가 발생했습니다</h3>
+               <p>{error}</p>
+               <button 
+                 className="retry-btn" 
+                 onClick={() => navigate('/recipes')}
+               >
+                 다시 시도하기
+               </button>
+             </div>
+           </div>
+         )}
+         {!loading && !error && recipes.length > 0 && (
+           sortedRecipes.map((recipe, idx) => {
+             // 배열 형태의 데이터를 객체로 변환
+             let recipeObj = recipe;
+             if (Array.isArray(recipe)) {
+               recipeObj = {
+                 recipe_id: recipe[0],
+                 recipe_title: recipe[1],
+                 cooking_name: recipe[2],
+                 scrap_count: recipe[3],
+                 cooking_case_name: recipe[4],
+                 cooking_category_name: recipe[5],
+                 cooking_introduction: recipe[6],
+                 number_of_serving: recipe[7],
+                 thumbnail_url: recipe[8],
+                 recipe_url: recipe[9],
+                 matched_ingredient_count: recipe[10],
+                 used_ingredients: Array.isArray(recipe[11]) ? recipe[11] : []
+               };
+             }
+             
+             // 실제 일치하는 재료 수 계산 (API 명세서 형식에 맞게)
+             const actualMatchedCount = Array.isArray(recipeObj.used_ingredients) ? 
+               recipeObj.used_ingredients.filter(usedIng => 
+                 displayIngredients.some(displayIng => {
+                   const displayName = typeof displayIng === 'string' ? displayIng : displayIng.name || '';
+                   const usedIngName = usedIng && (usedIng.material_name || usedIng.name || '');
+                   return usedIngName && (
+                     displayName.toLowerCase().includes(usedIngName.toLowerCase()) ||
+                     usedIngName.toLowerCase().includes(displayName.toLowerCase())
+                   );
+                 })
+               ).length : 0;
+             
+             // 디버깅을 위한 콘솔 로그
+             console.log('Recipe object:', recipeObj);
+             console.log('matched_ingredient_count:', recipeObj.matched_ingredient_count);
+             console.log('total_ingredients_count:', recipeObj.total_ingredients_count);
+             console.log('used_ingredients:', recipeObj.used_ingredients);
+             console.log('used_ingredients type:', typeof recipeObj.used_ingredients);
+             console.log('used_ingredients isArray:', Array.isArray(recipeObj.used_ingredients));
+             console.log('Actual matched count:', actualMatchedCount);
+             
+                           return (
+                <div key={recipeObj.recipe_id || recipeObj.id || idx} 
+                     className={`recipe-card ${searchType === 'keyword' ? 'keyword-search-card' : 'ingredient-search-card'}`} 
+                     onClick={() => handleRecipeClick(recipeObj)}>
+                 <div className="recipe-image">
+                   <img src={getRecipeImageSrc(recipeObj, idx)} alt={recipeObj.recipe_title || recipeObj.name || '레시피'} onError={(e)=>{ e.currentTarget.src = fallbackImg; }} />
+                 </div>
+                 <div className="recipe-info">
+                   <h3 className="recipe-name" title={recipeObj.recipe_title || recipeObj.name}>
+                    {(recipeObj.recipe_title || recipeObj.name || '').length > 50 
+                      ? (recipeObj.recipe_title || recipeObj.name).substring(0, 50) + '...' 
+                      : (recipeObj.recipe_title || recipeObj.name)}
+                  </h3>
+                   <div className="recipe-stats">
+                     <span className="serving serving-small">{recipeObj.number_of_serving}</span>
+                     <span className="separator"> | </span>
+                     <span className="scrap-count">
+                       <img className="bookmark-icon" src={bookmarkIcon} alt="북마크" />
+                       <span className="bookmark-count">{recipeObj.scrap_count || recipeObj.scrapCount || 0}</span>
+                     </span>
+                   </div>
+                                       {typeof recipeObj.matched_ingredient_count === 'number' && (
+                      <div className="matched-ingredients">
+                        <span className="matched-count">{actualMatchedCount}개 재료 일치</span>
+                        <span className="separator"> | </span>
+                        <span className="total-ingredients">재료 총 {recipeObj.total_ingredients_count || (Array.isArray(recipeObj.used_ingredients) ? recipeObj.used_ingredients.length : 0)}개</span>
+                      </div>
+                    )}
+                    
+                                         {/* 사용되는 재료 목록 표시 - 소진 희망 재료 검색에서만 표시 */}
+                     {searchType === 'ingredient' && Array.isArray(recipeObj.used_ingredients) && recipeObj.used_ingredients.length > 0 && (
+                       <div className="used-ingredients-list">
+                         {recipeObj.used_ingredients.slice(0, 3).map((ingredient, idx) => (
+                           <span key={idx} className="used-ingredient-item">
+                             {ingredient.material_name} {ingredient.measure_amount}{ingredient.measure_unit}
+                           </span>
+                         ))}
+                         {recipeObj.used_ingredients.length > 3 && (
+                           <span className="more-ingredients">외 {recipeObj.used_ingredients.length - 3}개</span>
+                         )}
+                       </div>
+                     )}
+                     
+                     {/* 키워드 검색 결과에만 레시피 설명 표시 */}
+                     {searchType === 'keyword' && recipeObj.cooking_introduction && (
+                       <p className="recipe-description">{recipeObj.cooking_introduction}</p>
+                     )}
+                 </div>
+               </div>
+             );
+           })
+         )}
+         {!loading && !error && recipes.length === 0 && (
+           <div className="no-results">
+             <p>검색 결과가 없습니다.</p>
+             <p>다른 재료로 다시 시도해보세요.</p>
+           </div>
+         )}
+         
+         {/* 페이지네이션 - recipe-list 내부로 이동 */}
+         {recipes.length > 0 && (
+           <div className="pagination-section">
+             <div className="pagination-buttons">
+               {[1, 2, 3].map((page) => (
+                 <button
+                   key={page}
+                   className={`pagination-btn ${currentPage === page ? 'active' : ''}`}
+                   onClick={() => handlePageChange(page)}
+                   disabled={loading}
+                 >
+                   {page}
+                 </button>
+               ))}
+             </div>
+           </div>
+         )}
+       </main>
 
       {/* 하단 네비게이션 */}
       <BottomNav />
