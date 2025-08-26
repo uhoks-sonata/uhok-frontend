@@ -363,6 +363,11 @@ const KokSearch = () => {
            };
            
            console.log('변환된 콕 상품 데이터:', result);
+           console.log('상품 ID 확인:', {
+             원본_kok_product_id: product.kok_product_id,
+             변환후_id: result.id,
+             타입: typeof result.id
+           });
            return result;
          });
         
@@ -673,12 +678,16 @@ const KokSearch = () => {
   // 콕 상품 클릭 핸들러
   const handleProductClick = (product) => {
     console.log('콕 상품 클릭:', product);
+    console.log('상품 ID 타입:', typeof product.id, '값:', product.id);
+    console.log('전체 상품 데이터:', product);
+    
     // 콕 상품 상세 페이지로 이동 (검색 정보를 state로 전달)
     navigate(`/kok/product/${product.id}`, {
       state: {
         from: 'search',
         searchQuery: searchQuery,
-        backUrl: `/kok/search?q=${encodeURIComponent(searchQuery)}`
+        backUrl: `/kok/search?q=${encodeURIComponent(searchQuery)}`,
+        productData: product // 디버깅을 위해 전체 상품 데이터도 전달
       }
     });
   };
