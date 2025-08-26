@@ -55,28 +55,47 @@ const UpBtn = () => {
     // window 스크롤 이벤트 리스너
     window.addEventListener('scroll', toggleVisibility);
     
-    // // 컨테이너 스크롤 이벤트 리스너
-    // const container = document.querySelector('.kok-product-list-content');
-    // if (container) {
-    //   containerRef.current = container;
-    //   container.addEventListener('scroll', toggleVisibility);
-    // }
-
     // 컨테이너 스크롤 이벤트 리스너 (여러 컨테이너 감지)
     const containers = [
       '.kok-product-list-content',  // KokProductListPage용
-      '.product-content'            // KokProductDetail용
+      '.product-content',           // KokProductDetail용
+      '.main-schedule-content',     // Main 페이지용
+      '.schedule-timeline',         // Schedule 페이지용
+      '.schedule-content-main'      // Schedule 페이지용 (추가)
     ];
     
-    containers.forEach(selector => {
-      const container = document.querySelector(selector);
-      if (container) {
-        container.addEventListener('scroll', toggleVisibility);
-        // 첫 번째 발견된 컨테이너를 기본값으로 설정
-        if (!containerRef.current) {
-          containerRef.current = container;
+    // DOM이 완전히 로드된 후 컨테이너 찾기
+    const findContainers = () => {
+      containers.forEach(selector => {
+        const container = document.querySelector(selector);
+        if (container) {
+          console.log(`UpBtn: ${selector} 컨테이너 발견, 스크롤 이벤트 리스너 추가`);
+          container.addEventListener('scroll', toggleVisibility);
+          // 첫 번째 발견된 컨테이너를 기본값으로 설정
+          if (!containerRef.current) {
+            containerRef.current = container;
+            console.log(`UpBtn: 기본 컨테이너로 ${selector} 설정`);
+          }
+        } else {
+          console.log(`UpBtn: ${selector} 컨테이너를 찾을 수 없음`);
         }
+      });
+    };
+    
+    // 즉시 찾기 시도
+    findContainers();
+    
+    // DOM 변경 감지를 위한 MutationObserver 추가
+    const observer = new MutationObserver(() => {
+      if (!containerRef.current) {
+        console.log('UpBtn: DOM 변경 감지, 컨테이너 재검색');
+        findContainers();
       }
+    });
+    
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
     });
     
     // 초기 상태 확인
@@ -85,6 +104,7 @@ const UpBtn = () => {
     // 컴포넌트 언마운트 시 이벤트 리스너 제거
     return () => {
       window.removeEventListener('scroll', toggleVisibility);
+      observer.disconnect();
       if (containerRef.current) {
         try {
           containerRef.current.removeEventListener('scroll', toggleVisibility);

@@ -4,6 +4,7 @@
   /* background-color: #f8f9fa; */
   padding-bottom: 80px; /* BottomNav 높이만큼 여백 */
   overflow-y: auto;
+  position: relative; /* UpBtn 위치 기준점 */
 }
 
 /* HeaderNavMain 스타일은 header_nav_Main.css에서 관리 */
@@ -280,4 +281,13 @@
   .main-price {
     font-size: 13px;
   }
+}
+
+/* UpBtn 스타일 */
+.main-page .up-btn {
+  position: fixed;
+  bottom: 100px; /* BottomNav 위에 위치 */
+  right: 199px;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }

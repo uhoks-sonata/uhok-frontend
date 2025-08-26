@@ -7,6 +7,7 @@ import HeaderNavMain from '../../layout/HeaderNavMain';
 import BottomNav from '../../layout/BottomNav';
 // 로딩 컴포넌트를 가져옵니다
 import Loading from '../../components/Loading';
+import UpBtn from '../../components/UpBtn';
 // 메인 페이지 스타일을 가져옵니다
 import '../../styles/main.css';
 // API 설정을 가져옵니다
@@ -358,6 +359,7 @@ const Main = () => {
 
       {/* 하단 네비게이션 */}
       <BottomNav />
+      <UpBtn />
     </div>
   );
 };

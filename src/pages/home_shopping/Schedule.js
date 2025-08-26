@@ -6,6 +6,7 @@ import { useUser } from '../../contexts/UserContext';
 import { homeShoppingApi } from '../../api/homeShoppingApi';
 import api from '../../pages/api';
 import Loading from '../../components/Loading';
+import UpBtn from '../../components/UpBtn';
 import emptyHeartIcon from '../../assets/heart_empty.png';
 import filledHeartIcon from '../../assets/heart_filled.png';
 import '../../styles/schedule.css';
@@ -1287,6 +1288,7 @@ const Schedule = () => {
       </div>
       
       <BottomNav />
+      <UpBtn />
     </div>
   );
 };
