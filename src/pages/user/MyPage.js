@@ -34,7 +34,7 @@ const MyPage = () => {
   // 페이지 이동을 위한 navigate 훅
   const navigate = useNavigate();
   // 사용자 정보 가져오기
-  const { user, isLoggedIn, isLoading: userContextLoading } = useUser();
+  const { user, isLoggedIn, isLoading: userContextLoading, logout, login } = useUser();
   const hasInitialized = useRef(false); // 중복 호출 방지용 ref
   
   // 유저 정보를 저장할 상태를 초기화합니다 (API에서 받아옴)
@@ -149,24 +149,25 @@ const MyPage = () => {
 
   // 백엔드 API에서 마이페이지 데이터를 가져오는 useEffect를 정의합니다
   useEffect(() => {
-    // 이미 초기화되었으면 리턴
-    if (hasInitialized.current) {
+    // UserContext 초기화가 완료될 때까지 기다림
+    if (userContextLoading) {
       return;
     }
     
-    // UserContext 초기화가 완료될 때까지 기다림
-    if (userContextLoading) {
+    // 로그인되지 않은 경우 API 호출하지 않음
+    if (!isLoggedIn) {
+      setLoading(false);
+      return;
+    }
+    
+    // 이미 초기화되었으면 리턴
+    if (hasInitialized.current) {
       return;
     }
     
     // 초기화 플래그 설정
     hasInitialized.current = true;
 
-    // 로그인되지 않은 경우 API 호출하지 않음
-    if (!isLoggedIn) {
-      setLoading(false);
-      return;
-    }
     // 비동기 함수로 마이페이지 데이터를 가져옵니다
     const fetchMyPageData = async () => {
       try {
@@ -177,7 +178,6 @@ const MyPage = () => {
         // 토큰 확인 및 검증
         const token = localStorage.getItem('access_token');
         if (!token) {
-          alert('로그인이 필요한 서비스입니다.');
           setLoading(false);
           return;
         }
@@ -202,11 +202,12 @@ const MyPage = () => {
           const userResponse = await userApi.getProfile();
           userData = userResponse;
         } catch (err) {
-          // 401 에러인 경우 이전 화면으로 돌아가기
+          // 401 에러인 경우 토큰 제거하고 로그인 상태 해제
           if (err.response?.status === 401) {
             localStorage.removeItem('access_token');
             localStorage.removeItem('token_type');
-            alert('로그인이 필요한 서비스입니다.');
+            // UserContext에서도 로그인 상태 해제
+            logout();
             setLoading(false);
             return;
           }
@@ -219,7 +220,7 @@ const MyPage = () => {
           };
         }
         
-                // 최근 주문 조회 (실제 API 호출)
+        // 최근 주문 조회 (실제 API 호출)
         try {
           const recentOrdersResponse = await orderApi.getRecentOrders(7);
           ordersData = recentOrdersResponse;
@@ -247,7 +248,8 @@ const MyPage = () => {
           if (err.response?.status === 401) {
             localStorage.removeItem('access_token');
             localStorage.removeItem('token_type');
-            alert('로그인이 필요한 서비스입니다.');
+            // UserContext에서도 로그인 상태 해제
+            logout();
             setLoading(false);
             return;
           }
@@ -262,7 +264,8 @@ const MyPage = () => {
           if (err.response?.status === 401) {
             localStorage.removeItem('access_token');
             localStorage.removeItem('token_type');
-            alert('로그인이 필요한 서비스입니다.');
+            // UserContext에서도 로그인 상태 해제
+            logout();
             setLoading(false);
             return;
           } else if (err.response?.status === 404) {
@@ -280,17 +283,26 @@ const MyPage = () => {
           recipeData = { purchasedRecipe: null, similarRecipes: [] };
         }
         
-                 // 파싱된 데이터를 상태에 저장합니다
-         setUserData({
-           user_id: userData.user_id,
-           username: userData.username,
-           email: userData.email,
-           created_at: userData.created_at,
-           orderCount: orderCount,
-           recentOrders: ordersData.orders || [] // orders 배열만 저장
-         });
+        // 파싱된 데이터를 상태에 저장합니다
+        setUserData({
+          user_id: userData.user_id,
+          username: userData.username,
+          email: userData.email,
+          created_at: userData.created_at,
+          orderCount: orderCount,
+          recentOrders: ordersData.orders || [] // orders 배열만 저장
+        });
         
         setRecipeData(recipeData);
+        
+        // API 호출이 성공했으므로 UserContext에서 로그인 상태로 설정
+        login({
+          token: localStorage.getItem('access_token'),
+          tokenType: localStorage.getItem('token_type'),
+          user_id: userData.user_id,
+          email: userData.email,
+          username: userData.username
+        });
         
       } catch (err) {
         // 예상치 못한 에러가 발생한 경우
@@ -301,16 +313,16 @@ const MyPage = () => {
       }
     };
 
-                                                          // 컴포넌트가 마운트될 때 데이터를 가져오는 함수를 실행합니다
-        fetchMyPageData();
-      }, [userContextLoading, isLoggedIn]); // UserContext 상태 변화 감지
+    // 컴포넌트가 마운트될 때 데이터를 가져오는 함수를 실행합니다
+    fetchMyPageData();
+  }, [userContextLoading, isLoggedIn, user]); // UserContext 상태 변화 감지
 
   // 주문 내역 클릭 시 실행되는 핸들러 함수를 정의합니다
   const handleOrderHistoryClick = async () => {
     try {
       // 로그인 상태 확인
       if (!isLoggedIn) {
-        alert('로그인이 필요한 서비스입니다.');
+        navigate('/login');
         return;
       }
       

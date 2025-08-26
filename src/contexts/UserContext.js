@@ -60,21 +60,19 @@ export const UserProvider = ({ children }) => {
       const isValid = validateToken(token);
       
       if (isValid) {
-        // 토큰이 유효하면 사용자 정보 설정
-        setUser({
-          token,
-          tokenType,
-          isLoggedIn: true,
-          email: 'dev_user@example.com' // 기본 이메일 설정
-        });
-        console.log('UserContext - 로컬 스토리지에서 사용자 정보 복원 성공');
+        // 토큰이 유효해도 임시로 로그인 상태로 설정하지 않음
+        // 실제 API 호출을 통해 검증이 완료된 후에만 로그인 상태로 설정
+        console.log('UserContext - 토큰이 있지만 API 검증이 필요합니다');
+        setUser(null); // 로그인하지 않은 상태로 유지
       } else {
         console.log('UserContext - 유효하지 않은 토큰 제거');
         localStorage.removeItem('access_token');
         localStorage.removeItem('token_type');
+        setUser(null);
       }
     } else {
       console.log('UserContext - 로컬 스토리지에 토큰이 없습니다.');
+      setUser(null);
     }
     
     // 항상 로딩 상태를 false로 설정
