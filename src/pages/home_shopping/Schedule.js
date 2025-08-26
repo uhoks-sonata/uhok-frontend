@@ -549,7 +549,7 @@ const Schedule = () => {
                 promotion_type: item.promotion_type || '일반',
                 product_id: item.product_id || 0,
                 product_name: item.product_name || '상품명 없음',
-                thumb_img_url: item.thumb_img_url || '',
+                썸네일: item.thumb_img_url || '',
                 sale_price: item.sale_price || 0,
                 dc_price: item.dc_price || item.sale_price || 0,
                 dc_rate: item.dc_rate || 0
@@ -1117,14 +1117,10 @@ const Schedule = () => {
                       <Loading message="로딩 중..." containerStyle={{ padding: '10px', margin: '0' }} />
                     </div>
                   ) : (
-                    <img 
-                      src={item.thumb_img_url || '/placeholder-image.png'} 
-                      alt={item.product_name || '상품 이미지'} 
-                      onError={(e) => {
-                        e.target.src = '/placeholder-image.png';
-                        e.target.alt = '이미지 로드 실패';
-                      }}
-                    />
+                                         <img 
+                       src={item.썸네일} 
+                       alt={item.product_name || '상품 이미지'} 
+                     />
                   )}
                   {renderStatusBadge(item.status, item.promotion_type)}
                 </div>
