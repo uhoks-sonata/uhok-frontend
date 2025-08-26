@@ -132,12 +132,22 @@ const RecipeDetail = () => {
     }
   }, [location.state, recipe, ingredientsStatus]);
 
-  // 별점 등록
-  const handleRatingSubmit = async (newRating) => {
+  // 별점 선택 (임시)
+  const handleStarClick = (star) => {
+    setUserRating(star);
+  };
+
+  // 별점 등록 (확인 버튼 클릭 시)
+  const handleRatingSubmit = async () => {
+    if (userRating === 0) {
+      alert('별점을 선택해주세요.');
+      return;
+    }
+    
     try {
-      const result = await recipeApi.postRecipeRating(recipeId, newRating);
-      setUserRating(newRating);
+      const result = await recipeApi.postRecipeRating(recipeId, userRating);
       setRating(result);
+      alert('별점이 등록되었습니다.');
     } catch (error) {
       console.error('별점 등록 실패:', error);
       alert('별점 등록에 실패했습니다.');
@@ -349,17 +359,26 @@ const RecipeDetail = () => {
 
           {/* 내 별점 입력 */}
           <div className="my-rating-section">
-            <span className="my-rating-label">내 별점:</span>
-            <div className="star-input">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  key={star}
-                  className={`star-btn ${userRating >= star ? 'active' : ''}`}
-                  onClick={() => handleRatingSubmit(star)}
-                >
-                  ⭐
-                </button>
-              ))}
+            <div className="rating-input-row">
+              <span className="my-rating-label">내 별점:</span>
+                             <div className="star-input">
+                 {[1, 2, 3, 4, 5].map((star) => (
+                   <button
+                     key={star}
+                     className={`star-btn ${userRating >= star ? 'active' : ''}`}
+                     onClick={() => handleStarClick(star)}
+                   >
+                     ★
+                   </button>
+                 ))}
+               </div>
+              <button 
+                className="rating-submit-btn"
+                onClick={handleRatingSubmit}
+                disabled={userRating === 0}
+              >
+                확인
+              </button>
             </div>
           </div>
         </div>

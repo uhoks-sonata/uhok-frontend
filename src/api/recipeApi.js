@@ -23,6 +23,13 @@ export const recipeApi = {
   /**
    * 1. 보유 재료가 차감되는 형식으로 보여줌, 입력한 재료가 많이 속한 레시피 순으로 제공
    * GET /api/recipes/by-ingredients
+   * 
+   * Query Parameters:
+   * - ingredient (복수, 최소 3개)
+   * - amount (복수, 옵션, ingredient와 순서/개수 일치)
+   * - unit (복수, 옵션, ingredient와 순서/개수 일치)
+   * - page (페이지 번호, 기본 1)
+   * - size (페이지당 결과, 기본 5)
    */
   getRecipesByIngredients: async ({
     ingredients,
@@ -31,22 +38,33 @@ export const recipeApi = {
     signal
   } = {}) => {
     try {
-      // 파라미터명 수정: ingredients → ingredient
+      // 최소 3개 재료 검증
+      if (!ingredients || ingredients.length < 3) {
+        throw new Error('최소 3개 이상의 재료가 필요합니다.');
+      }
+
       const queryParams = new URLSearchParams();
       
-      // ingredient 파라미터 (배열)
+      // ingredient 파라미터 (배열) - 재료명만 추출
       ingredients.forEach(ingredient => {
-        queryParams.append('ingredient', ingredient.name);
+        const name = typeof ingredient === 'string' ? ingredient : ingredient.name;
+        if (name && name.trim()) {
+          queryParams.append('ingredient', name.trim());
+        }
       });
       
-      // amount 파라미터 (배열)
+      // amount 파라미터 (배열) - 옵션
       ingredients.forEach(ingredient => {
-        queryParams.append('amount', ingredient.amount);
+        if (typeof ingredient === 'object' && ingredient.amount != null) {
+          queryParams.append('amount', String(ingredient.amount));
+        }
       });
       
-      // unit 파라미터 (배열)
+      // unit 파라미터 (배열) - 옵션
       ingredients.forEach(ingredient => {
-        queryParams.append('unit', ingredient.unit);
+        if (typeof ingredient === 'object' && ingredient.unit) {
+          queryParams.append('unit', String(ingredient.unit));
+        }
       });
       
       // 페이지네이션
@@ -77,6 +95,12 @@ export const recipeApi = {
   /**
    * 2. sbert 모델 사용 - 레시피명/재료명 검색
    * GET /api/recipes/search
+   * 
+   * Query Parameters:
+   * - recipe (검색 키워드)
+   * - page (페이지 번호, 기본 1)
+   * - size (페이지당 결과, 기본 5)
+   * - method (검색방식 recipe | ingredient, Default value: recipe)
    */
   searchRecipes: async ({ 
     recipe, 
@@ -86,12 +110,22 @@ export const recipeApi = {
     signal 
   } = {}) => {
     try {
-      const qs = buildQuery({ recipe, page, size, method });
+      // 검색 키워드 검증
+      if (!recipe || !recipe.trim()) {
+        throw new Error('검색 키워드를 입력해주세요.');
+      }
+
+      // method 값 검증
+      if (method && !['recipe', 'ingredient'].includes(method)) {
+        method = 'recipe'; // 기본값으로 설정
+      }
+
+      const qs = buildQuery({ recipe: recipe.trim(), page, size, method });
       const url = `/api/recipes/search?${qs}`;
       
       console.log('🔍 레시피 검색 API 요청:', {
         url,
-        params: { recipe, page, size, method }
+        params: { recipe: recipe.trim(), page, size, method }
       });
       
       const response = await api.get(url, {
@@ -292,6 +326,7 @@ export const recipeApi = {
 
   /**
    * 유틸리티 함수: API 응답 데이터 정규화
+   * API 명세서에 맞게 데이터 구조 통일
    */
   normalizeRecipeData: (recipe) => {
     if (!recipe) return null;
@@ -314,7 +349,30 @@ export const recipeApi = {
       };
     }
     
-    // 객체 형태의 데이터는 그대로 반환
+    // 객체 형태의 데이터를 API 명세서 형식에 맞게 정규화
+    if (typeof recipe === 'object') {
+      return {
+        recipe_id: recipe.recipe_id || recipe.RECIPE_ID || recipe.id,
+        recipe_title: recipe.recipe_title || recipe.RECIPE_TITLE || recipe.cooking_name || recipe.COOKING_NAME,
+        cooking_name: recipe.cooking_name || recipe.COOKING_NAME,
+        scrap_count: recipe.scrap_count || recipe.SCRAP_COUNT || 0,
+        cooking_case_name: recipe.cooking_case_name || recipe.COOKING_CASE_NAME,
+        cooking_category_name: recipe.cooking_category_name || recipe.COOKING_CATEGORY_NAME,
+        cooking_introduction: recipe.cooking_introduction || recipe.COOKING_INTRODUCTION,
+        number_of_serving: recipe.number_of_serving || recipe.NUMBER_OF_SERVING,
+        thumbnail_url: recipe.thumbnail_url || recipe.THUMBNAIL_URL,
+        recipe_url: recipe.recipe_url || recipe.RECIPE_URL,
+        matched_ingredient_count: recipe.matched_ingredient_count || 0,
+        total_ingredients_count: recipe.total_ingredients_count || 0,
+        // used_ingredients 필드 정규화 (API 명세서 형식)
+        used_ingredients: Array.isArray(recipe.used_ingredients) ? recipe.used_ingredients.map(ing => ({
+          material_name: ing.material_name || ing.name || ing.MATERIAL_NAME,
+          measure_amount: ing.measure_amount || ing.amount || ing.MEASURE_AMOUNT,
+          measure_unit: ing.measure_unit || ing.unit || ing.MEASURE_UNIT
+        })) : []
+      };
+    }
+    
     return recipe;
   },
 
