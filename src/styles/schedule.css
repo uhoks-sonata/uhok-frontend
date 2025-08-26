@@ -181,7 +181,7 @@
 /* 왼쪽 사이드바 */
 .left-sidebar {
   width: 100px; /* 너비를 100px로 줄임 */
-  background: #f8f9fa;
+  /* background: #f8f9fa; */
   border-right: 1px solid #e5e5e5;
   display: flex;
   flex-direction: column;
@@ -196,11 +196,11 @@
   overflow-y: auto;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */
-  padding: 12px 8px;
+  padding: 8px 4px;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  gap: 16px;
+  gap: 12px;
   height: 100%; /* 전체 높이 사용 */
 }
 
@@ -212,25 +212,28 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 12px 8px;
+  /* padding: 8px 4px; */
   border-radius: 8px;
   transition: background-color 0.2s;
   cursor: pointer;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.channel-item:hover {
+/* .channel-item:hover {
   background-color: rgba(233, 30, 99, 0.1);
-}
+} */
 
 .schedule-channel-logo {
   width: 100%;
-  /* height: 80px; */
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
-  /* padding: 4px; */
+  padding: 4px;
   position: relative;
   transition: all 0.2s ease;
+  box-sizing: border-box;
 }
 
 .schedule-channel-logo.selected-channel {
@@ -260,6 +263,8 @@
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
+  width: auto;
+  height: auto;
 }
 
 .channel-name {
@@ -665,13 +670,14 @@
     display: flex;
     overflow-x: auto;
     overflow-y: hidden;
-    padding: 12px;
-    gap: 16px;
+    padding: 8px;
+    gap: 12px;
   }
   
   .channel-item {
     min-width: 80px;
     margin-bottom: 0;
+    padding: 6px 4px;
   }
   
   .schedule-search-header {
@@ -893,15 +899,7 @@
   margin-bottom: 12px;
 }
 
-.live-id, .product-id {
-  font-size: 11px;
-  color: #999;
-  background: #f5f5f5;
-  padding: 2px 6px;
-  border-radius: 3px;
-  display: inline-block;
-  margin-right: 8px;
-}
+
 
 .schedule-product-meta {
   margin-bottom: 8px;
@@ -1059,9 +1057,9 @@
 }
 
 .schedule-channel-logo-small {
-  width: 24px;
-  height: 24px;
-  border-radius: 4px;
+  width: 50px;
+  height: 32px;
+  border-radius: 6px;
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -1069,7 +1067,7 @@
 .schedule-channel-logo-small img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .schedule-channel-name {
@@ -1078,13 +1076,7 @@
   font-size: 14px;
 }
 
-.schedule-channel-id {
-  font-size: 11px;
-  color: #adb5bd;
-  background-color: #f8f9fa;
-  padding: 2px 6px;
-  border-radius: 8px;
-}
+
 
 /* 편성표 상품 메타 정보 */
 .schedule-product-meta {
@@ -1103,15 +1095,7 @@
   overflow: hidden;
 }
 
-.schedule-product-id {
-  font-size: 11px;
-  color: #adb5bd;
-  background-color: #f8f9fa;
-  padding: 2px 6px;
-  border-radius: 8px;
-  display: inline-block;
-  margin-top: 4px;
-}
+
 
 /* 편성표 가격 정보 */
 .schedule-price-info {
@@ -1138,7 +1122,7 @@
 }
 
 .schedule-discount-rate {
-  background-color: #dc3545;
+  background-color: #FA5F8C;
   color: white;
   padding: 4px 8px;
   border-radius: 12px;
@@ -1223,15 +1207,7 @@
     font-size: 15px;
   }
   
-  .schedule-product-id {
-    font-size: 10px;
-    padding: 1px 4px;
-  }
-  
-  .schedule-channel-id {
-    font-size: 10px;
-    padding: 1px 4px;
-  }
+
 }
 
 @media (max-width: 480px) {

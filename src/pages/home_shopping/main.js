@@ -208,7 +208,7 @@ const Main = () => {
 
 
 
-  // 현재 시간과 비교하여 방송 중/방송예정을 구분하는 함수를 정의합니다
+  // 현재 시간과 비교하여 방송 예정/방송 종료를 구분하는 함수를 정의합니다
   const getBroadcastStatus = (startTime) => {
     const now = new Date();
     const currentTime = now.getHours() * 60 + now.getMinutes(); // 현재 시간을 분으로 변환
@@ -216,13 +216,13 @@ const Main = () => {
     const [hours, minutes] = startTime.split(':').map(Number);
     const startTimeInMinutes = hours * 60 + minutes; // 시작 시간을 분으로 변환
     
-    // 시작 시간이 현재 시간보다 이전이면 방송 중, 이후면 방송예정
-    return startTimeInMinutes <= currentTime ? '방송 중' : '방송예정';
+    // 시작 시간이 현재 시간보다 이후면 방송 예정, 이전이면 방송 종료
+    return startTimeInMinutes > currentTime ? '방송예정' : '방송종료';
   };
 
-  // 스케줄 데이터를 방송 중과 방송예정으로 분류합니다
-  const onAirItems = scheduleData.schedule.filter(item => getBroadcastStatus(item.시작시간) === '방송 중');
+  // 스케줄 데이터를 방송 예정과 방송 종료로 분류합니다 (방송 종료는 표시하지 않음)
   const scheduledItems = scheduleData.schedule.filter(item => getBroadcastStatus(item.시작시간) === '방송예정');
+  const onAirItems = []; // 방송 중인 항목은 없음
 
   // 로딩 중일 때 표시할 UI를 렌더링합니다
   if (loading || userLoading) {
@@ -289,14 +289,14 @@ const Main = () => {
                {/* 날짜를 표시합니다 (API에서 받아옴) */}
                <div className="date">{scheduleData.date}</div>
              </div>
-                                       {/* 방송 중 섹션 */}
-             {onAirItems.length > 0 && (
+                                       {/* 방송 예정 섹션 */}
+             {scheduledItems.length > 0 && (
                <>
-                 <div className="main-section-title">방송 중</div>
+                 <div className="main-section-title">방송 예정</div>
                  <div className="main-product-cards">
-                   {onAirItems.map((item, index) => (
+                   {scheduledItems.map((item, index) => (
                      <div
-                       key={`onair-${item.홈쇼핑_아이디}-${index}`}
+                       key={`scheduled-${item.홈쇼핑_아이디}-${index}`}
                        className="main-product-card"
                        onClick={() => handleProductClick(item.홈쇼핑_아이디)}
                      >
@@ -351,67 +351,7 @@ const Main = () => {
                </>
              )}
 
-                                                       {/* 방송 예정 섹션 */}
-               {scheduledItems.length > 0 && (
-                 <>
-                   <div className="main-section-title">방송 예정</div>
-                   <div className="main-product-cards">
-                     {scheduledItems.map((item, index) => (
-                       <div
-                         key={`scheduled-${item.홈쇼핑_아이디}-${index}`}
-                         className="main-product-card"
-                         onClick={() => handleProductClick(item.홈쇼핑_아이디)}
-                       >
-                         {/* 시간 헤더 */}
-                         <div className="main-time-overlay">{item.시작시간}</div>
-                         
-                         {/* 카드 내부 레이아웃 컨테이너 */}
-                         <div className="main-card-layout">
-                           
-                           {/* 왼쪽: 상품 이미지 */}
-                           <div className="main-product-image-container">
-                             {/* 상품 이미지 컨테이너 */}
-                             <div className="main-product-image">
-                               {/* 상품 이미지를 표시합니다 */}
-                               <img src={item.썸네일} alt={item.상품명} />
-                             </div>
-                           </div>
-                           
-                           {/* 오른쪽: 상품 정보 */}
-                           <div className="main-product-info">
-                             {/* 상품 상세 정보 컨테이너 */}
-                             <div className="main-product-details">
-                               {/* 브랜드 정보 컨테이너 */}
-                               <div className="main-brand-info">
-                                 {/* 브랜드 로고 컨테이너 */}
-                                 <div className="main-brand-logo">
-                                   {/* 브랜드 로고 이미지 */}
-                                   <img
-                                     src={item.채널로고}
-                                     alt={item.홈쇼핑명}
-                                     className="main-brand-image"
-                                   />
-                                 </div>
-                                 {/* 채널 번호를 표시합니다 */}
-                                 <span className="main-channel">[CH {item.채널번호}]</span>
-                               </div>
-                               {/* 상품명을 표시합니다 */}
-                               <div className="main-product-name">{item.상품명}</div>
-                               {/* 가격 정보 컨테이너 */}
-                               <div className="main-price-info">
-                                 {/* 할인율을 표시합니다 */}
-                                 <span className="main-discount">{item.할인율}</span>
-                                 {/* 할인된 가격을 표시합니다 */}
-                                 <span className="main-price">{item.할인된가격}</span>
-                               </div>
-                             </div>
-                           </div>
-                         </div>
-                       </div>
-                     ))}
-                   </div>
-                 </>
-               )}
+
            </>
          )}
       </div>
