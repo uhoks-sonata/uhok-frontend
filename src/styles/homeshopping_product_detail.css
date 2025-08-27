@@ -100,7 +100,6 @@
 .product-detail-container {
   width: 448px;
   margin: 0 auto;
-  padding: 20px;
   overflow-y: scroll;
   height: calc(100vh - 200px);
   padding-bottom: 20px;
@@ -118,7 +117,9 @@
 .image-container {
   position: relative;
   width: 100%;
-  height: 400px;
+  height: 100%;
+  margin-top: 10px;
+  margin-bottom: 10px;
   /* background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); */
 }
 
@@ -159,7 +160,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #e9ecef;
+  /* border-bottom: 1px solid #e9ecef; */
   gap: 20px;
 }
 
@@ -501,24 +502,26 @@
   margin-bottom: 24px;
 }
 
-.store-name {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 8px 16px;
-  border-radius: 50px;
+.hsproduct-store-name {
+  /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
+  color: rgb(0, 0, 0);
+  /* padding: 8px 16px; */
+  /* border-radius: 50px; */
   font-size: 14px;
-  font-weight: 600;
+  /* font-weight: 600; */
   margin-bottom: 16px;
   align-self: flex-start;
 }
 
-.product-name {
-  font-size: 32px;
-  font-weight: 700;
+.hsproduct-product-name {
+  margin-top: 0px;
+  font-size: 24px;
+  font-weight: 600;
   color: #2c3e50;
   margin-bottom: 16px;
   line-height: 1.3;
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  text-align: left;
 }
 
 .product-meta {
@@ -528,10 +531,64 @@
 }
 
 /* 가격 정보 */
-.price-section {
+.hsproduct-price-section {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  /* gap: 12px; */
+}
+
+/* 정가 (첫번째 줄) */
+.hsproduct-original-price {
+  margin-bottom: 2px;
+}
+
+.hsproduct-original-price-text {
+  font-size: 16px;
+  color: #999;
+  text-decoration: line-through;
+}
+
+/* 할인율과 할인가격 (두번째 줄) */
+.hsproduct-discount-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hsproduct-discount-rate {
+  font-size: 20px;
+  color: #FA5F8C;
+  font-weight: bold;
+}
+
+.hsproduct-discounted-price {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+}
+
+/* 할인이 없는 경우 */
+.hsproduct-no-discount-price {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+}
+
+/* 할인 없음 텍스트 */
+.hsproduct-no-discount {
+  font-size: 12px;
+  color: #6c757d;
+  background-color: #f8f9fa;
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+/* 할인 없는 경우의 가격 (정상 가격) */
+.discount-price-normal {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
 }
 
 .original-price {
@@ -629,7 +686,7 @@
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
   position: relative;
 }
-
+/* 
 .section-title::after {
   content: '';
   position: absolute;
@@ -639,7 +696,7 @@
   height: 4px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 2px;
-}
+} */
 
 /* 상품 상세 정보 */
 .detail-info-section {
@@ -994,7 +1051,7 @@
     padding: 24px;
   }
   
-  .product-name {
+  .hsproduct-product-name {
     font-size: 24px;
   }
   
@@ -1089,4 +1146,249 @@
     padding: 14px 28px;
     font-size: 14px;
   }
+}
+
+/* 탭 네비게이션 스타일 */
+.tab-navigation {
+  display: flex !important;
+  background-color: #ffffff !important;
+  border-bottom: 2px solid #e0e0e0 !important;
+  flex-shrink: 0 !important;
+  position: relative !important;
+  z-index: 10 !important;
+  width: 100% !important; /* 전체 너비 사용 */
+  min-height: 48px !important;
+  box-shadow: none !important;
+  margin: 0 !important; /* App의 padding 16을 고려하여 margin 제거 */
+  padding: 0 !important;
+}
+
+.tab-button {
+  flex: 1 !important;
+  background: none !important;
+  border: none !important;
+  padding: 16px 8px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: #666 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  position: relative !important;
+  min-height: 48px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  user-select: none !important;
+  margin: 0 !important;
+}
+
+.tab-button:hover {
+  color: #333 !important;
+  background-color: #ffffff !important;
+}
+
+.tab-button.active {
+  color: #333 !important;
+  font-weight: bold !important;
+  background-color: #ffffff !important;
+}
+
+.tab-button.active::after {
+  content: '' !important;
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 3px !important;
+  background-color: #FA5F8C !important;
+  border-radius: 2px 2px 0 0 !important;
+}
+
+/* 탭 콘텐츠 */
+.tab-content {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  background-color: #ffffff !important;
+  padding-bottom: 20px !important;
+  position: relative !important;
+  z-index: 1 !important;
+  display: block !important;
+  width: 100% !important;
+}
+
+/* 상품 상세 탭 */
+.detail-tab {
+  padding: 0 !important;
+  animation: fadeIn 0.3s ease-in-out !important;
+  min-height: 100% !important;
+  display: block !important;
+  width: 100% !important;
+  background-color: #ffffff !important;
+  overflow-y: visible !important;
+}
+
+/* 판매자 정보 탭 */
+.seller-tab {
+  padding: 0 !important;
+  animation: fadeIn 0.3s ease-in-out !important;
+  min-height: 100% !important;
+  display: block !important;
+  width: 100% !important;
+  background-color: #ffffff !important;
+  overflow-y: visible !important;
+}
+
+/* 탭 콘텐츠 애니메이션 */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 상품 상세 이미지 섹션 */
+.product-detail-images-section {
+  margin-bottom: 24px;
+  padding: 0 16px; /* App의 padding 16을 고려하여 좌우 여백만 추가 */
+}
+
+.product-detail-images-section .section-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  color: #333;
+}
+
+.detail-images-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-image-item {
+  width: 100%;
+}
+
+.detail-image-item img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* 상품 상세 정보 섹션 */
+.product-detail-info-section {
+  margin-bottom: 24px;
+  padding: 0 16px; /* App의 padding 16을 고려하여 좌우 여백만 추가 */
+}
+
+.product-detail-info-section .section-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  color: #333;
+}
+
+.detail-info-container {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.detail-info-row {
+  display: flex;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.detail-info-row:last-child {
+  border-bottom: none;
+}
+
+.detail-info-label {
+  background-color: #f8f9fa;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: #666;
+  font-weight: 500;
+  min-width: 120px;
+  flex-shrink: 0;
+  width: 30%;
+}
+
+.detail-info-value {
+  padding: 12px 16px;
+  font-size: 13px;
+  color: #333;
+  flex: 1;
+  word-break: break-all;
+}
+
+/* 판매자 정보 섹션 */
+.seller-info-section {
+  margin-bottom: 24px;
+  padding: 0 16px; /* App의 padding 16을 고려하여 좌우 여백만 추가 */
+}
+
+.seller-info-section .section-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  color: #333;
+}
+
+.seller-info-table,
+.product-details-table {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.seller-info-row,
+.product-detail-row {
+  display: flex;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.seller-info-row:last-child,
+.product-detail-row:last-child {
+  border-bottom: none;
+}
+
+.seller-info-label,
+.product-detail-label {
+  background-color: #f8f9fa;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: #666;
+  font-weight: 500;
+  min-width: 120px;
+  flex-shrink: 0;
+  width: 30%;
+}
+
+.seller-info-value,
+.product-detail-value {
+  padding: 12px 16px;
+  font-size: 13px;
+  color: #333;
+  flex: 1;
+  word-break: break-all;
+}
+
+/* 상세 정보나 이미지가 없는 경우 */
+.no-detail-content {
+  text-align: center;
+  padding: 40px 16px; /* App의 padding 16을 고려하여 조정 */
+  color: #999;
+}
+
+.no-detail-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.no-detail-text {
+  font-size: 14px;
+  color: #666;
 }
