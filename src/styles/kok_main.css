@@ -10,7 +10,7 @@
 
 /* Webkit 브라우저 스크롤바 스타일링 */
 .kok-home-shopping-main::-webkit-scrollbar {
-  width: 4px; /* 스크롤바 너비 */
+  width: 3px; /* 스크롤바 너비 */
 }
 
 .kok-home-shopping-main::-webkit-scrollbar-track {
@@ -37,7 +37,7 @@
 
 /* Webkit 브라우저 스크롤바 스타일링 - 메인 콘텐츠용 */
 .kok-main-content::-webkit-scrollbar {
-  width: 4px; /* 스크롤바 너비 */
+  width: 3px; /* 스크롤바 너비 */
 }
 
 .kok-main-content::-webkit-scrollbar-track {
@@ -93,9 +93,7 @@
   }
   
   /* 모바일에서 스크롤바 너비 조정 - 메인 콘텐츠용 */
-  .kok-main-content::-webkit-scrollbar {
-    width: 3px;
-  }
+  /* 이미 3px로 통일되어 있으므로 제거 */
   
   .kok-product-section {
     padding: 0 12px;

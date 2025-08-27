@@ -42,7 +42,7 @@
 
 /* 스크롤바 스타일링 */
 .kok-product-list-content::-webkit-scrollbar {
-  width: 4px;
+  width: 3px;
 }
 
 .kok-product-list-content::-webkit-scrollbar-track {

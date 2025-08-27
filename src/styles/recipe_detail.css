@@ -19,7 +19,7 @@
 
 /* 스크롤바 스타일링 */
 .recipe-content-scrollable::-webkit-scrollbar {
-  width: 4px; /* 8px에서 4px로 변경 */
+  width: 3px; /* 8px에서 3px로 변경 */
   margin-right: 4px;
 }
 

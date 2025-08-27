@@ -23,7 +23,7 @@ const KokProductListPage = () => {
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   
-  // KOK API에서 할인 특가 상품 데이터를 가져오는 함수
+  // KOK API에서 오늘의 특가 상품 데이터를 가져오는 함수
   const fetchKokProducts = async (page = 1) => {
     try {
       const response = await api.get('/api/kok/discounted', {
@@ -32,7 +32,7 @@ const KokProductListPage = () => {
           size: 20
         }
       });
-      console.log('할인 특가 상품 API 응답:', response.data);
+              console.log('오늘의 특가 상품 API 응답:', response.data);
       
       // API 응답 구조에 맞게 데이터 처리
       if (response.data && response.data.products) {
@@ -43,7 +43,7 @@ const KokProductListPage = () => {
           reviewCount: product.kok_review_cnt || 0 // 백엔드에서 직접 제공하는 리뷰 수
         }));
         
-        console.log('리뷰 통계가 포함된 할인 특가 상품 데이터:', productsWithReviews);
+        console.log('리뷰 통계가 포함된 오늘의 특가 상품 데이터:', productsWithReviews);
         
         return productsWithReviews;
       } else {
@@ -56,7 +56,7 @@ const KokProductListPage = () => {
     }
   };
 
-  // KOK API에서 판매율 높은 상품 데이터를 가져오는 함수
+  // KOK API에서 베스트 판매 상품 데이터를 가져오는 함수
   const fetchKokTopSellingProducts = async (page = 1) => {
     try {
       const response = await api.get('/api/kok/top-selling', {
@@ -66,7 +66,7 @@ const KokProductListPage = () => {
           sort_by: 'review_count' // 리뷰 개수 순으로 정렬 (기본값)
         }
       });
-      console.log('판매율 높은 상품 API 응답:', response.data);
+             console.log('베스트 판매 상품 API 응답:', response.data);
       
       // API 응답 구조에 맞게 데이터 처리
       if (response.data && response.data.products) {
@@ -77,7 +77,7 @@ const KokProductListPage = () => {
           reviewCount: product.kok_review_cnt || 0 // 백엔드에서 직접 제공하는 리뷰 수
         }));
         
-        console.log('리뷰 통계가 포함된 판매율 높은 상품 데이터:', productsWithReviews);
+                 console.log('리뷰 통계가 포함된 베스트 판매 상품 데이터:', productsWithReviews);
         
         return productsWithReviews;
       } else {
@@ -85,12 +85,12 @@ const KokProductListPage = () => {
         return [];
       }
     } catch (err) {
-      console.error('KOK 판매율 높은 상품 데이터 로딩 실패:', err);
+             console.error('KOK 베스트 판매 상품 데이터 로딩 실패:', err);
       return [];
     }
   };
 
-  // KOK API에서 구매한 스토어 내 리뷰 많은 상품 데이터를 가져오는 함수
+  // KOK API에서 최근 이용 스토어 내 리뷰 많은 상품 데이터를 가져오는 함수
   const fetchKokStoreBestItems = async (page = 1) => {
     try {
       const response = await api.get('/api/kok/store-best-items', {
@@ -119,7 +119,7 @@ const KokProductListPage = () => {
         return [];
       }
     } catch (err) {
-      console.error('KOK 구매한 스토어 내 리뷰 많은 상품 데이터 로딩 실패:', err);
+             console.error('KOK 최근 이용 스토어 내 리뷰 많은 상품 데이터 로딩 실패:', err);
       return [];
     }
   };
@@ -141,21 +141,21 @@ const KokProductListPage = () => {
           case 'discount':
             const kokProducts = await fetchKokProducts(1);
             setKokProducts(kokProducts);
-            setKokSectionTitle('할인 특가 상품');
+            setKokSectionTitle('오늘의 특가');
             setHasMore(kokProducts.length === 20); // 20개면 더 로드 가능
-            console.log('✅ 할인 특가 상품 로드 완료:', kokProducts.length, '개');
+            console.log('✅ 오늘의 특가 상품 로드 완료:', kokProducts.length, '개');
             break;
           case 'high-selling':
             const kokTopSellingProducts = await fetchKokTopSellingProducts(1);
             setKokProducts(kokTopSellingProducts);
-            setKokSectionTitle('판매율 높은 상품');
+                         setKokSectionTitle('베스트 판매 상품');
             setHasMore(kokTopSellingProducts.length === 20); // 20개면 더 로드 가능
-            console.log('✅ 판매율 높은 상품 로드 완료:', kokTopSellingProducts.length, '개');
+                         console.log('✅ 베스트 판매 상품 로드 완료:', kokTopSellingProducts.length, '개');
             break;
           case 'reviews':
             const kokStoreBestItems = await fetchKokStoreBestItems(1);
             setKokProducts(kokStoreBestItems);
-            setKokSectionTitle('구매한 스토어 내 리뷰 많은 상품');
+                         setKokSectionTitle('최근 이용 스토어 내 인기 상품');
             setHasMore(false); // 스토어 베스트는 10개 고정
             console.log('✅ 스토어 베스트 상품 로드 완료:', kokStoreBestItems.length, '개');
             break;
@@ -415,7 +415,6 @@ const KokProductListPage = () => {
         
         <div className="kok-section-header">
           <h1 className="kok-page-title">{kokSectionTitle}</h1>
-          <p className="kok-product-count">총 {kokProducts.length}개의 상품</p>
         </div>
         
         <div className="kok-product-list-content">

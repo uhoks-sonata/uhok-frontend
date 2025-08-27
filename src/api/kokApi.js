@@ -5,37 +5,37 @@ import { orderApi } from './orderApi';
 export const kokApi = {
   // ===== 메인화면 상품정보 =====
   
-  // 할인 특가 상품 조회 (20개)
+  // 오늘의 특가 상품 조회 (20개)
   getDiscountedProducts: async (page = 1, size = 20) => {
     try {
-      console.log('🚀 할인 특가 상품 API 호출:', { page, size });
+              console.log('🚀 오늘의 특가 상품 API 호출:', { page, size });
       const response = await api.get('/api/kok/discounted', {
         params: { page, size }
       });
-      console.log('✅ 할인 특가 상품 API 응답:', response.data);
+              console.log('✅ 오늘의 특가 상품 API 응답:', response.data);
       return response.data;
     } catch (error) {
-      console.error('❌ 할인 특가 상품 API 호출 실패:', error);
+              console.error('❌ 오늘의 특가 상품 API 호출 실패:', error);
       throw error;
     }
   },
 
-  // 판매율 높은 상품 조회 (20개)
+  // 베스트 판매 상품 조회 (20개)
   getTopSellingProducts: async (page = 1, size = 20, sortBy = 'review_count') => {
     try {
-      console.log('🚀 판매율 높은 상품 API 호출:', { page, size, sortBy });
+              console.log('🚀 베스트 판매 상품 API 호출:', { page, size, sortBy });
       const response = await api.get('/api/kok/top-selling', {
         params: { page, size, sort_by: sortBy }
       });
-      console.log('✅ 판매율 높은 상품 API 응답:', response.data);
+              console.log('✅ 베스트 판매 상품 API 응답:', response.data);
       return response.data;
     } catch (error) {
-      console.error('❌ 판매율 높은 상품 API 호출 실패:', error);
+              console.error('❌ 베스트 판매 상품 API 호출 실패:', error);
       throw error;
     }
   },
 
-  // 구매한 스토어 내 리뷰 많은 상품 조회 (10개)
+  // 최근 이용 스토어 내 인기 상품 조회 (10개)
   getStoreBestItems: async (sortBy = 'review_count') => {
     try {
       console.log('🚀 스토어 베스트 상품 API 호출:', { sortBy });
@@ -279,7 +279,7 @@ export const kokApi = {
       // 중복 제거를 위해 Map 사용
       const allProductsMap = new Map();
       
-      // 할인 특가 상품 추가
+      // 오늘의 특가 상품 추가
       if (discountedProducts?.products) {
         discountedProducts.products.forEach(product => {
           allProductsMap.set(product.kok_product_id, {
@@ -297,7 +297,7 @@ export const kokApi = {
         });
       }
       
-      // 판매율 높은 상품 추가
+              // 베스트 판매 상품 추가
       if (topSellingProducts?.products) {
         topSellingProducts.products.forEach(product => {
           if (!allProductsMap.has(product.kok_product_id)) {

@@ -9,7 +9,7 @@ import '../../styles/kok_main.css';
 import api from '../api';
 import { useUser } from '../../contexts/UserContext';
 
-// 상품 데이터 import (할인 특가와 판매율 높은 상품만)
+// 상품 데이터 import (오늘의 특가와 베스트 판매 상품만)
 import { 
   discountProducts, 
   highSellingProducts
@@ -28,10 +28,10 @@ const KokMain = () => {
   // 사용자 정보 가져오기
   const { user, isLoggedIn } = useUser();
 
-  // KOK API에서 할인 특가 상품 데이터를 가져오는 함수
+  // KOK API에서 오늘의 특가 상품 데이터를 가져오는 함수
   const fetchKokProducts = async () => {
     try {
-      console.log('할인 특가 상품 API 호출 시작...');
+      console.log('오늘의 특가 상품 API 호출 시작...');
       console.log('API 엔드포인트: /api/kok/discounted');
       console.log('요청 파라미터:', { page: 1, size: 20 });
       
@@ -47,12 +47,12 @@ const KokMain = () => {
       console.log('📤 API 요청 URL:', '/api/kok/discounted');
       console.log('📤 API 요청 파라미터:', { page: 1, size: 20 });
       
-      console.log('📥 할인 특가 상품 API 응답 전체:', response);
-      console.log('할인 특가 상품 API 응답:', response.data);
+      console.log('📥 오늘의 특가 상품 API 응답 전체:', response);
+      console.log('오늘의 특가 상품 API 응답:', response.data);
       
       // 백엔드 응답 구조에 맞게 데이터 처리 (products 필드 우선)
       if (response.data && response.data.products && Array.isArray(response.data.products)) {
-        console.log('할인 특가 상품 데이터 설정:', response.data.products.length);
+        console.log('오늘의 특가 상품 데이터 설정:', response.data.products.length);
         
         // 백엔드에서 직접 제공하는 별점과 리뷰 수 사용
         const transformedProducts = response.data.products.map(product => ({
@@ -113,10 +113,10 @@ const KokMain = () => {
     }
   };
 
-  // KOK API에서 판매율 높은 상품 데이터를 가져오는 함수
+  // KOK API에서 베스트 판매 상품 데이터를 가져오는 함수
   const fetchKokTopSellingProducts = async () => {
     try {
-      console.log('판매율 높은 상품 API 호출 시작...');
+      console.log('베스트 판매 상품 API 호출 시작...');
       console.log('API 엔드포인트: /api/kok/top-selling');
       console.log('요청 파라미터:', { page: 1, size: 20, sort_by: 'review_count' });
       
@@ -134,12 +134,12 @@ const KokMain = () => {
       console.log('📤 API 요청 URL:', '/api/kok/top-selling');
       console.log('📤 API 요청 파라미터:', { page: 1, size: 20, sort_by: 'review_count' });
       
-      console.log('📥 판매율 높은 상품 API 응답 전체:', response);
-      console.log('판매율 높은 상품 API 응답:', response.data);
+      console.log('📥 베스트 판매 상품 API 응답 전체:', response);
+      console.log('베스트 판매 상품 API 응답:', response.data);
       
       // 백엔드 응답 구조에 맞게 데이터 처리 (products 필드 우선)
       if (response.data && response.data.products && Array.isArray(response.data.products)) {
-        console.log('판매율 높은 상품 데이터 설정:', response.data.products.length);
+        console.log('베스트 판매 상품 데이터 설정:', response.data.products.length);
         
         // 백엔드에서 직접 제공하는 별점과 리뷰 수 사용
         const transformedProducts = response.data.products.map(product => ({
@@ -182,7 +182,7 @@ const KokMain = () => {
         setKokTopSellingProducts(highSellingProducts);
       }
     } catch (err) {
-      console.error('KOK 판매율 높은 상품 데이터 로딩 실패:', err);
+      console.error('KOK 베스트 판매 상품 데이터 로딩 실패:', err);
       
       // 에러 상세 정보 로깅
       if (err.response) {
@@ -200,7 +200,7 @@ const KokMain = () => {
     }
   };
 
-    // 구매한 스토어 내 인기 상품 데이터를 가져오는 함수
+    // 최근 이용 스토어 내 인기 상품 데이터를 가져오는 함수
   const fetchKokStoreBestItems = async () => {
     try {
       console.log('스토어 베스트 상품 API 호출 시작...');
@@ -434,15 +434,15 @@ const KokMain = () => {
     
     // 데이터가 없는 경우 상세 로깅
     if (kokProducts.length === 0) {
-      console.log('⚠️ 할인 특가 상품 데이터가 없습니다.');
+      console.log('⚠️ 오늘의 특가 상품 데이터가 없습니다.');
     } else {
-      console.log('✅ 할인 특가 상품:', kokProducts.length, '개');
+      console.log('✅ 오늘의 특가 상품:', kokProducts.length, '개');
     }
     
     if (kokTopSellingProducts.length === 0) {
-      console.log('⚠️ 판매율 높은 상품 데이터가 없습니다.');
+      console.log('⚠️ 베스트 판매 상품 데이터가 없습니다.');
     } else {
-      console.log('✅ 판매율 높은 상품:', kokTopSellingProducts.length, '개');
+      console.log('✅ 베스트 판매 상품:', kokTopSellingProducts.length, '개');
     }
     
     if (kokStoreBestItems.length === 0) {
@@ -479,7 +479,7 @@ const KokMain = () => {
         ) : (
           <>
             <KokProductSection 
-              title="할인 특가 상품" 
+              title="오늘의 특가" 
               products={kokProducts.slice(0, 12)} 
               type="discount-grid"
               showMore={true}
@@ -496,35 +496,35 @@ const KokMain = () => {
             />
         
         <KokProductSection 
-          title="판매율 높은 상품" 
-          products={kokTopSellingProducts.slice(0, 3)} 
-          type="fixed"
+          title="베스트 판매 상품" 
+          products={kokTopSellingProducts.slice(0, 5)} 
+          type="non-duplicated-grid"
           showMore={true}
           sectionStyle={{
             margin: '0 0 24px 0',
             padding: '0 0px'
           }}
           containerStyle={{
-            gap: '4px'
+            gap: '14px'
           }}
           cardStyle={{
             boxShadow: 'none'
           }}
         />
         
-        {/* 구매한 스토어 내 인기 상품 - API 실패 시 숨김 */}
+        {/* 최근 이용 스토어 내 인기 상품 - API 실패 시 숨김 */}
         {kokStoreBestItems.length > 0 && (
           <KokProductSection 
-            title="구매한 스토어 내 인기 상품" 
-            products={kokStoreBestItems.slice(0, 5)} 
-            type="non-duplicated-grid"
+            title="최근 이용 스토어 내 인기 상품" 
+            products={kokStoreBestItems.slice(0, 3)} 
+            type="fixed"
             showMore={true}
             sectionStyle={{
               margin: '0 0 24px 0',
               padding: '0 0px'
             }}
             containerStyle={{
-              gap: '14px'
+              gap: '4px'
             }}
             cardStyle={{
               boxShadow: 'none'
@@ -545,7 +545,7 @@ const KokMain = () => {
            }}>
              <div style={{ marginBottom: '8px' }}>
                <span role="img" aria-label="info" style={{ fontSize: '16px', marginRight: '6px' }}>ℹ️</span>
-               구매한 스토어 내 인기 상품
+               최근 이용 스토어 내 인기 상품
              </div>
              <div style={{ fontSize: '12px', color: '#666' }}>
                서비스 점검 중입니다

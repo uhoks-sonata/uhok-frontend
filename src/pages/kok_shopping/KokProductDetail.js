@@ -643,10 +643,10 @@ API 연결 테스트 결과:
             height: '855px',
             overflowY: 'auto'
           }}>
-            {/* KOK API에서 가져온 상품 이미지들 */}
-            {kokProductImages.length > 0 && (
-              <div className="product-images-section" style={{ marginTop: '24px' }}>
-                <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '12px' }}>상품 상세 이미지</h3>
+                         {/* KOK API에서 가져온 상품 이미지들 */}
+             {kokProductImages.length > 0 && (
+               <div className="product-images-section" style={{ marginTop: '24px' }}>
+                 <h3>상품 상세 이미지</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {kokProductImages.map((image) => (
                     <div key={image.kok_img_id} style={{ width: '100%' }}>
@@ -676,81 +676,46 @@ API 연결 테스트 결과:
             height: '855px',
             overflowY: 'auto'
           }}>
-            <div className="reviews-header" style={{ marginBottom: '20px' }}>
-              <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '8px' }}>
-                리뷰 {kokReviewStats ? kokReviewStats.kok_review_cnt : kokProduct.reviewCount}
-              </h3>
-              <div className="overall-rating">
-                <span className="rating-stars" style={{ fontSize: '16px', color: '#FA5F8C', fontWeight: 'bold' }}>
-                  ★ {kokReviewStats ? kokReviewStats.kok_review_score : kokProduct.rating}
-                </span>
-              </div>
+                         <div className="reviews-header" style={{ marginBottom: '20px' }}>
+               <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '12px' }}>
+                 리뷰 {kokReviewStats ? kokReviewStats.kok_review_cnt : kokProduct.reviewCount}
+               </h3>
             </div>
             
-            {/* 평가 항목 표시 */}
-            {kokReviewStats && (
-              <div className="feedback-tags" style={{ marginBottom: '20px' }}>
-                <span style={{
-                  display: 'inline-block',
-                  padding: '4px 8px',
-                  margin: '2px',
-                  backgroundColor: '#ffffff',
-                  borderRadius: '12px',
-                  fontSize: '12px',
-                  color: '#666',
-                  border: '1px solid #f0f0f0'
-                }}>
-                  가격 {kokReviewStats.kok_aspect_price} {kokReviewStats.kok_aspect_price_ratio}%
-                </span>
-                <span style={{
-                  display: 'inline-block',
-                  padding: '4px 8px',
-                  margin: '2px',
-                  backgroundColor: '#ffffff',
-                  borderRadius: '12px',
-                  fontSize: '12px',
-                  color: '#666',
-                  border: '1px solid #f0f0f0'
-                }}>
-                  배송 {kokReviewStats.kok_aspect_delivery} {kokReviewStats.kok_aspect_delivery_ratio}%
-                </span>
-                <span style={{
-                  display: 'inline-block',
-                  padding: '4px 8px',
-                  margin: '2px',
-                  backgroundColor: '#ffffff',
-                  borderRadius: '12px',
-                  fontSize: '12px',
-                  color: '#666',
-                  border: '1px solid #f0f0f0'
-                }}>
-                  품질 {kokReviewStats.kok_aspect_quality} {kokReviewStats.kok_aspect_quality_ratio}%
-                </span>
-              </div>
-            )}
+            
             
             {/* 별점 분포 표시 */}
             {kokReviewStats && (
-              <div className="rating-distribution" style={{ marginBottom: '20px' }}>
-                {[5, 4, 3, 2, 1].map(star => (
-                  <div key={star} className="rating-bar" style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                    <span className="star-label" style={{ width: '40px', fontSize: '12px' }}>{star}점</span>
-                    <div className="bar-container" style={{ flex: 1, height: '8px', backgroundColor: '#f0f0f0', borderRadius: '4px', marginLeft: '8px' }}>
-                      <div 
-                        className="bar-fill" 
-                        style={{ 
-                          width: `${kokReviewStats[`kok_${star}_ratio`] || 0}%`,
-                          height: '100%',
-                          backgroundColor: '#FA5F8C',
-                          borderRadius: '4px'
-                        }}
-                      ></div>
+              <div className="rating-distribution-container">
+                                 {/* 평균 별점 섹션 */}
+                 <div className="average-rating-section">
+                   <div className="average-rating-stars">
+                     ★
+                   </div>
+                   <div className="average-rating-score">
+                     {kokReviewStats.kok_review_score ? kokReviewStats.kok_review_score.toFixed(1) : '0.0'}
+                   </div>
+                 </div>
+                
+                {/* 별점 분포 차트 */}
+                <div className="rating-distribution-chart">
+                  {[5, 4, 3, 2, 1].map(star => (
+                    <div key={star} className="rating-bar" style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                      <span className="star-label" style={{ width: '40px', fontSize: '12px' }}>{star}점</span>
+                      <div className="rating-bar-container">
+                        <div 
+                          className="rating-bar-fill" 
+                          style={{ 
+                            width: `${kokReviewStats[`kok_${star}_ratio`] || 0}%`
+                          }}
+                        ></div>
+                      </div>
+                      <span style={{ marginLeft: '8px', fontSize: '12px', color: '#666', width: '30px' }}>
+                        {kokReviewStats[`kok_${star}_ratio`] || 0}%
+                      </span>
                     </div>
-                    <span style={{ marginLeft: '8px', fontSize: '12px', color: '#666', width: '30px' }}>
-                      {kokReviewStats[`kok_${star}_ratio`] || 0}%
-                    </span>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
             
@@ -803,68 +768,68 @@ API 연결 테스트 결과:
             height: '855px',
             overflowY: 'auto'
           }}>
-            <div className="details-info">
-              <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '16px' }}>상세 정보</h3>
-              
-              {/* 판매자 정보 표 */}
-              {kokSellerInfo && (
-                <div style={{ marginBottom: '24px' }}>
-                  <h4 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', color: '#333' }}>판매자 정보</h4>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #e0e0e0', borderRadius: '8px', overflow: 'hidden' }}>
-                    <tbody>
-                      <tr style={{ borderBottom: '1px solid #f0f0f0' }}>
-                        <td style={{ padding: '12px', backgroundColor: '#f8f9fa', fontWeight: '500', fontSize: '13px', color: '#666', width: '30%' }}>상호명/대표자</td>
-                        <td style={{ padding: '12px', fontSize: '13px', color: '#333' }}>{kokSellerInfo.kok_co_ceo}</td>
-                      </tr>
-                      <tr style={{ borderBottom: '1px solid #f0f0f0' }}>
-                        <td style={{ padding: '12px', backgroundColor: '#f8f9fa', fontWeight: '500', fontSize: '13px', color: '#666' }}>사업자등록번호</td>
-                        <td style={{ padding: '12px', fontSize: '13px', color: '#333' }}>{kokSellerInfo.kok_co_reg_no}</td>
-                      </tr>
-                      <tr style={{ borderBottom: '1px solid #f0f0f0' }}>
-                        <td style={{ padding: '12px', backgroundColor: '#f8f9fa', fontWeight: '500', fontSize: '13px', color: '#666' }}>통신판매업신고</td>
-                        <td style={{ padding: '12px', fontSize: '13px', color: '#333' }}>{kokSellerInfo.kok_co_ec_reg}</td>
-                      </tr>
-                      <tr style={{ borderBottom: '1px solid #f0f0f0' }}>
-                        <td style={{ padding: '12px', backgroundColor: '#f8f9fa', fontWeight: '500', fontSize: '13px', color: '#666' }}>전화번호</td>
-                        <td style={{ padding: '12px', fontSize: '13px', color: '#333' }}>{kokSellerInfo.kok_tell}</td>
-                      </tr>
-                      <tr style={{ borderBottom: '1px solid #f0f0f0' }}>
-                        <td style={{ padding: '12px', backgroundColor: '#f8f9fa', fontWeight: '500', fontSize: '13px', color: '#666' }}>인증완료 항목</td>
-                        <td style={{ padding: '12px', fontSize: '13px', color: '#333' }}>{kokSellerInfo.kok_ver_item}</td>
-                      </tr>
-                      <tr style={{ borderBottom: '1px solid #f0f0f0' }}>
-                        <td style={{ padding: '12px', backgroundColor: '#f8f9fa', fontWeight: '500', fontSize: '13px', color: '#666' }}>인증시기</td>
-                        <td style={{ padding: '12px', fontSize: '13px', color: '#333' }}>{kokSellerInfo.kok_ver_date}</td>
-                      </tr>
-                      <tr style={{ borderBottom: '1px solid #f0f0f0' }}>
-                        <td style={{ padding: '12px', backgroundColor: '#f8f9fa', fontWeight: '500', fontSize: '13px', color: '#666' }}>영업소재지</td>
-                        <td style={{ padding: '12px', fontSize: '13px', color: '#333' }}>{kokSellerInfo.kok_co_addr}</td>
-                      </tr>
-                      <tr>
-                        <td style={{ padding: '12px', backgroundColor: '#f8f9fa', fontWeight: '500', fontSize: '13px', color: '#666' }}>반품주소</td>
-                        <td style={{ padding: '12px', fontSize: '13px', color: '#333' }}>{kokSellerInfo.kok_return_addr}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                         <div className="details-info">
+               <h3>상세 정보</h3>
+               
+               {/* 판매자 정보 표 */}
+               {kokSellerInfo && (
+                 <div>
+                   <h4>판매자 정보</h4>
+                   <table>
+                     <tbody>
+                       <tr>
+                         <td>상호명/대표자</td>
+                         <td>{kokSellerInfo.kok_co_ceo}</td>
+                       </tr>
+                       <tr>
+                         <td>사업자등록번호</td>
+                         <td>{kokSellerInfo.kok_co_reg_no}</td>
+                       </tr>
+                       <tr>
+                         <td>통신판매업신고</td>
+                         <td>{kokSellerInfo.kok_co_ec_reg}</td>
+                       </tr>
+                       <tr>
+                         <td>전화번호</td>
+                         <td>{kokSellerInfo.kok_tell}</td>
+                       </tr>
+                       <tr>
+                         <td>인증완료 항목</td>
+                         <td>{kokSellerInfo.kok_ver_item}</td>
+                       </tr>
+                       <tr>
+                         <td>인증시기</td>
+                         <td>{kokSellerInfo.kok_ver_date}</td>
+                       </tr>
+                       <tr>
+                         <td>영업소재지</td>
+                         <td>{kokSellerInfo.kok_co_addr}</td>
+                       </tr>
+                       <tr>
+                         <td>반품주소</td>
+                         <td>{kokSellerInfo.kok_return_addr}</td>
+                       </tr>
+                     </tbody>
+                   </table>
+                 </div>
+               )}
 
-              {/* 제품 상세 정보 표 */}
-              {kokDetailInfo.length > 0 && (
-                <div>
-                  <h4 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', color: '#333' }}>제품 상세 정보</h4>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #e0e0e0', borderRadius: '8px', overflow: 'hidden' }}>
-                    <tbody>
-                      {kokDetailInfo.map((detail, index) => (
-                        <tr key={index} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                          <td style={{ padding: '12px', backgroundColor: '#f8f9fa', fontWeight: '500', fontSize: '13px', color: '#666', width: '30%' }}>{detail.kok_detail_col}</td>
-                          <td style={{ padding: '12px', fontSize: '13px', color: '#333' }}>{detail.kok_detail_val}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+               {/* 제품 상세 정보 표 */}
+               {kokDetailInfo.length > 0 && (
+                 <div>
+                   <h4>제품 상세 정보</h4>
+                   <table>
+                     <tbody>
+                       {kokDetailInfo.map((detail, index) => (
+                         <tr key={index}>
+                           <td>{detail.kok_detail_col}</td>
+                           <td>{detail.kok_detail_val}</td>
+                         </tr>
+                       ))}
+                     </tbody>
+                   </table>
+                 </div>
+               )}
 
               {/* API 데이터가 없는 경우 안내 메시지 */}
               {!kokSellerInfo && !kokDetailInfo.length && (
@@ -991,7 +956,7 @@ API 연결 테스트 결과:
                 {kokProduct.discountPrice.toLocaleString()}원
               </span>
               <span style={{ fontSize: '10px', color: '#999' }}>
-                {kokProduct.shippingInfo || '배송정보 없음'}
+                무료 배송
               </span>
                              <div 
                  className="heart-button"

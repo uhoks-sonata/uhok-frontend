@@ -187,6 +187,7 @@
   height: auto !important; /* 높이 자동 조정 */
   min-height: auto !important; /* 최소 높이 제한 해제 */
   max-height: none !important; /* 최대 높이 제한 해제 */
+  text-align: left !important; /* 좌측 정렬 강제 */
 }
 
 .product-price-info {
@@ -355,6 +356,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: 24px;
   margin-bottom: 20px;
 }
 
@@ -587,7 +589,31 @@
   display: flex; /* flexbox 사용 */
   flex-direction: column; /* 세로 배치 */
   align-items: center; /* 가로 중앙 정렬 */
-  max-height: calc(100vh - 200px); /* 스크롤 가능하도록 최대 높이 설정 */
+  max-height: calc(100vh - 185px); /* 스크롤 가능하도록 최대 높이 설정 */
+}
+
+/* Webkit 브라우저 스크롤바 스타일링 - product-content용 */
+.kok-product-detail-page .product-content::-webkit-scrollbar {
+  width: 3px; /* 스크롤바 너비 */
+}
+
+.kok-product-detail-page .product-content::-webkit-scrollbar-track {
+  background: transparent !important; /* 스크롤바 트랙 배경 */
+}
+
+.kok-product-detail-page .product-content::-webkit-scrollbar-thumb {
+  background: #e0e0e0 !important; /* 스크롤바 썸 색상 */
+  border-radius: 4px !important; /* 스크롤바 모서리 둥글게 */
+}
+
+.kok-product-detail-page .product-content::-webkit-scrollbar-thumb:hover {
+  background: #bbb !important; /* 호버 시 스크롤바 색상 */
+}
+
+/* Firefox 스크롤바 스타일 - product-content용 */
+.kok-product-detail-page .product-content {
+  scrollbar-width: thin !important;
+  scrollbar-color: #e0e0e0 transparent !important;
 }
 
 /* 반응형 디자인 */
@@ -624,32 +650,32 @@
 }
 
 /* 스크롤바 스타일 - 더 명확하게 표시 */
-.kok-tab-content-container::-webkit-scrollbar {
-  width: 4px; /* 8px에서 4px로 변경 */
+.kok-product-detail-page .kok-tab-content-container::-webkit-scrollbar {
+  width: 3px !important; /* 3px로 통일 */
 }
 
-.kok-tab-content-container::-webkit-scrollbar-track {
-  background: transparent; /* #f1f1f1에서 투명으로 변경 */
+.kok-product-detail-page .kok-tab-content-container::-webkit-scrollbar-track {
+  background: transparent !important; /* #f1f1f1에서 투명으로 변경 */
 }
 
-.kok-tab-content-container::-webkit-scrollbar-thumb {
-  background: #e0e0e0; /* #c1c1c1에서 #e0e0e0으로 변경 */
-  border-radius: 4px; /* 4px 유지 */
+.kok-product-detail-page .kok-tab-content-container::-webkit-scrollbar-thumb {
+  background: #e0e0e0 !important; /* #c1c1c1에서 #e0e0e0으로 변경 */
+  border-radius: 4px !important; /* 4px 유지 */
 }
 
-.kok-tab-content-container::-webkit-scrollbar-thumb:hover {
-  background: #bbb; /* #a8a8a8에서 #bbb로 변경 */
+.kok-product-detail-page .kok-tab-content-container::-webkit-scrollbar-thumb:hover {
+  background: #bbb !important; /* #a8a8a8에서 #bbb로 변경 */
 }
 
 /* Firefox 스크롤바 스타일 */
-.kok-tab-content-container {
-  scrollbar-width: thin;
-  scrollbar-color: #ccc transparent;
+.kok-product-detail-page .kok-tab-content-container {
+  scrollbar-width: thin !important;
+  scrollbar-color: #ccc transparent !important;
 }
 
 /* 스크롤바가 항상 표시되도록 강제 */
-.kok-tab-content-container {
-  scrollbar-gutter: stable;
+.kok-product-detail-page .kok-tab-content-container {
+  scrollbar-gutter: stable !important;
 } 
 
 /* 모바일 최적화 */
@@ -692,7 +718,222 @@
   }
   
   /* 모바일에서 스크롤바 너비 조정 */
-  .kok-tab-content-container::-webkit-scrollbar {
-    width: 3px; /* 4px에서 3px로 변경 */
-  }
+  /* 이미 3px로 통일되어 있으므로 제거 */
 } 
+
+/* 상세 정보 섹션 스타일 */
+.details-info {
+  padding: 0px;
+  margin-top: 24px;
+}
+
+.details-info h3 {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  color: #333;
+}
+
+.details-info h4 {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  color: #333;
+}
+
+.details-info table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.details-info table td {
+  padding: 12px;
+  font-size: 13px;
+}
+
+.details-info table td:first-child {
+  background-color: #f8f9fa;
+  font-weight: 500;
+  color: #666;
+  width: 30%;
+}
+
+.details-info table td:last-child {
+  color: #333;
+}
+
+.details-info table tr {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.details-info table tr:last-child {
+  border-bottom: none;
+}
+
+/* 상품 상세 이미지 섹션 스타일 */
+.product-images-section h3 {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  color: #333;
+}
+
+/* 별점 분포 바 컨테이너 독립 스타일 */
+.rating-bar-container {
+  flex: 1;
+  height: 12px;
+  background-color: #f0f0f0;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-left: 8px;
+}
+
+.rating-bar-fill {
+  height: 100%;
+  background-color: #FA5F8C;
+  border-radius: 6px;
+  transition: width 0.3s ease;
+}
+
+/* 전역 스크롤바 스타일 덮어쓰기 방지 - 최우선 적용 */
+.kok-product-detail-page *::-webkit-scrollbar {
+  width: 3px !important;
+}
+
+.kok-product-detail-page *::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.kok-product-detail-page *::-webkit-scrollbar-thumb {
+  background: #e0e0e0 !important;
+  border-radius: 4px !important;
+}
+
+.kok-product-detail-page *::-webkit-scrollbar-thumb:hover {
+  background: #bbb !important;
+}
+
+.kok-product-detail-page * {
+  scrollbar-width: thin !important;
+  scrollbar-color: #e0e0e0 transparent !important;
+}
+
+/* 더 강력한 선택자로 모든 스크롤바 강제 적용 */
+html body .kok-product-detail-page *::-webkit-scrollbar {
+  width: 3px !important;
+}
+
+html body .kok-product-detail-page *::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+html body .kok-product-detail-page *::-webkit-scrollbar-thumb {
+  background: #e0e0e0 !important;
+  border-radius: 4px !important;
+}
+
+html body .kok-product-detail-page *::-webkit-scrollbar-thumb:hover {
+  background: #bbb !important;
+}
+
+html body .kok-product-detail-page * {
+  scrollbar-width: thin !important;
+  scrollbar-color: #e0e0e0 transparent !important;
+}
+
+/* 최종 강제 적용 - 모든 다른 스타일을 덮어쓰기 */
+html body div.kok-product-detail-page *::-webkit-scrollbar {
+  width: 3px !important;
+}
+
+html body div.kok-product-detail-page *::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+html body div.kok-product-detail-page *::-webkit-scrollbar-thumb {
+  background: #e0e0e0 !important;
+  border-radius: 4px !important;
+}
+
+html body div.kok-product-detail-page *::-webkit-scrollbar-thumb:hover {
+  background: #bbb !important;
+}
+
+html body div.kok-product-detail-page * {
+  scrollbar-width: thin !important;
+  scrollbar-color: #e0e0e0 transparent !important;
+}
+
+/* 평균 별점 섹션 */
+.average-rating-section {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 80px;
+  padding: 16px 6px 16px 16px;
+  background-color: #ffffff;
+  border-radius: 8px;
+}
+
+/* 평균 별점 아이콘 - 독립적인 스타일 */
+.average-rating-section .average-rating-stars {
+  font-size: 50px !important;
+  color: #FA5F8C !important;
+  font-weight: bold !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+  display: inline-block !important;
+  text-align: center !important;
+  font-family: inherit !important;
+  text-decoration: none !important;
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: auto !important;
+  min-height: auto !important;
+  max-width: none !important;
+  max-height: none !important;
+  overflow: visible !important;
+  position: static !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+  transition: none !important;
+  animation: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  outline: none !important;
+  cursor: default !important;
+  user-select: none !important;
+  pointer-events: none !important;
+}
+
+.average-rating-score {
+  font-size: 40px;
+  font-weight: bold;
+  color: #333;
+  line-height: 1;
+}
+
+/* 별점 분포 차트 컨테이너 */
+.rating-distribution-chart {
+  flex: 1;
+}
+
+/* 별점 분포 전체 컨테이너 */
+.rating-distribution-container {
+  margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
