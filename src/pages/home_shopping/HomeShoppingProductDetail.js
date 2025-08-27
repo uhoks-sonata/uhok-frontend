@@ -17,7 +17,7 @@ import '../../styles/homeshopping_product_detail.css';
 
 const HomeShoppingProductDetail = () => {
   const navigate = useNavigate();
-  const { productId } = useParams();
+  const { live_id } = useParams(); // live_id로 사용
   const location = useLocation();
   const { user, isLoggedIn } = useUser();
   
@@ -38,9 +38,9 @@ const HomeShoppingProductDetail = () => {
   
   // 상품 상세 정보 가져오기
   useEffect(() => {
-    // productId가 유효하지 않으면 API 호출하지 않음
-    if (!productId || productId === 'undefined' || productId === 'null' || productId === '') {
-      console.log('❌ 유효하지 않은 productId:', productId, '타입:', typeof productId);
+    // live_id가 유효하지 않으면 API 호출하지 않음
+    if (!live_id || live_id === 'undefined' || live_id === 'null' || live_id === '') {
+      console.log('❌ 유효하지 않은 live_id:', live_id, '타입:', typeof live_id);
       setError('상품 ID가 유효하지 않습니다.');
       setLoading(false);
       return;
@@ -57,11 +57,11 @@ const HomeShoppingProductDetail = () => {
         setLoading(true);
         setError(null);
         
-        console.log('🛍️ 홈쇼핑 상품 상세 정보 가져오기:', productId, `(시도 ${retryCount + 1}/${maxRetries + 1})`);
-        console.log('🔍 productId 상세 정보:', { value: productId, type: typeof productId, length: String(productId).length });
+        console.log('🛍️ 홈쇼핑 상품 상세 정보 가져오기 (live_id):', live_id, `(시도 ${retryCount + 1}/${maxRetries + 1})`);
+        console.log('🔍 live_id 상세 정보:', { value: live_id, type: typeof live_id, length: String(live_id).length });
         
-        // 상품 상세 정보 가져오기
-        const detailResponse = await homeShoppingApi.getProductDetail(productId);
+        // 상품 상세 정보 가져오기 (live_id 사용)
+        const detailResponse = await homeShoppingApi.getProductDetail(live_id);
         console.log('✅ 상품 상세 정보:', detailResponse);
         
         if (!isMounted) return;
@@ -70,7 +70,7 @@ const HomeShoppingProductDetail = () => {
           setProductDetail(detailResponse.product);
           setIsLiked(detailResponse.product.is_liked || false);
           
-          // 상세 정보와 이미지 설정
+          // 상세 정보와 이미지 설정 (새로운 API 스펙에 맞게)
           if (detailResponse.detail_infos) {
             setDetailInfos(detailResponse.detail_infos);
           }
@@ -82,9 +82,9 @@ const HomeShoppingProductDetail = () => {
           initializeWishlistStatus();
         }
         
-        // 콕 상품 추천 가져오기 (에러가 발생해도 계속 진행)
+        // 콕 상품 추천 가져오기 (live_id 사용)
         try {
-          const kokResponse = await homeShoppingApi.getKokRecommendations(productId);
+          const kokResponse = await homeShoppingApi.getKokRecommendations(live_id);
           console.log('💡 콕 상품 추천:', kokResponse);
           if (isMounted) {
             setKokRecommendations(kokResponse.products || []);
@@ -93,9 +93,9 @@ const HomeShoppingProductDetail = () => {
           console.error('콕 상품 추천 가져오기 실패:', kokError);
         }
         
-        // 라이브 스트림 정보 가져오기 (에러가 발생해도 계속 진행)
+        // 라이브 스트림 정보 가져오기 (live_id 사용)
         try {
-          const streamResponse = await homeShoppingApi.getLiveStreamUrl(productId);
+          const streamResponse = await homeShoppingApi.getLiveStreamUrl(live_id);
           console.log('📹 라이브 스트림 정보:', streamResponse);
           if (isMounted) {
             setStreamData(streamResponse);
@@ -142,7 +142,7 @@ const HomeShoppingProductDetail = () => {
       }
     };
     
-    if (productId) {
+    if (live_id) {
       fetchProductDetail();
     }
     
@@ -150,7 +150,7 @@ const HomeShoppingProductDetail = () => {
     return () => {
       isMounted = false;
     };
-  }, [productId]);
+  }, [live_id]);
   
   // 찜 상태 초기화 함수
   const initializeWishlistStatus = async () => {
@@ -158,7 +158,7 @@ const HomeShoppingProductDetail = () => {
       const token = localStorage.getItem('access_token');
       if (!token) return;
 
-      // 사용자의 찜한 홈쇼핑 상품 목록 가져오기
+      // 사용자의 찜한 홈쇼핑 상품 목록 가져오기 (live_id 기준)
       const response = await api.get('/api/homeshopping/likes', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -166,9 +166,9 @@ const HomeShoppingProductDetail = () => {
       });
 
       if (response.data && response.data.liked_products) {
-        const likedProductIds = new Set(response.data.liked_products.map(product => product.product_id));
+        const likedProductIds = new Set(response.data.liked_products.map(product => product.product_id || product.live_id));
         setWishlistedProducts(likedProductIds);
-        console.log('찜 상태 초기화 완료:', likedProductIds.size, '개 상품');
+        console.log('찜 상태 초기화 완료:', likedProductIds.size, '개 상품 (product_id 기준)');
       }
     } catch (error) {
       console.error('찜 상태 초기화 실패:', error);
@@ -176,7 +176,7 @@ const HomeShoppingProductDetail = () => {
   };
 
   // 찜 토글 함수 (홈쇼핑 상품용) - Schedule.js와 동일한 방식
-  const handleHeartToggle = async (productId) => {
+  const handleHeartToggle = async (liveId) => {
     try {
       // 토큰 확인
       const token = localStorage.getItem('access_token');
@@ -187,10 +187,12 @@ const HomeShoppingProductDetail = () => {
         return;
       }
 
-      // 찜 토글 API 호출
-      const response = await api.post('/api/homeshopping/likes/toggle', {
-        product_id: productId
-      }, {
+      // 찜 토글 API 호출 (product_id 사용 - 백엔드 호환성)
+      const requestPayload = { product_id: productDetail?.product_id || liveId };
+      
+      // console.log('🔍 찜 토글 API 요청 페이로드:', requestPayload);
+      
+      const response = await api.post('/api/homeshopping/likes/toggle', requestPayload, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -198,27 +200,30 @@ const HomeShoppingProductDetail = () => {
 
       console.log('찜 토글 응답:', response.data);
 
-      // 찜 토글 성공 후 하트 아이콘만 즉시 변경 (위시리스트 데이터는 동기화하지 않음)
-      if (response.data) {
-        console.log('찜 토글 성공! 하트 아이콘 상태만 변경합니다.');
-        
-        // 하트 아이콘 상태만 토글 (즉시 피드백)
-        setWishlistedProducts(prev => {
-          const newSet = new Set(prev);
-          if (newSet.has(productId)) {
-            // 찜 해제된 상태에서 찜 추가
-            newSet.delete(productId);
-            console.log('찜이 추가되었습니다. 채워진 하트로 변경됩니다.');
-          } else {
-            // 찜된 상태에서 찜 해제
-            newSet.add(productId);
-            console.log('찜이 해제되었습니다. 빈 하트로 변경됩니다.');
-          }
-          return newSet;
-        });
+             // 찜 토글 성공 후 백엔드 응답에 따라 상태 업데이트
+       if (response.data) {
+         console.log('찜 토글 성공! 백엔드 응답에 따라 상태를 업데이트합니다.');
+         
+         // 백엔드 응답의 liked 상태에 따라 찜 상태 업데이트
+         const isLiked = response.data.liked;
+         const productId = productDetail?.product_id || liveId;
+         
+         setWishlistedProducts(prev => {
+           const newSet = new Set(prev);
+           if (isLiked) {
+             // 백엔드에서 찜된 상태로 응답
+             newSet.add(productId);
+             console.log('✅ 찜이 추가되었습니다. 채워진 하트로 변경됩니다.');
+           } else {
+             // 백엔드에서 찜 해제된 상태로 응답
+             newSet.delete(productId);
+             console.log('❌ 찜이 해제되었습니다. 빈 하트로 변경됩니다.');
+           }
+           return newSet;
+         });
         
         // 애니메이션 효과 추가
-        const heartButton = document.querySelector(`[data-product-id="${productId}"]`);
+        const heartButton = document.querySelector(`[data-product-id="${liveId}"]`);
         if (heartButton) {
           heartButton.style.transform = 'scale(1.2)';
           setTimeout(() => {
@@ -259,19 +264,61 @@ const HomeShoppingProductDetail = () => {
   
   // 방송 상태 확인
   const getBroadcastStatus = () => {
-    if (!productDetail) return null;
+    if (!productDetail || !productDetail.live_date || !productDetail.live_start_time || !productDetail.live_end_time) {
+      console.log('❌ 방송 상태 확인 실패: 필수 데이터 누락', {
+        live_date: productDetail?.live_date,
+        live_start_time: productDetail?.live_start_time,
+        live_end_time: productDetail?.live_end_time
+      });
+      return null;
+    }
     
     const now = new Date();
-    const liveStart = new Date(`${productDetail.live_date} ${productDetail.live_start_time}`);
-    const liveEnd = new Date(`${productDetail.live_date} ${productDetail.live_end_time}`);
     
-    if (now < liveStart) {
+    // 원본 데이터 로깅
+    console.log('📅 원본 방송 데이터:', {
+      live_date: productDetail.live_date,
+      live_start_time: productDetail.live_start_time,
+      live_end_time: productDetail.live_end_time
+    });
+    
+    // 현재 시간을 한국 시간으로 조정 (UTC+9)
+    const koreaTime = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+    
+    // 방송 날짜와 시간을 파싱하여 한국 시간 기준으로 Date 객체 생성
+    const [year, month, day] = productDetail.live_date.split('-').map(Number);
+    const [startHour, startMinute] = productDetail.live_start_time.split(':').map(Number);
+    const [endHour, endMinute] = productDetail.live_end_time.split(':').map(Number);
+    
+    // 한국 시간 기준으로 방송 시작/종료 시간 생성
+    const liveStart = new Date(year, month - 1, day, startHour, startMinute);
+    const liveEnd = new Date(year, month - 1, day, endHour, endMinute);
+    
+    console.log('🔍 방송 상태 확인 상세:', {
+      현재시간_UTC: now.toLocaleString(),
+      현재시간_한국: koreaTime.toLocaleString(),
+      방송시작: liveStart.toLocaleString(),
+      방송종료: liveEnd.toLocaleString(),
+      현재시간_타임스탬프: koreaTime.getTime(),
+      시작시간_타임스탬프: liveStart.getTime(),
+      종료시간_타임스탬프: liveEnd.getTime(),
+      시간차이: {
+        시작까지: liveStart.getTime() - koreaTime.getTime(),
+        종료까지: liveEnd.getTime() - koreaTime.getTime()
+      }
+    });
+    
+    // 현재 시간과 방송 시간 비교
+    if (koreaTime < liveStart) {
+      console.log('✅ 방송 예정 - 현재시간 < 방송시작시간');
       return { status: 'upcoming', text: '방송 예정' };
-    } else if (now >= liveStart && now <= liveEnd) {
+    } else if (koreaTime >= liveStart && koreaTime <= liveEnd) {
+      console.log('✅ 방송 중 (LIVE) - 방송시작시간 <= 현재시간 <= 방송종료시간');
       return { status: 'live', text: 'LIVE' };
-         } else {
-       return { status: 'ended', text: '방송 종료' };
-     }
+    } else {
+      console.log('✅ 방송 종료 - 현재시간 > 방송종료시간');
+      return { status: 'ended', text: '방송 종료' };
+    }
   };
   
   // 로딩 상태
@@ -382,23 +429,23 @@ const HomeShoppingProductDetail = () => {
               </div>
             </div>
             
-            {/* 찜 버튼 (별도 그룹) */}
-            <div className="hsproduct-heart-button-group">
-              <button 
-                className="hsproduct-heart-button"
-                data-product-id={productDetail.product_id}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleHeartToggle(productDetail.product_id);
-                }}
-              >
-                <img 
-                  src={wishlistedProducts.has(productDetail.product_id) ? filledHeartIcon : emptyHeartIcon} 
-                  alt="찜 토글" 
-                  className="hsproduct-heart-icon"
-                />
-              </button>
-            </div>
+                                                       {/* 찜 버튼 (별도 그룹) */}
+              <div className="hsproduct-heart-button-group">
+                <button 
+                  className="hsproduct-heart-button"
+                  data-product-id={live_id} // live_id 사용
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleHeartToggle(live_id); // live_id 사용
+                  }}
+                >
+                  <img 
+                    src={wishlistedProducts.has(productDetail?.product_id || live_id) ? filledHeartIcon : emptyHeartIcon} // product_id 우선 사용
+                    alt="찜 토글" 
+                    className="hsproduct-heart-icon"
+                  />
+                </button>
+              </div>
           </div>
           
                                                                                                                                    <div className="image-container">
@@ -663,28 +710,35 @@ const HomeShoppingProductDetail = () => {
                   </div>
                 </div>
                 
-                {/* 상품 기본 정보 */}
-                <div className="product-basic-details">
-                  <h3 className="section-title">상품 기본 정보</h3>
-                  <div className="product-details-table">
-                    <div className="product-detail-row">
-                      <span className="product-detail-label">상품명</span>
-                      <span className="product-detail-value">{productDetail.product_name}</span>
-                    </div>
-                    <div className="product-detail-row">
-                      <span className="product-detail-label">정가</span>
-                      <span className="product-detail-value">{productDetail.sale_price?.toLocaleString()}원</span>
-                    </div>
-                    <div className="product-detail-row">
-                      <span className="product-detail-label">할인율</span>
-                      <span className="product-detail-value">{productDetail.dc_rate || 0}%</span>
-                    </div>
-                    <div className="product-detail-row">
-                      <span className="product-detail-label">할인가</span>
-                      <span className="product-detail-value">{productDetail.dc_price?.toLocaleString()}원</span>
-                    </div>
-                  </div>
-                </div>
+                                 {/* 상품 기본 정보 */}
+                 <div className="product-basic-details">
+                   <h3 className="section-title">상품 기본 정보</h3>
+                   <div className="product-details-table">
+                     <div className="product-detail-row">
+                       <span className="product-detail-label">상품명</span>
+                       <span className="product-detail-value">{productDetail.product_name}</span>
+                     </div>
+                     <div className="product-detail-row">
+                       <span className="product-detail-label">정가</span>
+                       <span className="product-detail-value">{productDetail.sale_price?.toLocaleString()}원</span>
+                     </div>
+                     <div className="product-detail-row">
+                       <span className="product-detail-label">할인율</span>
+                       <span className="product-detail-value">{productDetail.dc_rate || 0}%</span>
+                     </div>
+                     <div className="product-detail-row">
+                       <span className="product-detail-value">{productDetail.dc_price?.toLocaleString()}원</span>
+                     </div>
+                     <div className="product-detail-row">
+                       <span className="product-detail-label">상품 ID</span>
+                       <span className="product-detail-value">{productDetail.product_id}</span>
+                     </div>
+                     <div className="product-detail-row">
+                       <span className="product-detail-label">라이브 ID</span>
+                       <span className="product-detail-value">{live_id}</span>
+                     </div>
+                   </div>
+                 </div>
               </div>
             )}
          </div>

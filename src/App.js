@@ -76,8 +76,8 @@ function App() {
               <Route path="/schedule" element={<Schedule />} />
               {/* 홈쇼핑 검색 경로 (/homeshopping/search) - HomeShoppingSearch 페이지로 설정 */}
               <Route path="/homeshopping/search" element={<HomeShoppingSearch />} />
-              {/* 홈쇼핑 상품 상세 경로 (/homeshopping/product/:productId) - HomeShoppingProductDetail 페이지로 설정 */}
-              <Route path="/homeshopping/product/:productId" element={<HomeShoppingProductDetail />} />
+              {/* 홈쇼핑 상품 상세 경로 (/homeshopping/product/:live_id) - HomeShoppingProductDetail 페이지로 설정 */}
+              <Route path="/homeshopping/product/:live_id" element={<HomeShoppingProductDetail />} />
               {/* ===== KOK 라우트 ===== */}
 
               {/* KOK 메인 경로 (/kok) - KOK 메인 페이지 */}

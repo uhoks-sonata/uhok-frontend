@@ -16,13 +16,13 @@ const UpBtn = () => {
       containerScrollTop = containerRef.current.scrollTop;
     }
     
-    // 디버깅 로그 추가
-    console.log('🔍 UpBtn 스크롤 상태:', {
-      windowScrollY,
-      containerScrollTop,
-      containerRef: containerRef.current?.className || 'none',
-      containerElement: containerRef.current?.tagName || 'none'
-    });
+    // // 디버깅 로그 추가
+    // console.log('🔍 UpBtn 스크롤 상태:', {
+    //   windowScrollY,
+    //   containerScrollTop,
+    //   containerRef: containerRef.current?.className || 'none',
+    //   containerElement: containerRef.current?.tagName || 'none'
+    // });
     
     // 둘 중 하나라도 100px 이상 스크롤되면 버튼 표시 (임계값 낮춤)
     const shouldShow = windowScrollY > 100 || containerScrollTop > 100;

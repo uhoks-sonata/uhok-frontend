@@ -321,9 +321,9 @@ const Schedule = () => {
       });
 
       if (response.data && response.data.liked_products) {
-        const likedProductIds = new Set(response.data.liked_products.map(product => product.product_id));
+        const likedProductIds = new Set(response.data.liked_products.map(product => product.product_id || product.live_id));
         setWishlistedProducts(likedProductIds);
-        console.log('찜 상태 초기화 완료:', likedProductIds.size, '개 상품');
+        console.log('찜 상태 초기화 완료:', likedProductIds.size, '개 상품 (product_id 기준)');
       }
     } catch (error) {
       console.error('찜 상태 초기화 실패:', error);
@@ -589,25 +589,25 @@ const Schedule = () => {
 
 
 
-  // 상품 클릭 핸들러 - 상품 상세 페이지로 이동
-  const handleProductClick = async (productId) => {
+  // 상품 클릭 핸들러 - 상품 상세 페이지로 이동 (live_id 사용)
+  const handleProductClick = async (liveId) => {
     try {
-      console.log('상품 클릭:', productId);
+      console.log('상품 클릭 (live_id):', liveId);
       
       // 로딩 상태 시작
       setIsProductDetailLoading(true);
-      setLoadingProductId(productId);
+      setLoadingProductId(liveId);
       
-      // 상품 분류 확인 (식재료/완제품)
-      const classificationResponse = await homeShoppingApi.checkProductClassification(productId);
+      // 상품 분류 확인 (식재료/완제품) - live_id 사용
+      const classificationResponse = await homeShoppingApi.checkProductClassification(liveId);
       console.log('상품 분류:', classificationResponse);
       
-      // 상품 상세 정보 가져오기
-      const productDetail = await homeShoppingApi.getProductDetail(productId);
+      // 상품 상세 정보 가져오기 - live_id 사용
+      const productDetail = await homeShoppingApi.getProductDetail(liveId);
       console.log('상품 상세:', productDetail);
       
-      // 상품 상세 페이지로 이동 (상품 ID와 분류 정보 전달)
-      navigate(`/homeshopping/product/${productId}`, {
+      // 상품 상세 페이지로 이동 (live_id 사용)
+      navigate(`/homeshopping/product/${liveId}`, {
         state: {
           productDetail,
           isIngredient: classificationResponse.is_ingredient,
@@ -618,7 +618,7 @@ const Schedule = () => {
     } catch (error) {
       console.error('상품 상세 정보 가져오기 실패:', error);
       // 에러가 발생해도 상품 상세 페이지로 이동 (기본 정보만으로)
-      navigate(`/homeshopping/product/${productId}`, {
+      navigate(`/homeshopping/product/${liveId}`, {
         state: {
           fromSchedule: true
         }
@@ -699,8 +699,8 @@ const Schedule = () => {
     return !!token;
   };
 
-  // 찜 토글 함수 (홈쇼핑 상품용) - 다른 파일들과 동일한 방식으로 수정
-  const handleHeartToggle = async (productId) => {
+  // 찜 토글 함수 (홈쇼핑 상품용) - live_id 사용
+  const handleHeartToggle = async (liveId) => {
     try {
       // 토큰 확인
       const token = localStorage.getItem('access_token');
@@ -711,10 +711,14 @@ const Schedule = () => {
         return;
       }
 
-      // 찜 토글 API 호출
-      const response = await api.post('/api/homeshopping/likes/toggle', {
-        product_id: productId
-      }, {
+      // 찜 토글 API 호출 (product_id 사용 - 백엔드 호환성)
+      // scheduleData에서 해당 live_id의 product_id 찾기
+      const scheduleItem = scheduleData.find(item => item.live_id === liveId);
+      const requestPayload = { product_id: scheduleItem?.product_id || liveId };
+      
+      // console.log('🔍 찜 토글 API 요청 페이로드:', requestPayload);
+      
+      const response = await api.post('/api/homeshopping/likes/toggle', requestPayload, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -722,27 +726,30 @@ const Schedule = () => {
 
       console.log('찜 토글 응답:', response.data);
 
-      // 찜 토글 성공 후 하트 아이콘만 즉시 변경 (위시리스트 데이터는 동기화하지 않음)
-      if (response.data) {
-        console.log('찜 토글 성공! 하트 아이콘 상태만 변경합니다.');
-        
-        // 하트 아이콘 상태만 토글 (즉시 피드백)
-        setWishlistedProducts(prev => {
-          const newSet = new Set(prev);
-          if (newSet.has(productId)) {
-            // 찜 해제된 상태에서 찜 추가
-            newSet.delete(productId);
-            console.log('찜이 추가되었습니다. 채워진 하트로 변경됩니다.');
-          } else {
-            // 찜된 상태에서 찜 해제
-            newSet.add(productId);
-            console.log('찜이 해제되었습니다. 빈 하트로 변경됩니다.');
-          }
-          return newSet;
-        });
+             // 찜 토글 성공 후 백엔드 응답에 따라 상태 업데이트
+       if (response.data) {
+         console.log('찜 토글 성공! 백엔드 응답에 따라 상태를 업데이트합니다.');
+         
+         // 백엔드 응답의 liked 상태에 따라 찜 상태 업데이트
+         const isLiked = response.data.liked;
+         const productId = scheduleItem?.product_id || liveId;
+         
+         setWishlistedProducts(prev => {
+           const newSet = new Set(prev);
+           if (isLiked) {
+             // 백엔드에서 찜된 상태로 응답
+             newSet.add(productId);
+             console.log('✅ 찜이 추가되었습니다. 채워진 하트로 변경됩니다.');
+           } else {
+             // 백엔드에서 찜 해제된 상태로 응답
+             newSet.delete(productId);
+             console.log('❌ 찜이 해제되었습니다. 빈 하트로 변경됩니다.');
+           }
+           return newSet;
+         });
         
         // 애니메이션 효과 추가
-        const heartButton = document.querySelector(`[data-product-id="${productId}"]`);
+        const heartButton = document.querySelector(`[data-product-id="${liveId}"]`);
         if (heartButton) {
           heartButton.style.transform = 'scale(1.2)';
           setTimeout(() => {
@@ -978,10 +985,10 @@ const Schedule = () => {
                  </span>
               </div>
               
-              <div className="schedule-item" onClick={() => handleProductClick(item.product_id)}>
+              <div className="schedule-item" onClick={() => handleProductClick(item.live_id)}>
                 <div className="schedule-content">
                 <div className="schedule-image">
-                  {isProductDetailLoading && loadingProductId === item.product_id ? (
+                  {isProductDetailLoading && loadingProductId === item.live_id ? (
                     <div className="product-loading-overlay">
                       <Loading message="로딩 중..." containerStyle={{ padding: '10px', margin: '0' }} />
                     </div>
@@ -1027,17 +1034,17 @@ const Schedule = () => {
                                              <div className="schedule-wishlist-btn">
                          <button 
                            className="heart-button"
-                           data-product-id={item.product_id}
+                           data-product-id={item.live_id}
                            onClick={(e) => {
                              e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
-                             handleHeartToggle(item.product_id);
+                             handleHeartToggle(item.live_id);
                            }}
                          >
-                           <img 
-                             src={wishlistedProducts.has(item.product_id) ? filledHeartIcon : emptyHeartIcon} 
-                             alt="찜 토글" 
-                             className="heart-icon"
-                           />
+                                                       <img 
+                              src={wishlistedProducts.has(item.product_id || item.live_id) ? filledHeartIcon : emptyHeartIcon} 
+                              alt="찜 토글" 
+                              className="heart-icon"
+                            />
                          </button>
                        </div>
                     </div>
