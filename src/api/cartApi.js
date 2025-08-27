@@ -173,9 +173,18 @@ export const cartApi = {
   createOrder: async (selectedItems) => {
     try {
       console.log('🛒 주문 생성 API 요청:', { selectedItems });
-      const response = await api.post('/api/kok/carts/order', { 
-        selected_items: selectedItems 
-      });
+      
+      // API 명세서에 맞는 요청 데이터 형식으로 변환
+      const requestData = {
+        selected_items: selectedItems.map(item => ({
+          cart_id: item.cart_id, // 실제 cart_id 사용
+          quantity: item.quantity
+        }))
+      };
+      
+      console.log('🔍 변환된 요청 데이터:', requestData);
+      
+      const response = await api.post('/api/orders/kok/carts/order', requestData);
       console.log('✅ 주문 생성 API 응답:', response.data);
       return response.data;
     } catch (error) {

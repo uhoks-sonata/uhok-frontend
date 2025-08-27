@@ -28,7 +28,7 @@ const api = axios.create({
 // API 설정 로깅
 console.log('API 설정:', {
   baseURL: '프록시 사용',
-  timeout: 30000
+  timeout: 60000
 });
 
 // 요청 인터셉터: 토큰 자동 추가 및 로그인 상태 확인
@@ -36,23 +36,33 @@ api.interceptors.request.use(
   (config) => {
     console.log('🔍 API 요청 시작:', {
       url: config.url,
-      method: config.method,
+      method: config.method?.toUpperCase(),
       params: config.params,
-      headers: config.headers
+      data: config.data
     });
 
     // 토큰이 있는 경우 헤더에 추가
     const token = localStorage.getItem('access_token');
     if (token) {
+      // 토큰 만료 확인
+      if (isTokenExpired(token)) {
+        console.warn('토큰이 만료되었습니다. 로그아웃 처리합니다.');
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('token_type');
+        alert('로그인이 만료되었습니다. 다시 로그인해주세요.');
+        window.location.href = '/login';
+        return Promise.reject(new Error('토큰이 만료되었습니다.'));
+      }
+      
       console.log('✅ API 요청 - 토큰 있음:', {
         url: config.url,
-        method: config.method
+        method: config.method?.toUpperCase()
       });
       config.headers.Authorization = `Bearer ${token}`;
     } else {
       console.log('API 요청 - 토큰 없음:', {
         url: config.url,
-        method: config.method
+        method: config.method?.toUpperCase()
       });
       
       // 인증이 필요한 페이지에서 토큰이 없으면 요청을 중단
@@ -79,6 +89,7 @@ api.interceptors.request.use(
     return config;
   },
   (error) => {
+    console.error('요청 인터셉터 에러:', error);
     return Promise.reject(error);
   }
 );
@@ -88,7 +99,7 @@ api.interceptors.response.use(
   (response) => {
     console.log('✅ API 응답 성공:', {
       url: response.config.url,
-      method: response.config.method,
+      method: response.config.method?.toUpperCase(),
       status: response.status,
       statusText: response.statusText
     });
@@ -99,7 +110,7 @@ api.interceptors.response.use(
     if (error.response?.status === 500) {
       console.error('서버 내부 오류 발생:', {
         url: error.config?.url,
-        method: error.config?.method,
+        method: error.config?.method?.toUpperCase(),
         status: error.response.status,
         statusText: error.response.statusText,
         data: error.response.data,
@@ -110,11 +121,11 @@ api.interceptors.response.use(
       console.warn('500 에러는 서버 측 문제입니다. 백엔드 개발자에게 문의하세요.');
     }
     
-    // 401 에러 처리 (인증 실패) - 요청 인터셉터에서 이미 처리했으므로 간소화
+    // 401 에러 처리 (인증 실패)
     if (error.response?.status === 401) {
       console.log('401 에러 발생:', {
         url: error.config?.url,
-        method: error.config?.method,
+        method: error.config?.method?.toUpperCase(),
         currentPath: window.location.pathname
       });
       
@@ -122,7 +133,25 @@ api.interceptors.response.use(
       localStorage.removeItem('access_token');
       localStorage.removeItem('token_type');
       
-      // 요청 인터셉터에서 이미 처리했으므로 여기서는 추가 처리하지 않음
+      // 인증이 필요한 페이지에서 401 에러가 발생하면 로그인 페이지로 리다이렉트
+      const currentPath = window.location.pathname;
+      const authRequiredPaths = [
+        '/notifications',
+        '/cart',
+        '/wishlist',
+        '/mypage',
+        '/orderlist',
+        '/kok/payment',
+        '/recipes'
+      ];
+      
+      const isAuthRequiredPath = authRequiredPaths.some(path => currentPath.startsWith(path));
+      
+      if (isAuthRequiredPath) {
+        alert('로그인이 만료되었습니다. 다시 로그인해주세요.');
+        window.location.href = '/login';
+      }
+      
       return Promise.reject(error);
     }
     
@@ -133,11 +162,22 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
     
+    // 403 에러 처리 (권한 없음)
+    if (error.response?.status === 403) {
+      console.error('권한이 없습니다:', {
+        url: error.config?.url,
+        method: error.config?.method?.toUpperCase(),
+        data: error.response.data
+      });
+      alert('해당 작업을 수행할 권한이 없습니다.');
+      return Promise.reject(error);
+    }
+    
     // 기타 에러들에 대한 로깅
     if (error.response) {
       console.error('API 응답 에러:', {
         url: error.config?.url,
-        method: error.config?.method,
+        method: error.config?.method?.toUpperCase(),
         status: error.response.status,
         statusText: error.response.statusText,
         data: error.response.data
@@ -145,7 +185,7 @@ api.interceptors.response.use(
     } else if (error.request) {
       console.error('API 요청 에러 (응답 없음):', {
         url: error.config?.url,
-        method: error.config?.method,
+        method: error.config?.method?.toUpperCase(),
         request: error.request
       });
     } else {

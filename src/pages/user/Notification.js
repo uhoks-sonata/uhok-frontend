@@ -7,6 +7,7 @@ import '../../styles/notification.css';
 import api from '../api';
 
 import { homeShoppingApi } from '../../api/homeShoppingApi';
+import { orderApi } from '../../api/orderApi';
 
 const Notification = () => {
   const navigate = useNavigate();
@@ -194,7 +195,7 @@ const Notification = () => {
     }
   };
 
-  // 쇼핑몰 알림 API 호출
+  // 콕 쇼핑몰 알림 API 호출
   const fetchShoppingNotifications = async (limit = 20) => {
     // 로그인하지 않은 경우 알림 후 이전 화면으로 돌아가기
     if (!checkLoginStatus()) {
@@ -206,17 +207,12 @@ const Notification = () => {
     try {
       console.log('쇼핑몰 알림 API 호출 시작...');
       
-      const response = await api.get('/api/kok/notifications', {
-        params: {
-          limit: limit,
-          offset: 0
-        }
-      });
+      const response = await orderApi.getKokOrderNotifications(limit, 0);
       
-      console.log('쇼핑몰 알림 API 응답:', response.data);
+      console.log('콕 쇼핑몰 알림 API 응답:', response);
       
-      if (response.data && response.data.notifications) {
-        const transformedNotifications = response.data.notifications.map(notification => ({
+      if (response && response.notifications) {
+        const transformedNotifications = response.notifications.map(notification => ({
           id: notification.notification_id,
           type: notification.notification_type,
           title: notification.title,

@@ -107,7 +107,172 @@
   }
   ```
 
-### 6. 로그 기록
+### 6. 선택된 상품들로 주문 생성
+- **기능**: 프론트엔드에서 선택된 상품들과 수량으로 주문 생성
+- **HTTP 메서드**: POST
+- **엔드포인트 URL**: `/api/orders/kok/carts/order`
+- **Header**: `Authorization: Bearer <access_token>`
+- **Query Parameter**: -
+- **Request Body**:
+  ```json
+  {
+    "selected_items": [
+      {
+        "cart_id": 1,
+        "quantity": 2
+      },
+      {
+        "cart_id": 3,
+        "quantity": 1
+      }
+    ]
+  }
+  ```
+- **Response Code**: 201
+- **Response Value**:
+  ```json
+  {
+    "order_id": 0,
+    "total_amount": 0,
+    "order_count": 0,
+    "order_details": [
+      {
+        "kok_order_id": 0,
+        "kok_product_id": 0,
+        "kok_product_name": "string",
+        "quantity": 0,
+        "unit_price": 0,
+        "total_price": 0
+      }
+    ],
+    "message": "string",
+    "order_time": "2025-08-27T05:26:01.650Z"
+  }
+  ```
+
+### 7. 콕 주문 상태 업데이트 (수동)
+- **기능**: 주문의 상태를 새로운 상태로 변경하고 이력을 기록합니다.
+- **HTTP 메서드**: PATCH
+- **엔드포인트 URL**: `/api/orders/kok/{kok_order_id}/status`
+- **Header**: `Authorization: Bearer {access_token}`
+- **Query Parameter**: `kok_order_id`
+- **Request Body**:
+  ```json
+  {
+    "new_status_code": "SHIPPING",
+    "changed_by": 1
+  }
+  ```
+- **Response Code**: 200
+- **Response Value**:
+  ```json
+  {
+    "kok_order_id": 5,
+    "current_status": {
+      "status_id": 3,
+      "status_code": "SHIPPING",
+      "status_name": "배송중"
+    },
+    "status_history": [
+      {
+        "history_id": 4,
+        "kok_order_id": 5,
+        "status": {
+          "status_id": 3,
+          "status_code": "SHIPPING",
+          "status_name": "배송중"
+        },
+        "changed_at": "2025-08-07T14:30:10",
+        "changed_by": 1
+      }
+    ]
+  }
+  ```
+
+### 8. 콕 주문 상태 조회
+- **기능**: 특정 콕 주문의 현재 상태와 모든 상태 변경 이력을 조회합니다.
+- **HTTP 메서드**: GET
+- **엔드포인트 URL**: `/api/orders/kok/{kok_order_id}/status`
+- **Header**: `Authorization: Bearer {access_token}`
+- **Query Parameter**: `kok_order_id`
+- **Request Body**: -
+- **Response Code**: 200
+- **Response Value**:
+  ```json
+  {
+    "kok_order_id": 5,
+    "current_status": {
+      "status_id": 2,
+      "status_code": "PREPARING",
+      "status_name": "상품준비중"
+    },
+    "status_history": [
+      {
+        "history_id": 3,
+        "kok_order_id": 5,
+        "status": {
+          "status_id": 2,
+          "status_code": "PREPARING",
+          "status_name": "상품준비중"
+        },
+        "changed_at": "2025-08-07T14:30:05",
+        "changed_by": 1
+      },
+      {
+        "history_id": 2,
+        "kok_order_id": 5,
+        "status": {
+          "status_id": 1,
+          "status_code": "PAYMENT_COMPLETED",
+          "status_name": "결제완료"
+        },
+        "changed_at": "2025-08-07T14:30:00",
+        "changed_by": 6
+      }
+    ]
+  }
+  ```
+
+### 9. 콕 주문과 상태 함께 조회
+- **기능**: 주문 상세 정보와 현재 상태를 한 번에 조회합니다.
+- **HTTP 메서드**: GET
+- **엔드포인트 URL**: `/api/orders/kok/{kok_order_id}/with-status`
+- **Header**: `Authorization: Bearer {access_token}`
+- **Query Parameter**: `kok_order_id`
+- **Request Body**: -
+- **Response Code**: 200
+- **Response Value**:
+  ```json
+  {
+    "kok_order": {
+      "kok_order_id": 5,
+      "kok_price_id": 1,
+      "kok_product_id": 1,
+      "quantity": 2,
+      "order_price": 50000
+    },
+    "current_status": {
+      "status_id": 3,
+      "status_code": "SHIPPING",
+      "status_name": "배송중"
+    }
+  }
+  ```
+
+### 10. 콕 주문 자동 상태 업데이트
+- **기능**: 특정 주문의 자동 상태 업데이트를 수동으로 시작합니다.
+- **HTTP 메서드**: POST
+- **엔드포인트 URL**: `/api/orders/kok/{kok_order_id}/auto-update`
+- **Header**: `Authorization: Bearer {access_token}`
+- **Query Parameter**: `kok_order_id`
+- **Request Body**: -
+- **Response Code**: 200
+- **Response Value**:
+  ```json
+  "string"
+  ```
+
+### 11. 로그 기록
 - **기능**: 사용자 로그 적재 (USER_LOG 테이블에 기록)
 - **HTTP 메서드**: POST
 - **엔드포인트 URL**: `/log`
@@ -137,7 +302,7 @@
   }
   ```
 
-### 7. 사용자 로그 조회
+### 12. 사용자 로그 조회
 - **기능**: 특정 사용자의 최근 로그 조회
 - **HTTP 메서드**: GET
 - **엔드포인트 URL**: `/log/user/{user_id}`

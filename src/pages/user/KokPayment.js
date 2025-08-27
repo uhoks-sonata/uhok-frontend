@@ -223,9 +223,10 @@ const KokPayment = () => {
       console.log('🚀 결제하기 - 주문 생성 시작');
       console.log('🔍 API 호출: POST /api/orders/kok/carts/order');
       
-      let orderId;
-      
-      if (orderInfo?.fromCart && orderInfo?.cartItems) {
+             let orderId;
+       let updatedOrderInfo; // 변수를 상위 스코프에서 선언
+       
+       if (orderInfo?.fromCart && orderInfo?.cartItems) {
         // 장바구니에서 온 주문인 경우
         const selectedItems = orderInfo.cartItems.map(item => ({
           cart_id: item.kok_cart_id,
@@ -239,11 +240,7 @@ const KokPayment = () => {
         console.log('🔍 장바구니 주문 요청 데이터:', requestData);
         console.log('🔍 장바구니 아이템 상세:', orderInfo.cartItems);
         
-        const orderResponse = await api.post('/api/orders/kok/carts/order', requestData, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
+        const orderResponse = await orderApi.createKokOrder(selectedItems);
         
         console.log('✅ 주문 생성 성공:', orderResponse.data);
         orderId = orderResponse.data.order_id;
@@ -254,13 +251,16 @@ const KokPayment = () => {
         
         console.log('🔍 추출된 kok_order_id들:', kokOrderIds);
         
-        setOrderInfo(prev => ({
-          ...prev,
+        // 상태 업데이트와 함께 로컬 변수로도 저장 (즉시 사용하기 위해)
+        const updatedOrderInfo = {
+          ...orderInfo,
           orderId: orderId,
           totalAmount: orderResponse.data.total_amount,
           kokOrderIds: kokOrderIds,  // 실제 kok_order_id들 저장
           orderDetails: orderDetails
-        }));
+        };
+        
+        setOrderInfo(updatedOrderInfo);
       } else {
         // 단일 상품 주문인 경우 (상품 상세에서 바로 주문)
         const orderData = {
@@ -272,11 +272,10 @@ const KokPayment = () => {
         console.log('🔍 단일 상품 주문 요청 데이터:', orderData);
         console.log('🔍 주문 정보 상세:', orderInfo);
         
-        const orderResponse = await api.post('/api/orders/kok/carts/order', orderData, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
+        const orderResponse = await orderApi.createKokOrder([{
+          cart_id: orderData.kok_product_id,
+          quantity: orderData.kok_quantity
+        }]);
         
         console.log('✅ 주문 생성 성공:', orderResponse.data);
         orderId = orderResponse.data.order_id;
@@ -287,12 +286,15 @@ const KokPayment = () => {
         
         console.log('🔍 단일 상품 주문 - 추출된 kok_order_id들:', kokOrderIds);
         
-        setOrderInfo(prev => ({
-          ...prev,
+        // 상태 업데이트와 함께 로컬 변수로도 저장 (즉시 사용하기 위해)
+        const updatedOrderInfo = {
+          ...orderInfo,
           orderId: orderId,
           kokOrderIds: kokOrderIds,  // 실제 kok_order_id들 저장
           orderDetails: orderDetails
-        }));
+        };
+        
+        setOrderInfo(updatedOrderInfo);
       }
 
       if (!orderId) {
@@ -323,17 +325,22 @@ const KokPayment = () => {
         // 3-1. 상태 자동 업데이트 API 호출 (주문 내역에 반영)
         console.log('🔍 API 호출: POST /api/orders/kok/{kok_order_id}/auto-update');
         
-        try {
-          // 실제 kok_order_id들을 사용하여 각각 상태 업데이트
-          const kokOrderIds = orderInfo?.kokOrderIds || [];
+                 try {
+           // 실제 kok_order_id들을 사용하여 각각 상태 업데이트
+           const kokOrderIds = updatedOrderInfo?.kokOrderIds || [];
+           
+           console.log('🔍 상태 업데이트에 사용할 kokOrderIds:', kokOrderIds);
+           console.log('🔍 updatedOrderInfo 존재 여부:', !!updatedOrderInfo);
           
           if (kokOrderIds.length > 0) {
             // 여러 kok_order_id가 있는 경우 각각 업데이트
             for (const kokOrderId of kokOrderIds) {
               console.log(`🔍 kok_order_id ${kokOrderId} 상태 업데이트 중...`);
-              const updateResponse = await api.post(`/api/orders/kok/${kokOrderId}/auto-update`, {});
-              console.log(`✅ kok_order_id ${kokOrderId} 상태 업데이트 완료:`, updateResponse.data);
+              const updateResponse = await orderApi.startAutoUpdate(kokOrderId);
+              console.log(`✅ kok_order_id ${kokOrderId} 상태 업데이트 완료:`, updateResponse);
             }
+          } else {
+            console.log('⚠️ kokOrderIds가 비어있어서 상태 업데이트를 건너뜁니다.');
           }
         } catch (updateError) {
           // 상태 업데이트 API가 없어도 결제는 성공으로 처리

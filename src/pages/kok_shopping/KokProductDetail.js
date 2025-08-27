@@ -461,111 +461,79 @@ API 연결 테스트 결과:
         }
       }
 
-      // 3. 장바구니에 없는 상품이므로 새로 추가
-      const cartData = {
-        kok_product_id: parseInt(productId),
-        kok_quantity: selectedQuantity,
-        recipe_id: 0 // 레시피 ID는 0으로 설정
-      };
+                    // 3. 장바구니에 상품 추가
+       console.log('🚀 주문하기 - 장바구니에 상품 추가');
+       
+       const cartData = {
+         kok_product_id: parseInt(productId),
+         kok_quantity: selectedQuantity,
+         recipe_id: 0 // 레시피 ID는 0으로 설정
+       };
 
-      console.log('🚀 주문하기 - 장바구니 추가 요청:', cartData);
-      
-      let cartItemToOrder = null;
-      
-      try {
-        // 4. 장바구니에 상품 추가 (cartApi 사용)
-        const response = await cartApi.addToCart(cartData);
+       try {
+         // 4. 장바구니에 상품 추가
+         const cartResponse = await cartApi.addToCart(cartData);
+         console.log('✅ 주문하기 - 장바구니 추가 성공:', cartResponse);
+         
+         // 5. 장바구니 목록 다시 조회하여 추가된 상품 정보 가져오기
+         const updatedCartResponse = await cartApi.getCartItems();
+         console.log('✅ 주문하기 - 업데이트된 장바구니 목록 조회 성공:', updatedCartResponse);
+         
+         // 6. 추가된 상품 찾기
+         const updatedCartItems = updatedCartResponse.cart_items || [];
+         const cartItemToOrder = updatedCartItems.find(item => 
+           item.kok_product_id === parseInt(productId)
+         );
 
-        console.log('✅ 주문하기 - 장바구니 추가 성공:', response);
-        
-        // 5. 장바구니 목록 다시 조회하여 추가된 상품 정보 가져오기
-        const updatedCartResponse = await cartApi.getCartItems();
+         if (!cartItemToOrder) {
+           throw new Error('장바구니에 추가된 상품을 찾을 수 없습니다.');
+         }
 
-        console.log('✅ 주문하기 - 업데이트된 장바구니 목록 조회 성공:', updatedCartResponse);
-        
-        // 6. 추가된 상품 찾기
-        const updatedCartItems = updatedCartResponse.cart_items || [];
-        cartItemToOrder = updatedCartItems.find(item => 
-          item.kok_product_id === parseInt(productId)
-        );
+         console.log('✅ 주문하기 - 주문할 장바구니 상품 찾음:', cartItemToOrder);
+         
+         // 7. 장바구니 상품으로 주문 생성
+         const orderItem = {
+           cart_id: cartItemToOrder.kok_cart_id,
+           quantity: selectedQuantity
+         };
 
-        if (!cartItemToOrder) {
-          throw new Error('장바구니에서 추가된 상품을 찾을 수 없습니다.');
-        }
+         const orderResponse = await cartApi.createOrder([orderItem]);
+         console.log('✅ 주문하기 - 주문 생성 성공:', orderResponse);
+         
+         // 8. 결제 페이지로 이동할 데이터 구성
+         const navigationState = {
+           fromCart: false,
+           discountPrice: (kokProduct?.discountPrice || 0) * selectedQuantity,
+           originalPrice: (kokProduct?.originalPrice || 0) * selectedQuantity,
+           productName: kokProduct?.name || `제품 ${productId}`,
+           productImage: kokProduct?.image || 'https://via.placeholder.com/150x150/CCCCCC/666666?text=Temp',
+           orderId: orderResponse.order_id || `ORDER-${Date.now()}`,
+           orderDetails: orderResponse.order_details || [],
+           kokOrderIds: orderResponse.order_details?.map(detail => detail.kok_order_id) || []
+         };
 
-        console.log('✅ 찾은 장바구니 아이템:', cartItemToOrder);
-
-      } catch (addError) {
-        console.log('🔍 장바구니 추가 에러 상세:', addError);
-        console.log('🔍 에러 상태 코드:', addError.response?.status);
-        console.log('🔍 에러 메시지:', addError.response?.data);
-        
-        // 장바구니 추가 실패 시 처리
-        if (addError.response?.status === 400) {
-          // 이미 장바구니에 있는 상품인 경우 (이중 체크)
-          console.log('이미 장바구니에 있는 상품입니다. 사용자에게 선택권을 제공합니다.');
-          
-          // 사용자에게 선택권 제공
-          const userChoice = window.confirm('이미 해당 상품이 장바구니에 있습니다.\n\n장바구니로 이동하시겠습니까?\n\n[확인] 장바구니로 이동\n[취소] 현재 페이지에서 계속 쇼핑');
-          
-          if (userChoice) {
-            // 장바구니로 이동
-            console.log('사용자가 장바구니로 이동을 선택했습니다.');
-            handleCloseQuantityModal();
-            navigate('/cart');
-            return;
-          } else {
-            // 현재 페이지에서 계속 쇼핑
-            console.log('사용자가 현재 페이지에서 계속 쇼핑을 선택했습니다.');
-            handleCloseQuantityModal();
-            return;
-          }
-        } else if (addError.response?.status === 500) {
-          // 서버 내부 오류인 경우 - cartApi에서 이미 임시 모의 응답을 반환했으므로 성공으로 처리
-          console.log('서버 내부 오류 발생, 임시 모의 응답 사용:', addError.response?.data);
-          
-          // 임시 모의 응답으로 장바구니 아이템 생성
-          cartItemToOrder = {
-            kok_cart_id: Math.floor(Math.random() * 1000) + 1,
-            kok_product_id: parseInt(productId),
-            kok_product_name: kokProduct?.name || `제품 ${productId}`,
-            kok_thumbnail: kokProduct?.image || 'https://via.placeholder.com/150x150/CCCCCC/666666?text=Temp',
-            kok_product_price: kokProduct?.originalPrice || 0,
-            kok_discounted_price: kokProduct?.discountPrice || 0,
-            kok_quantity: selectedQuantity,
-            kok_store_name: '임시 스토어'
-          };
-          
-          console.log('✅ 임시 모의 응답으로 장바구니 아이템 생성:', cartItemToOrder);
-        } else {
-          // 다른 에러인 경우 재throw
-          console.log('다른 에러 발생, 재throw:', addError);
-          throw addError;
-        }
-      }
-
-      // 4. 결제 페이지로 이동할 데이터 구성
-      const navigationState = {
-        fromCart: true,
-        discountPrice: cartItemToOrder.kok_discounted_price * cartItemToOrder.kok_quantity,
-        originalPrice: cartItemToOrder.kok_product_price * cartItemToOrder.kok_quantity,
-        productName: cartItemToOrder.kok_product_name,
-        productImage: cartItemToOrder.kok_thumbnail,
-        cartItems: [cartItemToOrder], // 단일 상품이므로 배열로 감싸기
-        orderId: `ORDER-${Date.now()}`
-      };
-
-      console.log('🚀 주문하기 - 결제 페이지로 이동:', navigationState);
-      
-      // 5. 모달 닫기
-      handleCloseQuantityModal();
-      
-      // 6. 결제 페이지로 이동 (UI에서는 장바구니 추가 과정이 보이지 않음)
-      navigate('/kok/payment', { 
-        state: navigationState,
-        replace: false
-      });
-      
+         console.log('🚀 주문하기 - 결제 페이지로 이동:', navigationState);
+         
+         // 9. 모달 닫기
+         handleCloseQuantityModal();
+         
+         // 10. 결제 페이지로 이동
+         navigate('/kok/payment', { 
+           state: navigationState,
+           replace: false
+         });
+         
+       } catch (orderError) {
+         console.error('❌ 주문 생성 실패:', orderError);
+         
+         if (orderError.response?.status === 401) {
+           alert('로그인이 필요한 서비스입니다.');
+         } else if (orderError.response?.status === 500) {
+           alert('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+         } else {
+           alert('주문 처리에 실패했습니다. 다시 시도해주세요.');
+         }
+       }
     } catch (error) {
       console.error('❌ 주문하기 처리 실패:', error);
       

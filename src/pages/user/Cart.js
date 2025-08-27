@@ -538,7 +538,6 @@ const Cart = () => {
               {cartItems.map((item) => (
                 <div key={item.kok_cart_id} className="cart-item">
                   <div className="item-header">
-                    <span className="store-name">{item.kok_store_name}</span>
                     <button 
                       className="remove-item-btn"
                       onClick={() => handleRemoveItem(item.kok_cart_id)}
