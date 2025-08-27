@@ -16,19 +16,10 @@ const UpBtn = () => {
       containerScrollTop = containerRef.current.scrollTop;
     }
     
-    // 둘 중 하나라도 300px 이상 스크롤되면 버튼 표시
-    const shouldShow = windowScrollY > 300 || containerScrollTop > 300;
-    
-    console.log('UpBtn Debug:', {
-      windowScrollY,
-      containerScrollTop,
-      shouldShow,
-      isVisible,
-      containerFound: !!containerRef.current,
-      containerType: containerRef.current ? containerRef.current.className : 'none'
-    });
-    
-    if (shouldShow) {
+         // 둘 중 하나라도 300px 이상 스크롤되면 버튼 표시
+     const shouldShow = windowScrollY > 300 || containerScrollTop > 300;
+     
+     if (shouldShow) {
       setIsVisible(true);
     } else {
       setIsVisible(false);
@@ -66,32 +57,27 @@ const UpBtn = () => {
     
     // DOM이 완전히 로드된 후 컨테이너 찾기
     const findContainers = () => {
-      containers.forEach(selector => {
-        const container = document.querySelector(selector);
-        if (container) {
-          console.log(`UpBtn: ${selector} 컨테이너 발견, 스크롤 이벤트 리스너 추가`);
-          container.addEventListener('scroll', toggleVisibility);
-          // 첫 번째 발견된 컨테이너를 기본값으로 설정
-          if (!containerRef.current) {
-            containerRef.current = container;
-            console.log(`UpBtn: 기본 컨테이너로 ${selector} 설정`);
-          }
-        } else {
-          console.log(`UpBtn: ${selector} 컨테이너를 찾을 수 없음`);
-        }
-      });
+             containers.forEach(selector => {
+         const container = document.querySelector(selector);
+         if (container) {
+           container.addEventListener('scroll', toggleVisibility);
+           // 첫 번째 발견된 컨테이너를 기본값으로 설정
+           if (!containerRef.current) {
+             containerRef.current = container;
+           }
+         }
+       });
     };
     
     // 즉시 찾기 시도
     findContainers();
     
-    // DOM 변경 감지를 위한 MutationObserver 추가
-    const observer = new MutationObserver(() => {
-      if (!containerRef.current) {
-        console.log('UpBtn: DOM 변경 감지, 컨테이너 재검색');
-        findContainers();
-      }
-    });
+         // DOM 변경 감지를 위한 MutationObserver 추가
+     const observer = new MutationObserver(() => {
+       if (!containerRef.current) {
+         findContainers();
+       }
+     });
     
     observer.observe(document.body, {
       childList: true,
@@ -105,14 +91,14 @@ const UpBtn = () => {
     return () => {
       window.removeEventListener('scroll', toggleVisibility);
       observer.disconnect();
-      if (containerRef.current) {
-        try {
-          containerRef.current.removeEventListener('scroll', toggleVisibility);
-        } catch (error) {
-          console.log('컨테이너 이벤트 리스너 제거 중 오류:', error);
-        }
-        containerRef.current = null;
-      }
+             if (containerRef.current) {
+         try {
+           containerRef.current.removeEventListener('scroll', toggleVisibility);
+         } catch (error) {
+           // 에러 무시
+         }
+         containerRef.current = null;
+       }
     };
   }, []);
 
