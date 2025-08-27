@@ -16,10 +16,18 @@ const UpBtn = () => {
       containerScrollTop = containerRef.current.scrollTop;
     }
     
-         // 둘 중 하나라도 300px 이상 스크롤되면 버튼 표시
-     const shouldShow = windowScrollY > 300 || containerScrollTop > 300;
-     
-     if (shouldShow) {
+    // 디버깅 로그 추가
+    console.log('🔍 UpBtn 스크롤 상태:', {
+      windowScrollY,
+      containerScrollTop,
+      containerRef: containerRef.current?.className || 'none',
+      containerElement: containerRef.current?.tagName || 'none'
+    });
+    
+    // 둘 중 하나라도 100px 이상 스크롤되면 버튼 표시 (임계값 낮춤)
+    const shouldShow = windowScrollY > 100 || containerScrollTop > 100;
+    
+    if (shouldShow) {
       setIsVisible(true);
     } else {
       setIsVisible(false);
@@ -52,7 +60,9 @@ const UpBtn = () => {
       '.product-content',           // KokProductDetail용
       '.main-schedule-content',     // Main 페이지용
       '.schedule-timeline',         // Schedule 페이지용
-      '.schedule-content-main'      // Schedule 페이지용 (추가)
+      '.schedule-content-main',     // Schedule 페이지용 (추가)
+      '.product-detail-container',  // HomeShoppingProductDetail용
+      '#homeshopping-product-detail-container'  // HomeShoppingProductDetail용 (ID로도 감지)
     ];
     
     // DOM이 완전히 로드된 후 컨테이너 찾기

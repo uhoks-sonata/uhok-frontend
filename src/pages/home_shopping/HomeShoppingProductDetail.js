@@ -339,7 +339,7 @@ const HomeShoppingProductDetail = () => {
         onNotificationClick={() => navigate('/notifications')}
       />
       
-      <div className="product-detail-container">
+             <div className="product-detail-container" id="homeshopping-product-detail-container">
                 {/* 상품 이미지 섹션 */}
         <div className="product-image-section">
                               {/* 독립적인 방송 정보 섹션 */}
@@ -554,141 +554,148 @@ const HomeShoppingProductDetail = () => {
            </div>
         </div>
         
-                          {/* 탭 네비게이션 */}
-         <div className="tab-navigation">
-           <button 
-             className={`tab-button ${activeTab === 'detail' ? 'active' : ''}`}
-             onClick={() => setActiveTab('detail')}
-           >
-             상품 상세
-           </button>
-           <button 
-             className={`tab-button ${activeTab === 'seller' ? 'active' : ''}`}
-             onClick={() => setActiveTab('seller')}
-           >
-             판매자 정보
-           </button>
-         </div>
+                                  {/* 탭 네비게이션 */}
+        <div className="tab-navigation">
+          <button
+            className={`tab-button ${activeTab === 'detail' ? 'active' : ''}`}
+            onClick={() => setActiveTab('detail')}
+          >
+            상품정보
+          </button>
+          <button
+            className={`tab-button ${activeTab === 'seller' ? 'active' : ''}`}
+            onClick={() => setActiveTab('seller')}
+          >
+            상세정보
+          </button>
+        </div>
          
          {/* 탭 콘텐츠 */}
          <div className="tab-content">
-           {/* 상품 상세 탭 */}
-           {activeTab === 'detail' && (
-             <div className="detail-tab">
-               {/* 상품 상세 이미지들 */}
-               {productImages && productImages.length > 0 && (
-                 <div className="product-detail-images-section">
-                   <h3 className="section-title">상품 상세 이미지</h3>
-                   <div className="detail-images-container">
-                     {productImages.map((image, index) => (
-                       <div key={index} className="detail-image-item">
-                         <img 
-                           src={image.img_url} 
-                           alt={`상품 상세 이미지 ${index + 1}`}
-                           className="detail-image"
-                           onClick={() => window.open(image.img_url, '_blank')}
-                           onError={(e) => {
-                             e.target.alt = '이미지 로드 실패';
-                           }}
-                         />
-                       </div>
-                     ))}
-                   </div>
-                 </div>
-               )}
-               
-               {/* 상품 상세 정보 */}
-               {detailInfos && detailInfos.length > 0 && (
-                 <div className="product-detail-info-section">
-                   <h3 className="section-title">상품 상세 정보</h3>
-                   <div className="detail-info-container">
-                     {detailInfos.map((info, index) => (
-                       <div key={index} className="detail-info-row">
-                         <span className="detail-info-label">{info.detail_col}</span>
-                         <span className="detail-info-value">{info.detail_val}</span>
-                       </div>
-                     ))}
-                   </div>
-                 </div>
-               )}
-               
-               {/* 상세 정보나 이미지가 없는 경우 */}
-               {(!detailInfos || detailInfos.length === 0) && 
-                (!productImages || productImages.length === 0) && (
-                 <div className="no-detail-content">
-                   <div className="no-detail-icon">📋</div>
-                   <p className="no-detail-text">상품 상세 정보가 없습니다</p>
-                 </div>
-               )}
-             </div>
-           )}
+                       {/* 상품 상세 탭 */}
+            {activeTab === 'detail' && (
+              <div className="detail-tab">
+                {/* 상품 상세 이미지들 */}
+                {productImages && productImages.length > 0 && (
+                  <div className="product-detail-images-section">
+                    <h3 className="section-title">상품 상세 이미지</h3>
+                    <div className="detail-images-container">
+                      {productImages.map((image, index) => (
+                        <div key={index} className="detail-image-item">
+                          <img 
+                            src={image.img_url} 
+                            alt={`상품 상세 이미지 ${index + 1}`}
+                            className="detail-image"
+                            onClick={() => window.open(image.img_url, '_blank')}
+                            onError={(e) => {
+                              e.target.alt = '이미지 로드 실패';
+                            }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                                                   {/* 상세 정보나 이미지가 없는 경우 */}
+                  {(!detailInfos || detailInfos.length === 0) && 
+                   (!productImages || productImages.length === 0) && (
+                    <div className="no-detail-content">
+                      <div className="no-detail-icon">📋</div>
+                      <p className="no-detail-text">상품 상세 정보가 없습니다</p>
+                    </div>
+                  )}
+                  
+                  {/* 스크롤을 위한 여백 추가 */}
+                  <div style={{ height: '150px' }}></div>
+               </div>
+            )}
            
-           {/* 판매자 정보 탭 */}
-           {activeTab === 'seller' && (
-             <div className="seller-tab">
-               {/* 판매자 기본 정보 */}
-               <div className="seller-basic-info">
-                 <h3 className="section-title">판매자 정보</h3>
-                 <div className="seller-info-table">
-                   <div className="seller-info-row">
-                     <span className="seller-info-label">매장명</span>
-                     <span className="seller-info-value">{productDetail.store_name || '홈쇼핑'}</span>
-                   </div>
-                   <div className="seller-info-row">
-                     <span className="seller-info-label">홈쇼핑</span>
-                     <span className="seller-info-value">{productDetail.homeshopping_name || 'N/A'}</span>
-                   </div>
-                   <div className="seller-info-row">
-                     <span className="seller-info-label">채널</span>
-                     <span className="seller-info-value">
-                       {getChannelInfoByHomeshoppingId(productDetail.homeshopping_id)?.channel || 'N/A'}
-                     </span>
-                   </div>
-                   <div className="seller-info-row">
-                     <span className="seller-info-label">방송일</span>
-                     <span className="seller-info-value">{productDetail.live_date || 'N/A'}</span>
-                   </div>
-                   <div className="seller-info-row">
-                     <span className="seller-info-label">방송시간</span>
-                     <span className="seller-info-value">
-                       {productDetail.live_start_time && productDetail.live_end_time 
-                         ? `${productDetail.live_start_time.slice(0, 5)} ~ ${productDetail.live_end_time.slice(0, 5)}`
-                         : 'N/A'
-                       }
-                     </span>
-                   </div>
-                 </div>
-               </div>
-               
-               {/* 상품 기본 정보 */}
-               <div className="product-basic-details">
-                 <h3 className="section-title">상품 기본 정보</h3>
-                 <div className="product-details-table">
-                   <div className="product-detail-row">
-                     <span className="product-detail-label">상품명</span>
-                     <span className="product-detail-value">{productDetail.product_name}</span>
-                   </div>
-                   <div className="product-detail-row">
-                     <span className="product-detail-label">정가</span>
-                     <span className="product-detail-value">{productDetail.sale_price?.toLocaleString()}원</span>
-                   </div>
-                   <div className="product-detail-row">
-                     <span className="product-detail-label">할인율</span>
-                     <span className="product-detail-value">{productDetail.dc_rate || 0}%</span>
-                   </div>
-                   <div className="product-detail-row">
-                     <span className="product-detail-label">할인가</span>
-                     <span className="product-detail-value">{productDetail.dc_price?.toLocaleString()}원</span>
-                   </div>
-                 </div>
-               </div>
-             </div>
-           )}
+                       {/* 상세정보 탭 */}
+            {activeTab === 'seller' && (
+              <div className="seller-tab">
+                {/* 상품 상세 정보 */}
+                {detailInfos && detailInfos.length > 0 && (
+                  <div className="product-detail-info-section">
+                    <h3 className="section-title">상품 상세 정보</h3>
+                    <div className="detail-info-container">
+                      {detailInfos.map((info, index) => (
+                        <div key={index} className="detail-info-row">
+                          <span className="detail-info-label">{info.detail_col}</span>
+                          <span className="detail-info-value">{info.detail_val}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* 판매자 기본 정보 */}
+                <div className="seller-basic-info">
+                  <h3 className="section-title">판매자 정보</h3>
+                  <div className="seller-info-table">
+                    <div className="seller-info-row">
+                      <span className="seller-info-label">매장명</span>
+                      <span className="seller-info-value">{productDetail.store_name || '홈쇼핑'}</span>
+                    </div>
+                    <div className="seller-info-row">
+                      <span className="seller-info-label">홈쇼핑</span>
+                      <span className="seller-info-value">{productDetail.homeshopping_name || 'N/A'}</span>
+                    </div>
+                    <div className="seller-info-row">
+                      <span className="seller-info-label">채널</span>
+                      <span className="seller-info-value">
+                        {getChannelInfoByHomeshoppingId(productDetail.homeshopping_id)?.channel || 'N/A'}
+                      </span>
+                    </div>
+                    <div className="seller-info-row">
+                      <span className="seller-info-label">방송일</span>
+                      <span className="seller-info-value">{productDetail.live_date || 'N/A'}</span>
+                    </div>
+                    <div className="seller-info-row">
+                      <span className="seller-info-label">방송시간</span>
+                      <span className="seller-info-value">
+                        {productDetail.live_start_time && productDetail.live_end_time 
+                          ? `${productDetail.live_start_time.slice(0, 5)} ~ ${productDetail.live_end_time.slice(0, 5)}`
+                          : 'N/A'
+                        }
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* 상품 기본 정보 */}
+                <div className="product-basic-details">
+                  <h3 className="section-title">상품 기본 정보</h3>
+                  <div className="product-details-table">
+                    <div className="product-detail-row">
+                      <span className="product-detail-label">상품명</span>
+                      <span className="product-detail-value">{productDetail.product_name}</span>
+                    </div>
+                    <div className="product-detail-row">
+                      <span className="product-detail-label">정가</span>
+                      <span className="product-detail-value">{productDetail.sale_price?.toLocaleString()}원</span>
+                    </div>
+                    <div className="product-detail-row">
+                      <span className="product-detail-label">할인율</span>
+                      <span className="product-detail-value">{productDetail.dc_rate || 0}%</span>
+                    </div>
+                    <div className="product-detail-row">
+                      <span className="product-detail-label">할인가</span>
+                      <span className="product-detail-value">{productDetail.dc_price?.toLocaleString()}원</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
          </div>
       </div>
       
-      <BottomNav />
-      <UpBtn />
+             <BottomNav />
+       
+       {/* 맨 위로 가기 버튼 */}
+       <div style={{ position: 'relative' }}>
+         <UpBtn />
+       </div>
     </div>
   );
 };

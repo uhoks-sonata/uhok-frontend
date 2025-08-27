@@ -1,11 +1,24 @@
-/* 홈쇼핑 상품 상세 페이지 스타일 - 피그마 목업 기반 */
+/* 홈쇼핑 상품 상세 페이지 스타일 - KokProductDetail과 동일 */
 .homeshopping-product-detail-page {
-  width: 448px;
+  background-color: #fff;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
-  padding-bottom: 80px; /* BottomNav 높이만큼 여백 */
-  overflow-y: auto;
   position: relative; /* UpBtn 위치 기준점 */
+  padding-bottom: 80px; /* BottomNav 높이만큼 여백 */
 }
+
+/* UpBtn 위치 관리 */
+.homeshopping-product-detail-page .up-btn {
+  position: absolute;
+  bottom: 40px;
+  right: 20px;
+}
+
 
 /* 로딩 컨테이너 */
 .loading-container {
@@ -98,11 +111,10 @@
 
 /* 상품 상세 컨테이너 */
 .product-detail-container {
-  width: 448px;
-  margin: 0 auto;
+  width: 100%;
+  max-width: 480px;
   overflow-y: scroll;
   height: calc(100vh - 200px);
-  padding-bottom: 20px;
 }
 
 /* 상품 이미지 섹션 */
@@ -158,10 +170,10 @@
 /* 독립적인 방송 정보 섹션 */
 .hsproduct-broadcast-info-section {
   display: flex;
-  justify-content: space-between;
+  justify-content: start;
   align-items: center;
   /* border-bottom: 1px solid #e9ecef; */
-  gap: 20px;
+  gap: 105px;
 }
 
 /* 제품 정보 그룹 */
@@ -267,7 +279,6 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -275,19 +286,9 @@
   border-radius: 50%;
 }
 
-.hsproduct-heart-button:hover {
-  transform: scale(1.1);
-  background: rgba(231, 76, 60, 0.1);
-}
-
 .hsproduct-heart-button .hsproduct-heart-icon {
   width: 24px;
   height: 24px;
-  transition: transform 0.3s ease;
-}
-
-.hsproduct-heart-button:hover .hsproduct-heart-icon {
-  transform: scale(1.2);
 }
 
 /* 방송 날짜 및 시간 (기존 스타일 - 제거 예정) */
@@ -415,18 +416,12 @@
   height: 56px;
   border-radius: 50%;
   cursor: pointer;
-  transition: all 0.3s ease;
   backdrop-filter: blur(10px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
   z-index: 10;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.like-button:hover {
-  transform: scale(1.1);
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
 }
 
 .like-button.liked {
@@ -437,11 +432,6 @@
 .heart-icon {
   width: 24px;
   height: 24px;
-  transition: transform 0.3s ease;
-}
-
-.like-button:hover .heart-icon {
-  transform: scale(1.2);
 }
 
 /* 라이브 스트림 버튼 */
@@ -492,7 +482,7 @@
 /* 상품 기본 정보 */
 .product-basic-info {
   /* background: white; */
-  padding: 32px;
+  padding: 0 4px; /* KokProductDetail과 동일한 패딩 */
   /* border-radius: 20px; */
   margin-bottom: 24px;
   /* box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08); */
@@ -514,14 +504,21 @@
 }
 
 .hsproduct-product-name {
-  margin-top: 0px;
-  font-size: 24px;
-  font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 16px;
-  line-height: 1.3;
-  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
-  text-align: left;
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+  /* width: 401px !important; KokProductDetail과 동일한 너비 */
+  word-wrap: break-word !important;
+  word-break: keep-all !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+  text-align: left !important;
 }
 
 .product-meta {
@@ -631,7 +628,6 @@
 .tab-navigation {
   display: flex;
   background: white;
-  border-radius: 16px;
   padding: 8px;
   margin-bottom: 24px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
@@ -654,21 +650,18 @@
 
 .tab-button:hover {
   color: #2c3e50;
-  background: rgba(102, 126, 234, 0.1);
+  /* background: rgba(102, 126, 234, 0.1); */
 }
 
 .tab-button.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  /* box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); */
 }
 
 /* 탭 콘텐츠 */
 .tab-content {
   background: white;
   border-radius: 20px;
-  padding: 32px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
 }
 
 /* 상품 정보 탭 */
@@ -1148,7 +1141,7 @@
   }
 }
 
-/* 탭 네비게이션 스타일 */
+/* 탭 네비게이션 스타일 - KokProductDetail과 동일 */
 .tab-navigation {
   display: flex !important;
   background-color: #ffffff !important;
@@ -1156,10 +1149,10 @@
   flex-shrink: 0 !important;
   position: relative !important;
   z-index: 10 !important;
-  width: 100% !important; /* 전체 너비 사용 */
+  width: 433px !important; /* KokProductDetail과 동일한 가로길이 */
   min-height: 48px !important;
   box-shadow: none !important;
-  margin: 0 !important; /* App의 padding 16을 고려하여 margin 제거 */
+  margin: 0 auto !important; /* 중앙 정렬 */
   padding: 0 !important;
 }
 
@@ -1210,7 +1203,7 @@
   flex: 1 !important;
   overflow-y: auto !important;
   background-color: #ffffff !important;
-  padding-bottom: 20px !important;
+  /* padding-bottom: 20px !important; */
   position: relative !important;
   z-index: 1 !important;
   display: block !important;
@@ -1247,8 +1240,8 @@
 
 /* 상품 상세 이미지 섹션 */
 .product-detail-images-section {
-  margin-bottom: 24px;
-  padding: 0 16px; /* App의 padding 16을 고려하여 좌우 여백만 추가 */
+  margin-top: 24px;
+  /* margin-bottom: 24px; */
 }
 
 .product-detail-images-section .section-title {
@@ -1278,7 +1271,7 @@
 /* 상품 상세 정보 섹션 */
 .product-detail-info-section {
   margin-bottom: 24px;
-  padding: 0 16px; /* App의 padding 16을 고려하여 좌우 여백만 추가 */
+  padding: 0 4px; /* KokProductDetail과 동일한 패딩 */
 }
 
 .product-detail-info-section .section-title {
@@ -1325,7 +1318,7 @@
 /* 판매자 정보 섹션 */
 .seller-info-section {
   margin-bottom: 24px;
-  padding: 0 16px; /* App의 padding 16을 고려하여 좌우 여백만 추가 */
+  padding: 0 4px; /* KokProductDetail과 동일한 패딩 */
 }
 
 .seller-info-section .section-title {
@@ -1378,8 +1371,56 @@
 /* 상세 정보나 이미지가 없는 경우 */
 .no-detail-content {
   text-align: center;
-  padding: 40px 16px; /* App의 padding 16을 고려하여 조정 */
+  padding: 40px 4px; /* KokProductDetail과 동일한 패딩 */
   color: #999;
+}
+
+/* 스크롤바 hover 스타일 - KokProductDetail과 동일 */
+.homeshopping-product-detail-page .product-content::-webkit-scrollbar {
+  width: 3px !important;
+}
+
+.homeshopping-product-detail-page .product-content::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.homeshopping-product-detail-page .product-content::-webkit-scrollbar-thumb {
+  background: #e0e0e0 !important;
+  border-radius: 4px !important;
+}
+
+.homeshopping-product-detail-page .product-content::-webkit-scrollbar-thumb:hover {
+  background: #bbb !important;
+}
+
+/* Firefox 스크롤바 스타일 */
+.homeshopping-product-detail-page .product-content {
+  scrollbar-width: thin !important;
+  scrollbar-color: #e0e0e0 transparent !important;
+}
+
+/* 탭 콘텐츠 스크롤바 hover 스타일 */
+.homeshopping-product-detail-page .tab-content::-webkit-scrollbar {
+  width: 3px !important;
+}
+
+.homeshopping-product-detail-page .tab-content::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.homeshopping-product-detail-page .tab-content::-webkit-scrollbar-thumb {
+  background: #e0e0e0 !important;
+  border-radius: 4px !important;
+}
+
+.homeshopping-product-detail-page .tab-content::-webkit-scrollbar-thumb:hover {
+  background: #bbb !important;
+}
+
+/* Firefox 탭 콘텐츠 스크롤바 스타일 */
+.homeshopping-product-detail-page .tab-content {
+  scrollbar-width: thin !important;
+  scrollbar-color: #e0e0e0 transparent !important;
 }
 
 .no-detail-icon {
