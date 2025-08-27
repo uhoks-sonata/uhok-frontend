@@ -142,22 +142,6 @@ export const orderApi = {
       return response.data;
     } catch (error) {
       console.error('❌ 결제요청 (폴링) 실패:', error);
-      
-      // 백엔드 서버가 실행되지 않은 경우 임시 모의 응답
-      if (error.response?.status === 404 || error.response?.status === 500 || error.code === 'ERR_NETWORK') {
-        console.log('🔄 백엔드 서버 연결 실패, 임시 모의 응답 반환');
-        return {
-          payment_id: `PAY_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
-          order_id: orderId.toString(),
-          status: 'COMPLETED',
-          payment_amount: 50000, // 임시 금액
-          method: method || 'CARD',
-          confirmed_at: new Date().toISOString(),
-          order_id_internal: parseInt(orderId) || 0
-        };
-      }
-      
-      // 404 에러가 아닌 다른 에러만 throw
       throw error;
     }
   }

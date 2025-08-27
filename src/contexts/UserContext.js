@@ -60,10 +60,13 @@ export const UserProvider = ({ children }) => {
       const isValid = validateToken(token);
       
       if (isValid) {
-        // 토큰이 유효해도 임시로 로그인 상태로 설정하지 않음
-        // 실제 API 호출을 통해 검증이 완료된 후에만 로그인 상태로 설정
-        console.log('UserContext - 토큰이 있지만 API 검증이 필요합니다');
-        setUser(null); // 로그인하지 않은 상태로 유지
+        // 토큰이 유효하면 로그인 상태로 설정
+        console.log('UserContext - 유효한 토큰으로 로그인 상태 설정');
+        setUser({
+          token: token,
+          tokenType: tokenType || 'bearer',
+          isLoggedIn: true
+        });
       } else {
         console.log('UserContext - 유효하지 않은 토큰 제거');
         localStorage.removeItem('access_token');

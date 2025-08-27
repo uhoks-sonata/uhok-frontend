@@ -248,11 +248,18 @@ const KokPayment = () => {
         console.log('✅ 주문 생성 성공:', orderResponse.data);
         orderId = orderResponse.data.order_id;
         
-        // 주문 정보 업데이트
+        // 주문 정보 업데이트 (order_details에서 kok_order_id들 추출)
+        const orderDetails = orderResponse.data.order_details || [];
+        const kokOrderIds = orderDetails.map(detail => detail.kok_order_id);
+        
+        console.log('🔍 추출된 kok_order_id들:', kokOrderIds);
+        
         setOrderInfo(prev => ({
           ...prev,
           orderId: orderId,
-          totalAmount: orderResponse.data.total_amount
+          totalAmount: orderResponse.data.total_amount,
+          kokOrderIds: kokOrderIds,  // 실제 kok_order_id들 저장
+          orderDetails: orderDetails
         }));
       } else {
         // 단일 상품 주문인 경우 (상품 상세에서 바로 주문)
@@ -273,6 +280,19 @@ const KokPayment = () => {
         
         console.log('✅ 주문 생성 성공:', orderResponse.data);
         orderId = orderResponse.data.order_id;
+        
+        // 단일 상품 주문인 경우에도 order_details에서 kok_order_id 추출
+        const orderDetails = orderResponse.data.order_details || [];
+        const kokOrderIds = orderDetails.map(detail => detail.kok_order_id);
+        
+        console.log('🔍 단일 상품 주문 - 추출된 kok_order_id들:', kokOrderIds);
+        
+        setOrderInfo(prev => ({
+          ...prev,
+          orderId: orderId,
+          kokOrderIds: kokOrderIds,  // 실제 kok_order_id들 저장
+          orderDetails: orderDetails
+        }));
       }
 
       if (!orderId) {
@@ -281,25 +301,40 @@ const KokPayment = () => {
 
       // 2. 결제 요청 & 확인 API 호출 (폴링 방식)
       console.log('🔍 API 호출: POST /api/orders/payment/{order_id}/confirm/v1');
+      console.log('🔍 사용할 orderId:', orderId);
+      console.log('🔍 orderId 타입:', typeof orderId);
       
       const paymentResponse = await orderApi.confirmPayment(orderId);
       
       console.log('✅ 결제 완료 응답:', paymentResponse);
 
       // 3. 결제 상태 확인 - 결제가 성공한 경우에만 주문 내역에 저장
-      if (paymentResponse && paymentResponse.status === 'COMPLETED') {
+      console.log('🔍 결제 응답 상세 분석:', {
+        hasResponse: !!paymentResponse,
+        status: paymentResponse?.status,
+        paymentId: paymentResponse?.payment_id,
+        orderId: paymentResponse?.order_id
+      });
+      
+      // paymentResponse가 존재하고 status가 COMPLETED 또는 PAYMENT_COMPLETED인 경우 성공으로 처리
+      if (paymentResponse && (paymentResponse.status === 'COMPLETED' || paymentResponse.status === 'PAYMENT_COMPLETED')) {
         console.log('✅ 결제 성공 확인됨 - 주문 내역에 저장 진행');
         
         // 3-1. 상태 자동 업데이트 API 호출 (주문 내역에 반영)
         console.log('🔍 API 호출: POST /api/orders/kok/{kok_order_id}/auto-update');
         
         try {
-          const updateResponse = await api.post(`/api/orders/kok/${orderId}/auto-update`, {}, {
-            headers: {
-              'Authorization': `Bearer ${token}`
+          // 실제 kok_order_id들을 사용하여 각각 상태 업데이트
+          const kokOrderIds = orderInfo?.kokOrderIds || [];
+          
+          if (kokOrderIds.length > 0) {
+            // 여러 kok_order_id가 있는 경우 각각 업데이트
+            for (const kokOrderId of kokOrderIds) {
+              console.log(`🔍 kok_order_id ${kokOrderId} 상태 업데이트 중...`);
+              const updateResponse = await api.post(`/api/orders/kok/${kokOrderId}/auto-update`, {});
+              console.log(`✅ kok_order_id ${kokOrderId} 상태 업데이트 완료:`, updateResponse.data);
             }
-          });
-          console.log('✅ 상태 자동 업데이트 완료:', updateResponse.data);
+          }
         } catch (updateError) {
           // 상태 업데이트 API가 없어도 결제는 성공으로 처리
           console.log('⚠️ 상태 자동 업데이트 API 호출 실패 (무시됨):', updateError.response?.status);
@@ -309,12 +344,17 @@ const KokPayment = () => {
         setPaymentStatus('completed');
         alert('결제가 완료되었습니다!');
         
-        // 5. 주문내역 페이지로 이동
+        // 5. 주문내역 페이지로 이동 (히스토리 스택 초기화)
         console.log('🚀 결제 완료 - 주문내역 페이지로 이동');
-        window.location.href = 'http://localhost:3001/orderlist';
+        navigate('/orderlist', { replace: true });
       } else {
         // 결제가 실패한 경우
         console.log('❌ 결제 실패 - 주문 내역에 저장하지 않음');
+        console.log('❌ 결제 실패 상세:', {
+          paymentResponse: paymentResponse,
+          responseType: typeof paymentResponse,
+          status: paymentResponse?.status
+        });
         setPaymentStatus('failed');
         setErrorMessage('결제가 실패했습니다. 다시 시도해주세요.');
         
@@ -350,12 +390,9 @@ const KokPayment = () => {
       } else if (error.response?.status === 400) {
         setErrorMessage('결제 처리에 실패했습니다: ' + (error.response.data?.message || '잘못된 요청입니다.'));
       } else if (error.response?.status === 404) {
-        // 404 에러는 orderApi에서 이미 임시 모의 응답을 반환했으므로 성공으로 처리
-        console.log('결제 API 엔드포인트가 존재하지 않음, 임시 모의 응답 사용됨');
-        setPaymentStatus('completed');
-        alert('결제가 완료되었습니다! (임시 모의 응답)');
-        navigate('/mypage');
-        return;
+        // 404 에러 - 결제 API 엔드포인트가 존재하지 않음
+        console.log('결제 API 엔드포인트가 존재하지 않음');
+        setErrorMessage('결제 서비스를 사용할 수 없습니다. 잠시 후 다시 시도해주세요.');
       } else if (error.response?.data?.message) {
         setErrorMessage(`결제 처리 실패: ${error.response.data.message}`);
       } else if (error.message) {
