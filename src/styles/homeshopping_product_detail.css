@@ -1,7 +1,10 @@
 /* 홈쇼핑 상품 상세 페이지 스타일 - 피그마 목업 기반 */
 .homeshopping-product-detail-page {
+  width: 448px;
   min-height: 100vh;
   padding-bottom: 80px; /* BottomNav 높이만큼 여백 */
+  overflow-y: auto;
+  position: relative; /* UpBtn 위치 기준점 */
 }
 
 /* 로딩 컨테이너 */
@@ -95,17 +98,20 @@
 
 /* 상품 상세 컨테이너 */
 .product-detail-container {
-  max-width: 1200px;
+  width: 448px;
   margin: 0 auto;
   padding: 20px;
+  overflow-y: scroll;
+  height: calc(100vh - 200px);
+  padding-bottom: 20px;
 }
 
 /* 상품 이미지 섹션 */
 .product-image-section {
   position: relative;
-  margin-bottom: 32px;
+  /* margin-bottom: 32px; */
   border-radius: 20px;
-  overflow: hidden;
+  /* overflow: hidden; */
   /* box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); */
 }
 
@@ -116,53 +122,82 @@
   /* background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); */
 }
 
-/* 독립적인 방송 정보 섹션 */
-.broadcast-info-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  background: white;
-  border-radius: 20px 20px 0 0;
-  border-bottom: 1px solid #e9ecef;
-  gap: 20px;
-}
-
-/* 브랜드 로고 */
-.brand-logo {
+/* 제품 이미지 래퍼 */
+.product-image-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.homeshopping-logo {
-  width: 40px;
-  height: 40px;
+/* 가운데 방송 상태 텍스트 오버레이 */
+.center-broadcast-status {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgb(255 255 255 / 70%);
+  color: rgb(0, 0, 0);
+  padding: 16px 32px;
+  border-radius: 50px;
+  font-size: 18px;
+  font-weight: 600;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+  /* box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); */
+}
+
+.center-status-text {
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  white-space: nowrap;
+}
+
+/* 독립적인 방송 정보 섹션 */
+.hsproduct-broadcast-info-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e9ecef;
+  gap: 20px;
+}
+
+/* 제품 정보 그룹 */
+.hsproduct-product-info-group {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+/* 찜 버튼 그룹 */
+.hsproduct-heart-button-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 브랜드 로고 */
+.hsproduct-brand-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hsproduct-homeshopping-logo {
+  /* width: 132px; */
+  height: 37px;
   object-fit: contain;
-  border-radius: 8px;
 }
 
 /* 채널 번호 */
-.channel-number {
-  color: #2c3e50;
+.hsproduct-channel-number {
+  color: #737373;
   font-size: 14px;
-  font-weight: 600;
-  padding: 4px 8px;
-  border-radius: 12px;
-  background: #f8f9fa;
+  width: 59px;
 }
 
-/* 방송 상태 배지 */
-.broadcast-status-badge {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  text-align: center;
-  min-width: 80px;
-}
+
 
 /* 브랜드명 및 채널 정보 */
 .brand-channel-info {
@@ -205,27 +240,53 @@
 }
 
 /* 방송 날짜 */
-.broadcast-date {
-  color: #2c3e50;
+.hsproduct-broadcast-date {
+  color: #737373;
   font-size: 14px;
   font-weight: 600;
-  padding: 6px 12px;
-  border-radius: 16px;
-  background: #e8f4fd;
+  /* padding: 6px 12px; */
+  /* border-radius: 16px; */
   text-align: center;
-  min-width: 80px;
+  min-width: 47px;
 }
 
 /* 방송 시간 */
-.broadcast-time {
-  color: #2c3e50;
+.hsproduct-broadcast-time {
+  color: #737373;
   font-size: 14px;
   font-weight: 600;
-  padding: 6px 12px;
-  border-radius: 16px;
-  background: #f0f8ff;
+  /* padding: 6px 12px; */
+  /* border-radius: 16px; */
   text-align: center;
-  min-width: 120px;
+  min-width: 92px;
+}
+
+/* 찜 버튼 (방송 정보 섹션용) */
+.hsproduct-heart-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 50%;
+}
+
+.hsproduct-heart-button:hover {
+  transform: scale(1.1);
+  background: rgba(231, 76, 60, 0.1);
+}
+
+.hsproduct-heart-button .hsproduct-heart-icon {
+  width: 24px;
+  height: 24px;
+  transition: transform 0.3s ease;
+}
+
+.hsproduct-heart-button:hover .hsproduct-heart-icon {
+  transform: scale(1.2);
 }
 
 /* 방송 날짜 및 시간 (기존 스타일 - 제거 예정) */
@@ -259,36 +320,65 @@
   /* backdrop-filter: blur(10px); */
 }
 
-.product-image {
+.hsproduct-product-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   transition: transform 0.3s ease;
 }
 
-.product-image:hover {
+/* .hsproduct-product-image:hover {
   transform: scale(1.05);
+} */
+
+/* 이미지가 없을 때의 플레이스홀더 */
+.no-image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+  color: #6c757d;
+  font-size: 16px;
+  font-weight: 500;
+  border: 2px dashed #dee2e6;
+  border-radius: 12px;
+}
+
+.no-overlay-image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+  color: #6c757d;
+  font-size: 14px;
+  font-weight: 500;
+  border: 2px dashed #dee2e6;
+  border-radius: 16px;
 }
 
 /* 방송 상태 배지 */
-.broadcast-status {
+.hsproduct-broadcast-status {
   position: absolute;
   top: 20px;
   left: 20px;
-  background: rgba(0, 0, 0, 0.8);
+  /* background: rgba(0, 0, 0, 0.8); */
   color: white;
   padding: 12px 20px;
   border-radius: 50px;
   font-size: 14px;
-  font-weight: 600;
-  backdrop-filter: blur(10px);
+  /* font-weight: 600; */
+  /* backdrop-filter: blur(10px); */
   display: flex;
   align-items: center;
   gap: 8px;
   z-index: 7;
 }
 
-.broadcast-status.live {
+.hsproduct-broadcast-status.live {
   background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
   animation: livePulse 2s infinite;
 }
@@ -298,12 +388,11 @@
   50% { box-shadow: 0 0 0 20px rgba(231, 76, 60, 0); }
 }
 
-.broadcast-status.upcoming {
+.hsproduct-broadcast-status.upcoming {
   background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
 }
 
-.broadcast-status.ended {
-  background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+.hsproduct-broadcast-status.ended {
 }
 
 .status-icon {
@@ -376,6 +465,8 @@
   z-index: 10;
 }
 
+
+
 .live-stream-button:hover {
   transform: translateX(-50%) translateY(-2px);
   box-shadow: 0 12px 35px rgba(231, 76, 60, 0.5);
@@ -399,15 +490,26 @@
 
 /* 상품 기본 정보 */
 .product-basic-info {
-  background: white;
+  /* background: white; */
   padding: 32px;
-  border-radius: 20px;
+  /* border-radius: 20px; */
   margin-bottom: 24px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  /* box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08); */
 }
 
 .product-header {
   margin-bottom: 24px;
+}
+
+.store-name {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  align-self: flex-start;
 }
 
 .product-name {
@@ -423,15 +525,6 @@
   display: flex;
   align-items: center;
   gap: 16px;
-}
-
-.store-name {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 8px 16px;
-  border-radius: 50px;
-  font-size: 14px;
-  font-weight: 600;
 }
 
 /* 가격 정보 */
@@ -863,6 +956,30 @@
   font-weight: 500;
 }
 
+/* 스크롤바 스타일 */
+.product-detail-container::-webkit-scrollbar {
+  width: 4px;
+}
+
+.product-detail-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.product-detail-container::-webkit-scrollbar-thumb {
+  background: #e0e0e0;
+  border-radius: 4px;
+}
+
+.product-detail-container::-webkit-scrollbar-thumb:hover {
+  background: #bbb;
+}
+
+/* Firefox 스크롤바 */
+.product-detail-container {
+  scrollbar-width: thin;
+  scrollbar-color: #e0e0e0 transparent;
+}
+
 /* 반응형 디자인 */
 @media (max-width: 768px) {
   .product-detail-container {
@@ -913,38 +1030,44 @@
     padding: 20px;
   }
   
-  .broadcast-info-section {
+  .hsproduct-broadcast-info-section {
     flex-direction: column;
-    gap: 12px;
+    gap: 20px;
     padding: 16px;
   }
   
-  .homeshopping-logo {
-    width: 32px;
+  .hsproduct-product-info-group {
+    gap: 8px;
+  }
+  
+  .hsproduct-homeshopping-logo {
     height: 32px;
   }
   
-  .channel-number {
+  .hsproduct-channel-number {
     font-size: 12px;
-    padding: 3px 6px;
+    width: 55px;
   }
   
-  .broadcast-status-badge {
-    font-size: 11px;
-    padding: 4px 8px;
-    min-width: 70px;
+
+  
+  .hsproduct-broadcast-date {
+    font-size: 12px;
+    min-width: 42px;
   }
   
-  .broadcast-date {
+  .hsproduct-broadcast-time {
     font-size: 12px;
-    padding: 4px 8px;
-    min-width: 70px;
+    min-width: 87px;
   }
   
-  .broadcast-time {
-    font-size: 12px;
-    padding: 4px 8px;
-    min-width: 100px;
+  .hsproduct-heart-button {
+    padding: 6px;
+  }
+  
+  .hsproduct-heart-button .hsproduct-heart-icon {
+    width: 20px;
+    height: 20px;
   }
   
   .broadcast-status {

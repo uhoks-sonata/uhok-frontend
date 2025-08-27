@@ -5,8 +5,10 @@ import { useUser } from '../../contexts/UserContext';
 import HeaderNavSchedule from '../../layout/HeaderNavSchedule';
 import BottomNav from '../../layout/BottomNav';
 import Loading from '../../components/Loading';
+import UpBtn from '../../components/UpBtn';
 import emptyHeartIcon from '../../assets/heart_empty.png';
 import filledHeartIcon from '../../assets/heart_filled.png';
+import api from '../../pages/api';
 
 // 홈쇼핑 로고 관련 컴포넌트
 import { getLogoByHomeshoppingId, getChannelInfoByHomeshoppingId } from '../../components/homeshoppingLogo';
@@ -31,6 +33,7 @@ const HomeShoppingProductDetail = () => {
   const [kokRecommendations, setKokRecommendations] = useState([]);
   const [recipeRecommendations, setRecipeRecommendations] = useState([]);
   const [activeTab, setActiveTab] = useState('info'); // 탭 상태 관리
+  const [wishlistedProducts, setWishlistedProducts] = useState(new Set()); // 찜된 상품 ID들을 저장
   
   // 상품 상세 정보 가져오기
   useEffect(() => {
@@ -45,18 +48,21 @@ const HomeShoppingProductDetail = () => {
         const detailResponse = await homeShoppingApi.getProductDetail(productId);
         console.log('✅ 상품 상세 정보:', detailResponse);
         
-        if (detailResponse && detailResponse.product) {
-          setProductDetail(detailResponse.product);
-          setIsLiked(detailResponse.product.is_liked || false);
-          
-          // 상세 정보와 이미지 설정
-          if (detailResponse.detail_infos) {
-            setDetailInfos(detailResponse.detail_infos);
-          }
-          if (detailResponse.images) {
-            setProductImages(detailResponse.images);
-          }
-        }
+                 if (detailResponse && detailResponse.product) {
+           setProductDetail(detailResponse.product);
+           setIsLiked(detailResponse.product.is_liked || false);
+           
+           // 상세 정보와 이미지 설정
+           if (detailResponse.detail_infos) {
+             setDetailInfos(detailResponse.detail_infos);
+           }
+           if (detailResponse.images) {
+             setProductImages(detailResponse.images);
+           }
+           
+           // 상품 상세 정보 로딩 완료 후 찜 상태 초기화
+           initializeWishlistStatus();
+         }
         
         // 콕 상품 추천 가져오기
         try {
@@ -89,36 +95,93 @@ const HomeShoppingProductDetail = () => {
     }
   }, [productId]);
   
+  // 찜 상태 초기화 함수
+  const initializeWishlistStatus = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+
+      // 사용자의 찜한 홈쇼핑 상품 목록 가져오기
+      const response = await api.get('/api/homeshopping/likes', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.data && response.data.liked_products) {
+        const likedProductIds = new Set(response.data.liked_products.map(product => product.product_id));
+        setWishlistedProducts(likedProductIds);
+        console.log('찜 상태 초기화 완료:', likedProductIds.size, '개 상품');
+      }
+    } catch (error) {
+      console.error('찜 상태 초기화 실패:', error);
+    }
+  };
+
   // 찜 토글 함수 (홈쇼핑 상품용) - Schedule.js와 동일한 방식
-  const handleLikeToggle = async () => {
+  const handleHeartToggle = async (productId) => {
     try {
       // 토큰 확인
       const token = localStorage.getItem('access_token');
       if (!token) {
         console.log('토큰이 없어서 로그인 필요 팝업 표시');
+        // 다른 파일들과 동일하게 alert만 표시하고 제자리에 유지
         alert('로그인이 필요한 서비스입니다.');
         return;
       }
 
       // 찜 토글 API 호출
-      const response = await homeShoppingApi.toggleProductLike(productId);
-      console.log('찜 토글 응답:', response);
+      const response = await api.post('/api/homeshopping/likes/toggle', {
+        product_id: productId
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
 
-      // 찜 토글 성공 후 하트 아이콘 상태 변경
-      if (response) {
-        console.log('찜 토글 성공! 하트 아이콘 상태를 변경합니다.');
-        setIsLiked(prev => !prev);
+      console.log('찜 토글 응답:', response.data);
+
+      // 찜 토글 성공 후 하트 아이콘만 즉시 변경 (위시리스트 데이터는 동기화하지 않음)
+      if (response.data) {
+        console.log('찜 토글 성공! 하트 아이콘 상태만 변경합니다.');
+        
+        // 하트 아이콘 상태만 토글 (즉시 피드백)
+        setWishlistedProducts(prev => {
+          const newSet = new Set(prev);
+          if (newSet.has(productId)) {
+            // 찜 해제된 상태에서 찜 추가
+            newSet.delete(productId);
+            console.log('찜이 추가되었습니다. 채워진 하트로 변경됩니다.');
+          } else {
+            // 찜된 상태에서 찜 해제
+            newSet.add(productId);
+            console.log('찜이 해제되었습니다. 빈 하트로 변경됩니다.');
+          }
+          return newSet;
+        });
+        
+        // 애니메이션 효과 추가
+        const heartButton = document.querySelector(`[data-product-id="${productId}"]`);
+        if (heartButton) {
+          heartButton.style.transform = 'scale(1.2)';
+          setTimeout(() => {
+            heartButton.style.transform = 'scale(1)';
+          }, 150);
+        }
+        
+        // 위시리스트 데이터는 즉시 동기화하지 않음
+        // 페이지 벗어나거나 새로고침할 때 동기화됨
       }
-
-    } catch (error) {
-      console.error('찜 토글 실패:', error);
+    } catch (err) {
+      console.error('찜 토글 실패:', err);
       
-      // 401 에러 (인증 실패) 처리
-      if (error.response && error.response.status === 401) {
+      // 401 에러 (인증 실패) 시 제자리에 유지
+      if (err.response?.status === 401) {
         alert('로그인이 필요한 서비스입니다.');
         return;
       }
       
+      // 다른 에러의 경우 사용자에게 알림
       alert('찜 상태 변경에 실패했습니다. 다시 시도해주세요.');
     }
   };
@@ -126,7 +189,7 @@ const HomeShoppingProductDetail = () => {
   // 라이브 스트림 재생
   const handleLiveStream = () => {
     if (streamData && streamData.stream_url && streamData.is_live) {
-      window.open(streamData.stream_url, '_blank', 'width=800,height=600');
+      window.open(streamData.stream_url, '_blank', 'width=448,height=204');
     } else {
       alert('현재 라이브 스트림을 사용할 수 없습니다.');
     }
@@ -146,12 +209,12 @@ const HomeShoppingProductDetail = () => {
     const liveEnd = new Date(`${productDetail.live_date} ${productDetail.live_end_time}`);
     
     if (now < liveStart) {
-      return { status: 'upcoming', text: '방송 예정', icon: '📺' };
+      return { status: 'upcoming', text: '방송 예정' };
     } else if (now >= liveStart && now <= liveEnd) {
-      return { status: 'live', text: 'LIVE', icon: '🔴' };
-    } else {
-      return { status: 'ended', text: '방송 종료', icon: '⏹️' };
-    }
+      return { status: 'live', text: 'LIVE' };
+         } else {
+       return { status: 'ended', text: '방송 종료' };
+     }
   };
   
   // 로딩 상태
@@ -226,101 +289,109 @@ const HomeShoppingProductDetail = () => {
       <div className="product-detail-container">
                 {/* 상품 이미지 섹션 */}
         <div className="product-image-section">
-          {/* 독립적인 방송 정보 섹션 */}
-          <div className="broadcast-info-section">
-            {/* 브랜드 로고 */}
-            <div className="brand-logo">
-              <img 
-                src={getLogoByHomeshoppingId(productDetail.homeshopping_id)} 
-                alt={productDetail.homeshopping_name || '홈쇼핑'}
-                className="homeshopping-logo"
-              />
-            </div>
-            
-            {/* 채널 번호 */}
-            <div className="channel-number">
-              (채널 {productDetail.homeshopping_channel || 'N/A'})
-            </div>
-            
-            {/* 방송 상태 */}
-            <div className="broadcast-status-badge">
-              {broadcastStatus ? broadcastStatus.text : '방송 예정'}
-            </div>
-            
-            {/* 방송 날짜 */}
-            <div className="broadcast-date">
-              {productDetail.live_date && (() => {
-                const date = new Date(productDetail.live_date);
-                const month = date.getMonth() + 1;
-                const day = date.getDate();
-                const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
-                const weekday = weekdays[date.getDay()];
-                return `${month}/${day} ${weekday}`;
-              })()}
-            </div>
-            
-            {/* 방송 시간 */}
-            <div className="broadcast-time">
-              {productDetail.live_start_time && productDetail.live_end_time && 
-                `${productDetail.live_start_time.slice(0, 5)} ~ ${productDetail.live_end_time.slice(0, 5)}`
-              }
-            </div>
-          </div>
-          
-          <div className="image-container">
-            <img 
-              src={productDetail.thumb_img_url || '/placeholder-image.png'} 
-              alt={productDetail.product_name}
-              className="product-image"
-              onError={(e) => {
-                e.target.src = '/placeholder-image.png';
-                e.target.alt = '이미지 로드 실패';
-              }}
-            />
-            
-            {/* 방송 상태 배지 */}
-            {broadcastStatus && (
-              <div className={`broadcast-status ${broadcastStatus.status}`}>
-                <span className="status-icon">{broadcastStatus.icon}</span>
-                <span className="status-text">{broadcastStatus.text}</span>
+                              {/* 독립적인 방송 정보 섹션 */}
+          <div className="hsproduct-broadcast-info-section">
+            {/* 제품 정보 그룹 */}
+            <div className="hsproduct-product-info-group">
+              {/* 브랜드 로고 */}
+              <div className="hsproduct-brand-logo">
+                <img 
+                  src={getLogoByHomeshoppingId(productDetail.homeshopping_id)} 
+                  alt={productDetail.homeshopping_name || '홈쇼핑'}
+                  className="hsproduct-homeshopping-logo"
+                />
               </div>
-            )}
+              
+              {/* 채널 번호 */}
+              <div className="hsproduct-channel-number">
+                [채널 {getChannelInfoByHomeshoppingId(productDetail.homeshopping_id)?.channel || 'N/A'}]
+              </div>
+              
+
+              
+              {/* 방송 날짜 */}
+              <div className="hsproduct-broadcast-date">
+                {productDetail.live_date && (() => {
+                  const date = new Date(productDetail.live_date);
+                  const month = date.getMonth() + 1;
+                  const day = date.getDate();
+                  const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+                  const weekday = weekdays[date.getDay()];
+                  return `${month}/${day} ${weekday}`;
+                })()}
+              </div>
+              
+              {/* 방송 시간 */}
+              <div className="hsproduct-broadcast-time">
+                {productDetail.live_start_time && productDetail.live_end_time && 
+                  `${productDetail.live_start_time.slice(0, 5)} ~ ${productDetail.live_end_time.slice(0, 5)}`
+                }
+              </div>
+            </div>
             
-            {/* 찜 버튼 */}
-            <button 
-              className={`like-button ${isLiked ? 'liked' : ''}`}
-              onClick={handleLikeToggle}
-              title={isLiked ? '찜 해제' : '찜 추가'}
-            >
-              <img 
-                src={isLiked ? filledHeartIcon : emptyHeartIcon} 
-                alt="찜" 
-                className="heart-icon"
-              />
-            </button>
+            {/* 찜 버튼 (별도 그룹) */}
+            <div className="hsproduct-heart-button-group">
+              <button 
+                className="hsproduct-heart-button"
+                data-product-id={productDetail.product_id}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleHeartToggle(productDetail.product_id);
+                }}
+              >
+                <img 
+                  src={wishlistedProducts.has(productDetail.product_id) ? filledHeartIcon : emptyHeartIcon} 
+                  alt="찜 토글" 
+                  className="hsproduct-heart-icon"
+                />
+              </button>
+            </div>
           </div>
           
-          {/* 라이브 스트림 버튼 */}
-          {streamData?.is_live && streamData?.stream_url && (
-            <button 
-              className="live-stream-button"
-              onClick={handleLiveStream}
-              disabled={isStreamLoading}
-            >
-              <span className="live-icon">🔴</span>
-              {isStreamLoading ? '로딩 중...' : '라이브 시청하기'}
-            </button>
-          )}
+                                <div className="image-container">
+             {productDetail.thumb_img_url ? (
+               <div className="product-image-wrapper">
+                                   <img 
+                    src={productDetail.thumb_img_url} 
+                    alt={productDetail.product_name}
+                    className="hsproduct-product-image"
+                    onError={(e) => {
+                      e.target.alt = '이미지 로드 실패';
+                    }}
+                  />
+                 {/* 가운데 방송 상태 텍스트 오버레이 */}
+                 {broadcastStatus && (
+                   <div className="center-broadcast-status">
+                     <span className="center-status-text">{broadcastStatus.text}</span>
+                   </div>
+                 )}
+               </div>
+             ) : (
+               <div className="no-image-placeholder">
+                 <span>이미지 없음</span>
+               </div>
+             )}
+           </div>
+          
+                                 {/* 라이브 스트림 버튼 */}
+            {streamData?.stream_url && broadcastStatus?.status === 'live' && (
+              <button 
+                className="live-stream-button"
+                onClick={handleLiveStream}
+                disabled={isStreamLoading}
+              >
+                <span className="live-icon">🔴</span>
+                {isStreamLoading ? '로딩 중...' : '라이브 시청하기'}
+              </button>
+            )}
         </div>
         
-        {/* 상품 기본 정보 */}
-        <div className="product-basic-info">
-          <div className="product-header">
-            <h1 className="product-name">{productDetail.product_name}</h1>
-            <div className="product-meta">
-              <span className="store-name">{productDetail.store_name || '홈쇼핑'}</span>
-            </div>
-          </div>
+                 {/* 상품 기본 정보 */}
+         <div className="product-basic-info">
+           <div className="product-header">
+             <span className="store-name">{productDetail.store_name || '홈쇼핑'}</span>
+             <h1 className="product-name">{productDetail.product_name}</h1>
+           </div>
           
           {/* 가격 정보 */}
           <div className="price-section">
@@ -398,13 +469,16 @@ const HomeShoppingProductDetail = () => {
                     {productImages.map((imageGroup, index) => (
                       <div key={index} className="image-group">
                         {Object.entries(imageGroup).map(([key, imageUrl]) => (
-                          <img 
-                            key={key}
-                            src={imageUrl} 
-                            alt={`상품 이미지 ${index + 1}`}
-                            className="gallery-image"
-                            onClick={() => window.open(imageUrl, '_blank')}
-                          />
+                                                   <img 
+                           key={key}
+                           src={imageUrl} 
+                           alt={`상품 이미지 ${index + 1}`}
+                           className="gallery-image"
+                           onClick={() => window.open(imageUrl, '_blank')}
+                           onError={(e) => {
+                             e.target.alt = '이미지 로드 실패';
+                           }}
+                         />
                         ))}
                       </div>
                     ))}
@@ -505,14 +579,14 @@ const HomeShoppingProductDetail = () => {
                         className="kok-product-card"
                         onClick={() => handleKokProductClick(product.product_id)}
                       >
-                        <img 
-                          src={product.thumb_img_url || '/placeholder-image.png'} 
-                          alt={product.product_name}
-                          className="kok-product-image"
-                          onError={(e) => {
-                            e.target.src = '/placeholder-image.png';
-                          }}
-                        />
+                                                 <img 
+                           src={product.thumb_img_url} 
+                           alt={product.product_name}
+                           className="kok-product-image"
+                           onError={(e) => {
+                             e.target.alt = '이미지 로드 실패';
+                           }}
+                         />
                         <div className="kok-product-info">
                           <h4 className="kok-product-name">{product.product_name}</h4>
                           <p className="kok-product-price">{product.price?.toLocaleString()}원</p>
@@ -536,6 +610,7 @@ const HomeShoppingProductDetail = () => {
       </div>
       
       <BottomNav />
+      <UpBtn />
     </div>
   );
 };
