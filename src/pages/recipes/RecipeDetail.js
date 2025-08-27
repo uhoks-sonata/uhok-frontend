@@ -20,7 +20,19 @@ const RecipeDetail = () => {
   const [error, setError] = useState(null);
   const [showDescription, setShowDescription] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
-  const [ingredientsStatus, setIngredientsStatus] = useState(null);
+  const [ingredientsStatus, setIngredientsStatus] = useState({
+    ingredients_status: {
+      owned: [],
+      cart: [],
+      not_owned: []
+    },
+    summary: {
+      total_ingredients: 0,
+      owned_count: 0,
+      cart_count: 0,
+      not_owned_count: 0
+    }
+  });
 
   // 레시피 상세 정보 조회
   useEffect(() => {
@@ -47,6 +59,23 @@ const RecipeDetail = () => {
           setIngredientsStatus(statusData);
         } catch (statusError) {
           console.log('재료 상태 조회 실패:', statusError);
+          // API 호출 실패 시 기본값 설정
+          if (recipeData.materials) {
+            const defaultStatus = {
+              ingredients_status: {
+                owned: [],
+                cart: [],
+                not_owned: recipeData.materials.map(material => ({ material_name: material.material_name }))
+              },
+              summary: {
+                total_ingredients: recipeData.materials.length,
+                owned_count: 0,
+                cart_count: 0,
+                not_owned_count: recipeData.materials.length
+              }
+            };
+            setIngredientsStatus(defaultStatus);
+          }
         }
         
         // 재료별 콕 쇼핑몰 상품 조회
@@ -126,11 +155,11 @@ const RecipeDetail = () => {
       });
 
       // API 응답이 오기 전까지 임시 상태 사용
-      if (!ingredientsStatus) {
+      if (!ingredientsStatus || ingredientsStatus.summary.total_ingredients === 0) {
         setIngredientsStatus(initialStatus);
       }
     }
-  }, [location.state, recipe, ingredientsStatus]);
+  }, [location.state, recipe]);
 
   // 별점 선택 (임시)
   const handleStarClick = (star) => {
@@ -249,14 +278,32 @@ const RecipeDetail = () => {
               <p className="ingredients-description">장바구니에 없는 재료는 관련 상품을 추천해드려요</p>
             )}
           </div>
+          
+          {/* 재료 요약 정보 */}
+          {ingredientsStatus?.summary && (
+            <div className="ingredients-summary">
+              <span className="summary-item">
+                총 {ingredientsStatus.summary.total_ingredients || 0}개
+              </span>
+              <span className="summary-item owned">
+                보유 {ingredientsStatus.summary.owned_count || 0}개
+              </span>
+              <span className="summary-item cart">
+                장바구니 {ingredientsStatus.summary.cart_count || 0}개
+              </span>
+              <span className="summary-item not-owned">
+                미보유 {ingredientsStatus.summary.not_owned_count || 0}개
+              </span>
+            </div>
+          )}
           <div className="ingredients-list">
             {recipe.materials?.map((material, index) => {
               // 재료 상태 확인
               let status = 'not-owned';
               let statusText = '미보유';
               
-              if (ingredientsStatus) {
-                const { owned, cart, not_owned } = ingredientsStatus.ingredients_status;
+              if (ingredientsStatus && ingredientsStatus.ingredients_status) {
+                const { owned = [], cart = [], not_owned = [] } = ingredientsStatus.ingredients_status;
                 
                 if (owned.some(item => item.material_name === material.material_name)) {
                   status = 'owned';

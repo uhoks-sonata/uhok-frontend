@@ -165,11 +165,11 @@ export const homeShoppingApi = {
     }
   },
 
-  // 홈쇼핑 라이브 영상 URL 조회
-  getLiveStreamUrl: async (productId) => {
+  // 홈쇼핑 라이브 영상 URL 조회 (live_id 사용)
+  getLiveStreamUrl: async (liveId) => {
     try {
-      console.log('📹 라이브 스트림 URL API 요청:', { productId });
-      const response = await api.get(`/api/homeshopping/product/${productId}/stream`);
+      console.log('📹 라이브 스트림 URL API 요청:', { liveId });
+      const response = await api.get(`/api/homeshopping/product/${liveId}/stream`);
       console.log('✅ 라이브 스트림 URL API 응답:', response.data);
       return response.data;
     } catch (error) {

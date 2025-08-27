@@ -630,14 +630,14 @@ const Schedule = () => {
     }
   };
 
-  // 라이브 스트림 URL 가져오기
-  const getLiveStreamUrl = async (productId) => {
+  // 라이브 스트림 URL 가져오기 (live_id 사용)
+  const getLiveStreamUrl = async (liveId) => {
     try {
       setIsStreamLoading(true);
-      const streamData = await homeShoppingApi.getLiveStreamUrl(productId);
+      const streamData = await homeShoppingApi.getLiveStreamUrl(liveId);
       setLiveStreamData(prev => ({
         ...prev,
-        [productId]: streamData
+        [liveId]: streamData
       }));
       return streamData;
     } catch (error) {
@@ -648,10 +648,10 @@ const Schedule = () => {
     }
   };
 
-  // 라이브 스트림 재생
-  const handleLiveStream = async (productId) => {
+  // 라이브 스트림 재생 (live_id 사용)
+  const handleLiveStream = async (liveId) => {
     try {
-      const streamData = await getLiveStreamUrl(productId);
+      const streamData = await getLiveStreamUrl(liveId);
       if (streamData && streamData.stream_url) {
         // 새 창에서 라이브 스트림 열기
         window.open(streamData.stream_url, '_blank', 'width=800,height=600');
@@ -841,14 +841,14 @@ const Schedule = () => {
     
     if (isCurrentlyLive) {
       return (
-        <button 
-          className="live-stream-btn"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleLiveStream(item.product_id);
-          }}
-          disabled={isStreamLoading}
-        >
+                 <button 
+           className="live-stream-btn"
+           onClick={(e) => {
+             e.stopPropagation();
+             handleLiveStream(item.live_id);
+           }}
+           disabled={isStreamLoading}
+         >
           {isStreamLoading ? (
             <Loading message="로딩 중..." containerStyle={{ padding: '0', margin: '0' }} />
           ) : (
