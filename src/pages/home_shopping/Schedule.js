@@ -831,14 +831,15 @@ const Schedule = () => {
     return !!token;
   };
 
-  // 찜 토글 함수 (홈쇼핑 상품용) - WishList.js와 동일한 방식
+  // 찜 토글 함수 (홈쇼핑 상품용) - 다른 파일들과 동일한 방식으로 수정
   const handleHeartToggle = async (productId) => {
     try {
       // 토큰 확인
       const token = localStorage.getItem('access_token');
       if (!token) {
-        console.log('토큰이 없어서 로그인 페이지로 이동');
-        window.location.href = '/';
+        console.log('토큰이 없어서 로그인 필요 팝업 표시');
+        // 다른 파일들과 동일하게 alert만 표시하고 제자리에 유지
+        alert('로그인이 필요한 서비스입니다.');
         return;
       }
 
@@ -887,10 +888,9 @@ const Schedule = () => {
     } catch (err) {
       console.error('찜 토글 실패:', err);
       
-      // 401 에러 (인증 실패) 시 로그인 페이지로 이동
+      // 401 에러 (인증 실패) 시 제자리에 유지
       if (err.response?.status === 401) {
-        alert('로그인이 필요합니다.');
-        window.location.href = '/';
+        alert('로그인이 필요한 서비스입니다.');
         return;
       }
       
