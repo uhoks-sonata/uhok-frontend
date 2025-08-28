@@ -157,10 +157,10 @@ const HomeShoppingProductDetail = () => {
      
      const fetchRecommendations = async () => {
        try {
-         // 콕 상품 추천 가져오기
-         console.log('🔍 콕 상품 추천 API 호출 시작 (product_id):', productDetail.product_id);
-         const kokResponse = await homeShoppingApi.getKokRecommendations(productDetail.product_id);
-         console.log('💡 콕 상품 추천 응답:', kokResponse);
+                   // 콕 상품 추천 가져오기 (새로운 API 엔드포인트 사용)
+          console.log('🔍 콕 상품 추천 API 호출 시작 (product_id):', productDetail.product_id);
+          const kokResponse = await homeShoppingApi.getKokRecommendations(productDetail.product_id);
+          console.log('💡 콕 상품 추천 응답:', kokResponse);
          
          if (isMounted) {
            const products = kokResponse?.products || [];
@@ -465,21 +465,24 @@ const HomeShoppingProductDetail = () => {
           <div className="hsproduct-broadcast-info-section">
             {/* 제품 정보 그룹 */}
             <div className="hsproduct-product-info-group">
-              {/* 브랜드 로고 */}
-              <div className="hsproduct-brand-logo">
-                <img 
-                  src={getLogoByHomeshoppingId(productDetail.homeshopping_id)} 
-                  alt={productDetail.homeshopping_name || '홈쇼핑'}
-                  className="hsproduct-homeshopping-logo"
-                />
-              </div>
-              
-              {/* 채널 번호 */}
-              <div className="hsproduct-channel-number">
-                [채널 {getChannelInfoByHomeshoppingId(productDetail.homeshopping_id)?.channel || 'N/A'}]
-              </div>
-              
-
+                             {/* 브랜드 로고 */}
+               <div className="hsproduct-brand-logo">
+                 <img 
+                   src={getLogoByHomeshoppingId(productDetail.homeshopping_id)} 
+                   alt={productDetail.homeshopping_name || '홈쇼핑'}
+                   className="hsproduct-homeshopping-logo"
+                 />
+               </div>
+               
+               {/* 홈쇼핑 이름
+               <div className="hsproduct-homeshopping-name">
+                 {productDetail.homeshopping_name || getChannelInfoByHomeshoppingId(productDetail.homeshopping_id)?.name || '홈쇼핑'}
+               </div> */}
+               
+               {/* 채널 번호 */}
+               <div className="hsproduct-channel-number">
+                 [채널 {getChannelInfoByHomeshoppingId(productDetail.homeshopping_id)?.channel || 'N/A'}]
+               </div>
               
               {/* 방송 날짜 */}
               <div className="hsproduct-broadcast-date">
