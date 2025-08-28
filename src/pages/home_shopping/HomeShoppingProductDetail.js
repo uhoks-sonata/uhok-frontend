@@ -85,13 +85,23 @@ const HomeShoppingProductDetail = () => {
         
         // 콕 상품 추천 가져오기 (live_id 사용)
         try {
+          console.log('🔍 콕 상품 추천 API 호출 시작 (live_id):', live_id);
           const kokResponse = await homeShoppingApi.getKokRecommendations(live_id);
-          console.log('💡 콕 상품 추천:', kokResponse);
+          console.log('💡 콕 상품 추천 응답:', kokResponse);
+          
           if (isMounted) {
-            setKokRecommendations(kokResponse.products || []);
+            const products = kokResponse?.products || [];
+            console.log('✅ 콕 상품 추천 설정:', {
+              count: products.length,
+              products: products
+            });
+            setKokRecommendations(products);
           }
         } catch (kokError) {
-          console.error('콕 상품 추천 가져오기 실패:', kokError);
+          console.error('❌ 콕 상품 추천 가져오기 실패:', kokError);
+          if (isMounted) {
+            setKokRecommendations([]); // 빈 배열로 설정하여 에러 상태 표시
+          }
         }
         
         // 라이브 스트림 정보 가져오기 (live_id 사용)
