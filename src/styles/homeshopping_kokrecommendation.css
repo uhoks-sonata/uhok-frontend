@@ -10,20 +10,20 @@
 /* 토글 버튼 섹션 */
 .kokrecom-toggle-section {
   padding: 16px 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: transparent;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .kokrecom-toggle-section:hover {
-  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+  background: transparent;
 }
 
 .kokrecom-toggle-button {
   width: 100%;
   background: none;
   border: none;
-  color: white;
+  color: #333;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
@@ -33,14 +33,35 @@
   padding: 0;
 }
 
+.kokrecom-toggle-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* 콕 로고와 텍스트 컨테이너 */
+.kok-logo-text-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 콕 로고 스타일 */
+.kok-logo {
+  width: 34px;
+  height: 34px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
 .toggle-text {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: lighter;
+  color: #838383;
 }
 
 .toggle-arrow {
-  font-size: 14px;
   transition: transform 0.3s ease;
+  flex-shrink: 0;
 }
 
 .toggle-arrow.expanded {
@@ -53,12 +74,25 @@
   background: #fff;
 }
 
-.kokrecom-title h3 {
-  margin: 0 0 16px 0;
-  font-size: 18px;
+
+
+/* 추천 상품이 없을 때 표시되는 메시지 */
+.no-recommendations {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+}
+
+.no-recommendations p {
+  margin: 8px 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.no-recommendations p:first-child {
+  font-size: 16px;
   font-weight: 600;
   color: #333;
-  text-align: center;
 }
 
 /* 콕 상품 목록 */
@@ -72,7 +106,6 @@
   display: flex;
   gap: 12px;
   padding: 16px;
-  background: #f8f9fa;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -80,7 +113,7 @@
 }
 
 .kokrecom-product-item:hover {
-  background: #e9ecef;
+  border-color: #e04a7a;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
@@ -88,8 +121,8 @@
 /* 콕 상품 이미지 */
 .kokrecom-product-image {
   flex-shrink: 0;
-  width: 80px;
-  height: 80px;
+  width: 120px;
+  height: 120px;
   border-radius: 8px;
   overflow: hidden;
   background: #f1f3f4;
@@ -106,12 +139,22 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  justify-content: center;
+  min-height: 120px;
 }
 
 .kokrecom-product-name {
+}
+
+.kokrecom-product-name .kokrecom-product-store {
+  color: #666;
+  font-weight: bold;
   font-size: 14px;
-  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.kokrecom-product-name .kokrecom-product-name-text {
+  font-size: 14px;
   color: #333;
   line-height: 1.4;
   display: -webkit-box;
@@ -120,10 +163,16 @@
   overflow: hidden;
 }
 
+.kokrecom-price-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .kokrecom-product-price {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
-  color: #e74c3c;
+  color: #000000;
 }
 
 .kokrecom-product-store {
@@ -133,15 +182,62 @@
 }
 
 .kokrecom-product-discount {
+  font-size: 18px;
+  color: #FA5F8C;
+  font-weight: bold;
+  border-radius: 12px;
+  display: inline-block;
+  width: fit-content;
+  white-space: nowrap;
+}
+
+.kokrecom-no-discount {
   font-size: 12px;
-  color: #e74c3c;
-  font-weight: 600;
-  background: #ffe6e6;
+  color: #666;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 12px;
+  display: inline-block;
+  width: fit-content;
+  white-space: nowrap;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+}
+
+/* 콕 상품 찜 버튼 */
+.kokrecom-heart-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* margin-left: auto; */
+}
+
+/* .kokrecom-heart-button:hover {
+  background: rgba(0, 0, 0, 0.05);
+} */
+
+.kokrecom-heart-icon {
+  width: 24px;
+  height: 24px;
+  transition: transform 0.2s ease;
+}
+
+/* .kokrecom-product-distance {
+  font-size: 11px;
+  color: #28a745;
+  font-weight: 500;
+  background: #e8f5e8;
   padding: 2px 6px;
   border-radius: 4px;
   display: inline-block;
   width: fit-content;
-}
+} */
 
 /* 반응형 디자인 */
 @media (max-width: 768px) {
@@ -164,8 +260,8 @@
   }
   
   .kokrecom-product-image {
-    width: 70px;
-    height: 70px;
+    width: 100px;
+    height: 100px;
   }
   
   .kokrecom-product-name {
@@ -174,5 +270,10 @@
   
   .kokrecom-product-price {
     font-size: 15px;
+  }
+  
+  .kokrecom-product-discount {
+    font-size: 11px;
+    padding: 2px 6px;
   }
 }

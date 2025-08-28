@@ -8,6 +8,8 @@ import { userApi } from '../../api/userApi';
 import '../../styles/login.css';
 // 사용자 Context import
 import { useUser } from '../../contexts/UserContext';
+// 모달 관리자 컴포넌트 import
+import ModalManager, { showAlert, hideModal } from '../../components/LoadingModal';
 
 // ===== 로그인 페이지 컴포넌트 =====
 // 사용자 로그인을 처리하는 페이지 컴포넌트
@@ -19,8 +21,9 @@ const Login = () => {
   const [password, setPassword] = useState('');
   // 로딩 상태 관리
   const [loading, setLoading] = useState(false);
-  // 에러 메시지 상태 관리
-  const [error, setError] = useState('');
+  // 모달 상태 관리
+  const [modalState, setModalState] = useState({ isVisible: false, modalType: 'loading' });
+
 
   // ===== React Router 훅 =====
   // 페이지 이동을 위한 navigate 함수 가져오기
@@ -30,27 +33,39 @@ const Login = () => {
   // 사용자 정보 관리
   const { login } = useUser();
 
+  // ===== 모달 관련 함수 =====
+  // 알림 모달 표시 함수
+  const showAlertModal = (message, buttonText = "확인", buttonStyle = "primary") => {
+    setModalState(showAlert(message, buttonText, buttonStyle));
+  };
+
+  // 모달 닫기 함수
+  const closeModal = () => {
+    setModalState(hideModal());
+  };
+
   // ===== 이벤트 핸들러 함수 =====
   // 폼 제출 핸들러 함수 (API 명세서에 맞춘 비동기 처리)
   const handleSubmit = async (e) => {
     // 기본 폼 제출 동작 방지
     e.preventDefault();
     
-    // 로딩 상태 설정 및 에러 초기화
+    // 로딩 상태 설정
     setLoading(true);
-    setError('');
     
     // 콘솔에 로그인 시도 정보 출력
     console.log('로그인 시도:', { email, password });
 
     // 입력 데이터 검증
     if (!email.trim()) {
-      setError('이메일을 입력해주세요.');
+      showAlertModal('이메일을 입력해주세요.');
+      setLoading(false);
       return;
     }
     
     if (!password.trim()) {
-      setError('비밀번호를 입력해주세요.');
+      showAlertModal('비밀번호를 입력해주세요.');
+      setLoading(false);
       return;
     }
 
@@ -112,7 +127,7 @@ const Login = () => {
       } else {
         // 토큰이 없는 경우 에러 처리
         console.error('백엔드 응답에 토큰이 없습니다:', response);
-        setError('로그인에 실패했습니다. 토큰을 받지 못했습니다.');
+        showAlertModal('로그인에 실패했습니다. 토큰을 받지 못했습니다.');
       }
     } catch (err) {
       console.error('로그인 API 에러:', err);
@@ -120,7 +135,7 @@ const Login = () => {
       // API 서버 연결 실패 시 에러 처리
       if (err.code === 'ERR_NETWORK' || err.message.includes('Network Error')) {
         console.log('API 서버 연결 실패');
-        setError('백엔드 서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.');
+        showAlertModal('백엔드 서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.');
         return;
       }
       
@@ -137,11 +152,11 @@ const Login = () => {
         // 백엔드에서 전달하는 구체적인 에러 메시지 표시
         const errorData = err.response.data;
         if (errorData.detail) {
-          setError(`백엔드 API 오류: ${JSON.stringify(errorData.detail)}`);
+          showAlertModal(`백엔드 API 오류: ${JSON.stringify(errorData.detail)}`);
         } else if (errorData.message) {
-          setError(`백엔드 API 오류: ${errorData.message}`);
+          showAlertModal(`백엔드 API 오류: ${errorData.message}`);
         } else {
-          setError('백엔드 API에서 422 오류가 발생했습니다. 백엔드 개발자에게 문의하세요.');
+          showAlertModal('백엔드 API에서 422 오류가 발생했습니다. 백엔드 개발자에게 문의하세요.');
         }
         return; // 임시 로그인 처리하지 않고 에러 메시지만 표시
       }
@@ -158,10 +173,10 @@ const Login = () => {
         // 422 에러는 이미 위에서 처리했으므로 다른 에러만 처리
         if (err.response.status !== 422) {
           const errorMessage = err.response.data?.message || '로그인에 실패했습니다.';
-          setError(errorMessage);
+          showAlertModal(errorMessage);
         }
       } else {
-        setError('로그인 중 오류가 발생했습니다.');
+        showAlertModal('로그인 중 오류가 발생했습니다.');
       }
     } finally {
       // 로딩 상태 해제
@@ -169,7 +184,7 @@ const Login = () => {
     }
   };
 
-  // 로그인 페이지 JSX 반환
+    // 로그인 페이지 JSX 반환
   return (
     // 로그인 페이지 컨테이너
     <div>
@@ -196,12 +211,7 @@ const Login = () => {
           required // 필수 입력 필드
         />
         
-        {/* 에러 메시지 표시 */}
-        {error && (
-          <div className="error-message" style={{ color: 'red', marginBottom: '10px' }}>
-            {error}
-          </div>
-        )}
+        
         
         {/* 로그인 버튼 */}
         <button type="submit" disabled={loading}>
@@ -214,6 +224,12 @@ const Login = () => {
           <Link to="/signup">회원가입</Link>
         </div>
       </form>
+
+      {/* 모달 관리자 */}
+      <ModalManager
+        {...modalState}
+        onClose={closeModal}
+      />
     </div>
   );
 };

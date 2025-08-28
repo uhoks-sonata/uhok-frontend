@@ -7,6 +7,7 @@ import BottomNav from '../../layout/BottomNav';
 import Loading from '../../components/Loading';
 import UpBtn from '../../components/UpBtn';
 import HomeshoppingKokRecommendation from '../../components/HomeshoppingKokRecommendation';
+import ModalManager, { showWishlistNotification, showWishlistUnlikedNotification, hideModal } from '../../components/LoadingModal';
 import emptyHeartIcon from '../../assets/heart_empty.png';
 import filledHeartIcon from '../../assets/heart_filled.png';
 import api from '../../pages/api';
@@ -36,6 +37,9 @@ const HomeShoppingProductDetail = () => {
 
   const [wishlistedProducts, setWishlistedProducts] = useState(new Set()); // 찜된 상품 ID들을 저장
   const [activeTab, setActiveTab] = useState('detail'); // 탭 상태 관리
+  
+  // 모달 상태 관리
+  const [modalState, setModalState] = useState({ isVisible: false, modalType: 'loading' });
   
   // 상품 상세 정보 가져오기
   useEffect(() => {
@@ -83,16 +87,8 @@ const HomeShoppingProductDetail = () => {
           initializeWishlistStatus();
         }
         
-        // 콕 상품 추천 가져오기 (live_id 사용)
-        try {
-          const kokResponse = await homeShoppingApi.getKokRecommendations(live_id);
-          console.log('💡 콕 상품 추천:', kokResponse);
-          if (isMounted) {
-            setKokRecommendations(kokResponse.products || []);
-          }
-        } catch (kokError) {
-          console.error('콕 상품 추천 가져오기 실패:', kokError);
-        }
+                 // 콕 상품 추천과 레시피 추천은 productDetail이 설정된 후에 호출
+         // 이 부분은 useEffect의 의존성 배열에 productDetail을 추가하여 처리
         
         // 라이브 스트림 정보 가져오기 (live_id 사용)
         try {
@@ -147,11 +143,72 @@ const HomeShoppingProductDetail = () => {
       fetchProductDetail();
     }
     
-    // 컴포넌트 언마운트 시 정리
-    return () => {
-      isMounted = false;
-    };
-  }, [live_id]);
+         // 컴포넌트 언마운트 시 정리
+     return () => {
+       isMounted = false;
+     };
+   }, [live_id]);
+   
+   // productDetail이 설정된 후 콕 상품 추천과 레시피 추천 가져오기
+   useEffect(() => {
+     if (!productDetail?.product_id) return;
+     
+     let isMounted = true;
+     
+     const fetchRecommendations = async () => {
+       try {
+                   // 콕 상품 추천 가져오기 (새로운 API 엔드포인트 사용)
+          console.log('🔍 콕 상품 추천 API 호출 시작 (product_id):', productDetail.product_id);
+          const kokResponse = await homeShoppingApi.getKokRecommendations(productDetail.product_id);
+          console.log('💡 콕 상품 추천 응답:', kokResponse);
+         
+         if (isMounted) {
+           const products = kokResponse?.products || [];
+           console.log('✅ 콕 상품 추천 설정:', {
+             count: products.length,
+             products: products
+           });
+           setKokRecommendations(products);
+         }
+         
+         // 상품이 식재료인지 확인하고 레시피 추천 가져오기
+         console.log('🔍 상품 분류 확인 API 호출 (product_id):', productDetail.product_id);
+         const classifyResponse = await homeShoppingApi.checkProductClassify(productDetail.product_id);
+         console.log('💡 상품 분류 응답:', classifyResponse);
+         
+         if (isMounted && classifyResponse?.is_ingredient) {
+           console.log('🥬 식재료 상품 확인됨, 레시피 추천 가져오기');
+           const recipeResponse = await homeShoppingApi.getRecipeRecommendations(productDetail.product_id);
+           console.log('📖 레시피 추천 응답:', recipeResponse);
+           
+           if (isMounted) {
+             const recipes = recipeResponse?.recipes || [];
+             console.log('✅ 레시피 추천 설정:', {
+               count: recipes.length,
+               recipes: recipes
+             });
+             setRecipeRecommendations(recipes);
+           }
+         } else {
+           console.log('📦 완제품 상품이므로 레시피 추천 건너뜀');
+           setRecipeRecommendations([]);
+         }
+         
+       } catch (error) {
+         console.error('❌ 추천 데이터 가져오기 실패:', error);
+         if (isMounted) {
+           setKokRecommendations([]);
+           setRecipeRecommendations([]);
+         }
+       }
+     };
+     
+     fetchRecommendations();
+     
+     return () => {
+       isMounted = false;
+     };
+   }, [productDetail?.product_id]);
   
   // 찜 상태 초기화 함수
   const initializeWishlistStatus = async () => {
@@ -232,6 +289,15 @@ const HomeShoppingProductDetail = () => {
           }, 150);
         }
         
+        // 찜 상태에 따른 알림 모달 표시
+        if (isLiked) {
+          // 찜 추가 시 알림
+          setModalState(showWishlistNotification());
+        } else {
+          // 찜 해제 시 알림
+          setModalState(showWishlistUnlikedNotification());
+        }
+        
         // 위시리스트 데이터는 즉시 동기화하지 않음
         // 페이지 벗어나거나 새로고침할 때 동기화됨
       }
@@ -261,6 +327,11 @@ const HomeShoppingProductDetail = () => {
   // 콕 상품으로 이동
   const handleKokProductClick = (kokProductId) => {
     navigate(`/kok/product/${kokProductId}`);
+  };
+
+  // 모달 닫기 함수
+  const closeModal = () => {
+    setModalState(hideModal());
   };
   
   // 방송 상태 확인
@@ -394,21 +465,24 @@ const HomeShoppingProductDetail = () => {
           <div className="hsproduct-broadcast-info-section">
             {/* 제품 정보 그룹 */}
             <div className="hsproduct-product-info-group">
-              {/* 브랜드 로고 */}
-              <div className="hsproduct-brand-logo">
-                <img 
-                  src={getLogoByHomeshoppingId(productDetail.homeshopping_id)} 
-                  alt={productDetail.homeshopping_name || '홈쇼핑'}
-                  className="hsproduct-homeshopping-logo"
-                />
-              </div>
-              
-              {/* 채널 번호 */}
-              <div className="hsproduct-channel-number">
-                [채널 {getChannelInfoByHomeshoppingId(productDetail.homeshopping_id)?.channel || 'N/A'}]
-              </div>
-              
-
+                             {/* 브랜드 로고 */}
+               <div className="hsproduct-brand-logo">
+                 <img 
+                   src={getLogoByHomeshoppingId(productDetail.homeshopping_id)} 
+                   alt={productDetail.homeshopping_name || '홈쇼핑'}
+                   className="hsproduct-homeshopping-logo"
+                 />
+               </div>
+               
+               {/* 홈쇼핑 이름
+               <div className="hsproduct-homeshopping-name">
+                 {productDetail.homeshopping_name || getChannelInfoByHomeshoppingId(productDetail.homeshopping_id)?.name || '홈쇼핑'}
+               </div> */}
+               
+               {/* 채널 번호 */}
+               <div className="hsproduct-channel-number">
+                 [채널 {getChannelInfoByHomeshoppingId(productDetail.homeshopping_id)?.channel || 'N/A'}]
+               </div>
               
               {/* 방송 날짜 */}
               <div className="hsproduct-broadcast-date">
@@ -600,94 +674,123 @@ const HomeShoppingProductDetail = () => {
                }
              })()}
            </div>
-        </div>
-        
-                                  {/* 탭 네비게이션 */}
-        <div className="tab-navigation">
-          <button
-            className={`tab-button ${activeTab === 'detail' ? 'active' : ''}`}
-            onClick={() => setActiveTab('detail')}
-          >
-            상품정보
-          </button>
-          <button
-            className={`tab-button ${activeTab === 'seller' ? 'active' : ''}`}
-            onClick={() => setActiveTab('seller')}
-          >
-            상세정보
-          </button>
-        </div>
+                 </div>
          
-         {/* 탭 콘텐츠 */}
-         <div className="tab-content">
-                       {/* 상품 상세 탭 */}
-            {activeTab === 'detail' && (
-              <div className="detail-tab">
-                {/* 상품 상세 이미지들 */}
-                {productImages && productImages.length > 0 && (
-                  <div className="product-detail-images-section">
-                    <h3 className="section-title">상품 상세 이미지</h3>
-                    <div className="detail-images-container">
-                      {productImages.map((image, index) => (
-                        <div key={index} className="detail-image-item">
-                          <img 
-                            src={image.img_url} 
-                            alt={`상품 상세 이미지 ${index + 1}`}
-                            className="detail-image"
-                            onClick={() => window.open(image.img_url, '_blank')}
-                            onError={(e) => {
-                              e.target.alt = '이미지 로드 실패';
-                            }}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                                                   {/* 상세 정보나 이미지가 없는 경우 */}
-                  {(!detailInfos || detailInfos.length === 0) && 
-                   (!productImages || productImages.length === 0) && (
-                    <div className="no-detail-content">
-                      <div className="no-detail-icon">📋</div>
-                      <p className="no-detail-text">상품 상세 정보가 없습니다</p>
-                    </div>
-                  )}
-                  
-                  {/* 스크롤을 위한 여백 추가 */}
-                  <div style={{ height: '150px' }}></div>
-               </div>
-            )}
-           
-                       {/* 상세정보 탭 */}
-            {activeTab === 'seller' && (
-              <div className="seller-tab">
-                {/* 상품 상세 정보 */}
-                {detailInfos && detailInfos.length > 0 && (
-                  <div className="product-detail-info-section">
-                    <h3 className="section-title">상품 상세 정보</h3>
-                    <div className="detail-info-container">
-                      {detailInfos.map((info, index) => (
-                        <div key={index} className="detail-info-row">
-                          <span className="detail-info-label">{info.detail_col}</span>
-                          <span className="detail-info-value">{info.detail_val}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-
-              </div>
-            )}
+         {/* 콕 상품 추천 섹션 - 가격 정보 바로 아래에 위치 */}
+         <HomeshoppingKokRecommendation 
+           kokRecommendations={kokRecommendations}
+           onKokProductClick={handleKokProductClick}
+         />
+         
+         {/* 레시피 추천 섹션 - 콕 상품 추천 아래에 위치 */}
+         {recipeRecommendations && recipeRecommendations.length > 0 && (
+           <div className="recipe-recommendation-section">
+             <div className="recipe-section-header">
+               <h3 className="recipe-section-title">이 상품으로 만들 수 있는 레시피</h3>
+             </div>
+             <div className="recipe-list">
+               {recipeRecommendations.map((recipe, index) => (
+                 <div key={index} className="recipe-item">
+                   <div className="recipe-info">
+                     <h4 className="recipe-name">{recipe.recipe_name}</h4>
+                     <div className="recipe-meta">
+                       <span className="cooking-time">⏱️ {recipe.cooking_time}</span>
+                       <span className="difficulty">📊 {recipe.difficulty}</span>
+                     </div>
+                     <p className="recipe-description">{recipe.description}</p>
+                     <div className="recipe-ingredients">
+                       <span className="ingredients-label">주요 재료:</span>
+                       <span className="ingredients-list">
+                         {recipe.ingredients.join(', ')}
+                       </span>
+                     </div>
                    </div>
-       </div>
-       
-       {/* 콕 상품 추천 섹션 */}
-       <HomeshoppingKokRecommendation 
-         kokRecommendations={kokRecommendations}
-         onKokProductClick={handleKokProductClick}
-       />
+                 </div>
+               ))}
+             </div>
+           </div>
+         )}
+         
+                                   {/* 탭 네비게이션 */}
+         <div className="tab-navigation">
+           <button
+             className={`tab-button ${activeTab === 'detail' ? 'active' : ''}`}
+             onClick={() => setActiveTab('detail')}
+           >
+             상품정보
+           </button>
+           <button
+             className={`tab-button ${activeTab === 'seller' ? 'active' : ''}`}
+             onClick={() => setActiveTab('seller')}
+           >
+             상세정보
+           </button>
+         </div>
+          
+          {/* 탭 콘텐츠 */}
+          <div className="tab-content">
+                        {/* 상품 상세 탭 */}
+             {activeTab === 'detail' && (
+               <div className="detail-tab">
+                 {/* 상품 상세 이미지들 */}
+                 {productImages && productImages.length > 0 && (
+                   <div className="product-detail-images-section">
+                     <h3 className="section-title">상품 상세 이미지</h3>
+                     <div className="detail-images-container">
+                       {productImages.map((image, index) => (
+                         <div key={index} className="detail-image-item">
+                           <img 
+                             src={image.img_url} 
+                             alt={`상품 상세 이미지 ${index + 1}`}
+                             className="detail-image"
+                             onClick={() => window.open(image.img_url, '_blank')}
+                             onError={(e) => {
+                               e.target.alt = '이미지 로드 실패';
+                             }}
+                           />
+                         </div>
+                       ))}
+                     </div>
+                   </div>
+                 )}
+                 
+                                                    {/* 상세 정보나 이미지가 없는 경우 */}
+                   {(!detailInfos || detailInfos.length === 0) && 
+                    (!productImages || productImages.length === 0) && (
+                     <div className="no-detail-content">
+                       <div className="no-detail-icon">📋</div>
+                       <p className="no-detail-text">상품 상세 정보가 없습니다</p>
+                     </div>
+                   )}
+                   
+                   {/* 스크롤을 위한 여백 추가 */}
+                   <div style={{ height: '150px' }}></div>
+                </div>
+             )}
+            
+                        {/* 상세정보 탭 */}
+             {activeTab === 'seller' && (
+               <div className="seller-tab">
+                 {/* 상품 상세 정보 */}
+                 {detailInfos && detailInfos.length > 0 && (
+                   <div className="product-detail-info-section">
+                     <h3 className="section-title">상품 상세 정보</h3>
+                     <div className="detail-info-container">
+                       {detailInfos.map((info, index) => (
+                         <div key={index} className="detail-info-row">
+                           <span className="detail-info-label">{info.detail_col}</span>
+                           <span className="detail-info-value">{info.detail_val}</span>
+                         </div>
+                       ))}
+                     </div>
+                   </div>
+                 )}
+                 
+
+               </div>
+             )}
+                    </div>
+        </div>
        
               <BottomNav />
        
@@ -695,6 +798,12 @@ const HomeShoppingProductDetail = () => {
        <div style={{ position: 'relative' }}>
          <UpBtn />
        </div>
+       
+       {/* 모달 관리자 */}
+       <ModalManager
+         {...modalState}
+         onClose={closeModal}
+       />
     </div>
   );
 };

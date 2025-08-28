@@ -140,7 +140,7 @@ export const homeShoppingApi = {
   },
 
   // 상품 분류 확인 (식재료/완제품)
-  checkProductClassification: async (productId) => {
+  checkProductClassify: async (productId) => {
     try {
       console.log('🏷️ 상품 분류 확인 API 요청:', { productId });
       const response = await api.get(`/api/homeshopping/product/${productId}/check`);
@@ -178,20 +178,7 @@ export const homeShoppingApi = {
     }
   },
 
-  // 홈쇼핑 상품 찜 등록/해제
-  toggleProductLike: async (productId) => {
-    try {
-      console.log('❤️ 홈쇼핑 상품 찜 토글 API 요청:', { productId });
-      const response = await api.post('/api/homeshopping/likes/toggle', {
-        product_id: productId
-      });
-      console.log('✅ 홈쇼핑 상품 찜 토글 API 응답:', response.data);
-      return response.data;
-    } catch (error) {
-      console.error('❌ 홈쇼핑 상품 찜 토글 실패:', error);
-      throw error;
-    }
-  },
+
 
   // ===== 검색 관련 =====
   

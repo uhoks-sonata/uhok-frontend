@@ -173,7 +173,7 @@
   justify-content: start;
   align-items: center;
   /* border-bottom: 1px solid #e9ecef; */
-  gap: 105px;
+  gap: 49px;
 }
 
 /* 제품 정보 그룹 */
@@ -1432,4 +1432,126 @@
 .no-detail-text {
   font-size: 14px;
   color: #666;
+}
+
+/* ===== 레시피 추천 섹션 ===== */
+.recipe-recommendation-section {
+  margin: 20px 0;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.recipe-section-header {
+  padding: 20px 20px 16px 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.recipe-section-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+}
+
+.recipe-list {
+  padding: 0;
+}
+
+.recipe-item {
+  padding: 20px;
+  border-bottom: 1px solid #f8f9fa;
+  transition: background-color 0.2s ease;
+}
+
+.recipe-item:last-child {
+  border-bottom: none;
+}
+
+.recipe-item:hover {
+  background-color: #f8f9fa;
+}
+
+.recipe-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.recipe-name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+  line-height: 1.4;
+}
+
+.recipe-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: #666;
+}
+
+.cooking-time,
+.difficulty {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.recipe-description {
+  margin: 0;
+  font-size: 14px;
+  color: #555;
+  line-height: 1.5;
+}
+
+.recipe-ingredients {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ingredients-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+}
+
+.ingredients-list {
+  font-size: 13px;
+  color: #777;
+  line-height: 1.4;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .recipe-recommendation-section {
+    margin: 16px 0;
+    border-radius: 8px;
+  }
+  
+  .recipe-section-header {
+    padding: 16px 16px 12px 16px;
+  }
+  
+  .recipe-item {
+    padding: 16px;
+  }
+  
+  .recipe-name {
+    font-size: 15px;
+  }
+  
+  .recipe-meta {
+    gap: 12px;
+    font-size: 12px;
+  }
+  
+  .recipe-description {
+    font-size: 13px;
+  }
 }
