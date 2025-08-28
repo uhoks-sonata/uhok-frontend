@@ -199,25 +199,31 @@ const MyPage = () => {
         
         // 사용자 정보 조회 (API 명세서에 맞춘 처리)
         try {
+          console.log('🔍 MyPage - 사용자 정보 조회 시작');
           const userResponse = await userApi.getProfile();
+          console.log('✅ MyPage - 사용자 정보 조회 성공:', userResponse);
           userData = userResponse;
         } catch (err) {
-          // 401 에러인 경우 토큰 제거하고 로그인 상태 해제
+          console.error('❌ MyPage - 사용자 정보 조회 실패:', err);
+          // 401 에러인 경우에도 자동 로그아웃하지 않음
           if (err.response?.status === 401) {
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('token_type');
-            // UserContext에서도 로그인 상태 해제
-            logout();
-            setLoading(false);
-            return;
+            console.warn('사용자 정보 조회 401 에러 발생했지만 자동 로그아웃하지 않습니다.');
+            // 임시 데이터 사용
+            userData = {
+              user_id: 101,
+              username: '테스트 사용자',
+              email: 'test@example.com',
+              created_at: '2025-01-01T00:00:00.000Z'
+            };
+          } else {
+            // 다른 에러인 경우 임시 데이터 사용
+            userData = {
+              user_id: 101,
+              username: '테스트 사용자',
+              email: 'test@example.com',
+              created_at: '2025-01-01T00:00:00.000Z'
+            };
           }
-          // 다른 에러인 경우 임시 데이터 사용
-          userData = {
-            user_id: 101,
-            username: '테스트 사용자',
-            email: 'test@example.com',
-            created_at: '2025-01-01T00:00:00.000Z'
-          };
         }
         
         // 최근 주문 조회 (실제 API 호출)
@@ -246,14 +252,11 @@ const MyPage = () => {
           }
         } catch (err) {
           if (err.response?.status === 401) {
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('token_type');
-            // UserContext에서도 로그인 상태 해제
-            logout();
-            setLoading(false);
-            return;
+            console.warn('최근 주문 조회 401 에러 발생했지만 자동 로그아웃하지 않습니다.');
+            ordersData = { orders: [] };
+          } else {
+            ordersData = { orders: [] };
           }
-          ordersData = { orders: [] };
         }
         
         // 주문 개수 조회 (실제 API 호출)
@@ -262,16 +265,14 @@ const MyPage = () => {
           orderCount = orderCountResponse.order_count || 0;
         } catch (err) {
           if (err.response?.status === 401) {
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('token_type');
-            // UserContext에서도 로그인 상태 해제
-            logout();
-            setLoading(false);
-            return;
+            console.warn('주문 개수 조회 401 에러 발생했지만 자동 로그아웃하지 않습니다.');
+            orderCount = 0;
           } else if (err.response?.status === 404) {
             // 404 에러 - 주문 개수 API 엔드포인트가 존재하지 않습니다.
+            orderCount = 0;
+          } else {
+            orderCount = 0;
           }
-          orderCount = 0;
         }
         
         // 레시피 정보 조회 (현재는 임시 데이터 사용)

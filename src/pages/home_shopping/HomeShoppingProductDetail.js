@@ -6,6 +6,7 @@ import HeaderNavSchedule from '../../layout/HeaderNavSchedule';
 import BottomNav from '../../layout/BottomNav';
 import Loading from '../../components/Loading';
 import UpBtn from '../../components/UpBtn';
+import HomeshoppingKokRecommendation from '../../components/HomeshoppingKokRecommendation';
 import emptyHeartIcon from '../../assets/heart_empty.png';
 import filledHeartIcon from '../../assets/heart_filled.png';
 import api from '../../pages/api';
@@ -679,10 +680,16 @@ const HomeShoppingProductDetail = () => {
 
               </div>
             )}
-         </div>
-      </div>
-      
-             <BottomNav />
+                   </div>
+       </div>
+       
+       {/* 콕 상품 추천 섹션 */}
+       <HomeshoppingKokRecommendation 
+         kokRecommendations={kokRecommendations}
+         onKokProductClick={handleKokProductClick}
+       />
+       
+              <BottomNav />
        
        {/* 맨 위로 가기 버튼 */}
        <div style={{ position: 'relative' }}>

@@ -8,6 +8,8 @@ import "../styles/bottom_nav.css";
 import bottomNavImage from "../assets/bottom_navigation.gif";
 // API 설정을 가져옵니다
 import api from "../pages/api";
+// 로그 API를 가져옵니다
+import { logApi } from "../api/logApi";
 // 콕 쇼핑몰 아이콘 (활성 상태) import
 import bottomIconKok from "../assets/bottom_icon_kok.png";
 // 콕 쇼핑몰 아이콘 (비활성 상태) import
@@ -90,6 +92,14 @@ const BottomNav = ({ selectedItemsCount = 0, handlePayment = null, productInfo =
 
   // 네비게이션 클릭 로그를 기록하는 비동기 함수
   const logNavigationClick = async (path, label) => {
+    console.log('🚀 logNavigationClick 함수 호출됨 - 매개변수:', { path, label });
+    console.log('🚀 logNavigationClick 함수 호출됨 - 매개변수 타입:', { 
+      pathType: typeof path, 
+      labelType: typeof label,
+      pathValue: path,
+      labelValue: label
+    });
+    
     // 로그인하지 않은 상태면 API 호출 건너뛰기
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -98,21 +108,44 @@ const BottomNav = ({ selectedItemsCount = 0, handlePayment = null, productInfo =
     }
 
     try {
-      await api.post('/api/user/activity-log', {
+      console.log('🔍 BottomNav - 네비게이션 클릭 로그 기록 시작:', { path, label });
+      console.log('🔍 BottomNav - 토큰 상태:', {
+        hasToken: !!token,
+        tokenLength: token?.length,
+        tokenStart: token?.substring(0, 20) + '...',
+        bearerToken: `Bearer ${token}`,
+        fullToken: token
+      });
+      
+      console.log('🔍 BottomNav - 사용자 정보:', { token: !!token });
+      
+      // logApi를 사용하여 로그 기록
+      const requestData = {
         action: 'navigation_click',
         path: path,
         label: label,
         timestamp: new Date().toISOString()
-      }, {
-        headers: {
-          'Authorization': 'Bearer <access_token>'
-        }
-      }).catch(() => {
-        // 로그 기록 실패는 무시
-        console.log('네비게이션 클릭 로그 기록 실패 (무시됨)');
+      };
+      
+      console.log('🔍 BottomNav - API 요청 데이터:', requestData);
+      console.log('🔍 BottomNav - requestData 상세:', {
+        actionValue: requestData.action,
+        pathValue: requestData.path,
+        labelValue: requestData.label,
+        actionType: typeof requestData.action,
+        pathType: typeof requestData.path,
+        labelType: typeof requestData.label
       });
+      console.log('🔍 BottomNav - logApi.createUserLog 호출');
+      
+      await logApi.createUserLog(requestData).catch((error) => {
+        // 로그 기록 실패는 무시하되 에러 정보는 출력
+        console.log('네비게이션 클릭 로그 기록 실패 (무시됨):', error);
+      });
+      
+      console.log('✅ BottomNav - 네비게이션 클릭 로그 기록 완료');
     } catch (error) {
-      console.error('네비게이션 로그 기록 에러:', error);
+      console.error('❌ BottomNav - 네비게이션 로그 기록 에러:', error);
     }
   };
 
@@ -222,16 +255,19 @@ const BottomNav = ({ selectedItemsCount = 0, handlePayment = null, productInfo =
                   <Link
                     to={item.path} // 이동할 경로
                     className={`nav-item ${isActive ? 'active' : ''}`} // 활성 상태에 따른 CSS 클래스 적용
-                    onClick={() => {
-                      logNavigationClick(item.path, item.label); // 네비게이션 클릭 로그 기록
-                      
-                      // main 페이지는 공개 페이지로 변경됨 - 토큰 검증 제거
-                      
-                      // 현재 활성화된 아이콘을 클릭했을 때도 페이지 새로고침
-                      if (isActive) {
-                        window.location.href = item.path;
-                      }
-                    }}
+                                         onClick={() => {
+                       console.log('🎯 네비게이션 아이템 클릭됨:', { path: item.path, label: item.label });
+                       console.log('🎯 logNavigationClick 함수 호출 직전');
+                       logNavigationClick(item.path, item.label); // 네비게이션 클릭 로그 기록
+                       console.log('🎯 logNavigationClick 함수 호출 완료');
+                       
+                       // main 페이지는 공개 페이지로 변경됨 - 토큰 검증 제거
+                       
+                       // 현재 활성화된 아이콘을 클릭했을 때도 페이지 새로고침
+                       if (isActive) {
+                         window.location.href = item.path;
+                       }
+                     }}
                   >
                     {/* 네비게이션 아이콘 */}
                     <img
@@ -249,7 +285,12 @@ const BottomNav = ({ selectedItemsCount = 0, handlePayment = null, productInfo =
                     <Link 
                       to="/main" 
                       className="main-button-link"
-                      onClick={() => logNavigationClick('/main', '혹')} // 혹 버튼 클릭 로그 기록
+                                             onClick={() => {
+                         console.log('🎯 혹 버튼 클릭됨:', { path: '/main', label: '혹' });
+                         console.log('🎯 logNavigationClick 함수 호출 직전');
+                         logNavigationClick('/main', '혹'); // 혹 버튼 클릭 로그 기록
+                         console.log('🎯 logNavigationClick 함수 호출 완료');
+                       }}
                     >
                       <div className="image-button">
                         <div className="image-text">

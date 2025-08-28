@@ -56,9 +56,16 @@ api.interceptors.request.use(
       
       console.log('✅ API 요청 - 토큰 있음:', {
         url: config.url,
-        method: config.method?.toUpperCase()
+        method: config.method?.toUpperCase(),
+        tokenLength: token.length,
+        tokenStart: token.substring(0, 20) + '...',
+        authorizationHeader: `Bearer ${token}`,
+        fullHeaders: config.headers
       });
       config.headers.Authorization = `Bearer ${token}`;
+      
+      // 토큰 설정 후 최종 헤더 확인
+      console.log('🔍 최종 설정된 Authorization 헤더:', config.headers.Authorization);
     } else {
       console.log('API 요청 - 토큰 없음:', {
         url: config.url,

@@ -108,6 +108,9 @@ export const UserProvider = ({ children }) => {
     try {
       if (userData.user_id) {
         await logApi.createUserLog({
+          action: 'user_login',
+          path: '/login',
+          label: '사용자 로그인',
           user_id: userData.user_id,
           event_type: 'USER_LOGIN',
           event_data: {
@@ -128,6 +131,9 @@ export const UserProvider = ({ children }) => {
     try {
       if (user && user.user_id) {
         await logApi.createUserLog({
+          action: 'user_logout',
+          path: '/logout',
+          label: '사용자 로그아웃',
           user_id: user.user_id,
           event_type: 'USER_LOGOUT',
           event_data: {
