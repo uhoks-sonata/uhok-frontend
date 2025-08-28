@@ -427,6 +427,11 @@ const WishList = () => {
                                        ) : (
                       // 쇼핑몰 탭 레이아웃 - 이미지 참고하여 개선
                       <div className="shopping-product-info">
+                        <div className="shopping-product-details">
+                          <span className="shopping-product-name">
+                            <span className="shopping-brand-name">{product.kok_store_name}</span> | {product.kok_product_name}
+                          </span>
+                        </div>
                         <div className="shopping-price-section">
                           <div className="shopping-price-info">
                             {product.kok_discount_rate > 0 && (
@@ -449,11 +454,6 @@ const WishList = () => {
                               className="shopping-heart-icon"
                             />
                           </button>
-                        </div>
-                        <div className="shopping-product-details">
-                          <span className="shopping-product-name">
-                            <span className="shopping-brand-name">{product.kok_store_name}</span> | {product.kok_product_name}
-                          </span>
                         </div>
                       </div>
                     )}
