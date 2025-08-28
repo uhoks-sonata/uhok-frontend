@@ -6,6 +6,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { userApi } from '../../api/userApi';
 // 회원가입 페이지 스타일 CSS 파일 import
 import '../../styles/signup.css';
+// 모달 관리자 컴포넌트 import
+import ModalManager, { showAlert, hideModal } from '../../components/LoadingModal';
 
 // ===== 회원가입 페이지 컴포넌트 =====
 // 사용자 회원가입을 처리하는 페이지 컴포넌트
@@ -29,10 +31,27 @@ const Signup = () => {
   const [loading, setLoading] = useState(false);
   // 이메일 확인 로딩 상태 관리
   const [emailCheckLoading, setEmailCheckLoading] = useState(false);
+  // 모달 상태 관리
+  const [modalState, setModalState] = useState({ isVisible: false, modalType: 'loading' });
 
   // ===== React Router 훅 =====
   // 페이지 이동을 위한 navigate 함수 가져오기
   const navigate = useNavigate();
+
+  // ===== 모달 관련 함수 =====
+  // 알림 모달 표시 함수
+  const showAlertModal = (message, buttonText = "확인", buttonStyle = "primary") => {
+    setModalState(showAlert(message, buttonText, buttonStyle));
+  };
+
+  // 모달 닫기 함수
+  const closeModal = () => {
+    setModalState(hideModal());
+    // 회원가입 성공 후 모달이 닫히면 로그인 페이지로 이동
+    if (modalState.modalType === 'alert' && modalState.alertButtonStyle === 'primary') {
+      navigate('/login');
+    }
+  };
 
   // ===== 이벤트 핸들러 함수들 =====
   
@@ -129,22 +148,19 @@ const Signup = () => {
         console.log('회원가입 성공 - 사용자 ID:', response.user_id);
         
         // 회원가입 성공 시 알림 표시
-        alert('회원가입이 완료되었습니다.');
-        // 로그인 페이지로 이동
-        navigate('/');
+        showAlertModal('회원가입이 완료되었습니다!', '로그인', 'primary');
       } else {
         setErrorMsg('회원가입에 실패했습니다.');
       }
     } catch (err) {
       console.error('회원가입 API 에러:', err);
       
-      // API 서버 연결 실패 시 임시 처리 (개발용)
-      if (err.code === 'ERR_NETWORK' || err.message.includes('Network Error')) {
-        console.log('API 서버 연결 실패, 임시 회원가입 처리 (개발용)');
-        alert('회원가입이 완료되었습니다. (개발용)');
-        navigate('/');
-        return;
-      }
+              // API 서버 연결 실패 시 임시 처리 (개발용)
+        if (err.code === 'ERR_NETWORK' || err.message.includes('Network Error')) {
+          console.log('API 서버 연결 실패, 임시 회원가입 처리 (개발용)');
+          showAlertModal('회원가입이 완료되었습니다! (개발용)', '로그인', 'primary');
+          return;
+        }
       
       // 서버 에러 응답 처리
       if (err.response) {
@@ -236,6 +252,12 @@ const Signup = () => {
           <Link to="/">로그인</Link>
         </div>
       </form>
+
+      {/* 모달 관리자 */}
+      <ModalManager
+        {...modalState}
+        onClose={closeModal}
+      />
     </div>
   );
 };

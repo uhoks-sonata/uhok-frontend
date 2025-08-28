@@ -79,3 +79,128 @@
     gap: 6px;
   }
 }
+
+/* ===== 알림 모달 스타일 ===== */
+.alert-modal-message {
+  font-size: 16px;
+  color: #333;
+  line-height: 1.5;
+  margin-bottom: 24px;
+  word-break: keep-all;
+  text-align: center;
+  padding: 0 20px;
+}
+
+.alert-modal-button {
+  background: #FA5F8C;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 32px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 91px;
+  height: 44px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.alert-modal-button:hover {
+  background: #e04a7a;
+  transform: translateY(-1px);
+}
+
+.alert-modal-button:active {
+  transform: translateY(0);
+}
+
+/* ===== 확인 모달 스타일 ===== */
+.confirm-modal-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.alert-modal-button.cancel {
+  background: #6c757d;
+}
+
+.alert-modal-button.cancel:hover {
+  background: #5a6268;
+}
+
+.alert-modal-button.confirm {
+  background: #FA5F8C;
+}
+
+.alert-modal-button.confirm:hover {
+  background: #e04a7a;
+}
+
+/* ===== 다양한 알림 버튼 스타일 ===== */
+.alert-modal-button.primary {
+  background: #FA5F8C;
+}
+
+.alert-modal-button.primary:hover {
+  background: #e04a7a;
+}
+
+.alert-modal-button.success {
+  background: #10b981;
+}
+
+.alert-modal-button.success:hover {
+  background: #059669;
+}
+
+.alert-modal-button.warning {
+  background: #f59e0b;
+}
+
+.alert-modal-button.warning:hover {
+  background: #d97706;
+}
+
+.alert-modal-button.info {
+  background: #3b82f6;
+}
+
+.alert-modal-button.info:hover {
+  background: #2563eb;
+}
+
+/* 알림/확인 모달일 때 높이 조정 */
+.loading-modal-content:has(.alert-modal-message) {
+  height: auto;
+  min-height: 160px;
+  padding: 32px 40px;
+}
+
+/* 모바일에서 알림/확인 모달 높이 조정 */
+@media (max-width: 768px) {
+  .loading-modal-content:has(.alert-modal-message) {
+    padding: 24px 32px;
+    min-height: 140px;
+  }
+  
+  .alert-modal-message {
+    font-size: 15px;
+    margin-bottom: 20px;
+    padding: 0 16px;
+  }
+  
+  .alert-modal-button {
+    padding: 10px 24px;
+    font-size: 15px;
+    min-width: 80px;
+  }
+  
+  .confirm-modal-buttons {
+    gap: 10px;
+  }
+}
