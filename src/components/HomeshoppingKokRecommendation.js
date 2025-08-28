@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/homeshopping_kokrecommendation.css';
+import kokLogo from '../assets/kokshoppingmall_logo.png';
 
 const HomeshoppingKokRecommendation = ({ kokRecommendations, onKokProductClick }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -34,21 +35,38 @@ const HomeshoppingKokRecommendation = ({ kokRecommendations, onKokProductClick }
         <div className="kokrecom-toggle-section">
           <button 
             className="kokrecom-toggle-button"
-            disabled
+            onClick={handleToggle}
           >
-            <span className="toggle-text">콕 상품 추천 준비 중...</span>
-            <span className="toggle-arrow">▼</span>
+            <div className="kok-logo-text-container">
+              <img src={kokLogo} alt="콕" className="kok-logo" />
+              <span className="toggle-text">에서 비슷한 상품을 팔고 있어요!</span>
+            </div>
+            <svg 
+              className={`toggle-arrow ${isExpanded ? 'expanded' : ''}`}
+              width="20" 
+              height="20" 
+              viewBox="0 0 24 24" 
+              fill="none"
+            >
+              <path 
+                d="M7 10L12 15L17 10" 
+                stroke="#838383" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              />
+            </svg>
           </button>
         </div>
-        <div className="kokrecom-content">
-          <div className="kokrecom-title">
-            <h3>추천 콕 상품</h3>
+        {isExpanded && (
+          <div className="kokrecom-content">
+            
+            <div className="no-recommendations">
+              <p>현재 추천할 콕 상품이 없습니다.</p>
+              <p>곧 새로운 추천 상품을 준비하겠습니다.</p>
+            </div>
           </div>
-          <div className="no-recommendations">
-            <p>현재 추천할 콕 상품이 없습니다.</p>
-            <p>곧 새로운 추천 상품을 준비하겠습니다.</p>
-          </div>
-        </div>
+        )}
       </div>
     );
   }
@@ -61,19 +79,32 @@ const HomeshoppingKokRecommendation = ({ kokRecommendations, onKokProductClick }
           className="kokrecom-toggle-button"
           onClick={handleToggle}
         >
-          <span className="toggle-text">콕 상품을 추천드려요 ({kokRecommendations.length}개)</span>
-          <span className={`toggle-arrow ${isExpanded ? 'expanded' : ''}`}>
-            ▼
-          </span>
+          <div className="kok-logo-text-container">
+            <img src={kokLogo} alt="콕" className="kok-logo" />
+            <span className="toggle-text">에서 비슷한 상품을 팔고 있어요!</span>
+          </div>
+          <svg 
+            className={`toggle-arrow ${isExpanded ? 'expanded' : ''}`}
+            width="20" 
+            height="20" 
+            viewBox="0 0 24 24" 
+            fill="none"
+          >
+            <path 
+              d="M7 10L12 15L17 10" 
+              stroke="#838383" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+            />
+          </svg>
         </button>
       </div>
 
       {/* 콕 상품 추천 목록 */}
       {isExpanded && (
         <div className="kokrecom-content">
-          <div className="kokrecom-title">
-            <h3>추천 콕 상품 ({kokRecommendations.length}개)</h3>
-          </div>
+
           <div className="kokrecom-products">
             {kokRecommendations.map((product, index) => (
               <div 

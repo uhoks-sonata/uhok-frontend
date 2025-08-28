@@ -10,20 +10,20 @@
 /* 토글 버튼 섹션 */
 .kokrecom-toggle-section {
   padding: 16px 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: transparent;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .kokrecom-toggle-section:hover {
-  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+  background: transparent;
 }
 
 .kokrecom-toggle-button {
   width: 100%;
   background: none;
   border: none;
-  color: white;
+  color: #333;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
@@ -38,14 +38,30 @@
   opacity: 0.7;
 }
 
+/* 콕 로고와 텍스트 컨테이너 */
+.kok-logo-text-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 콕 로고 스타일 */
+.kok-logo {
+  width: 34px;
+  height: 34px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
 .toggle-text {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: lighter;
+  color: #838383;
 }
 
 .toggle-arrow {
-  font-size: 14px;
   transition: transform 0.3s ease;
+  flex-shrink: 0;
 }
 
 .toggle-arrow.expanded {
@@ -58,13 +74,7 @@
   background: #fff;
 }
 
-.kokrecom-title h3 {
-  margin: 0 0 16px 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
-  text-align: center;
-}
+
 
 /* 추천 상품이 없을 때 표시되는 메시지 */
 .no-recommendations {
