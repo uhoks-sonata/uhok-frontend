@@ -33,7 +33,6 @@ const HomeShoppingProductDetail = () => {
   const [streamData, setStreamData] = useState(null);
   const [isStreamLoading, setIsStreamLoading] = useState(false);
   const [kokRecommendations, setKokRecommendations] = useState([]);
-  const [recipeRecommendations, setRecipeRecommendations] = useState([]);
 
   const [wishlistedProducts, setWishlistedProducts] = useState(new Set()); // 찜된 상품 ID들을 저장
   const [activeTab, setActiveTab] = useState('detail'); // 탭 상태 관리
@@ -176,29 +175,24 @@ const HomeShoppingProductDetail = () => {
          const classifyResponse = await homeShoppingApi.checkProductClassify(productDetail.product_id);
          console.log('💡 상품 분류 응답:', classifyResponse);
          
-         if (isMounted && classifyResponse?.is_ingredient) {
-           console.log('🥬 식재료 상품 확인됨, 레시피 추천 가져오기');
-           const recipeResponse = await homeShoppingApi.getRecipeRecommendations(productDetail.product_id);
-           console.log('📖 레시피 추천 응답:', recipeResponse);
+         // 상품 분류 정보를 productDetail에 저장
+         if (isMounted && classifyResponse) {
+           setProductDetail(prev => ({
+             ...prev,
+             is_ingredient: classifyResponse.is_ingredient
+           }));
            
-           if (isMounted) {
-             const recipes = recipeResponse?.recipes || [];
-             console.log('✅ 레시피 추천 설정:', {
-               count: recipes.length,
-               recipes: recipes
-             });
-             setRecipeRecommendations(recipes);
-           }
-         } else {
-           console.log('📦 완제품 상품이므로 레시피 추천 건너뜀');
-           setRecipeRecommendations([]);
+                       if (classifyResponse.is_ingredient) {
+              console.log('🥬 식재료 상품 확인됨, 레시피 추천 버튼 표시');
+            } else {
+              console.log('📦 완제품 상품이므로 레시피 추천 버튼 숨김');
+            }
          }
          
        } catch (error) {
          console.error('❌ 추천 데이터 가져오기 실패:', error);
          if (isMounted) {
            setKokRecommendations([]);
-           setRecipeRecommendations([]);
          }
        }
      };
@@ -683,30 +677,33 @@ const HomeShoppingProductDetail = () => {
          />
          
          {/* 레시피 추천 섹션 - 콕 상품 추천 아래에 위치 */}
-         {recipeRecommendations && recipeRecommendations.length > 0 && (
+         {productDetail?.is_ingredient && (
            <div className="recipe-recommendation-section">
              <div className="recipe-section-header">
                <h3 className="recipe-section-title">이 상품으로 만들 수 있는 레시피</h3>
+               <button 
+                 className="recipe-search-button"
+                                 onClick={() => navigate('/recipes/result', {
+                  state: {
+                    recipes: [],
+                    ingredients: [productDetail.product_name],
+                    searchType: 'keyword',
+                    page: 1,
+                    total: 0,
+                    combination_number: 1,
+                    has_more_combinations: false,
+                    product_id: productDetail.product_id,
+                    product_name: productDetail.product_name
+                  }
+                })}
+               >
+                 레시피 보러 가기
+               </button>
              </div>
-             <div className="recipe-list">
-               {recipeRecommendations.map((recipe, index) => (
-                 <div key={index} className="recipe-item">
-                   <div className="recipe-info">
-                     <h4 className="recipe-name">{recipe.recipe_name}</h4>
-                     <div className="recipe-meta">
-                       <span className="cooking-time">⏱️ {recipe.cooking_time}</span>
-                       <span className="difficulty">📊 {recipe.difficulty}</span>
-                     </div>
-                     <p className="recipe-description">{recipe.description}</p>
-                     <div className="recipe-ingredients">
-                       <span className="ingredients-label">주요 재료:</span>
-                       <span className="ingredients-list">
-                         {recipe.ingredients.join(', ')}
-                       </span>
-                     </div>
-                   </div>
-                 </div>
-               ))}
+             <div className="recipe-info-message">
+               <p className="recipe-message-text">
+                 이 상품으로 만들 수 있는 다양한 레시피를 찾아보세요!
+               </p>
              </div>
            </div>
          )}

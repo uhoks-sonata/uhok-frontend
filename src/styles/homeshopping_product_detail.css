@@ -1448,12 +1448,41 @@
   border-bottom: 1px solid #f0f0f0;
 }
 
+.recipe-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 20px 16px 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
 .recipe-section-title {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
   color: #333;
-  text-align: center;
+}
+
+.recipe-search-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.recipe-search-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.recipe-search-button:active {
+  transform: translateY(0);
 }
 
 .recipe-list {
@@ -1524,6 +1553,20 @@
 .ingredients-list {
   font-size: 13px;
   color: #777;
+  line-height: 1.4;
+}
+
+/* 레시피 정보 메시지 */
+.recipe-info-message {
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.recipe-message-text {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: #666;
   line-height: 1.4;
 }
 

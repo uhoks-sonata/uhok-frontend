@@ -44,6 +44,8 @@ const RecipeResult = () => {
   // 조합별로 결과를 캐싱하여 중복 요청 방지
   const combinationCache = useMemo(() => new Map(), []);
 
+
+
   // 레시피별 재료 정보 가져오기 (키워드 검색에서만) - 배치 처리로 개선
   const fetchRecipeIngredients = useCallback(async (recipeIds) => {
     if (searchType !== 'keyword' || isFetchingIngredients) {
@@ -111,21 +113,21 @@ const RecipeResult = () => {
     }
   }, [searchType, isFetchingIngredients, recipeIngredientsCache]);
 
-  // 백엔드 응답의 이미지 키 다양성 대응 및 로컬 폴백 사용
-  // const localImgs = useMemo(() => [img1, img2, img3], []);
-  const getRecipeImageSrc = (recipe, idx) => {
-    const candidates = [
-      recipe?.thumbnail_url,
-      recipe?.thumbnailUrl,
-      recipe?.image_url,
-      recipe?.img_url,
-      recipe?.main_image_url,
-      recipe?.image,
-      recipe?.thumbnail,
-    ].filter((v) => typeof v === 'string' && v.length > 0);
-    if (candidates.length > 0) return candidates[0];
-    return fallbackImg;
-  };
+        // 백엔드 응답의 이미지 키 다양성 대응 및 로컬 폴백 사용
+      // const localImgs = useMemo(() => [img1, img2, img3], []);
+      const getRecipeImageSrc = (recipe, idx) => {
+        const candidates = [
+          recipe?.thumbnail_url,
+          recipe?.thumbnailUrl,
+          recipe?.image_url,
+          recipe?.img_url,
+          recipe?.main_image_url,
+          recipe?.image,
+          recipe?.thumbnail,
+        ].filter((v) => typeof v === 'string' && v.length > 0);
+        if (candidates.length > 0) return candidates[0];
+        return fallbackImg;
+      };
 
   // 재료 표기를 문자열로 정규화 (객체/문자열 둘 다 처리)
   const displayIngredients = useMemo(() => {
@@ -162,6 +164,8 @@ const RecipeResult = () => {
       const initialRecipes = location.state.recipes || [];
       const initialIngredients = location.state.ingredients || [];
       const initialPage = location.state.page || 1;
+      
+
       
       // 에러 상태 확인
       if (location.state.error) {
@@ -441,12 +445,6 @@ const RecipeResult = () => {
 
              {/* 선택된 재료 태그들 */}
        <div className="selected-ingredients-section">
-                   {/* 검색 타입에 따른 제목 표시 */}
-          {searchType === 'keyword' && (
-            <div className="search-keyword-title">
-              검색어: {displayIngredients.map(ing => typeof ing === 'string' ? ing : ing.name).join(', ')}
-            </div>
-          )}
           {/* 소진희망재료 검색에서만 재료 태그들 표시 */}
           {searchType === 'ingredient' && (
             <div className="ingredients-tags-container">
