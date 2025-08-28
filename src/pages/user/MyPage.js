@@ -29,6 +29,16 @@ import noItemsIcon from '../../assets/no_items.png';
 import testImage1 from '../../assets/test/test1.png';
 import testImage2 from '../../assets/test/test2.png';
 
+// 로그인하지 않은 상태일 때만 mypage-logged-out.css를 동적으로 import
+const loadLoggedOutStyles = () => {
+  if (!document.querySelector('link[href*="mypage-logged-out.css"]')) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = '/src/styles/mypage-logged-out.css';
+    document.head.appendChild(link);
+  }
+};
+
 // 마이페이지 메인 컴포넌트를 정의합니다
 const MyPage = () => {
   // 페이지 이동을 위한 navigate 훅
@@ -147,6 +157,13 @@ const MyPage = () => {
     // 로그인하지 않은 경우에도 페이지에 머무름 (이전 화면으로 돌아가지 않음)
   }, []); // 빈 의존성 배열로 변경하여 한 번만 실행
 
+  // 로그인 상태에 따라 CSS 파일 동적 로드
+  useEffect(() => {
+    if (!isLoggedIn) {
+      loadLoggedOutStyles();
+    }
+  }, [isLoggedIn]);
+
   // 백엔드 API에서 마이페이지 데이터를 가져오는 useEffect를 정의합니다
   useEffect(() => {
     // UserContext 초기화가 완료될 때까지 기다림
@@ -154,9 +171,30 @@ const MyPage = () => {
       return;
     }
     
-    // 로그인되지 않은 경우 API 호출하지 않음
+    console.log('MyPage - 현재 상태:', { 
+      isLoggedIn, 
+      userContextLoading, 
+      userData: userData.username,
+      user: user 
+    });
+    
+    // 로그인되지 않은 경우 로그인하지 않은 상태 UI 표시
     if (!isLoggedIn) {
+      console.log('MyPage - 로그인하지 않은 상태, 로그인하지 않은 UI 표시');
       setLoading(false);
+      // 로그인하지 않은 상태에서도 기본 데이터 설정
+      setUserData({
+        user_id: null,
+        username: '',
+        email: '',
+        created_at: '',
+        orderCount: 0,
+        recentOrders: []
+      });
+      setRecipeData({
+        purchasedRecipe: null,
+        similarRecipes: []
+      });
       return;
     }
     
@@ -205,16 +243,12 @@ const MyPage = () => {
           userData = userResponse;
         } catch (err) {
           console.error('❌ MyPage - 사용자 정보 조회 실패:', err);
-          // 401 에러인 경우에도 자동 로그아웃하지 않음
+          // 401 에러인 경우 로그아웃 처리
           if (err.response?.status === 401) {
-            console.warn('사용자 정보 조회 401 에러 발생했지만 자동 로그아웃하지 않습니다.');
-            // 임시 데이터 사용
-            userData = {
-              user_id: 101,
-              username: '테스트 사용자',
-              email: 'test@example.com',
-              created_at: '2025-01-01T00:00:00.000Z'
-            };
+            console.warn('사용자 정보 조회 401 에러 발생, 로그아웃 처리합니다.');
+            logout();
+            navigate('/login');
+            return; // 함수 종료
           } else {
             // 다른 에러인 경우 임시 데이터 사용
             userData = {
@@ -252,8 +286,10 @@ const MyPage = () => {
           }
         } catch (err) {
           if (err.response?.status === 401) {
-            console.warn('최근 주문 조회 401 에러 발생했지만 자동 로그아웃하지 않습니다.');
-            ordersData = { orders: [] };
+            console.warn('최근 주문 조회 401 에러 발생, 로그아웃 처리합니다.');
+            logout();
+            navigate('/login');
+            return; // 함수 종료
           } else {
             ordersData = { orders: [] };
           }
@@ -265,8 +301,10 @@ const MyPage = () => {
           orderCount = orderCountResponse.order_count || 0;
         } catch (err) {
           if (err.response?.status === 401) {
-            console.warn('주문 개수 조회 401 에러 발생했지만 자동 로그아웃하지 않습니다.');
-            orderCount = 0;
+            console.warn('주문 개수 조회 401 에러 발생, 로그아웃 처리합니다.');
+            logout();
+            navigate('/login');
+            return; // 함수 종료
           } else if (err.response?.status === 404) {
             // 404 에러 - 주문 개수 API 엔드포인트가 존재하지 않습니다.
             orderCount = 0;
@@ -323,6 +361,7 @@ const MyPage = () => {
     try {
       // 로그인 상태 확인
       if (!isLoggedIn) {
+        // 로그인하지 않은 경우 로그인 페이지로 이동
         navigate('/login');
         return;
       }
@@ -331,6 +370,7 @@ const MyPage = () => {
       navigate('/orderlist');
     } catch (error) {
       // 에러 처리
+      console.error('주문 내역 페이지 이동 중 오류:', error);
     }
   };
 
@@ -405,10 +445,10 @@ const MyPage = () => {
     }
   };
 
-  // 로딩 중일 때 표시할 UI를 렌더링합니다
-  if (loading) {
-    return (
-      <div className="mypage-page">
+     // 로딩 중일 때 표시할 UI를 렌더링합니다
+   if (loading) {
+     return (
+       <div className={`mypage-page ${isLoggedIn && userData.username && userData.username.trim() !== '' ? 'logged-in' : 'logged-out'}`}>
         {/* 마이페이지 헤더 네비게이션 */}
         <HeaderNavMypage 
           onBackClick={() => window.history.back()}
@@ -425,9 +465,9 @@ const MyPage = () => {
     );
   }
 
-  // 정상적인 마이페이지를 렌더링합니다
-  return (
-    <div className="mypage-page">
+     // 정상적인 마이페이지를 렌더링합니다
+   return (
+     <div className={`mypage-page ${isLoggedIn && userData.username && userData.username.trim() !== '' ? 'logged-in' : 'logged-out'}`}>
               {/* 마이페이지 헤더 네비게이션 */}
         <HeaderNavMypage 
           onBackClick={() => window.history.back()}
@@ -445,89 +485,90 @@ const MyPage = () => {
               <img src={userIcon} alt="프로필" />
             </div>
             
-            {/* 유저 정보 */}
-            <div className="user-details">
-              {isLoggedIn ? (
-                <>
-                  {/* 유저 이름을 표시합니다 (API에서 받아옴) */}
-                  <div className="user-name">{userData.username} 님</div>
-                  {/* 유저 이메일을 표시합니다 (API에서 받아옴) */}
-                  <div className="user-email">{userData.email}</div>
-                </>
-              ) : (
-                <>
-                  {/* 로그인하지 않은 경우 기본 메시지 */}
-                  <div className="user-name">로그인이 필요합니다</div>
-                  <div className="user-email">로그인하여 개인화된 서비스를 이용하세요</div>
-                </>
-              )}
-            </div>
+                         {/* 유저 정보 */}
+             <div className="user-details">
+               {isLoggedIn && userData.username && userData.username.trim() !== '' ? (
+                 <>
+                   {/* 유저 이름을 표시합니다 (API에서 받아옴) */}
+                   <div className="user-name">{userData.username} 님</div>
+                   {/* 유저 이메일을 표시합니다 (API에서 받아옴) */}
+                   <div className="user-email">{userData.email}</div>
+                 </>
+               ) : (
+                 <>
+                   {/* 로그인하지 않은 경우 기본 메시지 */}
+                   <div className="user-name">로그인이 필요합니다</div>
+                   <div className="user-email">로그인하여 개인화된 서비스를 이용하세요</div>
+                 </>
+               )}
+             </div>
             
-            {/* 로그인/로그아웃 버튼 */}
-            <div className="logout-container">
-              {isLoggedIn ? (
-                <button className="logout-button" onClick={handleLogout}>
-                  로그아웃
-                </button>
-              ) : (
-                <button className="login-button" onClick={handleLogin}>
-                  로그인
-                </button>
-              )}
-            </div>
+                         {/* 로그인/로그아웃 버튼 */}
+             <div className="logout-container">
+               {isLoggedIn && userData.username && userData.username.trim() !== '' ? (
+                 <button className="logout-button" onClick={handleLogout}>
+                   로그아웃
+                 </button>
+               ) : (
+                 <button className="login-button" onClick={handleLogin}>
+                   로그인
+                 </button>
+               )}
+             </div>
           </div>
           
-          {/* 주문 내역 링크 */}
-          <div className="order-history-link" onClick={handleOrderHistoryClick}>
-            <span className="order-history-text">주문 내역</span>
-            <span className="order-count">
-              {isLoggedIn ? `${userData.orderCount} >` : '로그인 필요 >'}
-            </span>
-          </div>
+                     {/* 주문 내역 링크 */}
+           <div className="order-history-link" onClick={handleOrderHistoryClick}>
+             <span className="order-history-text">주문 내역</span>
+             <span className="order-count">
+               {isLoggedIn && userData.username && userData.username.trim() !== '' ? `${userData.orderCount} >` : '로그인 필요 >'}
+             </span>
+           </div>
         </div>
 
-        {/* 최근 주문 섹션 */}
-        <div className="recent-orders-section">
-          {/* 섹션 제목 */}
-          <h3 className="section-title">최근 7일 동안 주문한 상품</h3>
-          
-          {/* 주문이 있을 때와 없을 때를 구분하여 렌더링합니다 */}
-          {userData.recentOrders && userData.recentOrders.length > 0 ? (
-            // 주문번호별로 그룹화하여 렌더링합니다
-            (() => {
-              // 주문번호별로 상품들을 그룹화합니다
-              const groupedOrders = userData.recentOrders.reduce((groups, order) => {
-                if (!groups[order.order_id]) {
-                  groups[order.order_id] = [];
-                }
-                groups[order.order_id].push(order);
-                return groups;
-              }, {});
-              
-              // 그룹화된 주문들을 렌더링합니다
-              return Object.entries(groupedOrders).map(([orderId, orders]) => {
-                const firstOrder = orders[0]; // 첫 번째 상품의 정보를 사용
+                 {/* 최근 주문 섹션 - 로그인한 상태에서만 표시 */}
+         {isLoggedIn && userData.username && userData.username.trim() !== '' && (
+          <div className="recent-orders-section">
+            {/* 섹션 제목 */}
+            <h3 className="section-title">최근 7일 동안 주문한 상품</h3>
+            
+            {/* 주문이 있을 때와 없을 때를 구분하여 렌더링합니다 */}
+            {userData.recentOrders && userData.recentOrders.length > 0 ? (
+              // 주문번호별로 그룹화하여 렌더링합니다
+              (() => {
+                // 주문번호별로 상품들을 그룹화합니다
+                const groupedOrders = userData.recentOrders.reduce((groups, order) => {
+                  if (!groups[order.order_id]) {
+                    groups[order.order_id] = [];
+                  }
+                  groups[order.order_id].push(order);
+                  return groups;
+                }, {});
                 
-                              return (
-                <div key={orderId} className="mypage-order-item">
-                                     {/* 주문 정보 헤더 */}
-                   <div className="mypage-order-header">
-                     {/* 주문 날짜와 주문번호를 한 줄로 표시합니다 */}
-                     <div className="order-info-container">
-                       <span className="mypage-order-date">{firstOrder.order_date}</span>
-                       <span className="mypage-order-number">주문번호 {orderId}</span>
-                     </div>
-                   </div>
-                    
-                    {/* 배송 상태 카드 */}
-                    <div className="delivery-status-card">
-                      {/* 배송 상태를 표시합니다 (API에서 받아옴) */}
-                      <div className="delivery-status">
-                        <span className="delivery-status-text">배송완료</span>
-                        <span className="delivery-date">{firstOrder.order_date} 도착</span>
+                // 그룹화된 주문들을 렌더링합니다
+                return Object.entries(groupedOrders).map(([orderId, orders]) => {
+                  const firstOrder = orders[0]; // 첫 번째 상품의 정보를 사용
+                  
+                  return (
+                    <div key={orderId} className="mypage-order-item">
+                      {/* 주문 정보 헤더 */}
+                      <div className="mypage-order-header">
+                        {/* 주문 날짜와 주문번호를 한 줄로 표시합니다 */}
+                        <div className="order-info-container">
+                          <span className="mypage-order-date">{firstOrder.order_date}</span>
+                          <span className="mypage-order-number">주문번호 {orderId}</span>
+                        </div>
                       </div>
                       
-                                                                     {/* 상품 정보들 - 실제 데이터 구조에 맞게 표시 */}
+                      {/* 배송 상태 카드 */}
+                      <div className="delivery-status-card">
+                        {/* 배송 상태를 표시합니다 (API에서 받아옴) */}
+                        <div className="delivery-status">
+                          <span className="delivery-status-text">배송완료</span>
+                          <span className="delivery-date">{firstOrder.order_date} 도착</span>
+                        </div>
+                        
+                        {/* 상품 정보들 - 실제 데이터 구조에 맞게 표시 */}
                         {orders.map((order, index) => (
                           <div key={`${orderId}-${index}`} className="mypage-product-info">
                             {/* 상품 이미지를 표시합니다 */}
@@ -537,13 +578,13 @@ const MyPage = () => {
                             
                             {/* 상품 상세 정보 */}
                             <div className="mypage-product-details">
-                                                             {/* 상품명을 표시합니다 */}
-                               <div className="mypage-product-name" title={order.product_name}>
-                                 {order.product_name && order.product_name.length > 50 
-                                   ? `${order.product_name.substring(0, 50)}...`
-                                   : order.product_name || '상품명 없음'
-                                 }
-                               </div>
+                              {/* 상품명을 표시합니다 */}
+                              <div className="mypage-product-name" title={order.product_name}>
+                                {order.product_name && order.product_name.length > 50 
+                                  ? `${order.product_name.substring(0, 50)}...`
+                                  : order.product_name || '상품명 없음'
+                                }
+                              </div>
                               {/* 가격과 수량을 표시합니다 */}
                               <div className="mypage-product-price">
                                 {formatPrice(order.price || 0)} · {order.quantity || 1}개
@@ -558,31 +599,32 @@ const MyPage = () => {
                             </div>
                           </div>
                         ))}
-                      
-                      {/* 레시피 관련 버튼들 */}
-                      <div className="recipe-buttons">
-                        {/* 레시피 추천 버튼 */}
-                        <div className="recipe-recommend-btn" onClick={handleRecipeRecommendationClick}>
-                          구매 재료들로 만들 수 있는 다른 레시피 추천받기
+                        
+                        {/* 레시피 관련 버튼들 */}
+                        <div className="recipe-buttons">
+                          {/* 레시피 추천 버튼 */}
+                          <div className="recipe-recommend-btn" onClick={handleRecipeRecommendationClick}>
+                            구매 재료들로 만들 수 있는 다른 레시피 추천받기
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                );
-              });
-            })()
-          ) : (
-            // 주문이 없을 때의 UI - no_items 이미지 사용
-            <div className="no-orders-state">
-              {/* 주문 없음 일러스트레이션 */}
-              <div className="no-orders-illustration">
-                <img src={noItemsIcon} alt="상품 없음" className="no-items-image" />
+                  );
+                });
+              })()
+            ) : (
+              // 주문이 없을 때의 UI - no_items 이미지 사용
+              <div className="no-orders-state">
+                {/* 주문 없음 일러스트레이션 */}
+                <div className="no-orders-illustration">
+                  <img src={noItemsIcon} alt="상품 없음" className="no-items-image" />
+                </div>
+                {/* 주문 없음 메시지 */}
+                <div className="no-orders-message">최근 주문한 상품이 없어요</div>
               </div>
-              {/* 주문 없음 메시지 */}
-              <div className="no-orders-message">최근 주문한 상품이 없어요</div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
         {/* 구매한 레시피 섹션 - 주문이 있을 때만 표시 */}
         {recipeData.purchasedRecipe && (

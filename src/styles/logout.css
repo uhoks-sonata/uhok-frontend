@@ -105,3 +105,22 @@
   color: #333333;
   background-color: #e0e0e0;
 }
+
+/* 반응형 디자인 */
+@media (max-width: 480px) {
+  .logout-button,
+  .login-button {
+    min-width: 60px;
+    height: 28px;
+    font-size: 11px;
+    padding: 6px 12px;
+  }
+  
+  .mypage-page.logged-out .login-button {
+    transform: scale(1.01);
+  }
+  
+  .mypage-page.logged-out .login-button:hover {
+    transform: scale(1.03);
+  }
+}

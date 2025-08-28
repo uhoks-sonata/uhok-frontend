@@ -173,7 +173,7 @@ export const UserProvider = ({ children }) => {
     login,
     logout,
     updateToken,
-    isLoggedIn: !!user && !!user.isLoggedIn
+    isLoggedIn: !!user && !!user.isLoggedIn && !!user.token
   };
 
   return (
