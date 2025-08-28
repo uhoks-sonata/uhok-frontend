@@ -349,15 +349,31 @@
 }
 
 .recipe-recommend-btn {
-  background-color: transparent;
-  color: #ff6b9d;
-  padding: 12px 16px;
+  background: linear-gradient(135deg, #ff6b9d 0%, #ff8fab 100%);
+  color: #ffffff;
+  padding: 12px 20px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   text-align: center;
   cursor: pointer;
-  transition: color 0.2s ease;
+  transition: all 0.3s ease;
   border: none;
+  border-radius: 25px;
+  box-shadow: 0 4px 15px rgba(255, 107, 157, 0.3);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* 돋보기 아이콘 제거 */
+
+.recipe-recommend-btn::after {
+  content: "→";
+  font-size: 14px;
+  transition: transform 0.3s ease;
 }
 
 .recipe-purchase-btn:hover {
@@ -365,7 +381,18 @@
 }
 
 .recipe-recommend-btn:hover {
-  color: #ff5aa0;
+  background: linear-gradient(135deg, #ff5aa0 0%, #ff7a9f 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 107, 157, 0.4);
+}
+
+.recipe-recommend-btn:hover::after {
+  transform: translateX(3px);
+}
+
+.recipe-recommend-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(255, 107, 157, 0.3);
 }
 
 /* 법적 고지사항 */
@@ -437,8 +464,15 @@
   }
   
   .recipe-recommend-btn {
-    padding: 10px 14px;
+    padding: 10px 16px;
     font-size: 13px;
+    border-radius: 20px;
+  }
+  
+  /* 돋보기 아이콘 제거 */
+  
+  .recipe-recommend-btn::after {
+    font-size: 12px;
   }
   
   .legal-disclaimer {

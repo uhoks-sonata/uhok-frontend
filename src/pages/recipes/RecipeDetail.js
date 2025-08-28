@@ -255,8 +255,8 @@ const RecipeDetail = () => {
               let status = 'not-owned';
               let statusText = '미보유';
               
-              if (ingredientsStatus) {
-                const { owned, cart, not_owned } = ingredientsStatus.ingredients_status;
+              if (ingredientsStatus && ingredientsStatus.ingredients_status) {
+                const { owned = [], cart = [], not_owned = [] } = ingredientsStatus.ingredients_status;
                 
                 if (owned.some(item => item.material_name === material.material_name)) {
                   status = 'owned';

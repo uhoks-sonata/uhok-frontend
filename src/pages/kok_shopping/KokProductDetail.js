@@ -506,11 +506,15 @@ API 연결 테스트 결과:
            discountPrice: (kokProduct?.discountPrice || 0) * selectedQuantity,
            originalPrice: (kokProduct?.originalPrice || 0) * selectedQuantity,
            productName: kokProduct?.name || `제품 ${productId}`,
-           productImage: kokProduct?.image || 'https://via.placeholder.com/150x150/CCCCCC/666666?text=Temp',
-           orderId: orderResponse.order_id || `ORDER-${Date.now()}`,
+           productImage: kokProduct?.image || kokProductImages[0]?.kok_img_url || 'https://via.placeholder.com/150x150/CCCCCC/666666?text=Temp',
+           orderId: String(orderResponse.order_id || `ORDER-${Date.now()}`),
            orderDetails: orderResponse.order_details || [],
            kokOrderIds: orderResponse.order_details?.map(detail => detail.kok_order_id) || []
          };
+         
+         console.log('🚀 주문하기 - kokProduct.image:', kokProduct?.image);
+         console.log('🚀 주문하기 - kokProductImages[0]:', kokProductImages[0]);
+         console.log('🚀 주문하기 - 최종 productImage:', navigationState.productImage);
 
          console.log('🚀 주문하기 - 결제 페이지로 이동:', navigationState);
          
@@ -1197,7 +1201,7 @@ API 연결 테스트 결과:
            originalPrice: kokProduct?.originalPrice,
            discountRate: kokProduct?.discountRate,
            productName: kokProduct?.name,
-           productImage: kokProduct?.image
+           productImage: kokProduct?.image || kokProductImages[0]?.kok_img_url
          }}
        />
     </div>

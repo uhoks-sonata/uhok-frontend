@@ -3,7 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import BottomNav from '../../layout/BottomNav';
 import HeaderNavRecipeRecommendation from '../../layout/HeaderNavRecipeRecommendation';
 import Loading from '../../components/Loading';
+import LoadingModal from '../../components/LoadingModal';
+import IngredientTag from '../../components/IngredientTag';
 import '../../styles/recipe_recommendation.css';
+import '../../styles/ingredient-tag.css';
 import outOfStockIcon from '../../assets/out_of_stock_icon.png';
 import chefIcon from '../../assets/chef_icon.png';
 import searchIcon from '../../assets/search_icon.png';
@@ -196,7 +199,7 @@ const RecipeRecommendation = () => {
             recipes: normalizedRecipes,
             total,
             page,
-            ingredients: [],
+            ingredients: [{ name: recipeInput, amount: '', unit: '' }], // 검색어를 재료 형태로 전달
             searchType: 'keyword' // 검색 타입 추가
           },
         });
@@ -231,6 +234,11 @@ const RecipeRecommendation = () => {
 
   return (
     <div className="recipe-recommendation-page">
+      {/* 로딩 모달 */}
+      {isLoading && (
+        <LoadingModal message="레시피를 찾고 있어요..." />
+      )}
+      
       <HeaderNavRecipeRecommendation 
         onBackClick={handleBack}
       />
@@ -267,38 +275,23 @@ const RecipeRecommendation = () => {
               선택된 재료(최소 3개 필요)
             </div>
             
-            {/* 선택된 재료 태그들 */}
-            <div className="selected-ingredients-tags">
-              {selectedIngredients.map((ingredient, index) => (
-                <div 
-                  key={index} 
-                  className="ingredient-tag"
-                  id={`ingredient-tag-${index}`}
-                >
-                  <span className="ingredient-name">
-                    {ingredient.name}
-                    {ingredient.amount && ` ${ingredient.amount}${ingredient.unit}`}
-                  </span>
-                  <button 
-                    className="remove-ingredient-btn"
-                    onClick={() => handleRemoveIngredient(index)}
-                    onMouseEnter={() => {
-                      // X 버튼에 마우스를 올렸을 때 태그 전체에 효과 적용
-                      document.getElementById(`ingredient-tag-${index}`).classList.add('x-button-hover');
-                    }}
-                    onMouseLeave={() => {
-                      // X 버튼에서 마우스가 벗어났을 때 효과 제거
-                      document.getElementById(`ingredient-tag-${index}`).classList.remove('x-button-hover');
-                    }}
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
+            {/* 재료가 있을 때만 표시되는 태그들 */}
+            {selectedIngredients.length > 0 && (
+              <div className="ingredients-tags-container">
+                {selectedIngredients.map((ingredient, index) => (
+                  <IngredientTag
+                    key={index}
+                    ingredient={ingredient}
+                    index={index}
+                    onRemove={handleRemoveIngredient}
+                    showRemoveButton={true}
+                  />
+                ))}
+              </div>
+            )}
 
             {/* 재료명 입력 필드 */}
-            <div className="input-field-container">
+            <div className={`input-field-container ${selectedIngredients.length === 0 ? 'no-ingredients' : ''}`}>
               <div className="input-field">
                 <img src={searchIcon} alt="검색" className="search-icon" />
                 <input
@@ -382,6 +375,8 @@ const RecipeRecommendation = () => {
                 />
               </div>
             </div>
+            
+
           </div>
         )}
         
@@ -389,13 +384,9 @@ const RecipeRecommendation = () => {
         {/* 레시피 추천 받기 버튼 */}
         {(isIngredientActive || isRecipeActive) && (
           <div className="recipe-recommendation-section">
-            {isLoading ? (
-              <Loading message="레시피를 찾고 있어요..." />
-            ) : (
-              <button className="get-recommendation-btn" onClick={handleGetRecipeRecommendation}>
-                레시피 추천 받기
-              </button>
-            )}
+            <button className="get-recommendation-btn" onClick={handleGetRecipeRecommendation}>
+              레시피 추천 받기
+            </button>
           </div>
         )}
       </main>

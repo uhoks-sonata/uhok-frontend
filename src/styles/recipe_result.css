@@ -50,52 +50,48 @@
 
 /* 선택된 재료 태그들 */
 .selected-ingredients-section {
-  padding: 16px 20px;
+  padding: 0px 16px 0px 16px;
   background-color: #ffffff;
   border-bottom: 1px solid #f0f0f0;
 }
 
+/* 검색어 제목 스타일 (레시피명/식재료명 검색용) */
+.search-keyword-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  padding: 12px 16px 8px 16px;
+  text-align: left;
+  background-color: #ffffff;
+  border-radius: 8px 8px 0 0;
+  margin: 0;
+  border-left: 4px solid #ffffff;
+}
+
+/* 소진희망재료 검색용 제목 스타일 */
+.ingredient-search-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  padding: 12px 0 8px 0;
+  text-align: center;
+  background-color: #fff3e0;
+  border-radius: 8px 8px 0 0;
+  margin: 0;
+  border-left: 4px solid #ff9800;
+}
+
 .ingredients-tags {
   display: flex;
-  gap: 8px;
   flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 12px;
 }
 
-.ingredient-tag {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #ffffff; /* 흰색 배경 */
-  border: none; /* 테두리 삭제 */
-  border-radius: 12px;
-  padding: 6px 10px;
-  min-height: 28px;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08); /* 살짝 그림자 효과 */
-}
-
-/* 태그 전체에 대한 호버 효과 제거 - X 버튼에만 효과 적용 */
-/* .ingredient-tag:hover {
-  background-color: #e8e8e8;
-  border-color: #d0d0d0;
-  transform: scale(1.02);
-} */
-
-/* X 버튼에 마우스를 올렸을 때 태그 전체에 효과 적용 */
-.ingredient-tag.x-button-hover {
-  background-color: #f8f8f8; /* 호버 시 살짝 회색 */
-  transform: scale(1.02);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12); /* 호버 시 그림자 강화 */
-}
-
-.ingredient-name {
-  font-size: 13px;
-  color: #666;
-  font-weight: 500 !important; /* serving 클래스와 동일하게 설정, !important로 우선순위 확보 */
-  text-align: center;
-  line-height: 1;
-  white-space: nowrap;
-}
+/* ingredient-tag 스타일은 이제 독립적인 CSS 파일에서 관리됩니다 */
 
 /* 결과 요약 */
 .result-summary {
@@ -117,8 +113,8 @@
   padding: 16px 20px;
   background-color: #ffffff;
   overflow-y: auto;
-  height: calc(100vh - 320px); /* 헤더 + 선택된 재료 + 결과 요약 + 페이지네이션 + 바텀네비 + 패딩 고려 */
-  max-height: calc(100vh - 245px); /* 최대 높이 제한 */
+  height: calc(100vh - 230px); /* 헤더 + 선택된 재료 + 결과 요약 + 페이지네이션 + 바텀네비 + 패딩 고려 */
+  max-height: calc(100vh - 230px); /* 최대 높이 제한 */
   position: relative; /* 로딩 오버레이를 위한 상대 위치 */
 }
 
@@ -153,7 +149,7 @@
   min-height: 150px; /* 최소 높이 증가: 132px → 150px */
 }
 
-/* 검색 타입별 카드 스타일 제거 - 색깔 없음 */
+
 
 /* 기존 recipe-card 스타일은 유지 */
 .recipe-card {
@@ -306,6 +302,15 @@
   font-weight: 500;
 }
 
+/* 검색 타입별 matched-count 스타일 */
+.ingredient-search-card .matched-count {
+  color: #FA5F8C;
+}
+
+.keyword-search-card .matched-count {
+  color: #FA5F8C;
+}
+
 .separator {
   color: #ccc;
   margin: 0 2px;
@@ -331,6 +336,20 @@
   padding: 2px 6px;
   border-radius: 4px;
   white-space: nowrap;
+}
+
+/* 소진희망재료 검색용 재료 아이템 스타일 */
+.ingredient-search-card .used-ingredient-item {
+  background-color: #ffffff;
+  color: #ff7ba1;
+  border: 1px solid #ff7ea3;
+}
+
+/* 키워드 검색용 재료 아이템 스타일 */
+.keyword-search-card .used-ingredient-item {
+  background-color: #e3f2fd;
+  color: #1565c0;
+  border: 1px solid #2196f3;
 }
 
 .more-ingredients {
@@ -399,6 +418,8 @@
   color: #FA5F8C;
   font-weight: 500;
 }
+
+
 
 /* 더보기 버튼 */
 .load-more-section {

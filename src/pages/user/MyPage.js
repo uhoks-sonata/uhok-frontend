@@ -344,6 +344,17 @@ const MyPage = () => {
     }
   };
 
+  // 레시피 추천 버튼 클릭 시 실행되는 핸들러 함수를 정의합니다
+  const handleRecipeRecommendationClick = () => {
+    try {
+      // 레시피 추천 페이지로 이동합니다
+      navigate('/recipes/recommendation');
+    } catch (error) {
+      // 에러 처리
+      console.error('레시피 추천 페이지 이동 중 오류:', error);
+    }
+  };
+
   // 알림 클릭 시 실행되는 핸들러 함수를 정의합니다
   const handleNotificationClick = () => {
     navigate('/notifications');
@@ -549,12 +560,8 @@ const MyPage = () => {
                       
                       {/* 레시피 관련 버튼들 */}
                       <div className="recipe-buttons">
-                        {/* 레시피 구매 버튼 */}
-                        <div className="recipe-purchase-btn">
-                          이 레시피를 보고 상품을 구매하셨어요!
-                        </div>
                         {/* 레시피 추천 버튼 */}
-                        <div className="recipe-recommend-btn">
+                        <div className="recipe-recommend-btn" onClick={handleRecipeRecommendationClick}>
                           구매 재료들로 만들 수 있는 다른 레시피 추천받기
                         </div>
                       </div>
