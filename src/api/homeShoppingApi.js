@@ -114,10 +114,10 @@ export const homeShoppingApi = {
   // ===== 상품 관련 =====
   
   // 홈쇼핑 상품 상세 조회
-  getProductDetail: async (productId) => {
+  getProductDetail: async (liveId) => {
     try {
-      console.log('🛍️ 홈쇼핑 상품 상세 API 요청:', { productId });
-      const response = await api.get(`/api/homeshopping/product/${productId}`);
+      console.log('🛍️ 홈쇼핑 상품 상세 API 요청:', { liveId });
+      const response = await api.get(`/api/homeshopping/product/${liveId}`);
       console.log('✅ 홈쇼핑 상품 상세 API 응답:', response.data);
       return response.data;
     } catch (error) {

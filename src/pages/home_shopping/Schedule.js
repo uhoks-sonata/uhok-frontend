@@ -265,8 +265,8 @@ const Schedule = () => {
         const [itemEndHour] = item.live_end_time.split(':').map(Number);
         
         // 선택된 시간이 방송 시간 범위에 포함되는지 확인
-        // 시작 시간 <= 선택된 시간 < 종료 시간
-        return selectedHour >= itemStartHour && selectedHour < itemEndHour;
+        // 시작 시간 <= 선택된 시간 <= 종료 시간 (종료 시간도 포함)
+        return selectedHour >= itemStartHour && selectedHour <= itemEndHour;
       });
     }
     
