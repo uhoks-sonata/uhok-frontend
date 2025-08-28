@@ -7,6 +7,7 @@ import BottomNav from '../../layout/BottomNav';
 import Loading from '../../components/Loading';
 import UpBtn from '../../components/UpBtn';
 import HomeshoppingKokRecommendation from '../../components/HomeshoppingKokRecommendation';
+import ModalManager, { showWishlistNotification, showWishlistUnlikedNotification, hideModal } from '../../components/LoadingModal';
 import emptyHeartIcon from '../../assets/heart_empty.png';
 import filledHeartIcon from '../../assets/heart_filled.png';
 import api from '../../pages/api';
@@ -36,6 +37,9 @@ const HomeShoppingProductDetail = () => {
 
   const [wishlistedProducts, setWishlistedProducts] = useState(new Set()); // 찜된 상품 ID들을 저장
   const [activeTab, setActiveTab] = useState('detail'); // 탭 상태 관리
+  
+  // 모달 상태 관리
+  const [modalState, setModalState] = useState({ isVisible: false, modalType: 'loading' });
   
   // 상품 상세 정보 가져오기
   useEffect(() => {
@@ -285,6 +289,15 @@ const HomeShoppingProductDetail = () => {
           }, 150);
         }
         
+        // 찜 상태에 따른 알림 모달 표시
+        if (isLiked) {
+          // 찜 추가 시 알림
+          setModalState(showWishlistNotification());
+        } else {
+          // 찜 해제 시 알림
+          setModalState(showWishlistUnlikedNotification());
+        }
+        
         // 위시리스트 데이터는 즉시 동기화하지 않음
         // 페이지 벗어나거나 새로고침할 때 동기화됨
       }
@@ -314,6 +327,11 @@ const HomeShoppingProductDetail = () => {
   // 콕 상품으로 이동
   const handleKokProductClick = (kokProductId) => {
     navigate(`/kok/product/${kokProductId}`);
+  };
+
+  // 모달 닫기 함수
+  const closeModal = () => {
+    setModalState(hideModal());
   };
   
   // 방송 상태 확인
@@ -777,6 +795,12 @@ const HomeShoppingProductDetail = () => {
        <div style={{ position: 'relative' }}>
          <UpBtn />
        </div>
+       
+       {/* 모달 관리자 */}
+       <ModalManager
+         {...modalState}
+         onClose={closeModal}
+       />
     </div>
   );
 };

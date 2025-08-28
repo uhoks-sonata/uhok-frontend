@@ -105,6 +105,28 @@ export const showConfirm = (message, confirmText = "확인", cancelText = "취�
   return { modalType: 'confirm', confirmMessage: message, confirmText, cancelText, isVisible: true };
 };
 
+// 찜 알림 모달 표시 함수
+export const showWishlistNotification = () => {
+  return { 
+    modalType: 'alert', 
+    alertMessage: '방송이 시작하면 알림을 보내드려요.', 
+    alertButtonText: '확인',
+    alertButtonStyle: 'primary',
+    isVisible: true 
+  };
+};
+
+// 찜 해제 알림 모달 표시 함수
+export const showWishlistUnlikedNotification = () => {
+  return { 
+    modalType: 'alert', 
+    alertMessage: '알림이 해제되었어요.', 
+    alertButtonText: '확인',
+    alertButtonStyle: 'secondary',
+    isVisible: true 
+  };
+};
+
 export const hideModal = () => {
   return { isVisible: false };
 };

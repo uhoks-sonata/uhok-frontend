@@ -7,6 +7,7 @@ import { homeShoppingApi } from '../../api/homeShoppingApi';
 import api from '../../pages/api';
 import Loading from '../../components/Loading';
 import UpBtn from '../../components/UpBtn';
+import ModalManager, { showWishlistNotification, showWishlistUnlikedNotification, hideModal } from '../../components/LoadingModal';
 import emptyHeartIcon from '../../assets/heart_empty.png';
 import filledHeartIcon from '../../assets/heart_filled.png';
 
@@ -41,6 +42,9 @@ const Schedule = () => {
   // 상품 상세 정보 로딩 상태
   const [isProductDetailLoading, setIsProductDetailLoading] = useState(false);
   const [loadingProductId, setLoadingProductId] = useState(null);
+  
+  // 모달 상태 관리
+  const [modalState, setModalState] = useState({ isVisible: false, modalType: 'loading' });
   
 
   
@@ -757,6 +761,15 @@ const Schedule = () => {
           }, 150);
         }
         
+        // 찜 상태에 따른 알림 모달 표시
+        if (isLiked) {
+          // 찜 추가 시 알림
+          setModalState(showWishlistNotification());
+        } else {
+          // 찜 해제 시 알림
+          setModalState(showWishlistUnlikedNotification());
+        }
+        
         // 위시리스트 데이터는 즉시 동기화하지 않음
         // 페이지 벗어나거나 새로고침할 때 동기화됨
       }
@@ -777,6 +790,11 @@ const Schedule = () => {
   // 알림 핸들러
   const handleNotification = () => {
     navigate('/notifications');
+  };
+
+  // 모달 닫기 함수
+  const closeModal = () => {
+    setModalState(hideModal());
   };
 
   // 방송 상태 표시 함수
@@ -1164,6 +1182,12 @@ const Schedule = () => {
       
       <BottomNav />
       <UpBtn />
+      
+      {/* 모달 관리자 */}
+      <ModalManager
+        {...modalState}
+        onClose={closeModal}
+      />
     </div>
   );
 };
