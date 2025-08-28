@@ -273,15 +273,26 @@ const Cart = () => {
   };
 
   // 공통 함수: 결제 페이지로 이동하는 로직
-  const navigateToPayment = (orderType = 'ORDER') => {
+  const navigateToPayment = async (orderType = 'ORDER') => {
     if (selectedItems.size === 0) {
       alert('주문할 상품을 선택해주세요.');
       return;
     }
 
     try {
+      // 장바구니 상태 재확인 (주문 전 최종 검증)
+      console.log('🔍 주문 전 장바구니 상태 재확인 중...');
+      await loadCartItems();
+      
+      // 재확인 후 선택된 상품들이 여전히 유효한지 확인
+      const currentSelectedItems = cartItems.filter(item => selectedItems.has(item.kok_cart_id));
+      if (currentSelectedItems.length === 0) {
+        alert('선택한 상품이 장바구니에서 삭제되었거나 변경되었습니다. 장바구니를 다시 확인해주세요.');
+        return;
+      }
+      
       // 선택된 상품들의 정보 수집
-      const selectedCartItems = cartItems.filter(item => selectedItems.has(item.kok_cart_id));
+      const selectedCartItems = currentSelectedItems;
       
       console.log(`🚀 ${orderType === 'ORDER' ? '주문하기' : '테스트'} - 선택된 상품들:`, selectedCartItems);
       console.log(`🚀 ${orderType === 'ORDER' ? '주문하기' : '테스트'} - selectedItems.size:`, selectedItems.size);
@@ -329,7 +340,7 @@ const Cart = () => {
   };
 
   const handleOrder = async () => {
-    navigateToPayment('ORDER');
+    await navigateToPayment('ORDER');
   };
 
   const handleBuyNow = (cartItemId) => {

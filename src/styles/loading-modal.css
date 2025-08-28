@@ -1,0 +1,81 @@
+/* 로딩 모달 오버레이 */
+.loading-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* 로딩 모달 컨텐츠 */
+.loading-modal-content {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 15px 40px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  animation: slideIn 0.3s ease-out;
+  min-width: 320px;
+  max-width: 400px;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 로딩 모달 내부의 로딩 컨테이너 높이 조정 */
+.loading-modal-content .loading-container {
+  padding: 15px 20px;
+}
+
+.loading-modal-content .cute-loading-animation {
+  gap: 8px;
+}
+
+/* 페이드인 애니메이션 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 슬라이드인 애니메이션 */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+  .loading-modal-content {
+    padding: 12px 32px;
+    min-width: 280px;
+    max-width: 320px;
+    margin: 0 20px;
+  }
+  
+  .loading-modal-content .loading-container {
+    padding: 10px 20px;
+  }
+  
+  .loading-modal-content .cute-loading-animation {
+    gap: 6px;
+  }
+}

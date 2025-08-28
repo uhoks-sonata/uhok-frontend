@@ -32,12 +32,19 @@ export const cartApi = {
       console.error('❌ 장바구니 추가 실패:', error);
       
       // 백엔드 서버가 실행되지 않은 경우 임시 모의 응답
-      if (error.response?.status === 500 || error.code === 'ERR_NETWORK') {
+      if (error.response?.status === 500 || error.code === 'ERR_NETWORK' || error.response?.status === 404) {
         console.log('🔄 백엔드 서버 연결 실패, 임시 모의 응답 반환');
-        return {
-          kok_cart_id: Math.floor(Math.random() * 1000) + 1,
-          message: '임시 모의 응답: 장바구니에 추가되었습니다. (백엔드 서버 미실행)'
-        };
+        
+        // 개발 환경에서만 모의 응답 제공
+        if (process.env.NODE_ENV === 'development') {
+          return {
+            kok_cart_id: Math.floor(Math.random() * 1000) + 1,
+            message: '임시 모의 응답: 장바구니에 추가되었습니다. (백엔드 서버 미실행)'
+          };
+        }
+        
+        // 프로덕션 환경에서는 에러 발생
+        throw new Error('백엔드 서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.');
       }
       
       // API 명세서에 따른 에러 처리 (500 에러는 이미 위에서 처리됨)
@@ -70,24 +77,32 @@ export const cartApi = {
       console.error('❌ 장바구니 조회 실패:', error);
       
       // 백엔드 서버가 실행되지 않은 경우 임시 모의 응답
-      if (error.response?.status === 500 || error.code === 'ERR_NETWORK') {
+      if (error.response?.status === 500 || error.code === 'ERR_NETWORK' || error.response?.status === 404) {
         console.log('🔄 백엔드 서버 연결 실패, 임시 모의 응답 반환');
-        return {
-          cart_items: [
-            {
-              kok_cart_id: 1,
-              kok_product_id: 1,
-              recipe_id: 0,
-              kok_product_name: '임시 상품 (백엔드 서버 미실행)',
-              kok_thumbnail: 'https://via.placeholder.com/150x150/CCCCCC/666666?text=Temp',
-              kok_product_price: 10000,
-              kok_discount_rate: 10,
-              kok_discounted_price: 9000,
-              kok_store_name: '임시 스토어',
-              kok_quantity: 1
-            }
-          ]
-        };
+        
+        // 개발 환경에서만 모의 응답 제공
+        if (process.env.NODE_ENV === 'development') {
+          return {
+            cart_items: [
+              {
+                kok_cart_id: 1,
+                kok_product_id: 1,
+                kok_price_id: 1,
+                recipe_id: 0,
+                kok_product_name: '임시 상품 (백엔드 서버 미실행)',
+                kok_thumbnail: 'https://via.placeholder.com/150x150/CCCCCC/666666?text=Temp',
+                kok_product_price: 10000,
+                kok_discount_rate: 10,
+                kok_discounted_price: 9000,
+                kok_store_name: '임시 스토어',
+                kok_quantity: 1
+              }
+            ]
+          };
+        }
+        
+        // 프로덕션 환경에서는 에러 발생
+        throw new Error('백엔드 서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.');
       }
       
       // 500 에러가 아닌 다른 에러만 throw
@@ -199,11 +214,17 @@ export const cartApi = {
   getRecipeRecommendations: async (selectedCartIds, page = 1, size = 5) => {
     try {
       console.log('🛒 레시피 추천 API 요청:', { selectedCartIds, page, size });
-      const response = await api.post('/api/kok/carts/recipe-recommend', {
-        selected_cart_ids: selectedCartIds,
-        page,
-        size
+      
+      // API 명세서에 따라 GET 요청으로 변경
+      // GET 요청에 Request Body를 포함하기 위해 params로 전달
+      const response = await api.get('/api/kok/carts/recipe-recommend', {
+        params: {
+          selected_cart_ids: selectedCartIds,
+          page,
+          size
+        }
       });
+      
       console.log('✅ 레시피 추천 API 응답:', response.data);
       return response.data;
     } catch (error) {

@@ -168,3 +168,44 @@ export const notifyServerStatus = async () => {
   }
   return isHealthy;
 };
+
+// 백엔드 서버 연결 상태 확인 (KokPayment에서 사용)
+export const checkBackendConnection = async () => {
+  try {
+    // 프록시 설정에 맞춰 올바른 URL 사용
+    const response = await fetch('/api/health', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      timeout: 5000 // 5초 타임아웃
+    });
+    
+    if (response.ok) {
+      return { connected: true, status: response.status };
+    } else {
+      return { connected: false, status: response.status, error: '서버 응답 오류' };
+    }
+  } catch (error) {
+    console.error('백엔드 서버 연결 확인 실패:', error);
+    
+    // 개발 환경에서는 백엔드 서버가 없어도 계속 진행할 수 있도록 허용
+    // 404 오류나 네트워크 오류 모두 허용
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('⚠️ 개발 환경에서 백엔드 서버 연결 실패 - 모의 응답으로 계속 진행');
+      console.warn('백엔드 서버가 실행되지 않았거나 /api/health 엔드포인트가 없습니다.');
+      return { 
+        connected: true, // 개발 환경에서는 연결된 것으로 처리
+        status: 200,
+        isMock: true, // 모의 응답임을 표시
+        error: null
+      };
+    }
+    
+    return { 
+      connected: false, 
+      error: error.message || '서버에 연결할 수 없습니다.',
+      details: error
+    };
+  }
+};

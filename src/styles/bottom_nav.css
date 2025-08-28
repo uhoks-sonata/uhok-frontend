@@ -37,7 +37,7 @@ body {
   justify-content: space-around;
   align-items: center;
   box-shadow: 0 -4px 10px rgba(109, 109, 109, 0.1);
-  z-index: 9999;
+  z-index: 9998;
   overflow: visible; /* 동그란 버튼이 넘치도록 변경 */
   padding-top: 4px; /* 상단에 투명한 공간 추가 */
 }
@@ -147,7 +147,7 @@ body {
   position: relative;
   cursor: pointer;
   transition: all 0.3s ease;
-  z-index: 10000; /* 최상위 레이어로 설정 */
+  z-index: 9999; /* 최상위 레이어로 설정 */
 }
 
 .image-button-wrapper:hover {
