@@ -676,69 +676,7 @@ const HomeShoppingProductDetail = () => {
                   </div>
                 )}
                 
-                {/* 판매자 기본 정보 */}
-                <div className="seller-basic-info">
-                  <h3 className="section-title">판매자 정보</h3>
-                  <div className="seller-info-table">
-                    <div className="seller-info-row">
-                      <span className="seller-info-label">매장명</span>
-                      <span className="seller-info-value">{productDetail.store_name || '홈쇼핑'}</span>
-                    </div>
-                    <div className="seller-info-row">
-                      <span className="seller-info-label">홈쇼핑</span>
-                      <span className="seller-info-value">{productDetail.homeshopping_name || 'N/A'}</span>
-                    </div>
-                    <div className="seller-info-row">
-                      <span className="seller-info-label">채널</span>
-                      <span className="seller-info-value">
-                        {getChannelInfoByHomeshoppingId(productDetail.homeshopping_id)?.channel || 'N/A'}
-                      </span>
-                    </div>
-                    <div className="seller-info-row">
-                      <span className="seller-info-label">방송일</span>
-                      <span className="seller-info-value">{productDetail.live_date || 'N/A'}</span>
-                    </div>
-                    <div className="seller-info-row">
-                      <span className="seller-info-label">방송시간</span>
-                      <span className="seller-info-value">
-                        {productDetail.live_start_time && productDetail.live_end_time 
-                          ? `${productDetail.live_start_time.slice(0, 5)} ~ ${productDetail.live_end_time.slice(0, 5)}`
-                          : 'N/A'
-                        }
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                
-                                 {/* 상품 기본 정보 */}
-                 <div className="product-basic-details">
-                   <h3 className="section-title">상품 기본 정보</h3>
-                   <div className="product-details-table">
-                     <div className="product-detail-row">
-                       <span className="product-detail-label">상품명</span>
-                       <span className="product-detail-value">{productDetail.product_name}</span>
-                     </div>
-                     <div className="product-detail-row">
-                       <span className="product-detail-label">정가</span>
-                       <span className="product-detail-value">{productDetail.sale_price?.toLocaleString()}원</span>
-                     </div>
-                     <div className="product-detail-row">
-                       <span className="product-detail-label">할인율</span>
-                       <span className="product-detail-value">{productDetail.dc_rate || 0}%</span>
-                     </div>
-                     <div className="product-detail-row">
-                       <span className="product-detail-value">{productDetail.dc_price?.toLocaleString()}원</span>
-                     </div>
-                     <div className="product-detail-row">
-                       <span className="product-detail-label">상품 ID</span>
-                       <span className="product-detail-value">{productDetail.product_id}</span>
-                     </div>
-                     <div className="product-detail-row">
-                       <span className="product-detail-label">라이브 ID</span>
-                       <span className="product-detail-value">{live_id}</span>
-                     </div>
-                   </div>
-                 </div>
+
               </div>
             )}
          </div>
