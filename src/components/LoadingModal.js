@@ -1,13 +1,21 @@
 import React from 'react';
-import Loading from './Loading';
 import '../styles/loading-modal.css';
+import '../styles/loading.css';
 
-// 팝업 타입별 컴포넌트
 const LoadingModal = ({ message = "로딩 중..." }) => {
   return (
     <div className="loading-modal-overlay">
       <div className="loading-modal-content">
-        <Loading message={message} />
+        <div className="loading-container">
+          <div className="cute-loading-animation">
+            <div className="loading-dots">
+              <div className="dot"></div>
+              <div className="dot"></div>
+              <div className="dot"></div>
+            </div>
+            <div className="loading-text">{message}</div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -131,4 +139,5 @@ export const hideModal = () => {
   return { isVisible: false };
 };
 
+export { LoadingModal, AlertModal, ConfirmModal };
 export default ModalManager;

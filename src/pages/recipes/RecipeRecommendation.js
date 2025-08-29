@@ -121,6 +121,7 @@ const RecipeRecommendation = () => {
   const handleGetRecipeRecommendation = async () => {
     try {
       setIsLoading(true); // 로딩 시작
+      console.log('로딩 시작:', isLoading); // 디버깅용
       
       if (isIngredientActive) {
         // 최소 3개 재료 검증
@@ -160,15 +161,18 @@ const RecipeRecommendation = () => {
 
         console.log('정규화된 레시피 데이터:', normalizedRecipes);
 
-        navigate('/recipes/result', { 
-          state: { 
-            recipes: normalizedRecipes,
-            total,
-            page,
-            ingredients: selectedIngredients,
-            searchType: 'ingredient' // 검색 타입 추가
-          }
-        });
+        // 로딩 모달이 보이도록 약간의 지연 추가
+        setTimeout(() => {
+          navigate('/recipes/result', { 
+            state: { 
+              recipes: normalizedRecipes,
+              total,
+              page,
+              ingredients: selectedIngredients,
+              searchType: 'ingredient' // 검색 타입 추가
+            }
+          });
+        }, 500); // 0.5초 지연
         
       } else if (isRecipeActive) {
         if (!recipeInput.trim()) {
@@ -194,15 +198,18 @@ const RecipeRecommendation = () => {
         const normalizedRecipes = recipes.map(recipe => recipeApi.normalizeRecipeData(recipe));
         
         // 결과 페이지로 이동하며 검색결과 전달 (state 기반)
-        navigate('/recipes/result', {
-          state: {
-            recipes: normalizedRecipes,
-            total,
-            page,
-            ingredients: [{ name: recipeInput, amount: '', unit: '' }], // 검색어를 재료 형태로 전달
-            searchType: 'keyword' // 검색 타입 추가
-          },
-        });
+        // 로딩 모달이 보이도록 약간의 지연 추가
+        setTimeout(() => {
+          navigate('/recipes/result', {
+            state: {
+              recipes: normalizedRecipes,
+              total,
+              page,
+              ingredients: [{ name: recipeInput, amount: '', unit: '' }], // 검색어를 재료 형태로 전달
+              searchType: 'keyword' // 검색 타입 추가
+            },
+          });
+        }, 500); // 0.5초 지연
       }
     } catch (error) {
       console.error('API 호출 중 오류 발생:', error);
@@ -228,15 +235,17 @@ const RecipeRecommendation = () => {
         navigate(`/recipes/by-ingredients?keywordResult=${payload}`);
       }
     } finally {
+      console.log('로딩 종료'); // 디버깅용
       setIsLoading(false); // 로딩 종료
     }
   };
 
   return (
     <div className="recipe-recommendation-page">
-      {/* 로딩 모달 */}
+      {/* 로딩 */}
+      {console.log('렌더링 시 isLoading:', isLoading)} {/* 디버깅용 */}
       {isLoading && (
-        <LoadingModal message="레시피를 찾고 있어요..." />
+        <Loading message="레시피를 찾고 있어요..." />
       )}
       
       <HeaderNavRecipeRecommendation 

@@ -36,9 +36,14 @@ const KokProductDetail = () => {
 
   // BottomNav에서 주문하기 버튼 클릭 시 수량 선택 모달 열기
   useEffect(() => {
-    const handleOpenQuantityModal = () => {
-      console.log('BottomNav에서 수량 선택 모달 열기 이벤트 수신');
-      setShowQuantityModal(true);
+    const handleOpenQuantityModal = (event) => {
+      if (event.detail && event.detail.productId === productId) {
+        console.log('하단 네비게이션에서 주문하기 버튼 클릭됨');
+        setShowQuantityModal(true);
+      } else {
+        console.log('BottomNav에서 수량 선택 모달 열기 이벤트 수신');
+        setShowQuantityModal(true);
+      }
     };
 
     window.addEventListener('openQuantityModal', handleOpenQuantityModal);
@@ -46,13 +51,26 @@ const KokProductDetail = () => {
     return () => {
       window.removeEventListener('openQuantityModal', handleOpenQuantityModal);
     };
-  }, []);
+  }, [productId]);
 
   // KOK API에서 상품 기본 정보를 가져오는 함수
   const fetchKokProductInfo = async (productId) => {
     try {
-      console.log(`상품 기본 정보 API 호출: /api/kok/product/${productId}/info`);
-      const response = await api.get(`/api/kok/product/${productId}/info`);
+      // productId를 정수형으로 변환
+      const numericProductId = parseInt(productId, 10);
+      console.log(`상품 기본 정보 API 호출: /api/kok/product/${numericProductId}/info`);
+      
+      // 토큰이 있으면 헤더에 추가 (선택사항)
+      const token = localStorage.getItem('access_token');
+      const config = {};
+      
+      if (token) {
+        config.headers = {
+          'Authorization': `Bearer ${token}`
+        };
+      }
+      
+      const response = await api.get(`/api/kok/product/${numericProductId}/info`, config);
       console.log('상품 기본 정보 API 응답:', response.data);
       return response.data;
     } catch (err) {
@@ -65,8 +83,21 @@ const KokProductDetail = () => {
   // KOK API에서 상품 상세정보 탭 데이터를 가져오는 함수
   const fetchKokProductTabs = async (productId) => {
     try {
-      console.log(`상품 상세정보 탭 API 호출: /api/kok/product/${productId}/tabs`);
-      const response = await api.get(`/api/kok/product/${productId}/tabs`);
+      // productId를 정수형으로 변환
+      const numericProductId = parseInt(productId, 10);
+      console.log(`상품 상세정보 탭 API 호출: /api/kok/product/${numericProductId}/tabs`);
+      
+      // 토큰이 있으면 헤더에 추가 (선택사항)
+      const token = localStorage.getItem('access_token');
+      const config = {};
+      
+      if (token) {
+        config.headers = {
+          'Authorization': `Bearer ${token}`
+        };
+      }
+      
+      const response = await api.get(`/api/kok/product/${numericProductId}/tabs`, config);
       console.log('KOK 상품 상세정보 탭 데이터 응답:', response.data);
       
       // API 응답 구조 확인
@@ -78,11 +109,11 @@ const KokProductDetail = () => {
           images: [
             {
               kok_img_id: 1,
-              kok_img_url: "https://via.placeholder.com/480x300/FFE4B5/000000?text=Product+Image+1"
+              kok_img_url: "/test1.png"
             },
             {
               kok_img_id: 2,
-              kok_img_url: "https://via.placeholder.com/480x300/FFB6C1/000000?text=Product+Image+2"
+              kok_img_url: "/test2.png"
             }
           ]
         };
@@ -95,11 +126,11 @@ const KokProductDetail = () => {
         images: [
           {
             kok_img_id: 1,
-            kok_img_url: "https://via.placeholder.com/480x300/FFE4B5/000000?text=Product+Image+1"
+            kok_img_url: "/test1.png"
           },
           {
             kok_img_id: 2,
-            kok_img_url: "https://via.placeholder.com/480x300/FFB6C1/000000?text=Product+Image+2"
+            kok_img_url: "/test2.png"
           }
         ]
       };
@@ -109,8 +140,21 @@ const KokProductDetail = () => {
   // KOK API에서 상품 리뷰 데이터를 가져오는 함수
   const fetchKokProductReviews = async (productId) => {
     try {
-      console.log(`상품 리뷰 API 호출: /api/kok/product/${productId}/reviews`);
-      const response = await api.get(`/api/kok/product/${productId}/reviews`);
+      // productId를 정수형으로 변환
+      const numericProductId = parseInt(productId, 10);
+      console.log(`상품 리뷰 API 호출: /api/kok/product/${numericProductId}/reviews`);
+      
+      // 토큰이 있으면 헤더에 추가 (선택사항)
+      const token = localStorage.getItem('access_token');
+      const config = {};
+      
+      if (token) {
+        config.headers = {
+          'Authorization': `Bearer ${token}`
+        };
+      }
+      
+      const response = await api.get(`/api/kok/product/${numericProductId}/reviews`, config);
       console.log('상품 리뷰 API 응답:', response.data);
       return response.data;
     } catch (err) {
@@ -123,8 +167,21 @@ const KokProductDetail = () => {
   // KOK API에서 상품 상세 정보 데이터를 가져오는 함수
   const fetchKokProductDetails = async (productId) => {
     try {
-      console.log(`상품 상세 정보 API 호출: /api/kok/product/${productId}/seller-details`);
-      const response = await api.get(`/api/kok/product/${productId}/seller-details`);
+      // productId를 정수형으로 변환
+      const numericProductId = parseInt(productId, 10);
+      console.log(`상품 상세 정보 API 호출: /api/kok/product/${numericProductId}/seller-details`);
+      
+      // 토큰이 있으면 헤더에 추가 (선택사항)
+      const token = localStorage.getItem('access_token');
+      const config = {};
+      
+      if (token) {
+        config.headers = {
+          'Authorization': `Bearer ${token}`
+        };
+      }
+      
+      const response = await api.get(`/api/kok/product/${numericProductId}/seller-details`, config);
       console.log('KOK 상품 상세 정보 데이터 응답:', response.data);
       return response.data;
     } catch (err) {
@@ -150,21 +207,7 @@ const KokProductDetail = () => {
   //   }
   // };
 
-  // 하단 네비게이션의 주문하기 버튼 클릭 이벤트 리스너
-  useEffect(() => {
-    const handleOpenQuantityModal = (event) => {
-      if (event.detail.productId === productId) {
-        console.log('하단 네비게이션에서 주문하기 버튼 클릭됨');
-        setShowQuantityModal(true);
-      }
-    };
 
-    window.addEventListener('openQuantityModal', handleOpenQuantityModal);
-
-    return () => {
-      window.removeEventListener('openQuantityModal', handleOpenQuantityModal);
-    };
-  }, [productId]);
 
   useEffect(() => {
     const loadKokProductData = async () => {
@@ -182,17 +225,17 @@ const KokProductDetail = () => {
             fetchKokProductDetails(productId)
           ]);
 
-          // 기본 제품 데이터 생성 (기본값으로 설정)
-          let defaultKokProduct = {
-            id: parseInt(productId),
-            name: `제품 ${productId}`,
-            originalPrice: 0,
-            discountPrice: 0,
-            discountRate: 0,
-            image: 'https://via.placeholder.com/300x300/CCCCCC/666666?text=No+Image',
-            rating: 0,
-            reviewCount: 0
-          };
+                                // 기본 제품 데이터 생성 (기본값으로 설정)
+            let defaultKokProduct = {
+              id: parseInt(productId),
+              name: `제품 ${productId}`,
+              originalPrice: 15000,
+              discountPrice: 12000,
+              discountRate: 20,
+              image: '/test1.png',
+              rating: 4.5,
+              reviewCount: 15
+            };
 
           // product-info API에서 기본 정보가 있으면 업데이트
           if (kokProductInfo) {
@@ -202,7 +245,7 @@ const KokProductDetail = () => {
               originalPrice: kokProductInfo.kok_product_price || 0,
               discountPrice: kokProductInfo.kok_discounted_price || kokProductInfo.kok_product_price || 0,
               discountRate: kokProductInfo.kok_discount_rate || 0,
-              image: kokProductInfo.kok_thumbnail || 'https://via.placeholder.com/300x300/CCCCCC/666666?text=No+Image',
+                             image: kokProductInfo.kok_thumbnail || '/test1.png',
               rating: 0, // API에서 별도로 제공되지 않음
               reviewCount: kokProductInfo.kok_review_cnt || 0,
               storeName: kokProductInfo.kok_store_name || ''
@@ -226,7 +269,7 @@ const KokProductDetail = () => {
             setKokProductImages([
               {
                 kok_img_id: 1,
-                kok_img_url: "https://via.placeholder.com/480x300/FFE4B5/000000?text=Default+Product+Image"
+                kok_img_url: "/test1.png"
               }
             ]);
           }
@@ -248,24 +291,24 @@ const KokProductDetail = () => {
           // API 실패 시 기본 데이터 사용
           console.log('API 실패, 기본 데이터 사용');
           
-          // 기본 제품 데이터 생성
-          const defaultKokProduct = {
-            id: parseInt(productId),
-            name: `제품 ${productId}`,
-            originalPrice: 0,
-            discountPrice: 0,
-            discountRate: 0,
-            image: 'https://via.placeholder.com/300x300/CCCCCC/666666?text=No+Image',
-            rating: 0,
-            reviewCount: 0
-          };
+                     // 기본 제품 데이터 생성
+           const defaultKokProduct = {
+             id: parseInt(productId),
+             name: `제품 ${productId}`,
+             originalPrice: 15000,
+             discountPrice: 12000,
+             discountRate: 20,
+             image: '/test1.png',
+             rating: 4.5,
+             reviewCount: 15
+           };
           setKokProduct(defaultKokProduct);
           
           // 기본 이미지 설정
           setKokProductImages([
             {
               kok_img_id: 1,
-              kok_img_url: "https://via.placeholder.com/480x300/FFE4B5/000000?text=Default+Product+Image"
+              kok_img_url: "/test1.png"
             }
           ]);
         }
@@ -379,7 +422,8 @@ API 연결 테스트 결과:
 
       const cartData = {
         kok_product_id: parseInt(productId),
-        kok_quantity: selectedQuantity,
+        kok_price_id: 0, // 기본값 0
+        kok_quantity: 1, // 수량은 1개로 고정
         recipe_id: 0 // 레시피 ID는 0으로 설정
       };
 
@@ -506,7 +550,7 @@ API 연결 테스트 결과:
            discountPrice: (kokProduct?.discountPrice || 0) * selectedQuantity,
            originalPrice: (kokProduct?.originalPrice || 0) * selectedQuantity,
            productName: kokProduct?.name || `제품 ${productId}`,
-           productImage: kokProduct?.image || kokProductImages[0]?.kok_img_url || 'https://via.placeholder.com/150x150/CCCCCC/666666?text=Temp',
+                       productImage: kokProduct?.image || kokProductImages[0]?.kok_img_url || '/test1.png',
            orderId: String(orderResponse.order_id || `ORDER-${Date.now()}`),
            orderDetails: orderResponse.order_details || [],
            kokOrderIds: orderResponse.order_details?.map(detail => detail.kok_order_id) || []

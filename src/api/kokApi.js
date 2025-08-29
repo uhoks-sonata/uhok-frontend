@@ -6,42 +6,72 @@ export const kokApi = {
   // ===== 메인화면 상품정보 =====
   
   // 오늘의 특가 상품 조회 (20개)
-  getDiscountedProducts: async (page = 1, size = 20) => {
+  getDiscountedProducts: async (page = 1, size = 20, accessToken = null) => {
     try {
-              console.log('🚀 오늘의 특가 상품 API 호출:', { page, size });
-      const response = await api.get('/api/kok/discounted', {
+      console.log('🚀 오늘의 특가 상품 API 호출:', { page, size });
+      
+      const config = {
         params: { page, size }
-      });
-              console.log('✅ 오늘의 특가 상품 API 응답:', response.data);
+      };
+      
+      // Authorization 헤더가 있으면 추가 (선택사항)
+      if (accessToken) {
+        config.headers = {
+          'Authorization': `Bearer ${accessToken}`
+        };
+      }
+      
+      const response = await api.get('/api/kok/discounted', config);
+      console.log('✅ 오늘의 특가 상품 API 응답:', response.data);
       return response.data;
     } catch (error) {
-              console.error('❌ 오늘의 특가 상품 API 호출 실패:', error);
+      console.error('❌ 오늘의 특가 상품 API 호출 실패:', error);
       throw error;
     }
   },
 
   // 베스트 판매 상품 조회 (20개)
-  getTopSellingProducts: async (page = 1, size = 20, sortBy = 'review_count') => {
+  getTopSellingProducts: async (page = 1, size = 20, sortBy = 'review_count', accessToken = null) => {
     try {
-              console.log('🚀 베스트 판매 상품 API 호출:', { page, size, sortBy });
-      const response = await api.get('/api/kok/top-selling', {
+      console.log('🚀 베스트 판매 상품 API 호출:', { page, size, sortBy });
+      
+      const config = {
         params: { page, size, sort_by: sortBy }
-      });
-              console.log('✅ 베스트 판매 상품 API 응답:', response.data);
+      };
+      
+      // Authorization 헤더가 있으면 추가 (선택사항)
+      if (accessToken) {
+        config.headers = {
+          'Authorization': `Bearer ${accessToken}`
+        };
+      }
+      
+      const response = await api.get('/api/kok/top-selling', config);
+      console.log('✅ 베스트 판매 상품 API 응답:', response.data);
       return response.data;
     } catch (error) {
-              console.error('❌ 베스트 판매 상품 API 호출 실패:', error);
+      console.error('❌ 베스트 판매 상품 API 호출 실패:', error);
       throw error;
     }
   },
 
   // 최근 이용 스토어 내 인기 상품 조회 (10개)
-  getStoreBestItems: async (sortBy = 'review_count') => {
+  getStoreBestItems: async (sortBy = 'review_count', accessToken = null) => {
     try {
       console.log('🚀 스토어 베스트 상품 API 호출:', { sortBy });
-      const response = await api.get('/api/kok/store-best-items', {
+      
+      const config = {
         params: { sort_by: sortBy }
-      });
+      };
+      
+      // Authorization 헤더가 있으면 추가 (선택사항)
+      if (accessToken) {
+        config.headers = {
+          'Authorization': `Bearer ${accessToken}`
+        };
+      }
+      
+      const response = await api.get('/api/kok/store-best-items', config);
       console.log('✅ 스토어 베스트 상품 API 응답:', response.data);
       return response.data;
     } catch (error) {
@@ -53,10 +83,22 @@ export const kokApi = {
   // ===== 상품 상세 설명 =====
   
   // 상품 기본 정보 조회
-  getProductInfo: async (productId) => {
+  getProductInfo: async (productId, accessToken = null) => {
     try {
-      console.log('🚀 상품 기본 정보 API 호출:', { productId });
-      const response = await api.get(`/api/kok/product/${productId}/info`);
+      // productId를 정수형으로 변환
+      const numericProductId = parseInt(productId, 10);
+      console.log('🚀 상품 기본 정보 API 호출:', { productId: numericProductId });
+      
+      const config = {};
+      
+      // Authorization 헤더가 있으면 추가 (선택사항)
+      if (accessToken) {
+        config.headers = {
+          'Authorization': `Bearer ${accessToken}`
+        };
+      }
+      
+      const response = await api.get(`/api/kok/product/${numericProductId}/info`, config);
       console.log('✅ 상품 기본 정보 API 응답:', response.data);
       return response.data;
     } catch (error) {
@@ -66,10 +108,22 @@ export const kokApi = {
   },
 
   // 상품 설명 탭 정보 조회
-  getProductTabs: async (productId) => {
+  getProductTabs: async (productId, accessToken = null) => {
     try {
-      console.log('🚀 상품 설명 탭 API 호출:', { productId });
-      const response = await api.get(`/api/kok/product/${productId}/tabs`);
+      // productId를 정수형으로 변환
+      const numericProductId = parseInt(productId, 10);
+      console.log('🚀 상품 설명 탭 API 호출:', { productId: numericProductId });
+      
+      const config = {};
+      
+      // Authorization 헤더가 있으면 추가 (선택사항)
+      if (accessToken) {
+        config.headers = {
+          'Authorization': `Bearer ${accessToken}`
+        };
+      }
+      
+      const response = await api.get(`/api/kok/product/${numericProductId}/tabs`, config);
       console.log('✅ 상품 설명 탭 API 응답:', response.data);
       return response.data;
     } catch (error) {
@@ -79,10 +133,22 @@ export const kokApi = {
   },
 
   // 상품 리뷰 탭 정보 조회
-  getProductReviews: async (productId) => {
+  getProductReviews: async (productId, accessToken = null) => {
     try {
-      console.log('🚀 상품 리뷰 탭 API 호출:', { productId });
-      const response = await api.get(`/api/kok/product/${productId}/reviews`);
+      // productId를 정수형으로 변환
+      const numericProductId = parseInt(productId, 10);
+      console.log('🚀 상품 리뷰 탭 API 호출:', { productId: numericProductId });
+      
+      const config = {};
+      
+      // Authorization 헤더가 있으면 추가 (선택사항)
+      if (accessToken) {
+        config.headers = {
+          'Authorization': `Bearer ${accessToken}`
+        };
+      }
+      
+      const response = await api.get(`/api/kok/product/${numericProductId}/reviews`, config);
       console.log('✅ 상품 리뷰 탭 API 응답:', response.data);
       return response.data;
     } catch (error) {
@@ -92,10 +158,22 @@ export const kokApi = {
   },
 
   // 상품 판매자 정보 및 상세정보 조회
-  getProductSellerDetails: async (productId) => {
+  getProductSellerDetails: async (productId, accessToken = null) => {
     try {
-      console.log('🚀 상품 판매자 정보 API 호출:', { productId });
-      const response = await api.get(`/api/kok/product/${productId}/seller-details`);
+      // productId를 정수형으로 변환
+      const numericProductId = parseInt(productId, 10);
+      console.log('🚀 상품 판매자 정보 API 호출:', { productId: numericProductId });
+      
+      const config = {};
+      
+      // Authorization 헤더가 있으면 추가 (선택사항)
+      if (accessToken) {
+        config.headers = {
+          'Authorization': `Bearer ${accessToken}`
+        };
+      }
+      
+      const response = await api.get(`/api/kok/product/${numericProductId}/seller-details`, config);
       console.log('✅ 상품 판매자 정보 API 응답:', response.data);
       return response.data;
     } catch (error) {

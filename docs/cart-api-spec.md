@@ -9,6 +9,7 @@
 
 ### POST /api/kok/carts
 사용자가 상품을 장바구니에 추가한다.
+(수량은 1개로 고정, 기존 상품이 있으면 추가하지 않음)
 
 **요청 헤더:**
 ```
@@ -18,8 +19,10 @@ Content-Type: application/json
 **요청 본문:**
 ```json
 {
-  "kok_product_id": 10046186,
-  "kok_quantity": 1
+  "kok_product_id": 0,
+  "kok_price_id": 0,
+  "kok_quantity": 1,
+  "recipe_id": 0
 }
 ```
 
@@ -74,7 +77,7 @@ Content-Type: application/json
 **요청 본문:**
 ```json
 {
-  "quantity": 3
+  "kok_quantity": 3
 }
 ```
 
@@ -89,7 +92,7 @@ Content-Type: application/json
 
 ## 4. 장바구니 상품 삭제
 
-### DELETE /api/kok/carts/{cartItemId}
+### DELETE /api/kok/carts/{kok_cart_id}
 장바구니에서 상품을 삭제한다.
 
 **요청 헤더:**

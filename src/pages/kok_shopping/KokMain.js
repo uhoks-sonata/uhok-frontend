@@ -423,48 +423,50 @@ const KokMain = () => {
     });
   }, [user, isLoggedIn]);
 
-  // 데이터 상태 디버깅
+  // 데이터 상태 디버깅 (한 번만 실행)
   useEffect(() => {
-    console.log('📊 KokMain - 데이터 상태 요약:', {
-      kokProducts: kokProducts.length,
-      kokTopSellingProducts: kokTopSellingProducts.length,
-      kokStoreBestItems: kokStoreBestItems.length,
-      kokLoading: kokLoading
-    });
-    
-    // 데이터가 없는 경우 상세 로깅
-    if (kokProducts.length === 0) {
-      console.log('⚠️ 오늘의 특가 상품 데이터가 없습니다.');
-    } else {
-      console.log('✅ 오늘의 특가 상품:', kokProducts.length, '개');
+    if (!kokLoading) {
+      console.log('📊 KokMain - 데이터 상태 요약:', {
+        kokProducts: kokProducts.length,
+        kokTopSellingProducts: kokTopSellingProducts.length,
+        kokStoreBestItems: kokStoreBestItems.length,
+        kokLoading: kokLoading
+      });
+      
+      // 데이터가 없는 경우 상세 로깅
+      if (kokProducts.length === 0) {
+        console.log('⚠️ 오늘의 특가 상품 데이터가 없습니다.');
+      } else {
+        console.log('✅ 오늘의 특가 상품:', kokProducts.length, '개');
+      }
+      
+      if (kokTopSellingProducts.length === 0) {
+        console.log('⚠️ 베스트 판매 상품 데이터가 없습니다.');
+      } else {
+        console.log('✅ 베스트 판매 상품:', kokTopSellingProducts.length, '개');
+      }
+      
+      if (kokStoreBestItems.length === 0) {
+        console.log('⚠️ 스토어 베스트 상품 데이터가 없습니다.');
+        console.log('💡 이는 정상적인 상황입니다. 사용자가 아직 구매한 상품이 없어서 개인 맞춤 추천을 받을 수 없습니다.');
+      } else {
+        console.log('✅ 스토어 베스트 상품:', kokStoreBestItems.length, '개');
+      }
+      
+      // 모든 데이터가 없는 경우
+      if (kokProducts.length === 0 && kokTopSellingProducts.length === 0 && kokStoreBestItems.length === 0) {
+        console.log('🚨 모든 상품 데이터가 비어있습니다. 백엔드 서버 상태를 확인해주세요.');
+        console.log('확인사항:');
+        console.log('1. 백엔드 서버가 실행 중인지 확인');
+        console.log('2. 프록시 설정이 올바른지 확인 (setupProxy.js)');
+        console.log('3. 백엔드 API 엔드포인트가 올바른지 확인');
+        console.log('4. 데이터베이스에 상품 데이터가 있는지 확인');
+      } else if (kokStoreBestItems.length === 0 && (kokProducts.length > 0 || kokTopSellingProducts.length > 0)) {
+        console.log('ℹ️ 스토어 베스트 상품만 없는 상황입니다. 이는 정상적인 동작입니다.');
+        console.log('사용자가 상품을 구매하면 해당 스토어의 베스트 상품을 추천받을 수 있습니다.');
+      }
     }
-    
-    if (kokTopSellingProducts.length === 0) {
-      console.log('⚠️ 베스트 판매 상품 데이터가 없습니다.');
-    } else {
-      console.log('✅ 베스트 판매 상품:', kokTopSellingProducts.length, '개');
-    }
-    
-    if (kokStoreBestItems.length === 0) {
-      console.log('⚠️ 스토어 베스트 상품 데이터가 없습니다.');
-      console.log('💡 이는 정상적인 상황입니다. 사용자가 아직 구매한 상품이 없어서 개인 맞춤 추천을 받을 수 없습니다.');
-    } else {
-      console.log('✅ 스토어 베스트 상품:', kokStoreBestItems.length, '개');
-    }
-    
-    // 모든 데이터가 없는 경우
-    if (kokProducts.length === 0 && kokTopSellingProducts.length === 0 && kokStoreBestItems.length === 0) {
-      console.log('🚨 모든 상품 데이터가 비어있습니다. 백엔드 서버 상태를 확인해주세요.');
-      console.log('확인사항:');
-      console.log('1. 백엔드 서버가 실행 중인지 확인');
-      console.log('2. 프록시 설정이 올바른지 확인 (setupProxy.js)');
-      console.log('3. 백엔드 API 엔드포인트가 올바른지 확인');
-      console.log('4. 데이터베이스에 상품 데이터가 있는지 확인');
-    } else if (kokStoreBestItems.length === 0 && (kokProducts.length > 0 || kokTopSellingProducts.length > 0)) {
-      console.log('ℹ️ 스토어 베스트 상품만 없는 상황입니다. 이는 정상적인 동작입니다.');
-      console.log('사용자가 상품을 구매하면 해당 스토어의 베스트 상품을 추천받을 수 있습니다.');
-    }
-  }, [kokProducts, kokTopSellingProducts, kokStoreBestItems, kokLoading]);
+  }, [kokLoading]); // kokLoading만 의존성으로 설정
 
   return (
     <div className={`kok-home-shopping-main ${kokFadeIn ? 'kok-fade-in' : ''}`}>

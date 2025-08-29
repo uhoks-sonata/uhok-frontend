@@ -67,3 +67,12 @@
     opacity: 1;
   }
 }
+
+/* ===== 모달 안에서 사용될 때의 스타일 ===== */
+.loading-modal-content .loading-container {
+  padding: 15px 20px;
+}
+
+.loading-modal-content .cute-loading-animation {
+  gap: 8px;
+}
