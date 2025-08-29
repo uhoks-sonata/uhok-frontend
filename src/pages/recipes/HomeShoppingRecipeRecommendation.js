@@ -5,6 +5,7 @@ import BottomNav from '../../layout/BottomNav';
 import HeaderNavRecipeRecommendation from '../../layout/HeaderNavRecipeRecommendation';
 import Loading from '../../components/Loading';
 import IngredientTag from '../../components/IngredientTag';
+import ModalManager, { showNoRecipeNotification, hideModal } from '../../components/LoadingModal';
 import '../../styles/recipe_result.css';
 import '../../styles/ingredient-tag.css';
 import fallbackImg from '../../assets/no_items.png';
@@ -19,6 +20,7 @@ const HomeShoppingRecipeRecommendation = () => {
   const [productInfo, setProductInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [modalState, setModalState] = useState({ isVisible: false, modalType: 'loading' });
   
   // 컴포넌트 마운트 시 레시피 추천 데이터 가져오기
   useEffect(() => {
@@ -47,8 +49,15 @@ const HomeShoppingRecipeRecommendation = () => {
         
         if (response && response.recipes) {
           setRecipes(response.recipes);
+          
+          // 레시피가 0개인 경우 모달 표시
+          if (response.recipes.length === 0) {
+            setModalState(showNoRecipeNotification());
+          }
         } else {
           setRecipes([]);
+          // 레시피가 없는 경우 모달 표시
+          setModalState(showNoRecipeNotification());
         }
         
       } catch (error) {
@@ -75,6 +84,13 @@ const HomeShoppingRecipeRecommendation = () => {
   // 검색 페이지로 이동
   const handleSearchClick = () => {
     navigate('/recipes/recommendation');
+  };
+  
+  // 모달 닫기 함수
+  const closeModal = () => {
+    setModalState(hideModal());
+    // 모달 닫기 후 이전 페이지로 이동
+    navigate(-1);
   };
   
   // 로딩 상태
@@ -226,6 +242,12 @@ const HomeShoppingRecipeRecommendation = () => {
       
       {/* 하단 네비게이션 */}
       <BottomNav />
+      
+      {/* 모달 관리자 */}
+      <ModalManager
+        {...modalState}
+        onClose={closeModal}
+      />
     </div>
   );
 };

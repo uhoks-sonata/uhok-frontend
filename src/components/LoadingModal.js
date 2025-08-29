@@ -17,7 +17,10 @@ const AlertModal = ({ message, onClose, buttonText = "확인", buttonStyle = "pr
   return (
     <div className="loading-modal-overlay" onClick={onClose}>
       <div className="loading-modal-content" onClick={(e) => e.stopPropagation()}>
-        <div className="alert-modal-message">{message}</div>
+        <div 
+          className="alert-modal-message" 
+          dangerouslySetInnerHTML={{ __html: message }}
+        />
         <button className={`alert-modal-button ${buttonStyle}`} onClick={onClose}>
           {buttonText}
         </button>
@@ -123,6 +126,17 @@ export const showWishlistUnlikedNotification = () => {
     alertMessage: '알림이 해제되었어요.', 
     alertButtonText: '확인',
     alertButtonStyle: 'secondary',
+    isVisible: true 
+  };
+};
+
+// 레시피 추천 없음 모달 표시 함수
+export const showNoRecipeNotification = () => {
+  return { 
+    modalType: 'alert', 
+    alertMessage: '현재 추천할 레시피가 없습니다.<br><span class="sub-message">곧 새로운 추천 레시피를 준비하겠습니다.</span>', 
+    alertButtonText: '돌아가기',
+    alertButtonStyle: 'primary',
     isVisible: true 
   };
 };

@@ -7,7 +7,7 @@ import BottomNav from '../../layout/BottomNav';
 import Loading from '../../components/Loading';
 import UpBtn from '../../components/UpBtn';
 import HomeshoppingKokRecommendation from '../../components/HomeshoppingKokRecommendation';
-import ModalManager, { showWishlistNotification, showWishlistUnlikedNotification, hideModal } from '../../components/LoadingModal';
+import ModalManager, { showWishlistNotification, showWishlistUnlikedNotification, showNoRecipeNotification, hideModal } from '../../components/LoadingModal';
 import emptyHeartIcon from '../../assets/heart_empty.png';
 import filledHeartIcon from '../../assets/heart_filled.png';
 import api from '../../pages/api';
@@ -321,6 +321,31 @@ const HomeShoppingProductDetail = () => {
   // 콕 상품으로 이동
   const handleKokProductClick = (kokProductId) => {
     navigate(`/kok/product/${kokProductId}`);
+  };
+
+  // 레시피 가용성 확인 함수
+  const checkRecipeAvailability = async () => {
+    try {
+      // 레시피 추천 API 호출
+      const response = await homeShoppingApi.getRecipeRecommendations(productDetail.product_id);
+      
+      if (response && response.recipes && response.recipes.length > 0) {
+        // 레시피가 있으면 레시피 추천 페이지로 이동
+        navigate('/recipes/homeshopping-recommendation', {
+          state: {
+            product_id: productDetail.product_id,
+            product_name: productDetail.product_name
+          }
+        });
+      } else {
+        // 레시피가 없으면 모달 표시
+        setModalState(showNoRecipeNotification());
+      }
+    } catch (error) {
+      console.error('레시피 가용성 확인 실패:', error);
+      // 에러 발생 시에도 모달 표시
+      setModalState(showNoRecipeNotification());
+    }
   };
 
   // 모달 닫기 함수
@@ -680,12 +705,7 @@ const HomeShoppingProductDetail = () => {
            {productDetail?.is_ingredient && (
              <div 
                className="hs-recom-recipe-recommendation-section"
-               onClick={() => navigate('/recipes/homeshopping-recommendation', {
-                 state: {
-                   product_id: productDetail.product_id,
-                   product_name: productDetail.product_name
-                 }
-               })}
+               onClick={checkRecipeAvailability}
                style={{ cursor: 'pointer' }}
              >
                <div className="hs-recom-recipe-section-content">
