@@ -130,7 +130,7 @@ export const homeShoppingApi = {
   getKokRecommendations: async (productId) => {
     try {
       console.log('💡 콕 상품 추천 API 요청:', { productId });
-      const response = await api.get(`/api/kok/product/homeshopping-recommend`);
+      const response = await api.get(`/api/homeshopping/product/${productId}/kok-recommend`);
       console.log('✅ 콕 상품 추천 API 응답:', response.data);
       return response.data;
     } catch (error) {
