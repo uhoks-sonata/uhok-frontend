@@ -4,12 +4,9 @@ import { homeShoppingApi } from '../../api/homeShoppingApi';
 import BottomNav from '../../layout/BottomNav';
 import HeaderNavRecipeRecommendation from '../../layout/HeaderNavRecipeRecommendation';
 import Loading from '../../components/Loading';
-import IngredientTag from '../../components/IngredientTag';
 import ModalManager, { showNoRecipeNotification, hideModal } from '../../components/LoadingModal';
 import '../../styles/recipe_result.css';
-import '../../styles/ingredient-tag.css';
 import fallbackImg from '../../assets/no_items.png';
-import bookmarkIcon from '../../assets/bookmark-icon.png';
 
 const HomeShoppingRecipeRecommendation = () => {
   const navigate = useNavigate();
@@ -135,110 +132,86 @@ const HomeShoppingRecipeRecommendation = () => {
         onSearchClick={handleSearchClick}
       />
       
-      {/* 상품 정보 섹션 */}
-      {productInfo && (
-        <div className="product-info-section">
-                     <div className="search-keyword-title">
-             {productInfo.product_name}으로 만들 수 있는 레시피
-           </div>
-          <div className="ingredients-tags">
-            <IngredientTag 
-              ingredient={productInfo.product_name}
-              isSelected={true}
-              onClick={() => {}}
-            />
+                    {/* 상품 정보 섹션 */}
+        {productInfo && (
+          <div className="product-info-section">
+                       <div className="search-keyword-title">
+               {productInfo.product_name}
+             </div>
           </div>
-        </div>
-      )}
-      
-      {/* 결과 요약 */}
-      <div className="result-summary">
-        <span className="result-count">
-          총 <strong>{recipes.length}</strong>개의 레시피를 찾았습니다
-        </span>
-      </div>
-      
-      {/* 레시피 목록 */}
-      <div className="recipe-list-container">
-        {recipes.length > 0 ? (
-          <div className="recipe-list">
-            {recipes.map((recipe, index) => (
-              <div 
-                key={recipe.recipe_id || index}
-                className="recipe-item"
-                onClick={() => handleRecipeClick(recipe.recipe_id)}
-              >
-                {/* 레시피 이미지 */}
-                <div className="recipe-image-container">
-                  <img 
-                    src={recipe.recipe_image_url || fallbackImg}
-                    alt={recipe.recipe_name}
-                    className="recipe-image"
-                    onError={(e) => {
-                      e.target.src = fallbackImg;
-                    }}
-                  />
-                </div>
-                
-                {/* 레시피 정보 */}
-                <div className="recipe-info">
-                  <h3 className="recipe-name">{recipe.recipe_name}</h3>
-                  
-                                     {/* 요리 시간과 난이도 */}
-                   <div className="recipe-meta">
+        )}
+       
+              {/* 레시피 목록 */}
+       <main className="recipe-list">
+         {recipes.length > 0 ? (
+           recipes.map((recipe, index) => (
+             <div 
+               key={recipe.recipe_id || index}
+               className="recipe-card"
+               onClick={() => handleRecipeClick(recipe.recipe_id)}
+             >
+               {/* 레시피 이미지 */}
+               <div className="recipe-image">
+                 <img 
+                   src={recipe.recipe_image_url || fallbackImg}
+                   alt={recipe.recipe_name}
+                   onError={(e) => {
+                     e.target.src = fallbackImg;
+                   }}
+                 />
+               </div>
+               
+               {/* 레시피 정보 */}
+               <div className="recipe-info">
+                 <h3 className="recipe-name" title={recipe.recipe_name}>
+                   {recipe.recipe_name && recipe.recipe_name.length > 50 
+                     ? recipe.recipe_name.substring(0, 50) + '...' 
+                     : recipe.recipe_name}
+                 </h3>
+                 
+                 {/* 요리 시간과 난이도 */}
+                 {(recipe.cooking_time || recipe.difficulty) && (
+                   <div className="recipe-stats">
                      {recipe.cooking_time && (
-                       <span className="recipe-time">{recipe.cooking_time}</span>
+                       <span className="serving serving-small">{recipe.cooking_time}</span>
+                     )}
+                     {recipe.cooking_time && recipe.difficulty && (
+                       <span className="separator"> | </span>
                      )}
                      {recipe.difficulty && (
-                       <span className="recipe-difficulty">{recipe.difficulty}</span>
+                       <span className="scrap-count">{recipe.difficulty}</span>
                      )}
                    </div>
-                  
-                  {/* 설명 */}
-                  {recipe.description && (
-                    <p className="recipe-description">{recipe.description}</p>
-                  )}
-                  
-                  {/* 재료 정보 */}
-                  {recipe.ingredients && recipe.ingredients.length > 0 && (
-                    <div className="recipe-ingredients">
-                      <span className="ingredients-label">재료:</span>
-                      <div className="ingredients-tags-small">
-                        {recipe.ingredients.slice(0, 3).map((ingredient, idx) => (
-                          <span key={idx} className="ingredient-tag-small">
-                            {ingredient}
-                          </span>
-                        ))}
-                        {recipe.ingredients.length > 3 && (
-                          <span className="ingredient-tag-small">
-                            +{recipe.ingredients.length - 3}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-                
-                {/* 북마크 아이콘 */}
-                <div className="recipe-bookmark">
-                  <img 
-                    src={bookmarkIcon} 
-                    alt="북마크" 
-                    className="bookmark-icon"
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-                 ) : (
-           <div className="no-recipes-container">
-             <h3 className="no-recipes-title">추천 레시피가 없습니다</h3>
-             <p className="no-recipes-message">
-               이 상품으로 만들 수 있는 레시피를 찾을 수 없습니다.
-             </p>
+                 )}
+                 
+                 {/* 설명 */}
+                 {recipe.description && (
+                   <p className="recipe-description">{recipe.description}</p>
+                 )}
+                 
+                 {/* 재료 정보 */}
+                 {recipe.ingredients && recipe.ingredients.length > 0 && (
+                   <div className="used-ingredients-list">
+                     {recipe.ingredients.slice(0, 3).map((ingredient, idx) => (
+                       <span key={idx} className="used-ingredient-item">
+                         {ingredient}
+                       </span>
+                     ))}
+                     {recipe.ingredients.length > 3 && (
+                       <span className="more-ingredients">외 {recipe.ingredients.length - 3}개</span>
+                     )}
+                   </div>
+                 )}
+               </div>
+             </div>
+           ))
+         ) : (
+           <div className="no-results">
+             <p>추천 레시피가 없습니다</p>
+             <p>이 상품으로 만들 수 있는 레시피를 찾을 수 없습니다.</p>
            </div>
          )}
-      </div>
+       </main>
       
       {/* 하단 네비게이션 */}
       <BottomNav />
