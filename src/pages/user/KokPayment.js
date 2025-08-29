@@ -292,7 +292,7 @@ const KokPayment = () => {
        if (orderInfo?.fromCart && orderInfo?.cartItems) {
         // 장바구니에서 온 주문인 경우
         const selectedItems = orderInfo.cartItems.map(item => ({
-          cart_id: item.kok_cart_id,
+          kok_cart_id: item.kok_cart_id,
           quantity: item.kok_quantity
         }));
         

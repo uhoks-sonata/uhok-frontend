@@ -39,16 +39,13 @@ const CartButton = ({
         return;
       }
 
-      // 요청 데이터 준비
+      // 요청 데이터 준비 (API 명세서에 맞춤 - 수량은 1개로 고정)
       const requestData = {
         kok_product_id: productId,
-        kok_quantity: quantity
+        kok_price_id: 0, // 기본값 0
+        kok_quantity: 1, // 수량은 1개로 고정
+        recipe_id: recipeId || 0
       };
-      
-      // recipe_id가 0이 아닌 경우에만 추가
-      if (recipeId && recipeId !== 0) {
-        requestData.recipe_id = recipeId;
-      }
 
       console.log('장바구니 추가 요청:', {
         url: '/api/kok/carts',

@@ -422,7 +422,8 @@ API 연결 테스트 결과:
 
       const cartData = {
         kok_product_id: parseInt(productId),
-        kok_quantity: selectedQuantity,
+        kok_price_id: 0, // 기본값 0
+        kok_quantity: 1, // 수량은 1개로 고정
         recipe_id: 0 // 레시피 ID는 0으로 설정
       };
 

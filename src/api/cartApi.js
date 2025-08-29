@@ -9,10 +9,10 @@ export const cartApi = {
     try {
       console.log('🛒 장바구니 추가 API 요청:', productData);
       
-      // API 명세서에 맞는 요청 데이터 형식 확인
+      // API 명세서에 맞는 요청 데이터 형식 (수량은 1개로 고정)
       const requestData = {
         kok_product_id: parseInt(productData.kok_product_id),
-        kok_quantity: parseInt(productData.kok_quantity) || 1,
+        kok_quantity: 1, // 수량은 1개로 고정
         recipe_id: parseInt(productData.recipe_id) || 0
       };
       
@@ -112,12 +112,13 @@ export const cartApi = {
 
   // 장바구니 상품 수량 변경
   updateCartItemQuantity: async (cartItemId, quantity) => {
-    // 수량 범위 검증 (1-10) - 함수 시작 부분에서 정의
+    // 수량 범위 검증 (1-10) - API 명세서에 맞춤
     const validQuantity = Math.max(1, Math.min(10, parseInt(quantity)));
     
     try {
       console.log('🛒 장바구니 수량 변경 API 요청:', { cartItemId, quantity });
       
+      // API 명세서에 맞는 요청 데이터 형식
       const requestData = {
         kok_quantity: validQuantity
       };
@@ -138,7 +139,7 @@ export const cartApi = {
       console.error('❌ 장바구니 수량 변경 실패:', error);
       
       // 백엔드 서버가 실행되지 않은 경우 임시 모의 응답
-      if (error.response?.status === 500 || error.code === 'ERR_NETWORK') {
+      if (error.response?.status === 500 || error.code === 'ERR_NETWORK' || error.response?.status === 404) {
         console.log('🔄 백엔드 서버 연결 실패, 임시 모의 응답 반환');
         return {
           kok_cart_id: cartItemId,
@@ -170,7 +171,7 @@ export const cartApi = {
       console.error('❌ 장바구니 상품 삭제 실패:', error);
       
       // 백엔드 서버가 실행되지 않은 경우 임시 모의 응답
-      if (error.response?.status === 500 || error.code === 'ERR_NETWORK') {
+      if (error.response?.status === 500 || error.code === 'ERR_NETWORK' || error.response?.status === 404) {
         console.log('🔄 백엔드 서버 연결 실패, 임시 모의 응답 반환');
         return {
           message: '임시 모의 응답: 상품이 삭제되었습니다. (백엔드 서버 미실행)'
@@ -189,21 +190,63 @@ export const cartApi = {
     try {
       console.log('🛒 주문 생성 API 요청:', { selectedItems });
       
+      // 각 아이템의 구조를 자세히 로깅
+      selectedItems.forEach((item, index) => {
+        console.log(`🔍 아이템 ${index}:`, {
+          cart_id: item.cart_id,
+          kok_cart_id: item.kok_cart_id,
+          quantity: item.quantity,
+          kok_quantity: item.kok_quantity,
+          전체_아이템: item
+        });
+      });
+      
       // API 명세서에 맞는 요청 데이터 형식으로 변환
       const requestData = {
-        selected_items: selectedItems.map(item => ({
-          cart_id: item.cart_id, // 실제 cart_id 사용
-          quantity: item.quantity
-        }))
+        selected_items: selectedItems.map(item => {
+          const cartId = item.kok_cart_id || item.cart_id;
+          const quantity = item.kok_quantity || item.quantity;
+          
+          console.log('🔄 변환 중:', { 
+            원본_cart_id: item.cart_id, 
+            원본_kok_cart_id: item.kok_cart_id,
+            변환된_kok_cart_id: cartId,
+            원본_quantity: item.quantity,
+            원본_kok_quantity: item.kok_quantity,
+            변환된_quantity: quantity
+          });
+          
+          return {
+            kok_cart_id: cartId,
+            quantity: quantity
+          };
+        })
       };
       
-      console.log('🔍 변환된 요청 데이터:', requestData);
+      console.log('🔍 최종 변환된 요청 데이터:', JSON.stringify(requestData, null, 2));
       
       const response = await api.post('/api/orders/kok/carts/order', requestData);
-      console.log('✅ 주문 생성 API 응답:', response.data);
-      return response.data;
+      
+      // 201 상태 코드 확인 (API 명세서 기준)
+      if (response.status === 201) {
+        console.log('✅ 주문 생성 API 응답 (201):', response.data);
+        return response.data;
+      } else {
+        console.log('⚠️ 주문 생성 API 응답 (예상과 다른 상태 코드):', response.status, response.data);
+        return response.data;
+      }
     } catch (error) {
       console.error('❌ 주문 생성 실패:', error);
+      
+      // 에러 상세 정보 로깅
+      if (error.response?.data) {
+        console.error('🔍 에러 상세 정보:', {
+          status: error.response.status,
+          data: error.response.data,
+          validationErrors: error.response.data.validation_errors
+        });
+      }
+      
       throw error;
     }
   },
