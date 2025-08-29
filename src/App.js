@@ -28,6 +28,7 @@ import KokSearch from './pages/kok_shopping/KokSearch';
 import RecipeRecommendation from './pages/recipes/RecipeRecommendation';
 import RecipeResult from './pages/recipes/RecipeResult';
 import RecipeDetail from './pages/recipes/RecipeDetail';
+import HomeShoppingRecipeRecommendation from './pages/recipes/HomeShoppingRecipeRecommendation';
 // 결제 관련 페이지
 import KokPayment from './pages/user/KokPayment';
 
@@ -97,6 +98,9 @@ function App() {
                 
                 {/* 레시피 결과 경로 (/recipes/by-ingredients) - 레시피 추천 결과 페이지 (이전 버전 호환) */}
                 <Route path="/recipes/by-ingredients" element={<RecipeResult />} />
+                
+                {/* 홈쇼핑 상품 기반 레시피 추천 경로 (/recipes/homeshopping-recommendation) */}
+                <Route path="/recipes/homeshopping-recommendation" element={<HomeShoppingRecipeRecommendation />} />
                 
                 {/* 레시피 상세 경로 (/recipes/:recipeId) - 레시피 상세 페이지 */}
                 <Route path="/recipes/:recipeId" element={<RecipeDetail />} />

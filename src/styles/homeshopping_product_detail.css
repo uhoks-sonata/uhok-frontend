@@ -1435,7 +1435,7 @@
 }
 
 /* ===== 레시피 추천 섹션 ===== */
-.recipe-recommendation-section {
+.hs-recom-recipe-recommendation-section {
   margin: 20px 0;
   background: #fff;
   border-radius: 12px;
@@ -1443,158 +1443,147 @@
   overflow: hidden;
 }
 
-.recipe-section-header {
-  padding: 20px 20px 16px 20px;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.recipe-section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 20px 16px 20px;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.recipe-section-title {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
-}
-
-.recipe-search-button {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 10px 16px;
-  font-size: 14px;
-  font-weight: 500;
+.hs-recom-recipe-section-content {
+  background: transparent;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
 
-.recipe-search-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+.hs-recom-recipe-section-content:hover {
+  background: transparent;
 }
 
-.recipe-search-button:active {
-  transform: translateY(0);
-}
-
-.recipe-list {
-  padding: 0;
-}
-
-.recipe-item {
-  padding: 20px;
-  border-bottom: 1px solid #f8f9fa;
-  transition: background-color 0.2s ease;
-}
-
-.recipe-item:last-child {
-  border-bottom: none;
-}
-
-.recipe-item:hover {
-  background-color: #f8f9fa;
-}
-
-.recipe-info {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.recipe-name {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #2c3e50;
-  line-height: 1.4;
-}
-
-.recipe-meta {
-  display: flex;
-  gap: 16px;
-  font-size: 13px;
-  color: #666;
-}
-
-.cooking-time,
-.difficulty {
+.hs-recom-recipe-section-content .hs-recom-recipe-kokrecom-toggle-section {
+  padding-left: 23px;
+  padding: 16px 20px;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 4px;
+  justify-content: space-between;
+  min-height: 66px; /* 콕 상품 추천과 동일한 높이 */
 }
 
-.recipe-description {
-  margin: 0;
-  font-size: 14px;
-  color: #555;
-  line-height: 1.5;
+.hs-recom-recipe-section-content .hs-recom-recipe-kokrecom-toggle-section:hover {
+  background: transparent;
 }
 
-.recipe-ingredients {
+.hs-recom-recipe-section-text {
+  font-size: 15px;
+  color: #838383;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.hs-recom-recipe-section-icon {
+  width: 26px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+}
+
+.hs-recom-recipe-section-arrow {
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hs-recom-recipe-section-arrow svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* 별점 컴포넌트 스타일 */
+.star-rating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.star-rating-stars {
+  display: flex;
+  gap: 2px;
+}
+
+.star-rating-stars .star-icon {
+  transition: transform 0.2s ease;
+}
+
+.star-rating-stars .star-icon:hover {
+  transform: scale(1.1);
+}
+
+.star-rating-score {
+  font-size: 12px;
+  color: #333;
+  font-weight: 600;
+}
+
+/* 레시피 미리보기 카드 스타일 */
+.hs-recom-recipe-preview {
+  padding: 0 20px 16px 20px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.hs-recom-recipe-preview-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.hs-recom-recipe-preview-content:hover {
+  background: #f0f0f0;
+  transform: translateY(-1px);
+}
+
+.hs-recom-recipe-preview-text {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  flex: 1;
 }
 
-.ingredients-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #666;
-}
-
-.ingredients-list {
-  font-size: 13px;
-  color: #777;
-  line-height: 1.4;
-}
-
-/* 레시피 정보 메시지 */
-.recipe-info-message {
-  padding: 40px 20px;
-  text-align: center;
-}
-
-.recipe-message-text {
-  margin: 0;
-  font-size: 16px;
+.hs-recom-recipe-preview-title {
+  font-size: 14px;
+  color: #333;
   font-weight: 500;
-  color: #666;
-  line-height: 1.4;
 }
 
-/* 반응형 디자인 */
-@media (max-width: 768px) {
-  .recipe-recommendation-section {
-    margin: 16px 0;
-    border-radius: 8px;
-  }
-  
-  .recipe-section-header {
-    padding: 16px 16px 12px 16px;
-  }
-  
-  .recipe-item {
-    padding: 16px;
-  }
-  
-  .recipe-name {
-    font-size: 15px;
-  }
-  
-  .recipe-meta {
-    gap: 12px;
-    font-size: 12px;
-  }
-  
-  .recipe-description {
-    font-size: 13px;
-  }
+.hs-recom-recipe-preview-rating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hs-recom-recipe-preview-rating-text {
+  font-size: 12px;
+  color: #666;
+}
+
+.hs-recom-recipe-preview-arrow {
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+.hs-recom-recipe-preview-arrow svg {
+  width: 12px;
+  height: 12px;
 }

@@ -676,37 +676,34 @@ const HomeShoppingProductDetail = () => {
            onKokProductClick={handleKokProductClick}
          />
          
-         {/* 레시피 추천 섹션 - 콕 상품 추천 아래에 위치 */}
-         {productDetail?.is_ingredient && (
-           <div className="recipe-recommendation-section">
-             <div className="recipe-section-header">
-               <h3 className="recipe-section-title">이 상품으로 만들 수 있는 레시피</h3>
-               <button 
-                 className="recipe-search-button"
-                                 onClick={() => navigate('/recipes/result', {
-                  state: {
-                    recipes: [],
-                    ingredients: [productDetail.product_name],
-                    searchType: 'keyword',
-                    page: 1,
-                    total: 0,
-                    combination_number: 1,
-                    has_more_combinations: false,
-                    product_id: productDetail.product_id,
-                    product_name: productDetail.product_name
-                  }
-                })}
-               >
-                 레시피 보러 가기
-               </button>
+                                       {/* 레시피 추천 섹션 - 콕 상품 추천 아래에 위치 */}
+           {productDetail?.is_ingredient && (
+             <div 
+               className="hs-recom-recipe-recommendation-section"
+               onClick={() => navigate('/recipes/homeshopping-recommendation', {
+                 state: {
+                   product_id: productDetail.product_id,
+                   product_name: productDetail.product_name
+                 }
+               })}
+               style={{ cursor: 'pointer' }}
+             >
+               <div className="hs-recom-recipe-section-content">
+                 <div className="hs-recom-recipe-kokrecom-toggle-section">
+                   <div className="hs-recom-recipe-section-text">
+                     
+                     <span>보고 있는 상품으로 만들 수 있는 <b style={{ color: '#FA5F8C' }}>레시피</b>를 추천드려요!</span>
+                   </div>
+                   <div className="hs-recom-recipe-section-arrow">
+                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                       <path d="M9 18L15 12L9 6" stroke="#838383" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                     </svg>
+                   </div>
+                 </div>
+                 
+               </div>
              </div>
-             <div className="recipe-info-message">
-               <p className="recipe-message-text">
-                 이 상품으로 만들 수 있는 다양한 레시피를 찾아보세요!
-               </p>
-             </div>
-           </div>
-         )}
+           )}
          
                                    {/* 탭 네비게이션 */}
          <div className="tab-navigation">
