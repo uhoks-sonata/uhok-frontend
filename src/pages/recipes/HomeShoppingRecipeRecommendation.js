@@ -78,7 +78,7 @@ const HomeShoppingRecipeRecommendation = () => {
   
   // 레시피 클릭 시 상세 페이지로 이동
   const handleRecipeClick = (recipeId) => {
-    navigate(`/recipes/detail/${recipeId}`);
+    navigate(`/recipes/${recipeId}`);
   };
   
   // 뒤로 가기
