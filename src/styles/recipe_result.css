@@ -70,6 +70,49 @@
   border-left: 4px solid #ffffff;
 }
 
+/* 키워드 텍스트 스타일 */
+.keyword-text {
+  color: #EA008A;
+  font-weight: 600;
+}
+
+/* 레시피 추천 설명 텍스트 스타일 */
+.recipe-suggestion-text {
+  color: #999;
+  font-weight: 400;
+}
+
+/* 추출된 키워드 섹션 스타일 */
+.extracted-keywords-section {
+  padding: 0 16px 16px 16px;
+  background-color: #ffffff;
+}
+
+.keywords-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.keywords-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.keyword-tag {
+  display: inline-block;
+  padding: 6px 12px;
+  background-color: #f0f8ff;
+  color: #0066cc;
+  border: 1px solid #cce5ff;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
 /* 소진희망재료 검색용 제목 스타일 */
 .ingredient-search-title {
   font-size: 16px;
@@ -276,6 +319,20 @@
 .scrap-count {
   font-size: 12px;
   color: #666;
+}
+
+/* 북마크 아이콘 스타일 */
+.bookmark-icon {
+  width: 14px;
+  height: 14px;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+.bookmark-count {
+  font-size: 12px;
+  color: #666;
+  vertical-align: middle;
 }
 
 /* recipe-result 페이지 전용 matched-ingredients 스타일 */

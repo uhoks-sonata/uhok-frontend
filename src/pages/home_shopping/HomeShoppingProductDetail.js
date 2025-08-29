@@ -171,22 +171,34 @@ const HomeShoppingProductDetail = () => {
          }
          
          // 상품이 식재료인지 확인하고 레시피 추천 가져오기
-         console.log('🔍 상품 분류 확인 API 호출 (product_id):', productDetail.product_id);
-         const classifyResponse = await homeShoppingApi.checkProductClassify(productDetail.product_id);
-         console.log('💡 상품 분류 응답:', classifyResponse);
-         
-         // 상품 분류 정보를 productDetail에 저장
-         if (isMounted && classifyResponse) {
-           setProductDetail(prev => ({
-             ...prev,
-             is_ingredient: classifyResponse.is_ingredient
-           }));
+         console.log('🔍 레시피 추천 API 호출 (product_id):', productDetail.product_id);
+         try {
+           const recipeResponse = await homeShoppingApi.getRecipeRecommendations(productDetail.product_id);
+           console.log('💡 레시피 추천 응답:', recipeResponse);
            
-                       if (classifyResponse.is_ingredient) {
-              console.log('🥬 식재료 상품 확인됨, 레시피 추천 버튼 표시');
-            } else {
-              console.log('📦 완제품 상품이므로 레시피 추천 버튼 숨김');
-            }
+           // 새로운 API 응답에서 is_ingredient 정보를 가져와서 productDetail에 저장
+           if (isMounted && recipeResponse) {
+             setProductDetail(prev => ({
+               ...prev,
+               is_ingredient: recipeResponse.is_ingredient || false
+             }));
+             
+             if (recipeResponse.is_ingredient) {
+               console.log('🥬 식재료 상품 확인됨, 레시피 추천 버튼 표시');
+             } else {
+               console.log('📦 완제품 상품이므로 레시피 추천 버튼 숨김');
+             }
+           }
+         } catch (error) {
+           console.log('❌ 레시피 추천 API 호출 실패, 기본값으로 설정:', error);
+           // API 호출 실패 시 기본값으로 설정
+           if (isMounted) {
+             setProductDetail(prev => ({
+               ...prev,
+               is_ingredient: false
+             }));
+             console.log('📦 API 호출 실패로 인해 완제품으로 설정');
+           }
          }
          
        } catch (error) {
@@ -326,7 +338,7 @@ const HomeShoppingProductDetail = () => {
   // 레시피 가용성 확인 함수
   const checkRecipeAvailability = async () => {
     try {
-      // 레시피 추천 API 호출
+      // 새로운 레시피 추천 API 호출
       const response = await homeShoppingApi.getRecipeRecommendations(productDetail.product_id);
       
       if (response && response.recipes && response.recipes.length > 0) {

@@ -7,6 +7,7 @@ import Loading from '../../components/Loading';
 import ModalManager, { showNoRecipeNotification, hideModal } from '../../components/LoadingModal';
 import '../../styles/recipe_result.css';
 import fallbackImg from '../../assets/no_items.png';
+import bookmarkIcon from '../../assets/bookmark-icon.png';
 
 const HomeShoppingRecipeRecommendation = () => {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ const HomeShoppingRecipeRecommendation = () => {
   // 상태 관리
   const [recipes, setRecipes] = useState([]);
   const [productInfo, setProductInfo] = useState(null);
+  const [extractedKeywords, setExtractedKeywords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [modalState, setModalState] = useState({ isVisible: false, modalType: 'loading' });
@@ -46,6 +48,12 @@ const HomeShoppingRecipeRecommendation = () => {
         
         if (response && response.recipes) {
           setRecipes(response.recipes);
+          
+          // extracted_keywords가 있으면 설정
+          if (response.extracted_keywords && response.extracted_keywords.length > 0) {
+            setExtractedKeywords(response.extracted_keywords);
+            // console.log('🔑 추출된 키워드:', response.extracted_keywords);
+          }
           
           // 레시피가 0개인 경우 모달 표시
           if (response.recipes.length === 0) {
@@ -135,9 +143,15 @@ const HomeShoppingRecipeRecommendation = () => {
                     {/* 상품 정보 섹션 */}
         {productInfo && (
           <div className="product-info-section">
-                       <div className="search-keyword-title">
-               {productInfo.product_name}
-             </div>
+                                                                                                                                               <div className="search-keyword-title">
+                <span className="keyword-text">
+                  {extractedKeywords && extractedKeywords.length > 0 
+                    ? extractedKeywords.join(', ')
+                    : productInfo.product_name
+                  }
+                </span>
+                <span className="recipe-suggestion-text">의 레시피를 추천드려요</span>
+              </div>
           </div>
         )}
        
@@ -169,8 +183,8 @@ const HomeShoppingRecipeRecommendation = () => {
                      : recipe.recipe_name}
                  </h3>
                  
-                 {/* 요리 시간과 난이도 */}
-                 {(recipe.cooking_time || recipe.difficulty) && (
+                 {/* 요리 시간, 난이도, 스크랩 수를 한 줄로 표시 */}
+                 {(recipe.cooking_time || recipe.difficulty || recipe.scrap_count) && (
                    <div className="recipe-stats">
                      {recipe.cooking_time && (
                        <span className="serving serving-small">{recipe.cooking_time}</span>
@@ -180,6 +194,17 @@ const HomeShoppingRecipeRecommendation = () => {
                      )}
                      {recipe.difficulty && (
                        <span className="scrap-count">{recipe.difficulty}</span>
+                     )}
+                     {recipe.scrap_count && (
+                       <>
+                         {(recipe.cooking_time || recipe.difficulty) && (
+                           <span className="separator"> | </span>
+                         )}
+                         <span className="scrap-count">
+                           <img className="bookmark-icon" src={bookmarkIcon} alt="북마크" />
+                           <span className="bookmark-count">{recipe.scrap_count}</span>
+                         </span>
+                       </>
                      )}
                    </div>
                  )}
