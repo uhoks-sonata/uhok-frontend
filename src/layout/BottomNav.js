@@ -11,21 +11,21 @@ import api from "../pages/api";
 // 로그 API를 가져옵니다
 import { logApi } from "../api/logApi";
 // 콕 쇼핑몰 아이콘 (활성 상태) import
-import bottomIconKok from "../assets/bottom_icon_kok.png";
+import bottomIconKok from "../assets/bottom_icon_kok.svg";
 // 콕 쇼핑몰 아이콘 (비활성 상태) import
-import bottomIconKokBlack from "../assets/bottom_icon_kok_black.png";
+import bottomIconKokBlack from "../assets/bottom_icon_kok_black.svg";
 // 레시피 아이콘 (비활성 상태) import
-import bottomIconReciptBlack from "../assets/bottom_icon_recipt_black.png";
+import bottomIconReciptBlack from "../assets/bottom_icon_recipt_black.svg";
 // 레시피 아이콘 (비활성 상태) import
-import bottomIconRecipt from "../assets/bottom_icon_recipt.png";
+import bottomIconRecipt from "../assets/bottom_icon_recipt.svg";
 // 찜 아이콘 (활성 상태) import
-import bottomIconHeart from "../assets/bottom_icon_heart.png";
+import bottomIconHeart from "../assets/bottom_icon_heart.svg";
 // 찜 아이콘 (비활성 상태) import
-import bottomIconHeartBlack from "../assets/bottom_icon_heart_black.png";
+import bottomIconHeartBlack from "../assets/bottom_icon_heart_black.svg";
 // 마이페이지 아이콘 (활성 상태) import
-import bottomIconMypage from "../assets/bottom_icon_mypage.png";
+import bottomIconMypage from "../assets/bottom_icon_mypage.svg";
 // 마이페이지 아이콘 (비활성 상태) import
-import bottomIconMypageBlack from "../assets/bottom_icon_mypage_black.png";
+import bottomIconMypageBlack from "../assets/bottom_icon_mypage_black.svg";
 
 // ===== 하단 네비게이션 컴포넌트 =====
 // 앱 하단에 위치하는 메인 네비게이션 바 컴포넌트
