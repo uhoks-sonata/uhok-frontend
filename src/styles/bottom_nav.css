@@ -86,13 +86,13 @@ body {
 
 .bottom-nav a.active,
 .bottom-nav a:hover {
-  color: #f68cb1;
+  color: #000000;
   font-weight: 900;
 }
 
 .bottom-nav a.active .nav-label,
 .bottom-nav a:hover .nav-label {
-  color: #f68cb1;
+  color: #000000;
   font-weight: 600;
 }
 
@@ -122,8 +122,8 @@ body {
 .bottom-nav a:hover .nav-icon,
 .bottom-nav a.nav-item:hover .nav-icon,
 .bottom-nav a:hover img.nav-icon {
-  width: 50px !important;
-  height: 50px !important;
+  width: 43px !important;
+  height: 43px !important;
   filter: brightness(0.8) saturate(1.2);
 }
 
