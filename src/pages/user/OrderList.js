@@ -130,44 +130,60 @@ const OrderList = () => {
           days: 7,
           order_count: 2,
           orders: [
-                          {
-                order_id: 54,
-                order_number: "000000000054",
-                order_date: "2025. 8. 19",
-                delivery_status: "배송완료",
-                delivery_date: "7/28(월) 도착",
-                product_name: "구운계란 30구+핑크솔트 증정",
-                product_image: testImage1,
-                price: 11900,
-                quantity: 1,
-                recipe_related: false,
-                recipe_title: null,
-                recipe_rating: null,
-                recipe_scrap_count: null,
-                recipe_description: null,
-                ingredients_owned: null,
-                total_ingredients: null
-              },
-              {
-                order_id: 25,
-                order_number: "000000000025",
-                order_date: "2025. 8. 13",
-                delivery_status: "배송완료",
-                delivery_date: "7/28(월) 도착",
-                product_name: "초코파이 12개입",
-                product_image: testImage2,
-                price: 8500,
-                quantity: 1,
-                recipe_related: false,
-                recipe_title: null,
-                recipe_rating: null,
-                recipe_scrap_count: null,
-                recipe_description: null,
-                ingredients_owned: null,
-                total_ingredients: null
-              }
-            ]
-          };
+            {
+              order_id: 151,
+              order_number: "000000000151",
+              order_date: "2025. 8. 19",
+              delivery_status: "배송완료",
+              delivery_date: "7/28(월) 도착",
+              total_amount: 6900,
+              order_details: [
+                {
+                  kok_order_id: 119,
+                  kok_product_id: 10045061,
+                  kok_product_name: "[강원뜰] 강원도 산지직송 알감자/설봉감자 1.5kg ~ 20kg 모음전",
+                  quantity: 1,
+                  unit_price: 6900,
+                  total_price: 6900
+                }
+              ],
+              product_image: testImage1,
+              recipe_related: false,
+              recipe_title: null,
+              recipe_rating: null,
+              recipe_scrap_count: null,
+              recipe_description: null,
+              ingredients_owned: null,
+              total_ingredients: null
+            },
+            {
+              order_id: 152,
+              order_number: "000000000152",
+              order_date: "2025. 8. 13",
+              delivery_status: "배송완료",
+              delivery_date: "7/28(월) 도착",
+              total_amount: 8500,
+              order_details: [
+                {
+                  kok_order_id: 120,
+                  kok_product_id: 10045062,
+                  kok_product_name: "초코파이 12개입",
+                  quantity: 1,
+                  unit_price: 8500,
+                  total_price: 8500
+                }
+              ],
+              product_image: testImage2,
+              recipe_related: false,
+              recipe_title: null,
+              recipe_rating: null,
+              recipe_scrap_count: null,
+              recipe_description: null,
+              ingredients_owned: null,
+              total_ingredients: null
+            }
+          ]
+        };
       }
       
       // 최근 7일 주문내역 API 응답 구조 확인
@@ -185,30 +201,63 @@ const OrderList = () => {
       
       // 최근 7일 주문내역 API 응답 구조를 프론트엔드 형식으로 변환
       const transformedOrders = ordersData.orders.map((order) => {
-        return {
-          order_id: order.order_id,
-          order_number: order.order_number,
-          order_date: order.order_date,
-          status: 'delivered', // API에서 delivery_status로 제공되지만 일관성을 위해
-          total_amount: order.price * order.quantity,
-          items: [{
-            product_id: null, // API에서 제공되지 않음
-            product_name: order.product_name || '상품명 없음',
-            product_image: order.product_image || testImage1,
-            quantity: order.quantity,
-            price: order.price,
-            delivery_status: order.delivery_status,
-            delivery_date: order.delivery_date,
-            recipe_related: order.recipe_related,
-            recipe_title: order.recipe_title,
-            recipe_rating: order.recipe_rating,
-            recipe_scrap_count: order.recipe_scrap_count,
-            recipe_description: order.recipe_description,
-            ingredients_owned: order.ingredients_owned,
-            total_ingredients: order.total_ingredients
-          }]
-        };
-      });
+        // order_details가 있는 경우 (장바구니 주문)와 없는 경우 (단일 상품 주문) 구분
+        if (order.order_details && Array.isArray(order.order_details)) {
+          // 장바구니 주문: order_details의 각 항목을 개별 주문으로 변환
+          return order.order_details.map((detail) => {
+            return {
+              order_id: order.order_id,
+              kok_order_id: detail.kok_order_id, // kok_order_id 추가
+              order_number: order.order_number,
+              order_date: order.order_date,
+              status: 'delivered',
+              total_amount: detail.total_price,
+              items: [{
+                product_id: detail.kok_product_id,
+                kok_order_id: detail.kok_order_id, // kok_order_id 추가
+                product_name: detail.kok_product_name || '상품명 없음',
+                product_image: order.product_image || testImage1,
+                quantity: detail.quantity,
+                price: detail.unit_price,
+                delivery_status: order.delivery_status,
+                delivery_date: order.delivery_date,
+                recipe_related: order.recipe_related,
+                recipe_title: order.recipe_title,
+                recipe_rating: order.recipe_rating,
+                recipe_scrap_count: order.recipe_scrap_count,
+                recipe_description: order.recipe_description,
+                ingredients_owned: order.ingredients_owned,
+                total_ingredients: order.total_ingredients
+              }]
+            };
+          });
+        } else {
+          // 단일 상품 주문: 기존 방식 유지
+          return {
+            order_id: order.order_id,
+            order_number: order.order_number,
+            order_date: order.order_date,
+            status: 'delivered',
+            total_amount: order.price * order.quantity,
+            items: [{
+              product_id: null,
+              product_name: order.product_name || '상품명 없음',
+              product_image: order.product_image || testImage1,
+              quantity: order.quantity,
+              price: order.price,
+              delivery_status: order.delivery_status,
+              delivery_date: order.delivery_date,
+              recipe_related: order.recipe_related,
+              recipe_title: order.recipe_title,
+              recipe_rating: order.recipe_rating,
+              recipe_scrap_count: order.recipe_scrap_count,
+              recipe_description: order.recipe_description,
+              ingredients_owned: order.ingredients_owned,
+              total_ingredients: order.total_ingredients
+            }]
+          };
+        }
+      }).flat(); // 중첩된 배열을 평탄화
       
       // 파싱된 데이터를 상태에 저장합니다
       setOrderData({
@@ -254,13 +303,15 @@ const OrderList = () => {
         orders: [
           {
             order_id: 54,
+            kok_order_id: 119, // kok_order_id 추가
             order_number: "000000000054",
             order_date: "2025. 8. 19",
             status: 'delivered',
             total_amount: 23800,
             items: [
               {
-                product_id: null,
+                product_id: 10045061,
+                kok_order_id: 119, // kok_order_id 추가
                 product_name: '신선한 채소 세트',
                 product_image: testImage1,
                 quantity: 2,
@@ -279,13 +330,15 @@ const OrderList = () => {
           },
           {
             order_id: 25,
+            kok_order_id: 120, // kok_order_id 추가
             order_number: "000000000025",
             order_date: "2025. 8. 13",
             status: 'delivered',
             total_amount: 32000,
             items: [
               {
-                product_id: null,
+                product_id: 10045062,
+                kok_order_id: 120, // kok_order_id 추가
                 product_name: '유기농 과일 박스',
                 product_image: testImage2,
                 quantity: 1,
@@ -328,16 +381,20 @@ const OrderList = () => {
     window.history.back();
   };
 
-  // 주문 상세 보기 핸들러를 정의합니다 (비동기 처리 개선)
-  const handleOrderDetailClick = async (orderId) => {
+  // 주문 상세 보기 핸들러를 정의합니다 (kok_order_id 사용)
+  const handleOrderDetailClick = async (orderId, kokOrderId = null) => {
     try {
-      console.log('주문 상세 보기:', orderId);
+      console.log('주문 상세 보기:', { orderId, kokOrderId });
+      
+      // kok_order_id가 있는 경우 해당 ID로 상세 조회, 없으면 order_id 사용
+      const targetId = kokOrderId || orderId;
+      console.log('사용할 ID:', targetId);
       
       // orderApi를 활용하여 주문 상세 정보를 비동기로 가져옵니다
-      const orderDetail = await orderApi.getOrderDetail(orderId);
+      const orderDetail = await orderApi.getOrderDetail(targetId);
       console.log('주문 상세 정보:', orderDetail);
       // 주문 상세 페이지로 이동하는 기능을 구현할 예정입니다
-      // window.location.href = `/order-detail/${orderId}`;
+      // window.location.href = `/order-detail/${targetId}`;
     } catch (error) {
       // 네트워크 에러인 경우 조용히 처리
       if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED' || 
@@ -465,7 +522,12 @@ const OrderList = () => {
                       
                       {/* 상품 정보들 - 같은 주문번호의 모든 상품을 표시합니다 */}
                       {orders.map((order, index) => (
-                        <div key={`${orderId}-${index}`} className="product-info">
+                        <div 
+                          key={`${orderId}-${index}`} 
+                          className="product-info"
+                          onClick={() => handleOrderDetailClick(order.order_id, order.kok_order_id)}
+                          style={{ cursor: 'pointer' }}
+                        >
                           {/* 상품 이미지를 표시합니다 */}
                           <div className="product-image">
                             <img src={order.items[0].product_image} alt={order.items[0].product_name} />
@@ -480,6 +542,12 @@ const OrderList = () => {
                                 : order.items[0].product_name
                               }
                             </div>
+                            {/* kok_order_id 표시 (개발용) */}
+                            {order.kok_order_id && (
+                              <div className="kok-order-id" style={{ fontSize: '12px', color: '#999' }}>
+                                KOK ID: {order.kok_order_id}
+                              </div>
+                            )}
                             {/* 레시피 관련 정보 표시 */}
                             {order.items[0].recipe_related && order.items[0].recipe_title && (
                               <div className="recipe-info">

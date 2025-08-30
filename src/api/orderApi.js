@@ -15,11 +15,34 @@ export const orderApi = {
       const currentCartItems = currentCart.cart_items || [];
       
       console.log('🔍 현재 장바구니 상태:', currentCartItems);
+      console.log('🔍 장바구니 항목 상세 구조:', currentCartItems.map(item => ({
+        kok_cart_id: item.kok_cart_id,
+        cart_id: item.cart_id,
+        id: item.id,
+        전체_구조: item
+      })));
       
-      // 현재 장바구니에 있는 항목들의 ID 집합 (kok_cart_id 기준)
-      const currentCartIds = new Set(currentCartItems.map(item => item.kok_cart_id));
+      // 현재 장바구니에 있는 항목들의 ID 집합 (여러 필드 확인)
+      const currentCartIds = new Set();
+      const currentCartIdMap = new Map(); // ID별 전체 항목 정보 저장
       
-      console.log('🔍 현재 장바구니 ID들:', Array.from(currentCartIds));
+      currentCartItems.forEach(item => {
+        // 가능한 모든 ID 필드 추가
+        if (item.kok_cart_id) {
+          currentCartIds.add(item.kok_cart_id);
+          currentCartIdMap.set(item.kok_cart_id, item);
+        }
+        if (item.cart_id) {
+          currentCartIds.add(item.cart_id);
+          currentCartIdMap.set(item.cart_id, item);
+        }
+        if (item.id) {
+          currentCartIds.add(item.id);
+          currentCartIdMap.set(item.id, item);
+        }
+      });
+      
+      console.log('🔍 현재 장바구니 ID들 (모든 필드):', Array.from(currentCartIds));
       console.log('🔍 선택된 항목들:', selectedItems);
       
       // 선택된 항목들이 현재 장바구니에 존재하는지 확인
@@ -29,25 +52,34 @@ export const orderApi = {
       for (const selectedItem of selectedItems) {
         console.log('🔍 검증 중인 항목:', selectedItem);
         
-        // cart_id가 kok_cart_id와 일치하는지 확인
-        if (currentCartIds.has(selectedItem.cart_id)) {
+        // cart_id 또는 kok_cart_id가 현재 장바구니에 있는지 확인
+        const cartId = selectedItem.kok_cart_id || selectedItem.cart_id;
+        console.log('🔍 검증 중인 cartId:', cartId);
+        console.log('🔍 현재 장바구니 ID들:', Array.from(currentCartIds));
+        console.log('🔍 cartId가 장바구니에 있는지:', currentCartIds.has(cartId));
+        
+        if (currentCartIds.has(cartId)) {
           // 현재 장바구니에서 해당 항목 찾기
-          const currentItem = currentCartItems.find(item => item.kok_cart_id === selectedItem.cart_id);
+          const currentItem = currentCartIdMap.get(cartId);
           console.log('🔍 찾은 현재 항목:', currentItem);
           
-          if (currentItem && currentItem.kok_quantity >= selectedItem.quantity) {
+          // 수량 비교 (여러 필드 확인)
+          const currentQuantity = currentItem.kok_quantity || currentItem.quantity || 0;
+          const requestedQuantity = selectedItem.kok_quantity || selectedItem.quantity || 1;
+          
+          if (currentItem && currentQuantity >= requestedQuantity) {
             validItems.push(selectedItem);
             console.log('✅ 유효한 항목 추가:', selectedItem);
           } else {
             invalidItems.push({
-              cart_id: selectedItem.cart_id,
-              reason: currentItem ? `수량이 부족합니다. (요청: ${selectedItem.quantity}, 보유: ${currentItem.kok_quantity})` : '항목을 찾을 수 없습니다.'
+              cart_id: cartId,
+              reason: currentItem ? `수량이 부족합니다. (요청: ${requestedQuantity}, 보유: ${currentQuantity})` : '항목을 찾을 수 없습니다.'
             });
             console.log('❌ 수량 부족 또는 항목 없음:', selectedItem);
           }
         } else {
           invalidItems.push({
-            cart_id: selectedItem.cart_id,
+            cart_id: cartId,
             reason: '장바구니에서 삭제되었습니다.'
           });
           console.log('❌ 장바구니에서 삭제됨:', selectedItem);
@@ -79,6 +111,7 @@ export const orderApi = {
         
         if (process.env.NODE_ENV === 'development') {
           // 개발 환경에서는 모든 항목을 유효하다고 처리
+          console.log('🔄 개발 환경 모의 유효성 검증 처리');
           return {
             isValid: true,
             validItems: selectedItems,
@@ -87,6 +120,18 @@ export const orderApi = {
             isMock: true
           };
         }
+      }
+      
+      // 다른 에러들도 개발 환경에서는 임시 처리
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('🔄 개발 환경에서 모든 에러를 임시 처리');
+        return {
+          isValid: true,
+          validItems: selectedItems,
+          invalidItems: [],
+          message: '개발 환경: 모든 항목이 유효합니다. (에러 임시 처리)',
+          isMock: true
+        };
       }
       
       throw new Error('장바구니 상태를 확인할 수 없습니다.');
@@ -102,44 +147,10 @@ export const orderApi = {
       const validationResult = await orderApi.validateCartItems(selectedItems);
       
       if (!validationResult.isValid) {
-        console.log('⚠️ 장바구니 항목 유효성 검증 실패, 자동 장바구니 추가 시도:', validationResult);
+        console.log('⚠️ 장바구니 항목 유효성 검증 실패:', validationResult);
         
-        // 장바구니에 없는 상품들을 자동으로 추가
-        const cartApi = require('./cartApi').cartApi;
-        const addedItems = [];
-        
-        for (const invalidItem of validationResult.invalidItems) {
-          try {
-            // 장바구니에 상품 추가 (사용자에게는 보이지 않음)
-            const addResult = await cartApi.addToCart({
-              kok_product_id: invalidItem.cart_id,
-              kok_quantity: invalidItem.quantity || 1,
-              recipe_id: 0
-            });
-            
-            console.log('✅ 자동 장바구니 추가 성공:', addResult);
-            addedItems.push(invalidItem);
-          } catch (addError) {
-            console.error('❌ 자동 장바구니 추가 실패:', addError);
-          }
-        }
-        
-        // 자동 추가 후 다시 유효성 검증
-        if (addedItems.length > 0) {
-          console.log('🔄 자동 추가 후 재검증 시도');
-          const revalidationResult = await orderApi.validateCartItems(selectedItems);
-          
-          if (revalidationResult.isValid) {
-            console.log('✅ 자동 추가 후 유효성 검증 성공');
-            // 자동 장바구니 추가가 발생했으므로 장바구니 페이지로 리다이렉트 필요
-            throw new Error('CART_REDIRECT_NEEDED');
-          } else {
-            console.error('❌ 자동 추가 후에도 유효성 검증 실패:', revalidationResult);
-            throw new Error('장바구니 상태를 복구할 수 없습니다. 장바구니를 다시 확인해주세요.');
-          }
-        } else {
-          throw new Error(validationResult.message);
-        }
+        // 유효하지 않은 항목이 있으면 에러 발생
+        throw new Error(validationResult.message);
       }
       
       // 유효한 항목들만 사용하여 주문 생성
@@ -191,6 +202,29 @@ export const orderApi = {
       }
     } catch (error) {
       console.error('❌ 주문 생성 실패:', error);
+      
+      // 422 에러 특별 처리
+      if (error.response?.status === 422) {
+        console.error('❌ 422 유효성 검증 에러:', {
+          responseData: error.response.data
+        });
+        
+        // 필드별 에러 상세 분석
+        if (error.response.data.detail && Array.isArray(error.response.data.detail)) {
+          error.response.data.detail.forEach((err, index) => {
+            console.error(`❌ 필드 에러 ${index + 1}:`, {
+              type: err.type,
+              location: err.loc,
+              message: err.msg,
+              input: err.input
+            });
+          });
+        }
+        
+        // 422 에러는 유효성 검증 실패이므로 특별한 메시지로 처리
+        const errorMessage = error.response.data?.message || error.response.data?.detail?.[0]?.msg || '요청 데이터가 올바르지 않습니다.';
+        throw new Error(`데이터 유효성 검증 실패: ${errorMessage}`);
+      }
       
       // 백엔드 서버가 실행되지 않은 경우 모의 응답 제공 (개발 환경)
       if (error.response?.status === 500 || error.code === 'ERR_NETWORK' || error.response?.status === 404) {
@@ -361,11 +395,11 @@ export const orderApi = {
 
   // ===== 결제 관련 =====
   
-  // 콕 결제 확인(단건)
-  confirmKokPayment: async (kokOrderId) => {
-    try {
-      console.log('🚀 콕 결제 확인(단건) API 요청:', { kokOrderId });
-      const response = await api.post(`/api/orders/kok/${kokOrderId}/payment/confirm`);
+           // 콕 결제 확인(단건) - orderId 사용
+    confirmKokPayment: async (orderId) => {
+      try {
+        console.log('🚀 콕 결제 확인(단건) API 요청:', { orderId });
+        const response = await api.post(`/api/orders/payment/${orderId}/confirm/v1`);
       
       // 200 상태 코드 확인 (API 명세서 기준)
       if (response.status === 200) {
@@ -381,11 +415,11 @@ export const orderApi = {
     }
   },
 
-  // 결제확인(주문 단위)
-  confirmOrderUnitPayment: async (orderId) => {
-    try {
-      console.log('🚀 결제확인(주문 단위) API 요청:', { orderId });
-      const response = await api.post(`/api/orders/kok/order-unit/${orderId}/payment/confirm`);
+           // 결제확인(주문 단위) - confirmPayment와 동일한 엔드포인트 사용
+    confirmOrderUnitPayment: async (orderId) => {
+      try {
+        console.log('🚀 결제확인(주문 단위) API 요청:', { orderId });
+        const response = await api.post(`/api/orders/payment/${orderId}/confirm/v1`);
       
       // 200 상태 코드 확인 (API 명세서 기준)
       if (response.status === 200) {
@@ -460,16 +494,16 @@ export const orderApi = {
       // method가 제공된 경우에만 request body에 포함
       const requestData = method ? { method } : {};
       
-      console.log('🔍 결제 확인 요청 상세:', {
-        url: `/api/orders/payment/${orderId}/confirm/v1`,
-        method: 'POST',
-        data: requestData,
-        orderId: orderId,
-        orderIdType: typeof orderId
-      });
-      
-      // API 명세서에 맞는 엔드포인트 사용
-      const response = await api.post(`/api/orders/payment/${orderId}/confirm/v1`, requestData);
+             console.log('🔍 결제 확인 요청 상세:', {
+         url: `/api/orders/payment/${orderId}/confirm/v1`,
+         method: 'POST',
+         data: requestData,
+         orderId: orderId,
+         orderIdType: typeof orderId
+       });
+       
+       // API 명세서에 맞는 엔드포인트 사용
+       const response = await api.post(`/api/orders/payment/${orderId}/confirm/v1`, requestData);
       console.log('✅ 결제요청 (폴링) v1 API 응답:', response.data);
       return response.data;
     } catch (error) {

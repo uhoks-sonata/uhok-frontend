@@ -34,7 +34,7 @@ const BottomNav = ({ selectedItemsCount = 0, handlePayment = null, productInfo =
   const location = useLocation();
   const navigate = useNavigate();
 
-  // 공통 함수: 결제 페이지로 이동하는 로직 (Cart.js와 동일)
+  // 공통 함수: 결제 페이지로 이동하는 로직 (단순 인터페이스 이동)
   const navigateToPayment = (orderType = 'ORDER') => {
     if (selectedItems.size === 0) {
       alert('주문할 상품을 선택해주세요.');
@@ -45,9 +45,9 @@ const BottomNav = ({ selectedItemsCount = 0, handlePayment = null, productInfo =
       // 선택된 상품들의 정보 수집
       const selectedCartItems = cartItems.filter(item => selectedItems.has(item.kok_cart_id));
       
-      console.log(`🚀 ${orderType === 'ORDER' ? '주문하기' : '테스트'} - 선택된 상품들:`, selectedCartItems);
-      console.log(`🚀 ${orderType === 'ORDER' ? '주문하기' : '테스트'} - selectedItems.size:`, selectedItems.size);
-      console.log(`🚀 ${orderType === 'ORDER' ? '주문하기' : '테스트'} - cartItems.length:`, cartItems.length);
+      console.log(`🚀 주문하기 - 결제 페이지로 이동 (단순 인터페이스 이동)`);
+      console.log(`🔍 선택된 상품들:`, selectedCartItems);
+      console.log(`🔍 선택된 상품 개수:`, selectedItems.size);
       
       // 결제 페이지로 전달할 데이터 구성
       const navigationState = { 
@@ -62,31 +62,19 @@ const BottomNav = ({ selectedItemsCount = 0, handlePayment = null, productInfo =
         orderId: `${orderType}-${Date.now()}`
       };
       
-      console.log(`🚀 ${orderType === 'ORDER' ? '주문하기' : '테스트'} - 결제페이지로 이동 - 전달할 state:`, navigationState);
-      console.log(`📍 ${orderType === 'ORDER' ? '주문하기' : '테스트'} - navigate 함수 호출 직전`);
-      console.log(`📍 ${orderType === 'ORDER' ? '주문하기' : '테스트'} - navigationState.fromCart:`, navigationState.fromCart);
-      console.log(`📍 ${orderType === 'ORDER' ? '주문하기' : '테스트'} - navigationState.cartItems.length:`, navigationState.cartItems.length);
+      console.log(`🔍 결제 페이지로 전달할 데이터:`, navigationState);
       
-      // 결제 페이지로 이동
-      const navigateResult = navigate('/kok/payment', { 
+      // 결제 페이지로 이동 (단순 인터페이스 이동)
+      navigate('/kok/payment', { 
         state: navigationState,
         replace: false // 히스토리에 기록 남김
       });
       
-      console.log(`✅ ${orderType === 'ORDER' ? '주문하기' : '테스트'} - navigate 함수 호출 완료`);
-      console.log(`✅ ${orderType === 'ORDER' ? '주문하기' : '테스트'} - navigate 결과:`, navigateResult);
-      
-      // 추가 확인: 실제로 페이지가 이동되었는지 확인
-      setTimeout(() => {
-        console.log(`🔍 ${orderType === 'ORDER' ? '주문하기' : '테스트'} - 페이지 이동 후 확인`);
-        console.log(`🔍 ${orderType === 'ORDER' ? '주문하기' : '테스트'} - 현재 URL:`, window.location.href);
-        console.log(`🔍 ${orderType === 'ORDER' ? '주문하기' : '테스트'} - history.state:`, window.history.state);
-      }, 100);
+      console.log(`✅ 주문하기 - 결제 페이지로 이동 완료`);
       
     } catch (error) {
-      console.error(`❌ ${orderType === 'ORDER' ? '주문하기' : '테스트'} - 처리 실패:`, error);
-      console.error(`❌ ${orderType === 'ORDER' ? '주문하기' : '테스트'} - 에러 상세:`, error.message, error.stack);
-      alert(`${orderType === 'ORDER' ? '주문' : '테스트'} 처리에 실패했습니다. 다시 시도해주세요.`);
+      console.error(`❌ 주문하기 - 결제 페이지 이동 실패:`, error);
+      alert('결제 페이지로 이동하는 중 오류가 발생했습니다. 다시 시도해주세요.');
     }
   };
 
@@ -209,24 +197,29 @@ const BottomNav = ({ selectedItemsCount = 0, handlePayment = null, productInfo =
               className={`order-button ${isOrderButtonDisabled() ? 'disabled' : ''}`}
               onClick={() => {
                 if (location.pathname.startsWith('/kok/payment')) {
-                  // 결제 페이지에서는 handlePayment 함수 호출
+                  // 결제 페이지에서는 3단계 결제 프로세스 실행
                   if (handlePayment) {
-                    console.log('결제하기 버튼 클릭 - handlePayment 함수 호출');
+                    console.log('결제하기 버튼 클릭 - 3단계 결제 프로세스 시작');
+                    console.log('1단계: 주문 생성');
+                    console.log('2단계: 결제 확인');
+                    console.log('3단계: 결제 요청 응답 확인');
                     handlePayment();
                   } else {
                     console.log('결제 처리 중...');
                   }
                 } else {
-                  // 상품 상세 페이지나 장바구니에서는 결제 페이지로 이동
+                  // 상품 상세 페이지나 장바구니에서는 단순히 결제 페이지로 이동
                   if (location.pathname.startsWith('/kok/product/')) {
                     // 상품 상세페이지에서 주문하기 버튼 클릭 시
                     // 수량 선택 모달을 열기 위해 이벤트를 발생시킴
+                    console.log('주문하기 버튼 클릭 - 수량 선택 모달 열기');
                     const orderButtonEvent = new CustomEvent('openQuantityModal', {
                       detail: { productId: location.pathname.split('/').pop() }
                     });
                     window.dispatchEvent(orderButtonEvent);
                   } else {
-                    // 장바구니에서 주문하기 버튼 클릭 시
+                    // 장바구니에서 주문하기 버튼 클릭 시 - 단순 인터페이스 이동
+                    console.log('주문하기 버튼 클릭 - 결제 페이지로 이동 (단순 인터페이스 이동)');
                     navigateToPayment();
                   }
                 }

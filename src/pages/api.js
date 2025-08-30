@@ -199,6 +199,30 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
     
+    // 422 에러 처리 (유효성 검증 실패)
+    if (error.response?.status === 422) {
+      console.error('422 유효성 검증 에러:', {
+        url: error.config?.url,
+        method: error.config?.method?.toUpperCase(),
+        status: error.response.status,
+        statusText: error.response.statusText,
+        data: error.response.data,
+        requestData: error.config?.data
+      });
+      
+      // 필드별 에러 상세 분석
+      if (error.response.data?.detail && Array.isArray(error.response.data.detail)) {
+        error.response.data.detail.forEach((err, index) => {
+          console.error(`422 필드 에러 ${index + 1}:`, {
+            type: err.type,
+            location: err.loc,
+            message: err.msg,
+            input: err.input
+          });
+        });
+      }
+    }
+    
     // 기타 에러들에 대한 로깅
     if (error.response) {
       console.error('API 응답 에러:', {

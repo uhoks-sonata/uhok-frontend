@@ -420,14 +420,31 @@ API 연결 테스트 결과:
         return;
       }
 
+      // productId 유효성 검증
+      console.log('🔍 productId 검증:', { productId, type: typeof productId });
+      
+      if (!productId) {
+        throw new Error('상품 ID가 없습니다.');
+      }
+      
+      const parsedProductId = parseInt(productId);
+      if (isNaN(parsedProductId) || parsedProductId <= 0) {
+        throw new Error(`유효하지 않은 상품 ID: ${productId}`);
+      }
+
       const cartData = {
-        kok_product_id: parseInt(productId),
-        kok_price_id: 0, // 기본값 0
+        kok_product_id: parsedProductId,
         kok_quantity: 1, // 수량은 1개로 고정
         recipe_id: 0 // 레시피 ID는 0으로 설정
       };
 
       console.log('장바구니 추가 요청:', cartData);
+      console.log('🔍 디버깅 정보:', {
+        productId: productId,
+        productIdType: typeof productId,
+        productIdParsed: parseInt(productId),
+        isNaN: isNaN(parseInt(productId))
+      });
       
       const response = await cartApi.addToCart(cartData);
 
@@ -1053,7 +1070,7 @@ API 연결 테스트 결과:
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          zIndex: 2000
+          zIndex: 9999
         }}>
           <div style={{
             backgroundColor: 'white',
