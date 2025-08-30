@@ -127,13 +127,13 @@ export const homeshoppingChannels = [
 // homeshopping_id로 로고 찾기
 export const getLogoByHomeshoppingId = (homeshoppingId) => {
   const channel = homeshoppingChannels.find(ch => ch.id === homeshoppingId);
-  return channel ? channel.logo : homeshoppingLogoPublicshopping; // 기본값으로 공영쇼핑 로고
+  return channel;
 };
 
 // homeshopping_id로 채널 정보 찾기
 export const getChannelInfoByHomeshoppingId = (homeshoppingId) => {
   const channel = homeshoppingChannels.find(ch => ch.id === homeshoppingId);
-  return channel || homeshoppingChannels[5]; // 기본값으로 공영쇼핑
+  return channel;
 };
 
 export default homeshoppingChannels;

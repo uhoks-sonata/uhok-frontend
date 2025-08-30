@@ -8,12 +8,7 @@ import emptyHeartIcon from '../../assets/heart_empty.png';
 import filledHeartIcon from '../../assets/heart_filled.png';
 import testImage1 from '../../assets/test/test1.png';
 import testImage2 from '../../assets/test/test2.png';
-import homeshoppingLogoHomeandshopping from '../../assets/homeshopping_logo_homeandshopping.png';
-import homeshoppingLogoHyundai from '../../assets/homeshopping_logo_hyundai.png';
-import homeshoppingLogoNs from '../../assets/homeshopping_logo_ns.png';
-import homeshoppingLogoNsplus from '../../assets/homeshopping_logo_nsplus.png';
-import homeshoppingLogoPlusshop from '../../assets/homeshopping_logo_plusshop.png';
-import homeshoppingLogoPublicshopping from '../../assets/homeshopping_logo_publicshopping.png';
+import { getLogoByHomeshoppingId } from '../../components/homeshoppingLogo';
 import '../../styles/wishlist.css';
 
 const WishList = () => {
@@ -98,19 +93,33 @@ const WishList = () => {
       if (homeshoppingResponse.data && homeshoppingResponse.data.liked_products) {
         const homeshoppingProducts = homeshoppingResponse.data.liked_products.map(product => ({
           type: 'homeshopping',
-          // 홈쇼핑 상품 필드명을 통일 (hs_product_id 사용)
+          // 홈쇼핑 상품 필드명을 통일
           hs_product_id: product.product_id,
+          hs_live_id: product.hs_live_id || product.live_id,
           hs_product_name: product.product_name,
           hs_store_name: product.store_name,
           hs_thumbnail: product.thumb_img_url,
           hs_discounted_price: product.dc_price,
           hs_discount_rate: product.dc_rate,
-          // 더미 데이터로 방송 정보 추가 (실제로는 API에서 제공되어야 함)
-          // broadcast_date: "2024-01-15",
-          // broadcast_status: "방송예정",
-          // broadcast_time: "20:00",
-          // channel_name: "홈앤쇼핑",
-          // channel_logo: homeshoppingLogoHomeandshopping
+          // API에서 제공되는 방송 정보 사용
+          broadcast_date: product.live_date,
+          broadcast_time: product.live_start_time,
+          // homeshopping_id를 기반으로 로컬 로고 가져오기
+          channel_logo: getLogoByHomeshoppingId(product.homeshopping_id)?.logo,
+          // 방송 상태는 현재 시간과 비교하여 계산
+          broadcast_status: (() => {
+            const now = new Date();
+            const liveDateTime = new Date(`${product.live_date}T${product.live_start_time}`);
+            const timeDiff = liveDateTime - now;
+            
+            if (timeDiff < 0) {
+              return "방송종료";
+            } else if (timeDiff < 30 * 60 * 1000) { // 30분 이내
+              return "방송중";
+            } else {
+              return "방송예정";
+            }
+          })()
         }));
         allProducts.push(...homeshoppingProducts);
       }
@@ -128,50 +137,46 @@ const WishList = () => {
       }
       
       // API 연결 실패 시 더미 데이터 사용
-      setWishlistData({
-        liked_products: [
-          {
-            kok_product_id: 10,
-            kok_product_name: "[허닭] 닭가슴살 오븐바/스테이크/소시지/볶음밥/유부초밥 외 전제품 152종 모음전",
-            kok_thumbnail: testImage1,
-            kok_product_price: 17900,
-            kok_store_name: "허닭",
-            kok_discount_rate: 56,
-            kok_discounted_price: 7900,
-            type: "shopping"
-          },
-          {
-            hs_product_id: 25,
-            hs_product_name: "[산해직송] 산해직송 전라도 맛있는 파김치 남도식 국산 국내산",
-            hs_thumbnail: testImage2, 
-            hs_product_price: 30800,
-            hs_store_name: "산해직송",
-            hs_discount_rate: 52,
-            hs_discounted_price: 14800,
-            type: "homeshopping",
-            broadcast_date: "2024-01-15",
-            broadcast_status: "방송예정",
-            broadcast_time: "20:00",
-            channel_name: "홈앤쇼핑",
-            channel_logo: homeshoppingLogoHomeandshopping
-          },
-          {
-            hs_product_id: 30,
-            hs_product_name: "[현대홈쇼핑] 프리미엄 무선 이어폰 블루투스 5.0",
-            hs_thumbnail: testImage1,
-            hs_product_price: 99000,
-            hs_store_name: "현대홈쇼핑",
-            hs_discount_rate: 30,
-            hs_discounted_price: 69300,
-            type: "homeshopping",
-            broadcast_date: "2024-01-16",
-            broadcast_status: "방송중",
-            broadcast_time: "14:30",
-            channel_name: "현대홈쇼핑",
-            channel_logo: homeshoppingLogoHyundai
-          }
-        ]
-      });
+      // setWishlistData({
+      //   liked_products: [
+      //     {
+      //       kok_product_id: 10,
+      //       kok_product_name: "[허닭] 닭가슴살 오븐바/스테이크/소시지/볶음밥/유부초밥 외 전제품 152종 모음전",
+      //       kok_thumbnail: testImage1,
+      //       kok_product_price: 17900,
+      //       kok_store_name: "허닭",
+      //       kok_discount_rate: 56,
+      //       kok_discounted_price: 7900,
+      //       type: "shopping"
+      //     },
+      //     {
+      //       hs_product_id: 25,
+      //       hs_product_name: "[산해직송] 산해직송 전라도 맛있는 파김치 남도식 국산 국내산",
+      //       hs_thumbnail: testImage2, 
+      //       hs_discounted_price: 14800,
+      //       hs_store_name: "산해직송",
+      //       hs_discount_rate: 52,
+      //       type: "homeshopping",
+      //       broadcast_date: "2025-08-30",
+      //       broadcast_status: "방송예정",
+      //       broadcast_time: "20:00:00.000Z",
+      //       channel_logo: getLogoByHomeshoppingId(25)
+      //     },
+      //     {
+      //       hs_product_id: 30,
+      //       hs_product_name: "[현대홈쇼핑] 프리미엄 무선 이어폰 블루투스 5.0",
+      //       hs_thumbnail: testImage1,
+      //       hs_discounted_price: 69300,
+      //       hs_store_name: "현대홈쇼핑",
+      //       hs_discount_rate: 30,
+      //       type: "homeshopping",
+      //       broadcast_date: "2025-08-30",
+      //       broadcast_status: "방송중",
+      //       broadcast_time: "14:30:00.000Z",
+      //       channel_logo: getLogoByHomeshoppingId(30)
+      //     }
+      //   ]
+      // });
     } finally {
       setLoading(false);
     }
@@ -262,7 +267,7 @@ const WishList = () => {
   // 상품 클릭 핸들러
   const handleProductClick = (productId, productType) => {
     if (productType === 'homeshopping') {
-      // 홈쇼핑 상품 클릭 시 홈쇼핑 상품 상세 페이지로 이동
+      // 홈쇼핑 상품 클릭 시 live_id를 사용하여 홈쇼핑 상품 상세 페이지로 이동
       navigate(`/homeshopping/product/${productId}`);
     } else {
       // 콕 상품 클릭 시 콕 상품 상세 페이지로 이동
@@ -426,7 +431,7 @@ const WishList = () => {
           <div className="wishlist-products">
                          {filteredProducts.map((product, index) => (
                                <div key={`${product.type}-${product.type === 'homeshopping' ? product.hs_product_id : product.kok_product_id}-${index}`} className="wishlist-product-container">
-                  <div className="wishlist-product" onClick={() => handleProductClick(product.type === 'homeshopping' ? product.hs_product_id : product.kok_product_id, product.type)}>
+                  <div className="wishlist-product" onClick={() => handleProductClick(product.type === 'homeshopping' ? product.hs_live_id : product.kok_product_id, product.type)}>
                    <div className="product-image">
                      <img 
                        src={activeTab === 'homeshopping' ? product.hs_thumbnail : product.kok_thumbnail} 
@@ -437,14 +442,14 @@ const WishList = () => {
                                            {activeTab === 'homeshopping' ? (
                                                 // 홈쇼핑 탭 레이아웃 - 방송사, 상품명, 방송정보, 가격 순
                          <div className="product-channel-info">
-                           <div className="channel-info">
-                             <img 
-                               src={product.channel_logo} 
-                               alt={product.channel_name}
-                               className="channel-logo"
-                             />
-                             <span className="channel-number">[CH 8]</span>
-                           </div>
+                                                       <div className="channel-info">
+                              <img 
+                                src={product.channel_logo} 
+                                alt="채널 로고"
+                                className="channel-logo"
+                              />
+                              <span className="channel-number">[CH 8]</span>
+                            </div>
                            <div className="wishlist-product-name">
                              <span className="wishlist-brand-name">{product.hs_store_name}</span> | {product.hs_product_name}
                            </div>
