@@ -122,8 +122,8 @@ body {
 .bottom-nav a:hover .nav-icon,
 .bottom-nav a.nav-item:hover .nav-icon,
 .bottom-nav a:hover img.nav-icon {
-  width: 50px !important;
-  height: 50px !important;
+  width: 43px !important;
+  height: 43px !important;
   filter: brightness(0.8) saturate(1.2);
 }
 
