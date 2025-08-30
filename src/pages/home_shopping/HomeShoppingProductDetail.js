@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { homeShoppingApi } from '../../api/homeShoppingApi';
+import { homeShoppingApi, convertLiveIdToHomeshoppingId } from '../../api/homeShoppingApi';
 import { useUser } from '../../contexts/UserContext';
 import HeaderNavSchedule from '../../layout/HeaderNavSchedule';
 import BottomNav from '../../layout/BottomNav';
 import Loading from '../../components/Loading';
 import UpBtn from '../../components/UpBtn';
 import HomeshoppingKokRecommendation from '../../components/HomeshoppingKokRecommendation';
+import LiveStreamPlayer from '../../components/player/LiveStreamPlayer';
 import ModalManager, { showWishlistNotification, showWishlistUnlikedNotification, showNoRecipeNotification, hideModal } from '../../components/LoadingModal';
 import emptyHeartIcon from '../../assets/heart_empty.png';
 import filledHeartIcon from '../../assets/heart_filled.png';
@@ -16,6 +17,7 @@ import api from '../../pages/api';
 import { getLogoByHomeshoppingId, getChannelInfoByHomeshoppingId } from '../../components/homeshoppingLogo';
 
 import '../../styles/homeshopping_product_detail.css';
+import '../../styles/liveStream.css';
 
 const HomeShoppingProductDetail = () => {
   const navigate = useNavigate();
@@ -89,15 +91,25 @@ const HomeShoppingProductDetail = () => {
                  // 콕 상품 추천과 레시피 추천은 productDetail이 설정된 후에 호출
          // 이 부분은 useEffect의 의존성 배열에 productDetail을 추가하여 처리
         
-        // 라이브 스트림 정보 가져오기 (live_id 사용)
+        // 라이브 스트림 정보 가져오기 (live_id를 homeshopping_id로 변환하여 사용)
         try {
-          const streamResponse = await homeShoppingApi.getLiveStreamUrl(live_id);
-          console.log('📹 라이브 스트림 정보:', streamResponse);
-          if (isMounted) {
-            setStreamData(streamResponse);
+          // live_id를 homeshopping_id로 변환
+          const homeshoppingId = convertLiveIdToHomeshoppingId(live_id);
+          
+          if (homeshoppingId) {
+            console.log(`📹 라이브 스트림 API 호출: live_id=${live_id} → homeshopping_id=${homeshoppingId}`);
+            const streamResponse = await homeShoppingApi.getLiveStreamUrl(homeshoppingId);
+            console.log('📹 라이브 스트림 정보:', streamResponse);
+            if (isMounted) {
+              setStreamData(streamResponse);
+            }
+          } else {
+            console.log(`⚠️ live_id ${live_id}를 homeshopping_id로 변환할 수 없음`);
+            setStreamData(null);
           }
         } catch (streamError) {
           console.error('라이브 스트림 정보 가져오기 실패:', streamError);
+          // 라이브 스트림 에러는 상품 표시에 영향을 주지 않도록 처리
         }
         
       } catch (error) {
@@ -323,10 +335,16 @@ const HomeShoppingProductDetail = () => {
   
   // 라이브 스트림 재생
   const handleLiveStream = () => {
-    if (streamData && streamData.stream_url && streamData.is_live) {
-      window.open(streamData.stream_url, '_blank', 'width=448,height=204');
+    const streamUrl = window.__LIVE_SRC__ || streamData?.stream_url;
+    if (streamUrl) {
+      console.log('🎬 스트림 재생 시작:', streamUrl);
+      window.open(streamUrl, '_blank', 'width=800,height=600');
     } else {
-      alert('현재 라이브 스트림을 사용할 수 없습니다.');
+      console.log('❌ 스트림 URL 없음:', { 
+        windowLIVE_SRC: window.__LIVE_SRC__, 
+        streamDataUrl: streamData?.stream_url 
+      });
+      alert('현재 스트림을 사용할 수 없습니다.');
     }
   };
   
@@ -639,16 +657,90 @@ const HomeShoppingProductDetail = () => {
               })()}
             </div>
           
-                                 {/* 라이브 스트림 버튼 */}
-            {streamData?.stream_url && broadcastStatus?.status === 'live' && (
+                                                                                                                                     {/* 라이브 스트림 비디오 플레이어 */}
+              <div className="live-stream-section">
+                <h3 className="live-stream-title">
+                  {broadcastStatus?.status === 'live' ? '🔴 라이브 방송' : '📺 방송 영상'}
+                </h3>
+                {(streamData?.stream_url || window.__LIVE_SRC__) ? (
+                  <>
+                    <div className="video-container">
+                      <LiveStreamPlayer
+                        src={window.__LIVE_SRC__ || streamData?.stream_url}
+                        autoPlay={true}
+                        muted={true}
+                        controls={true}
+                        width="100%"
+                        height="auto"
+                        style={{
+                          boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)'
+                        }}
+                        onError={(error) => {
+                          console.error('스트림 로드 실패:', error);
+                          alert('스트림을 로드할 수 없습니다. 스트림 URL을 확인해주세요.');
+                        }}
+                        onLoadStart={() => {
+                          console.log('스트림 로딩 시작');
+                        }}
+                        onLoadedData={() => {
+                          console.log('스트림 로딩 완료');
+                        }}
+                      />
+                    </div>
+                    <div className="live-stream-info">
+                      <p><strong>스트림 상태:</strong> {streamData?.is_live ? '라이브' : '녹화 영상'}</p>
+                      <p><strong>방송 상태:</strong> {broadcastStatus?.status === 'live' ? '방송 중' : broadcastStatus?.status === 'upcoming' ? '방송 예정' : '방송 종료'}</p>
+                      <p><strong>스트림 URL:</strong> {window.__LIVE_SRC__ || streamData?.stream_url}</p>
+                      {window.__LIVE_SRC__ && (
+                        <p><strong>전역 스트림 URL:</strong> {window.__LIVE_SRC__}</p>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div className="video-container" style={{ 
+                    backgroundColor: '#f8f9fa', 
+                    border: '2px dashed #dee2e6',
+                    borderRadius: '12px',
+                    padding: '40px',
+                    textAlign: 'center',
+                    color: '#6c757d'
+                  }}>
+                    <div style={{ fontSize: '48px', marginBottom: '16px' }}>📺</div>
+                    <div style={{ fontSize: '18px', marginBottom: '8px' }}>스트림을 불러올 수 없습니다</div>
+                    <div style={{ fontSize: '14px' }}>스트림 URL이 설정되지 않았습니다</div>
+                  </div>
+                )}
+              </div>
+             
+                           {/* 라이브 스트림 버튼 */}
               <button 
                 className="live-stream-button"
                 onClick={handleLiveStream}
                 disabled={isStreamLoading}
-                             >
-                 {isStreamLoading ? '로딩 중...' : '라이브 시청하기'}
-               </button>
-            )}
+                style={{ marginTop: '10px' }}
+              >
+                {isStreamLoading ? '로딩 중...' : 
+                  (streamData?.stream_url || window.__LIVE_SRC__) ? 
+                    (broadcastStatus?.status === 'live' ? '새 창에서 라이브 시청하기' : '새 창에서 영상 시청하기') :
+                    '스트림 시청하기'}
+              </button>
+             
+             {/* 스트림 데이터 디버깅 정보 */}
+             <div className="live-stream-section" style={{ borderColor: '#95a5a6', opacity: 0.7 }}>
+               <h3 className="live-stream-title" style={{ color: '#95a5a6' }}>
+                   📺 스트림 디버깅 정보
+                 </h3>
+                 <div className="live-stream-info">
+                   <p><strong>스트림 데이터:</strong> {streamData ? '있음' : '없음'}</p>
+                   <p><strong>스트림 URL:</strong> {streamData?.stream_url || '없음'}</p>
+                   <p><strong>전역 스트림 URL:</strong> {window.__LIVE_SRC__ || '없음'}</p>
+                   <p><strong>라이브 상태:</strong> {streamData?.is_live ? '예' : '아니오'}</p>
+                   <p><strong>방송 상태:</strong> {broadcastStatus?.status || '알 수 없음'}</p>
+                   <p><strong>window.__LIVE_SRC__ 타입:</strong> {typeof window.__LIVE_SRC__}</p>
+                   <p><strong>window.__LIVE_SRC__ 길이:</strong> {window.__LIVE_SRC__ ? String(window.__LIVE_SRC__).length : 0}</p>
+                   <p><strong>현재 시간:</strong> {new Date().toLocaleString()}</p>
+                 </div>
+               </div>
         </div>
         
                   {/* 상품 기본 정보 */}

@@ -23,8 +23,8 @@ export const homeShoppingApi = {
       // params.limit = 10000; // 백엔드에서 limit을 지원한다면 이 줄을 활성화
       
       const response = await api.get('/api/homeshopping/schedule', { params });
-      console.log('✅ 편성표 조회 API 응답:', response);
-      return response; // response.data가 아닌 response 전체 반환
+      console.log('✅ 편성표 조회 API 응답:', response); // response.data가 아닌 response 전체 반환
+      return response;
     } catch (error) {
       console.error('❌ 편성표 조회 실패:', error);
       throw error;
@@ -140,7 +140,7 @@ export const homeShoppingApi = {
   },
 
   // 상품 분류 확인 (식재료/완제품)
-  checkProductClassify: async (productId) => {
+  checkProductClassification: async (productId) => {
     try {
       console.log('🏷️ 상품 분류 확인 API 요청:', { productId });
       const response = await api.get(`/api/homeshopping/product/${productId}/check`);
@@ -165,12 +165,43 @@ export const homeShoppingApi = {
     }
   },
 
-  // 홈쇼핑 라이브 영상 URL 조회 (live_id 사용)
-  getLiveStreamUrl: async (liveId) => {
+  // 홈쇼핑 라이브 영상 URL 조회 (homeshopping_id 사용) - 새로운 API 사용
+  getLiveStreamUrl: async (homeshoppingId) => {
     try {
-      console.log('📹 라이브 스트림 URL API 요청:', { liveId });
-      const response = await api.get(`/api/homeshopping/product/${liveId}/stream`);
-      console.log('✅ 라이브 스트림 URL API 응답:', response.data);
+      console.log('📹 라이브 스트림 URL API 요청:', { homeshoppingId });
+      
+      // 새로운 API 엔드포인트 사용
+      const response = await api.get('/api/homeshopping/schedule/live-stream', {
+        params: { homeshopping_id: homeshoppingId }
+      });
+      
+      console.log('✅ 라이브 스트림 URL API 응답 전체:', response);
+      console.log('✅ 응답 데이터 타입:', typeof response.data);
+      console.log('✅ 응답 데이터 길이:', response.data ? response.data.length : 'undefined');
+      console.log('✅ 응답 데이터 샘플:', response.data ? response.data.substring(0, 200) + '...' : 'undefined');
+      
+      // HTML 템플릿에서 m3u8 URL 추출
+      if (response.data && typeof response.data === 'string') {
+        console.log('🔍 HTML에서 m3u8 URL 추출 시도...');
+        
+        // HTML에서 window.LIVE_SRC 값 추출 (실제 HTML에 맞게 수정)
+        const match = response.data.match(/window\.LIVE_SRC\s*=\s*"([^"]+)"/);
+        console.log('🔍 정규식 매치 결과:', match);
+        
+        if (match && match[1]) {
+          console.log('✅ m3u8 URL 추출 성공:', match[1]);
+          return {
+            stream_url: match[1],
+            html_template: response.data
+          };
+        } else {
+          console.log('⚠️ m3u8 URL 추출 실패 - 정규식 매치 없음');
+        }
+      } else {
+        console.log('⚠️ 응답 데이터가 문자열이 아님');
+      }
+      
+      console.log('📤 최종 반환 데이터:', response.data);
       return response.data;
     } catch (error) {
       console.error('❌ 라이브 스트림 URL 조회 실패:', error);
@@ -178,7 +209,23 @@ export const homeShoppingApi = {
     }
   },
 
-
+  // 홈쇼핑 라이브 스트림 HTML 템플릿 조회 (새로운 API)
+  getLiveStreamTemplate: async (homeshoppingId = null, src = null) => {
+    try {
+      console.log('📺 라이브 스트림 HTML 템플릿 API 요청:', { homeshoppingId, src });
+      
+      const params = {};
+      if (homeshoppingId) params.homeshopping_id = homeshoppingId;
+      if (src) params.src = src;
+      
+      const response = await api.get('/api/homeshopping/schedule/live-stream', { params });
+      console.log('✅ 라이브 스트림 HTML 템플릿 API 응답:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('❌ 라이브 스트림 HTML 템플릿 조회 실패:', error);
+      throw error;
+    }
+  },
 
   // ===== 검색 관련 =====
   
@@ -321,3 +368,58 @@ export const homeShoppingApi = {
 };
 
 export default homeShoppingApi;
+
+// ===== 라이브 스트림 관련 API 함수 =====
+
+// live_id를 homeshopping_id로 변환하는 함수
+export function convertLiveIdToHomeshoppingId(liveId) {
+  // live_id의 패턴을 분석하여 homeshopping_id 추출
+  // 예: 17981 -> 1, 27982 -> 2, 37983 -> 3 등
+  
+  if (!liveId) return null;
+  
+  // live_id를 문자열로 변환
+  const liveIdStr = liveId.toString();
+  
+  // 첫 번째 자리수가 homeshopping_id인 경우 (1xxxx -> 1, 2xxxx -> 2)
+  if (liveIdStr.length >= 1) {
+    const firstDigit = parseInt(liveIdStr.charAt(0));
+    if (firstDigit >= 1 && firstDigit <= 6) {
+      return firstDigit;
+    }
+  }
+  
+  // 다른 패턴이 있다면 여기에 추가 로직 구현
+  // console.log('⚠️ live_id를 homeshopping_id로 변환할 수 없음:', liveId);
+  return null;
+}
+
+export async function fetchLiveStreamInfo(apiBase, homeshoppingUrl) {
+  const u = new URL(`${apiBase}/schedule/live-stream/info`);
+  u.searchParams.set("homeshopping_url", homeshoppingUrl);
+  const res = await fetch(u.toString(), {
+    credentials: "include", // 쿠키 기반 인증 시 필요
+    headers: { "Accept": "application/json" },
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`(${res.status}) ${text || "정보 조회 실패"}`);
+  }
+  const json = await res.json();
+  // 키 유연 매핑 (백엔드 응답 키가 달라도 동작하도록)
+  const m3u8 =
+    json.stream_url ||
+    json.playlist_url ||
+    json.m3u8_url ||
+    json.hls ||
+    json.url ||
+    null;
+
+  return {
+    channel: json.channel || json.channel_name || json.homeshopping_channel || "-",
+    title: json.title || json.live_title || json.program_title || "-",
+    source: json.source || json.homeshopping_url || json.original_url || "-",
+    m3u8,
+    raw: json,
+  };
+} 

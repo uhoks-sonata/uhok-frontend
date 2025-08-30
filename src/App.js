@@ -29,6 +29,8 @@ import RecipeRecommendation from './pages/recipes/RecipeRecommendation';
 import RecipeResult from './pages/recipes/RecipeResult';
 import RecipeDetail from './pages/recipes/RecipeDetail';
 import HomeShoppingRecipeRecommendation from './pages/recipes/HomeShoppingRecipeRecommendation';
+// 라이브 스트림 관련 페이지
+import LiveStreamPage from './pages/LiveStreamPage';
 // 결제 관련 페이지
 import KokPayment from './pages/user/KokPayment';
 
@@ -79,6 +81,8 @@ function App() {
               <Route path="/homeshopping/search" element={<HomeShoppingSearch />} />
               {/* 홈쇼핑 상품 상세 경로 (/homeshopping/product/:live_id) - HomeShoppingProductDetail 페이지로 설정 */}
               <Route path="/homeshopping/product/:live_id" element={<HomeShoppingProductDetail />} />
+              {/* 라이브 스트림 경로 (/live-stream) - 라이브 스트림 페이지 */}
+              <Route path="/live-stream" element={<LiveStreamPage />} />
               {/* ===== KOK 라우트 ===== */}
 
               {/* KOK 메인 경로 (/kok) - KOK 메인 페이지 */}
