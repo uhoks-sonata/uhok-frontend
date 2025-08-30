@@ -144,11 +144,11 @@ const LiveStreamPlayer = ({
 
       // 스트림 상태 모니터링 추가
       hlsRef.current.on(Hls.Events.FRAG_LOADING, () => {
-        console.log('📡 프래그먼트 로딩 중...');
+        // console.log('📡 프래그먼트 로딩 중...');
       });
 
       hlsRef.current.on(Hls.Events.FRAG_LOADED, () => {
-        console.log('✅ 프래그먼트 로딩 완료');
+        // console.log('✅ 프래그먼트 로딩 완료');
       });
 
       hlsRef.current.on(Hls.Events.BUFFER_STALLED, () => {

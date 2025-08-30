@@ -95,7 +95,7 @@ const WishList = () => {
           type: 'homeshopping',
           // 홈쇼핑 상품 필드명을 통일
           hs_product_id: product.product_id,
-          hs_live_id: product.hs_live_id || product.live_id,
+          hs_live_id: product.live_id,
           hs_product_name: product.product_name,
           hs_store_name: product.store_name,
           hs_thumbnail: product.thumb_img_url,

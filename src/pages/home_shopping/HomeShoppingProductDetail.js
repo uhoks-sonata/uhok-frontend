@@ -448,8 +448,8 @@ const HomeShoppingProductDetail = () => {
       live_end_time: productDetail.live_end_time
     });
     
-    // 현재 시간을 한국 시간으로 조정 (UTC+9)
-    const koreaTime = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+         // 현재 시간은 이미 한국 시간이므로 UTC 변환 불필요
+     const koreaTime = now;
     
     // 방송 날짜와 시간을 파싱하여 한국 시간 기준으로 Date 객체 생성
     const [year, month, day] = productDetail.live_date.split('-').map(Number);
@@ -562,7 +562,7 @@ const HomeShoppingProductDetail = () => {
                              {/* 브랜드 로고 */}
                <div className="hsproduct-brand-logo">
                  <img 
-                   src={getLogoByHomeshoppingId(productDetail.homeshopping_id)} 
+                   src={getLogoByHomeshoppingId(productDetail.homeshopping_id)?.logo || ''} 
                    alt={productDetail.homeshopping_name || '홈쇼핑'}
                    className="hsproduct-homeshopping-logo"
                  />
@@ -755,54 +755,11 @@ const HomeShoppingProductDetail = () => {
               })()}
             </div>
           
-          {/* 라이브 스트림 정보 섹션 (방송 중일 때만 표시) */}
-          {broadcastStatus?.status === 'live' && (
-            <div className="live-stream-section">
-              <h3 className="live-stream-title">🔴 라이브 방송</h3>
-              {(streamData?.stream_url || window.__LIVE_SRC__) ? (
-                <>
-                  <div className="live-stream-info">
-                    <p><strong>스트림 상태:</strong> {streamData?.is_live ? '라이브' : '녹화 영상'}</p>
-                    <p><strong>방송 상태:</strong> 방송 중</p>
-                    <p><strong>스트림 URL:</strong> {window.__LIVE_SRC__ || streamData?.stream_url}</p>
-                    {window.__LIVE_SRC__ && (
-                      <p><strong>전역 스트림 URL:</strong> {window.__LIVE_SRC__}</p>
-                    )}
-                  </div>
-                </>
-              ) : (
-                <div className="video-container" style={{ 
-                  backgroundColor: '#f8f9fa', 
-                  border: '2px dashed #dee2e6',
-                  borderRadius: '12px',
-                  padding: '40px',
-                  textAlign: 'center',
-                  color: '#6c757d'
-                }}>
-                  <div style={{ fontSize: '48px', marginBottom: '16px' }}>📺</div>
-                  <div style={{ fontSize: '18px', marginBottom: '8px' }}>스트림을 불러올 수 없습니다</div>
-                  <div style={{ fontSize: '14px' }}>스트림 URL이 설정되지 않았습니다</div>
-                </div>
-              )}
-            </div>
-          )}
-             
-                                     {/* 라이브 스트림 버튼 (방송 상태에 따라 다르게 표시) */}
-          {broadcastStatus?.status === 'live' && (
-            // 방송 중일 때: 현재 창에서 라이브 시청하기
-            <button 
-              className="live-stream-button"
-              onClick={handleLiveStream}
-              disabled={isStreamLoading}
-              style={{ marginTop: '10px' }}
-            >
-              {isStreamLoading ? '로딩 중...' : '현재 창에서 라이브 시청하기'}
-            </button>
-          )}
-             
-             {/* 라이브 스트림 비디오 플레이어 */}
+                     {/* 방송 상태에 따른 UI 분기 */}
+           {broadcastStatus?.status === 'live' ? (
+             // 방송 중일 때: 라이브 영상 표시
              <div className="live-stream-section">
-               <h3 className="live-stream-title">📺 라이브 스트림 시청</h3>
+               <h3 className="live-stream-title">🔴 라이브 방송</h3>
                {(streamData?.stream_url || window.__LIVE_SRC__) ? (
                  <div className="video-player-container">
                    <LiveStreamPlayer
@@ -842,6 +799,35 @@ const HomeShoppingProductDetail = () => {
                  </div>
                )}
              </div>
+           ) : (
+             // 방송 예정/종료일 때: 상태 메시지만 표시
+             broadcastStatus && (
+               <div className="live-stream-section">
+                 <h3 className="live-stream-title">📺 방송 정보</h3>
+                 <div className="broadcast-status-container" style={{ 
+                   backgroundColor: '#f8f9fa', 
+                   border: '2px dashed #dee2e6',
+                   borderRadius: '12px',
+                   padding: '40px',
+                   textAlign: 'center',
+                   color: '#6c757d'
+                 }}>
+                   <div style={{ fontSize: '48px', marginBottom: '16px' }}>
+                     {broadcastStatus.status === 'upcoming' ? '⏰' : '📺'}
+                   </div>
+                   <div style={{ fontSize: '18px', marginBottom: '8px' }}>
+                     {broadcastStatus.status === 'upcoming' ? '방송 예정' : '방송 종료'}
+                   </div>
+                   <div style={{ fontSize: '14px' }}>
+                     {broadcastStatus.status === 'upcoming' 
+                       ? '방송 시작 시간을 기다려주세요' 
+                       : '방송이 종료되었습니다'
+                     }
+                   </div>
+                 </div>
+               </div>
+             )
+           )}
         </div>
         
                   {/* 상품 기본 정보 */}
