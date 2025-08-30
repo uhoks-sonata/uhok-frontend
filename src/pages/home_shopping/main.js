@@ -18,12 +18,7 @@ import { homeShoppingApi } from '../../api/homeShoppingApi';
 import { useUser } from '../../contexts/UserContext';
 
 // 홈쇼핑 로고 이미지들을 가져옵니다
-import homeshopping_logo_publicshopping from '../../assets/homeshopping_logo_publicshopping.png'; // 공영홈쇼핑 로고
-import homeshoppingLogoPlusshop from '../../assets/homeshopping_logo_plusshop.png'; // 플러스샵 로고
-import homeshoppingLogoNsplus from '../../assets/homeshopping_logo_nsplus.png'; // NS플러스 로고
-import homeshoppingLogoNs from '../../assets/homeshopping_logo_ns.png'; // NS홈쇼핑 로고
-import homeshoppingLogoHyundai from '../../assets/homeshopping_logo_hyundai.png'; // 현대홈쇼핑 로고
-import homeshoppingLogoHomeandshopping from '../../assets/homeshopping_logo_homeandshopping.png'; // 홈앤쇼핑 로고
+import { homeshoppingChannels, getLogoByHomeshoppingId } from '../../components/homeshoppingLogo';
 
 // 하트 아이콘 이미지들을 가져옵니다
 import heartEmpty from '../../assets/heart_empty.png';
@@ -50,21 +45,7 @@ const Main = () => {
   // 찜한 상품 목록을 관리합니다
   const [likedProducts, setLikedProducts] = useState(new Set());
 
-  // homeshopping_id에 따른 로고 이미지를 반환하는 함수를 정의합니다
-  const getLogoByHomeshoppingId = (homeshoppingId) => {
-    // homeshopping_id와 로고 이미지를 매핑하는 객체를 정의합니다
-    const brandLogos = {
-      1: homeshoppingLogoHomeandshopping, // 홈앤쇼핑
-      2: homeshoppingLogoHyundai, // 현대홈쇼핑
-      3: homeshoppingLogoPlusshop, // 현대홈쇼핑+샵
-      4: homeshoppingLogoNs, // NS홈쇼핑
-      5: homeshoppingLogoNsplus, // NS샵+
-      6: homeshopping_logo_publicshopping, // 공영쇼핑
-    };
-    
-    // homeshopping_id로 매칭되는 로고가 있으면 반환하고, 없으면 공영홈쇼핑 로고를 기본값으로 반환합니다
-    return brandLogos[homeshoppingId] || homeshopping_logo_publicshopping;
-  };
+
 
   // 사용자 정보가 변경될 때마다 콘솔에 출력 (디버깅용)
   useEffect(() => {
@@ -183,7 +164,10 @@ const Main = () => {
                  홈쇼핑_아이디: item.homeshopping_id, // 홈쇼핑 채널 ID - fallback 제거
                  홈쇼핑명: item.homeshopping_name || item.store_name || '홈쇼핑',
                  채널명: item.homeshopping_name || item.store_name || '홈쇼핑',
-                 채널로고: item.channel_logo || getLogoByHomeshoppingId(item.homeshopping_id),
+                 채널로고: item.channel_logo || (() => {
+                   const channel = getLogoByHomeshoppingId(item.homeshopping_id);
+                   return channel ? channel.logo : null;
+                 })(),
                  채널번호: item.homeshopping_channel || item.channel_number || item.channel || '채널',
                  원가: item.sale_price ? `${item.sale_price.toLocaleString()}원` : '0원',
                  할인율: item.dc_rate ? `${item.dc_rate}%` : '0%',

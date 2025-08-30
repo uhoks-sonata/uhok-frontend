@@ -1,18 +1,18 @@
 // 홈쇼핑 로고 이미지들
-import homeshoppingLogoHomeandshopping from '../assets/homeshopping_logo_homeandshopping.png';
+import homeshoppingLogoHomeandshopping from '../assets/homeshopping_logo_homeand.png';
 import homeshoppingLogoHyundai from '../assets/homeshopping_logo_hyundai.png';
 import homeshoppingLogoNs from '../assets/homeshopping_logo_ns.png';
 import homeshoppingLogoNsplus from '../assets/homeshopping_logo_nsplus.png';
 import homeshoppingLogoPlusshop from '../assets/homeshopping_logo_plusshop.png';
-import homeshoppingLogoPublicshopping from '../assets/homeshopping_logo_publicshopping.png';
-import homeshoppingLogoGsshop from '../assets/homeshopping_logo_gsshop.png';
+import homeshoppingLogoPublicshopping from '../assets/homeshopping_logo_publicshopping_re.png';
+import homeshoppingLogoGsshop from '../assets/homeshopping_logo_gsmyshop.png';
 import homeshoppingLogoGsshoplive from '../assets/homeshopping_logo_gsshoplive.png';
-import homeshoppingLogoGsmyShop from '../assets/homeshopping_logo_gsmyshop.jpg';
-import homeshoppingLogoCjoneStyle from '../assets/homeshopping_logo_cjonestyle.jpg';
-import homeshoppingLogoCjoneStylePlus from '../assets/homeshopping_logo_cjonestyleplus.jpg';
-import homeshoppingLogoLotteHomeShopping from '../assets/homeshopping_logo_lottehomeshopping.jpg';
+import homeshoppingLogoGsmyShop from '../assets/homeshopping_logo_gsmyshop.png';
+import homeshoppingLogoCjoneStyle from '../assets/homeshopping_logo_cjonestyle.png';
+import homeshoppingLogoCjoneStylePlus from '../assets/homeshopping_logo_cjonstyleplus___.png';
+import homeshoppingLogoLotteHomeShopping from '../assets/homeshopping_logo_lottehomeshopping.png';
 import homeshoppingLogoLotteOneTv from '../assets/homeshopping_logo_lotteonetv.png';
-import homeshoppingLogoKtAlphaShopping from '../assets/homeshopping_logo_ktalphashopping2.png';
+import homeshoppingLogoKtAlphaShopping from '../assets/homeshopping_logo_ktalphashopping2 (2).png';
 import homeshoppingLogoSkStoa from '../assets/homeshopping_logo_skstoa.png';
 import homeshoppingLogoShinSegaEShopping from '../assets/homeshopping_logo_shinsegaeshopping.png';
 import homeshoppingLogoWshopping from '../assets/homeshopping_logo_wshopping.png';
@@ -50,12 +50,7 @@ export const homeshoppingChannels = [
     logo: homeshoppingLogoNsplus,
     channel: 41
   },
-  {
-    id: 6,
-    name: "공영쇼핑",
-    logo: homeshoppingLogoPublicshopping,
-    channel: 20
-  },
+
   {
     id: 7,
     name: "GS샵 LIVE",
@@ -121,6 +116,12 @@ export const homeshoppingChannels = [
     name: "쇼핑엔터",
     logo: homeshoppingLogoShoppingEnter,
     channel: 37
+  },
+  {
+    id: 18,
+    name: "공영쇼핑",
+    logo: homeshoppingLogoPublicshopping,
+    channel: 20
   }
 ];
 

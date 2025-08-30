@@ -951,7 +951,7 @@ const Schedule = () => {
                 <img 
                   src={channel.logo} 
                   alt={channel.name} 
-                  style={{ width: '32px', height: '32px', objectFit: 'contain' }}
+                  // style={{ width: '32px', height: '32px', objectFit: 'contain' }}
                 />
                 {selectedHomeshopping && selectedHomeshopping.id === channel.id && (
                   <div className="channel-selection-indicator">✓</div>
@@ -1093,40 +1093,57 @@ const Schedule = () => {
 
                   </div>
                   <div className="schedule-price-info">
-                    <div className="schedule-original-price">
-                      {item.sale_price?.toLocaleString() || '0'}원
-                    </div>
-                    <div className="schedule-price-row">
-                      <div className="schedule-discount-display">
-                                                 {displayDcRate > 0 ? (
-                           <>
-                             <span className="schedule-discount-rate">{displayDcRate}%</span>
-                             <span className="schedule-discount-price discount-price-normal">{displayDcPrice?.toLocaleString() || '0'}원</span>
-                           </>
-                         ) : (
-                           <>
-                             <span className="schedule-no-discount">할인 없음</span>
-                             <span className="schedule-discount-price discount-price-normal">{displayDcPrice?.toLocaleString() || '0'}원</span>
-                           </>
-                         )}
-                      </div>
-                                             <div className="schedule-wishlist-btn">
-                         <button 
-                           className="heart-button"
-                           data-product-id={item.live_id}
-                           onClick={(e) => {
-                             e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
-                             handleHeartToggle(item.live_id);
-                           }}
-                         >
-                                                       <img 
+                    {displayDcRate > 0 ? (
+                      <>
+                        <div className="schedule-original-price">
+                          {item.sale_price?.toLocaleString() || '0'}원
+                        </div>
+                        <div className="schedule-price-row">
+                          <div className="schedule-discount-display">
+                            <span className="schedule-discount-rate">{displayDcRate}%</span>
+                            <span className="schedule-discount-price schedule-discount-price-normal">{displayDcPrice?.toLocaleString() || '0'}원</span>
+                          </div>
+                          <div className="schedule-wishlist-btn">
+                            <button 
+                              className="heart-button"
+                              data-product-id={item.live_id}
+                              onClick={(e) => {
+                                e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
+                                handleHeartToggle(item.live_id);
+                              }}
+                            >
+                              <img 
+                                src={wishlistedProducts.has(item.product_id || item.live_id) ? filledHeartIcon : emptyHeartIcon} 
+                                alt="찜 토글" 
+                                className="heart-icon"
+                              />
+                            </button>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="schedule-price-row">
+                        <div className="schedule-discount-display">
+                          <span className="schedule-discount-price schedule-discount-price-normal">{displayDcPrice?.toLocaleString() || '0'}원</span>
+                        </div>
+                        <div className="schedule-wishlist-btn">
+                          <button 
+                            className="heart-button"
+                            data-product-id={item.live_id}
+                            onClick={(e) => {
+                              e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
+                              handleHeartToggle(item.live_id);
+                            }}
+                          >
+                            <img 
                               src={wishlistedProducts.has(item.product_id || item.live_id) ? filledHeartIcon : emptyHeartIcon} 
                               alt="찜 토글" 
                               className="heart-icon"
                             />
-                         </button>
-                       </div>
-                    </div>
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
