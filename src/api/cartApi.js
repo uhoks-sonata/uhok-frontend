@@ -275,25 +275,75 @@ export const cartApi = {
 
   // ===== 레시피 추천 =====
   
-  // 선택된 상품들로 레시피 추천
+  // 선택된 장바구니 상품들로 레시피 추천 (통일된 API)
   getRecipeRecommendations: async (selectedCartIds, page = 1, size = 5) => {
     try {
       console.log('🛒 레시피 추천 API 요청:', { selectedCartIds, page, size });
       
-      // API 명세서에 따라 GET 요청으로 변경
-      // GET 요청에 Request Body를 포함하기 위해 params로 전달
-      const response = await api.get('/api/kok/carts/recipe-recommend', {
-        params: {
-          selected_cart_ids: selectedCartIds,
-          page,
-          size
-        }
-      });
+      // GET 요청으로 변경하고 URL 인코딩을 사용하여 데이터 전송
+      const kokProductIds = encodeURIComponent(selectedCartIds.join(','));
+      const response = await api.get(`/api/kok/carts/recipe-recommend?kok_product_ids=${kokProductIds}&page=${page}&size=${size}`);
       
       console.log('✅ 레시피 추천 API 응답:', response.data);
       return response.data;
     } catch (error) {
       console.error('❌ 레시피 추천 실패:', error);
+      throw error;
+    }
+  },
+
+  // 마이페이지용 레시피 추천 (최근 주문 상품 기반) - 임시로 기존 API 사용
+  getMyPageRecipeRecommendations: async (recentOrders, page = 1, size = 5) => {
+    try {
+      console.log('🛒 마이페이지 레시피 추천 API 요청:', { recentOrders, page, size });
+      
+      // 최근 주문에서 상품명들을 추출하여 재료로 사용
+      let productNames = recentOrders.map(order => order.product_name).filter(Boolean);
+      
+      if (productNames.length === 0) {
+        throw new Error('추천할 상품이 없습니다.');
+      }
+      
+      // 중복 제거 및 상품명 간소화
+      productNames = [...new Set(productNames)]; // 중복 제거
+      
+      // 상품명을 간소화 (브랜드명과 주요 재료만 추출)
+      const simplifiedNames = productNames.map(name => {
+        // 대괄호 안의 브랜드명 제거
+        let simplified = name.replace(/\[.*?\]/g, '').trim();
+        
+        // 괄호 안의 상세 정보 제거
+        simplified = simplified.replace(/\([^)]*\)/g, '').trim();
+        
+        // 슬래시 이후 정보 제거
+        simplified = simplified.split('/')[0].trim();
+        
+        // 너무 긴 상품명은 앞부분만 사용 (50자 제한)
+        if (simplified.length > 50) {
+          simplified = simplified.substring(0, 50);
+        }
+        
+        return simplified;
+      }).filter(name => name.length > 0);
+      
+      // 최대 5개까지만 사용 (기존 API 요구사항)
+      const limitedNames = simplifiedNames.slice(0, 5);
+      
+      console.log('🔍 원본 상품명:', productNames);
+      console.log('🔍 간소화된 상품명:', limitedNames);
+      
+      // 임시로 기존 레시피 API 사용
+      const { recipeApi } = await import('./recipeApi.js');
+      const response = await recipeApi.getRecipesByIngredients({
+        ingredients: limitedNames,
+        page,
+        size
+      });
+      
+      console.log('✅ 마이페이지 레시피 추천 API 응답:', response);
+      return response;
+    } catch (error) {
+      console.error('❌ 마이페이지 레시피 추천 실패:', error);
       throw error;
     }
   },

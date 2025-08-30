@@ -348,83 +348,47 @@ const Cart = () => {
     navigate('/kok/payment');
   };
 
-  const toggleRecipeRecommendation = () => {
-    setIsRecipeLoading(true);
-    
-    // 1.5초 후 RecipeResult 페이지로 이동
-    setTimeout(() => {
-      setIsRecipeLoading(false);
-      
-      // 선택된 상품들의 상품명만 추출
-      const selectedProductNames = cartItems
-        .filter(item => selectedItems.has(item.kok_cart_id))
-        .map(item => item.kok_product_name);
-      
-      // RecipeResult 페이지로 이동하면서 필요한 데이터 전달
-      navigate('/recipes/result', {
-        state: {
-          recipes: [
-            {
-              recipe_id: 1,
-              recipe_title: "감자닭볶음탕",
-              cooking_name: "감자닭볶음탕",
-              scrap_count: 128,
-              cooking_case_name: "일반",
-              cooking_category_name: "한식",
-              cooking_introduction: "감자와 닭고기로 만드는 맛있는 볶음탕",
-              number_of_serving: "2인분",
-              thumbnail_url: "",
-              matched_ingredient_count: 2,
-              total_ingredients_count: 8,
-              used_ingredients: selectedProductNames.slice(0, 2)
-            },
-            {
-              recipe_id: 2,
-              recipe_title: "김치찌개",
-              cooking_name: "김치찌개",
-              scrap_count: 95,
-              cooking_case_name: "일반",
-              cooking_category_name: "한식",
-              cooking_introduction: "신김치로 만드는 얼큰한 김치찌개",
-              number_of_serving: "2인분",
-              thumbnail_url: "",
-              matched_ingredient_count: 1,
-              total_ingredients_count: 6,
-              used_ingredients: selectedProductNames.slice(0, 1)
-            }
-          ],
-          ingredients: selectedProductNames,
-          total: 2,
-          page: 1
-        }
-      });
-    }, 1500);
-  };
-
-  const loadRecipeRecommendations = async () => {
-    if (selectedItems.size === 0) {
-      alert('레시피 추천을 받으려면 상품을 선택해주세요.');
-      return;
-    }
-
+  const toggleRecipeRecommendation = async () => {
     try {
-      setRecipeLoading(true);
+      // 선택된 상품이 있는지 확인
+      if (selectedItems.size === 0) {
+        alert('레시피 추천을 받으려면 상품을 선택해주세요.');
+        return;
+      }
+
+      setIsRecipeLoading(true);
       
       // 선택된 상품들의 cart_id 배열
       const selectedCartIds = Array.from(selectedItems);
       
-      // 레시피 추천 API 호출
-      const result = await cartApi.getRecipeRecommendations(selectedCartIds);
+      // 통일된 레시피 추천 API 호출
+      const recipeRecommendations = await cartApi.getRecipeRecommendations(
+        selectedCartIds,
+        1, // page
+        5  // size
+      );
+
+      setIsRecipeLoading(false);
       
-      setRecipeRecommendations(result.recipes || []);
+      // CartRecipeResult 페이지로 이동하면서 필요한 데이터 전달
+      navigate('/recipes/cart-result', {
+        state: {
+          recipes: recipeRecommendations.recipes || [],
+          ingredients: recipeRecommendations.keyword_extraction || [],
+          total: recipeRecommendations.total_count || 0,
+          page: recipeRecommendations.page || 1,
+          searchType: 'cart' // 장바구니에서 온 것임을 표시
+        }
+      });
       
     } catch (error) {
-      console.error('레시피 추천 로딩 실패:', error);
-      alert('레시피 추천을 불러오는데 실패했습니다.');
-    } finally {
-      setRecipeLoading(false);
+      setIsRecipeLoading(false);
+      console.error('레시피 추천 처리 중 오류:', error);
+      alert('레시피 추천을 불러오는데 실패했습니다. 다시 시도해주세요.');
     }
   };
+
+
 
   const handleQuantityClick = (cartItemId) => {
     setSelectedCartItemId(cartItemId);

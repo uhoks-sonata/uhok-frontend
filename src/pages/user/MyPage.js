@@ -18,6 +18,8 @@ import { orderApi } from '../../api/orderApi';
 import { kokApi } from '../../api/kokApi';
 // homeShoppingApi import
 import { homeShoppingApi } from '../../api/homeShoppingApi';
+// cartApi import (레시피 추천용)
+import { cartApi } from '../../api/cartApi';
 // 사용자 Context import
 import { useUser } from '../../contexts/UserContext';
 // 기본 사용자 아이콘 이미지를 가져옵니다
@@ -386,13 +388,40 @@ const MyPage = () => {
   };
 
   // 레시피 추천 버튼 클릭 시 실행되는 핸들러 함수를 정의합니다
-  const handleRecipeRecommendationClick = () => {
+  const handleRecipeRecommendationClick = async () => {
     try {
-      // 레시피 추천 페이지로 이동합니다
-      navigate('/recipes/recommendation');
+      // 최근 주문이 있는지 확인
+      if (!userData.recentOrders || userData.recentOrders.length === 0) {
+        alert('최근 주문한 상품이 없어서 레시피를 추천받을 수 없습니다.');
+        return;
+      }
+
+      // 로딩 상태 시작
+      setLoading(true);
+
+      // 통일된 레시피 추천 API 호출
+      const recipeRecommendations = await cartApi.getMyPageRecipeRecommendations(
+        userData.recentOrders,
+        1, // page
+        5  // size
+      );
+
+      // CartRecipeResult 페이지로 이동
+      navigate('/recipes/cart-result', {
+        state: {
+          recipes: recipeRecommendations.recipes || [],
+          ingredients: recipeRecommendations.keyword_extraction || [],
+          total: recipeRecommendations.total_count || 0,
+          page: recipeRecommendations.page || 1,
+          searchType: 'mypage' // 마이페이지에서 온 것임을 표시
+        }
+      });
+
     } catch (error) {
-      // 에러 처리
-      console.error('레시피 추천 페이지 이동 중 오류:', error);
+      console.error('레시피 추천 처리 중 오류:', error);
+      alert('레시피 추천을 불러오는데 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setLoading(false);
     }
   };
 
