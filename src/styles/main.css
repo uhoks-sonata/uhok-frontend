@@ -16,7 +16,6 @@
 
 /* 기존 schedule-content 스타일 유지 */
 .main-schedule-content {
-  margin-top: 20px;
   overflow-y: scroll;
   height: calc(100vh - 200px);
   padding-bottom: 20px;
@@ -38,6 +37,59 @@
 
 .main-schedule-content::-webkit-scrollbar-thumb:hover {
   background: #bbb;
+}
+
+/* 메인 페이지 제목 */
+.main-page-title {
+  margin-bottom: 10px;
+  font-size: 24px;
+  font-weight: 700;
+  color: #333333;
+  text-align: left;
+}
+
+/* 위시리스트와 동일한 하트 버튼 스타일 */
+.shopping-heart-button {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease-in-out;
+  width: 35px;
+  height: 36px;
+}
+
+.shopping-heart-icon {
+  width: 28px;
+  height: auto;
+}
+
+/* 위시리스트와 동일한 방송상태 스타일 */
+.broadcast-status {
+  background-color: #95a5a6; /* 기본 회색 (방송 예정) */
+  color: white;
+  text-align: center;
+  font-size: 12px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+/* 방송 중일 때는 진한 분홍색 배경 */
+.broadcast-status.on-air {
+  background-color: #FA5F8C;
+}
+
+/* 위시리스트와 동일한 오른쪽 정보 컨테이너 */
+.wishlist-right-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* 날짜 정보 */
@@ -113,6 +165,7 @@
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   border: 1px solid #e0e0e0;
+  margin-bottom: 10px;
 }
 
 .main-product-card:hover {
@@ -277,14 +330,13 @@
   flex-shrink: 0;
 }
 
-.main-time-overlay {
+.main-time-display {
   color: #666666;
-  padding-bottom: 8px;
   font-size: 14px;
   text-align: left;
-  border-bottom: 1px solid #e0e0e0;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   white-space: nowrap;
+  font-weight: bold;
 }
 
 .main-product-image {
