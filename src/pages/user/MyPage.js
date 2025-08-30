@@ -388,24 +388,49 @@ const MyPage = () => {
   };
 
   // 레시피 추천 버튼 클릭 시 실행되는 핸들러 함수를 정의합니다
-  const handleRecipeRecommendationClick = async () => {
+  const handleRecipeRecommendationClick = async (selectedOrders) => {
     try {
-      // 최근 주문이 있는지 확인
-      if (!userData.recentOrders || userData.recentOrders.length === 0) {
-        alert('최근 주문한 상품이 없어서 레시피를 추천받을 수 없습니다.');
+      // 선택된 주문이 있는지 확인
+      if (!selectedOrders || selectedOrders.length === 0) {
+        alert('선택된 주문 상품이 없어서 레시피를 추천받을 수 없습니다.');
         return;
       }
+
+      console.log('🔍 레시피 추천 버튼 클릭 - 선택된 주문들:', selectedOrders);
+      console.log('🔍 선택된 주문들의 상세 정보:');
+      selectedOrders.forEach((order, index) => {
+        console.log(`주문 ${index + 1}:`, {
+          전체_데이터: order,
+          사용가능한_키: Object.keys(order),
+          product_id: order.product_id,
+          kok_product_id: order.kok_product_id,
+          id: order.id,
+          productId: order.productId,
+          item_id: order.item_id,
+          kok_item_id: order.kok_item_id,
+          product_name: order.product_name,
+          order_id: order.order_id
+        });
+      });
 
       // 로딩 상태 시작
       setLoading(true);
 
-      // 통일된 레시피 추천 API 호출
+      // 선택된 주문의 상품들로 레시피 추천 API 호출
       const recipeRecommendations = await cartApi.getMyPageRecipeRecommendations(
-        userData.recentOrders,
+        selectedOrders,
         1, // page
         5  // size
       );
 
+      console.log('🔍 마이페이지에서 CartRecipeResult로 전달할 데이터:', {
+        recipes: recipeRecommendations.recipes || [],
+        keyword_extraction: recipeRecommendations.keyword_extraction || [],
+        total: recipeRecommendations.total_count || 0,
+        page: recipeRecommendations.page || 1,
+        searchType: 'mypage'
+      });
+      
       // CartRecipeResult 페이지로 이동
       navigate('/recipes/cart-result', {
         state: {
@@ -631,9 +656,12 @@ const MyPage = () => {
                         
                         {/* 레시피 관련 버튼들 */}
                         <div className="recipe-buttons">
-                          {/* 레시피 추천 버튼 */}
-                          <div className="recipe-recommend-btn" onClick={handleRecipeRecommendationClick}>
-                            구매 재료들로 만들 수 있는 다른 레시피 추천받기
+                          {/* 레시피 추천 버튼 - 해당 주문의 상품들만 사용 */}
+                          <div 
+                            className="recipe-recommend-btn" 
+                            onClick={() => handleRecipeRecommendationClick(orders)}
+                          >
+                            구매 재료들로 만들 수 있는 다른 레시피 추천받기 →
                           </div>
                         </div>
                       </div>
