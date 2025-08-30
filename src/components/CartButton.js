@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../pages/api';
-import { notifyServerStatus } from '../utils/authUtils';
+
 import cartIcon from '../assets/icon-park-outline_weixin-market.png';
 
 const CartButton = ({ 
@@ -90,14 +90,6 @@ const CartButton = ({
         alert(`요청 오류: ${errorMessage}`);
       } else if (error.response?.status === 500) {
         console.error('서버 내부 오류 상세:', error.response?.data);
-        
-        // 500 에러 시 서버 상태 확인 시도
-        try {
-          const healthCheck = await notifyServerStatus();
-          console.log('서버 헬스체크 결과:', healthCheck);
-        } catch (healthError) {
-          console.error('서버 헬스체크 실패:', healthError);
-        }
         
         alert('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.\n\n개발자 도구의 콘솔에서 자세한 오류 정보를 확인할 수 있습니다.');
       } else if (error.response?.status === 404) {

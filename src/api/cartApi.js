@@ -6,17 +6,35 @@ export const cartApi = {
   
   // 장바구니에 상품 추가
   addToCart: async (productData) => {
+    // 입력 데이터 유효성 검증
+    if (!productData || !productData.kok_product_id) {
+      throw new Error('상품 ID가 필요합니다.');
+    }
+    
+    // kok_product_id가 유효한 숫자인지 확인
+    const productId = parseInt(productData.kok_product_id);
+    if (isNaN(productId) || productId <= 0) {
+      throw new Error(`유효하지 않은 상품 ID: ${productData.kok_product_id}`);
+    }
+    
+    // API 명세서에 맞는 요청 데이터 형식 (수량은 1개로 고정)
+    const requestData = {
+      kok_product_id: productId,
+      kok_quantity: 1, // 수량은 1개로 고정
+      recipe_id: parseInt(productData.recipe_id) || 0
+    };
+    
     try {
       console.log('🛒 장바구니 추가 API 요청:', productData);
-      
-      // API 명세서에 맞는 요청 데이터 형식 (수량은 1개로 고정)
-      const requestData = {
-        kok_product_id: parseInt(productData.kok_product_id),
-        kok_quantity: 1, // 수량은 1개로 고정
-        recipe_id: parseInt(productData.recipe_id) || 0
-      };
-      
       console.log('🔍 요청 데이터 형식 확인:', requestData);
+      console.log('🔍 입력 데이터 상세:', {
+        productData: productData,
+        kok_product_id: productData.kok_product_id,
+        kok_product_id_type: typeof productData.kok_product_id,
+        kok_product_id_parsed: productId,
+        recipe_id: productData.recipe_id,
+        recipe_id_parsed: parseInt(productData.recipe_id) || 0
+      });
       
       const response = await api.post('/api/kok/carts', requestData);
       
@@ -31,20 +49,15 @@ export const cartApi = {
     } catch (error) {
       console.error('❌ 장바구니 추가 실패:', error);
       
-      // 백엔드 서버가 실행되지 않은 경우 임시 모의 응답
+      // 백엔드 서버 연결 실패 시 에러 발생
       if (error.response?.status === 500 || error.code === 'ERR_NETWORK' || error.response?.status === 404) {
-        console.log('🔄 백엔드 서버 연결 실패, 임시 모의 응답 반환');
-        
-        // 개발 환경에서만 모의 응답 제공
-        if (process.env.NODE_ENV === 'development') {
-          return {
-            kok_cart_id: Math.floor(Math.random() * 1000) + 1,
-            message: '임시 모의 응답: 장바구니에 추가되었습니다. (백엔드 서버 미실행)'
-          };
-        }
-        
-        // 프로덕션 환경에서는 에러 발생
         throw new Error('백엔드 서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.');
+      }
+      
+      // 422 에러는 백엔드 서버가 실행 중이지만 데이터 유효성 검증에 실패한 경우
+      if (error.response?.status === 422) {
+        console.error('❌ 422 에러 - 데이터 유효성 검증 실패');
+        throw error; // 422 에러는 그대로 전달
       }
       
       // API 명세서에 따른 에러 처리 (500 에러는 이미 위에서 처리됨)
@@ -52,9 +65,24 @@ export const cartApi = {
         console.log('400 에러 - 이미 장바구니에 있는 상품일 수 있습니다.');
       } else if (error.response?.status === 401) {
         console.log('401 에러 - 인증이 필요합니다.');
+      } else if (error.response?.status === 422) {
+        console.error('❌ 422 유효성 검증 에러:', {
+          responseData: error.response.data
+        });
+        
+        // 필드별 에러 상세 분석
+        if (error.response.data.detail && Array.isArray(error.response.data.detail)) {
+          error.response.data.detail.forEach((err, index) => {
+            console.error(`❌ 필드 에러 ${index + 1}:`, {
+              type: err.type,
+              location: err.loc,
+              message: err.msg,
+              input: err.input
+            });
+          });
+        }
       }
       
-      // 500 에러가 아닌 다른 에러만 throw
       throw error;
     }
   },
@@ -76,36 +104,11 @@ export const cartApi = {
     } catch (error) {
       console.error('❌ 장바구니 조회 실패:', error);
       
-      // 백엔드 서버가 실행되지 않은 경우 임시 모의 응답
+      // 백엔드 서버 연결 실패 시 에러 발생
       if (error.response?.status === 500 || error.code === 'ERR_NETWORK' || error.response?.status === 404) {
-        console.log('🔄 백엔드 서버 연결 실패, 임시 모의 응답 반환');
-        
-        // 개발 환경에서만 모의 응답 제공
-        if (process.env.NODE_ENV === 'development') {
-          return {
-            cart_items: [
-              {
-                kok_cart_id: 1,
-                kok_product_id: 1,
-                kok_price_id: 1,
-                recipe_id: 0,
-                kok_product_name: '임시 상품 (백엔드 서버 미실행)',
-                kok_thumbnail: 'https://via.placeholder.com/150x150/CCCCCC/666666?text=Temp',
-                kok_product_price: 10000,
-                kok_discount_rate: 10,
-                kok_discounted_price: 9000,
-                kok_store_name: '임시 스토어',
-                kok_quantity: 1
-              }
-            ]
-          };
-        }
-        
-        // 프로덕션 환경에서는 에러 발생
         throw new Error('백엔드 서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.');
       }
       
-      // 500 에러가 아닌 다른 에러만 throw
       throw error;
     }
   },
@@ -138,17 +141,11 @@ export const cartApi = {
     } catch (error) {
       console.error('❌ 장바구니 수량 변경 실패:', error);
       
-      // 백엔드 서버가 실행되지 않은 경우 임시 모의 응답
+      // 백엔드 서버 연결 실패 시 에러 발생
       if (error.response?.status === 500 || error.code === 'ERR_NETWORK' || error.response?.status === 404) {
-        console.log('🔄 백엔드 서버 연결 실패, 임시 모의 응답 반환');
-        return {
-          kok_cart_id: cartItemId,
-          kok_quantity: validQuantity,
-          message: '임시 모의 응답: 수량이 변경되었습니다. (백엔드 서버 미실행)'
-        };
+        throw new Error('백엔드 서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.');
       }
       
-      // 500 에러가 아닌 다른 에러만 throw
       throw error;
     }
   },
@@ -170,15 +167,11 @@ export const cartApi = {
     } catch (error) {
       console.error('❌ 장바구니 상품 삭제 실패:', error);
       
-      // 백엔드 서버가 실행되지 않은 경우 임시 모의 응답
+      // 백엔드 서버 연결 실패 시 에러 발생
       if (error.response?.status === 500 || error.code === 'ERR_NETWORK' || error.response?.status === 404) {
-        console.log('🔄 백엔드 서버 연결 실패, 임시 모의 응답 반환');
-        return {
-          message: '임시 모의 응답: 상품이 삭제되었습니다. (백엔드 서버 미실행)'
-        };
+        throw new Error('백엔드 서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.');
       }
       
-      // 500 에러가 아닌 다른 에러만 throw
       throw error;
     }
   },
@@ -187,42 +180,50 @@ export const cartApi = {
   
   // 선택된 상품들로 주문 생성
   createOrder: async (selectedItems) => {
+    // 각 아이템의 구조를 자세히 로깅
+    selectedItems.forEach((item, index) => {
+      console.log(`🔍 아이템 ${index}:`, {
+        cart_id: item.cart_id,
+        kok_cart_id: item.kok_cart_id,
+        quantity: item.quantity,
+        kok_quantity: item.kok_quantity,
+        전체_아이템: item
+      });
+    });
+    
+    // API 명세서에 맞는 요청 데이터 형식으로 변환
+    const requestData = {
+      selected_items: selectedItems.map(item => {
+        const cartId = item.kok_cart_id || item.cart_id;
+        const quantity = item.kok_quantity || item.quantity;
+        
+        console.log('🔄 변환 중:', { 
+          원본_cart_id: item.cart_id, 
+          원본_kok_cart_id: item.kok_cart_id,
+          변환된_kok_cart_id: cartId,
+          원본_quantity: item.quantity,
+          원본_kok_quantity: item.kok_quantity,
+          변환된_quantity: quantity
+        });
+        
+        // 데이터 유효성 검증
+        if (!cartId || cartId <= 0) {
+          throw new Error(`유효하지 않은 장바구니 ID: ${cartId}`);
+        }
+        
+        if (!quantity || quantity <= 0 || quantity > 10) {
+          throw new Error(`유효하지 않은 수량: ${quantity} (1-10 범위여야 함)`);
+        }
+        
+        return {
+          kok_cart_id: parseInt(cartId),
+          quantity: parseInt(quantity)
+        };
+      })
+    };
+    
     try {
       console.log('🛒 주문 생성 API 요청:', { selectedItems });
-      
-      // 각 아이템의 구조를 자세히 로깅
-      selectedItems.forEach((item, index) => {
-        console.log(`🔍 아이템 ${index}:`, {
-          cart_id: item.cart_id,
-          kok_cart_id: item.kok_cart_id,
-          quantity: item.quantity,
-          kok_quantity: item.kok_quantity,
-          전체_아이템: item
-        });
-      });
-      
-      // API 명세서에 맞는 요청 데이터 형식으로 변환
-      const requestData = {
-        selected_items: selectedItems.map(item => {
-          const cartId = item.kok_cart_id || item.cart_id;
-          const quantity = item.kok_quantity || item.quantity;
-          
-          console.log('🔄 변환 중:', { 
-            원본_cart_id: item.cart_id, 
-            원본_kok_cart_id: item.kok_cart_id,
-            변환된_kok_cart_id: cartId,
-            원본_quantity: item.quantity,
-            원본_kok_quantity: item.kok_quantity,
-            변환된_quantity: quantity
-          });
-          
-          return {
-            kok_cart_id: cartId,
-            quantity: quantity
-          };
-        })
-      };
-      
       console.log('🔍 최종 변환된 요청 데이터:', JSON.stringify(requestData, null, 2));
       
       const response = await api.post('/api/orders/kok/carts/order', requestData);
@@ -245,6 +246,27 @@ export const cartApi = {
           data: error.response.data,
           validationErrors: error.response.data.validation_errors
         });
+        
+        // 422 에러 특별 처리
+        if (error.response.status === 422) {
+          console.error('❌ 422 유효성 검증 에러 상세:', {
+            requestData: requestData,
+            responseData: error.response.data,
+            detail: error.response.data.detail
+          });
+          
+          // 필드별 에러 상세 분석
+          if (error.response.data.detail && Array.isArray(error.response.data.detail)) {
+            error.response.data.detail.forEach((err, index) => {
+              console.error(`❌ 필드 에러 ${index + 1}:`, {
+                type: err.type,
+                location: err.loc,
+                message: err.msg,
+                input: err.input
+              });
+            });
+          }
+        }
       }
       
       throw error;
