@@ -164,6 +164,21 @@
   gap: 8px;
 }
 
+/* 하단 정보 컨테이너 (가격 + 오른쪽 정보) */
+.main-bottom-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+
+/* 오른쪽 정보 컨테이너 (하트 + 방송상태) */
+.main-right-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .main-discount {
   color: #FA5F8C;
   font-size: 18px;
@@ -174,6 +189,57 @@
   font-size: 18px;
   font-weight: 500;
   color: #333333;
+}
+
+/* 하트 아이콘 스타일 */
+.main-heart-icon {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.main-heart-icon:hover {
+  transform: scale(1.1);
+}
+
+.main-heart-icon:active {
+  transform: scale(0.95);
+}
+
+/* 하트 아이콘 애니메이션 */
+@keyframes heartBeat {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+.main-heart-icon.liked {
+  animation: heartBeat 0.6s ease-in-out;
+}
+
+/* 방송상태 스타일 */
+.main-status-text {
+  background-color: #95a5a6;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.main-status-text.scheduled {
+  background-color: #95a5a6;
+}
+
+.main-status-text.on-air {
+  background-color: #ff4757;
+}
+
+.main-status-text.ended {
+  background-color: #7f8c8d;
 }
 
 .main-brand-info {
@@ -214,10 +280,11 @@
 .main-time-overlay {
   color: #666666;
   padding-bottom: 8px;
-  font-size: 16px;
+  font-size: 14px;
   text-align: left;
   border-bottom: 1px solid #e0e0e0;
   margin-bottom: 12px;
+  white-space: nowrap;
 }
 
 .main-product-image {
@@ -280,6 +347,16 @@
   
   .main-price {
     font-size: 13px;
+  }
+  
+  .main-bottom-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .main-right-info {
+    align-self: flex-end;
   }
 }
 

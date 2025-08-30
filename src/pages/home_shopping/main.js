@@ -25,6 +25,10 @@ import homeshoppingLogoNs from '../../assets/homeshopping_logo_ns.png'; // NS홈
 import homeshoppingLogoHyundai from '../../assets/homeshopping_logo_hyundai.png'; // 현대홈쇼핑 로고
 import homeshoppingLogoHomeandshopping from '../../assets/homeshopping_logo_homeandshopping.png'; // 홈앤쇼핑 로고
 
+// 하트 아이콘 이미지들을 가져옵니다
+import heartEmpty from '../../assets/heart_empty.png';
+import heartFilled from '../../assets/heart_filled.png';
+
 // 메인 컴포넌트를 정의합니다
 const Main = () => {
   // 페이지 이동을 위한 navigate 훅
@@ -43,6 +47,8 @@ const Main = () => {
   const [loading, setLoading] = useState(true);
   // 에러 상태를 관리합니다 (null: 에러 없음, string: 에러 메시지)
   const [error, setError] = useState(null);
+  // 찜한 상품 목록을 관리합니다
+  const [likedProducts, setLikedProducts] = useState(new Set());
 
   // homeshopping_id에 따른 로고 이미지를 반환하는 함수를 정의합니다
   const getLogoByHomeshoppingId = (homeshoppingId) => {
@@ -207,9 +213,40 @@ const Main = () => {
     // 상품 상세 페이지로 이동하는 기능을 구현할 예정입니다
   };
 
+  // 하트 아이콘 클릭 시 실행되는 핸들러 함수를 정의합니다
+  const handleHeartClick = (productId, event) => {
+    event.stopPropagation(); // 상품 카드 클릭 이벤트 전파 방지
+    
+    // 로그인 상태 확인
+    if (!isLoggedIn) {
+      alert('로그인이 필요한 서비스입니다.');
+      return;
+    }
+    
+    // 찜하기 상태 토글
+    setLikedProducts(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(productId)) {
+        newSet.delete(productId);
+        console.log('찜 해제:', productId);
+      } else {
+        newSet.add(productId);
+        console.log('찜 추가:', productId);
+      }
+      return newSet;
+    });
+
+    // 애니메이션 효과 추가
+    const heartIcon = event.currentTarget;
+    if (heartIcon) {
+      heartIcon.classList.add('liked');
+      setTimeout(() => heartIcon.classList.remove('liked'), 600);
+    }
+  };
 
 
-  // 현재 시간과 비교하여 방송 예정/방송 종료를 구분하는 함수를 정의합니다
+
+  // 현재 시간과 비교하여 방송 상태를 구분하는 함수를 정의합니다
   const getBroadcastStatus = (startTime) => {
     const now = new Date();
     const currentTime = now.getHours() * 60 + now.getMinutes(); // 현재 시간을 분으로 변환
@@ -219,6 +256,20 @@ const Main = () => {
     
     // 시작 시간이 현재 시간보다 이후면 방송 예정, 이전이면 방송 종료
     return startTimeInMinutes > currentTime ? '방송예정' : '방송종료';
+  };
+
+  // 방송 상태에 따른 스타일 클래스를 반환하는 함수를 정의합니다
+  const getBroadcastStatusClass = (status) => {
+    switch (status) {
+      case '방송예정':
+        return 'main-status-text scheduled';
+      case '방송중':
+        return 'main-status-text on-air';
+      case '방송종료':
+        return 'main-status-text ended';
+      default:
+        return 'main-status-text scheduled';
+    }
   };
 
   // 스케줄 데이터를 방송 예정과 방송 종료로 분류합니다 (방송 종료는 표시하지 않음)
@@ -302,7 +353,9 @@ const Main = () => {
                        onClick={() => handleProductClick(item.홈쇼핑_아이디)}
                      >
                        {/* 시간 헤더 */}
-                       <div className="main-time-overlay">{item.시작시간}</div>
+                       <div className="main-time-overlay">
+                         {scheduleData.date} {item.시작시간}
+                       </div>
                        
                        {/* 카드 내부 레이아웃 컨테이너 */}
                        <div className="main-card-layout">
@@ -336,12 +389,29 @@ const Main = () => {
                              </div>
                              {/* 상품명을 표시합니다 */}
                              <div className="main-product-name">{item.상품명}</div>
-                             {/* 가격 정보 컨테이너 */}
-                             <div className="main-price-info">
-                               {/* 할인율을 표시합니다 */}
-                               <span className="main-discount">{item.할인율}</span>
-                               {/* 할인된 가격을 표시합니다 */}
-                               <span className="main-price">{item.할인된가격}</span>
+                             {/* 가격 정보와 방송상태를 하나의 컨테이너로 묶습니다 */}
+                             <div className="main-bottom-info">
+                               {/* 가격 정보 컨테이너 */}
+                               <div className="main-price-info">
+                                 {/* 할인율을 표시합니다 */}
+                                 <span className="main-discount">{item.할인율}</span>
+                                 {/* 할인된 가격을 표시합니다 */}
+                                 <span className="main-price">{item.할인된가격}</span>
+                               </div>
+                               {/* 오른쪽: 하트 아이콘과 방송상태 */}
+                               <div className="main-right-info">
+                                 {/* 하트 아이콘 */}
+                                 <img 
+                                   src={likedProducts.has(item.홈쇼핑_아이디) ? heartFilled : heartEmpty} 
+                                   alt="찜하기" 
+                                   className="main-heart-icon"
+                                   onClick={(e) => handleHeartClick(item.홈쇼핑_아이디, e)}
+                                 />
+                                 {/* 방송상태 표시 */}
+                                 <span className={getBroadcastStatusClass(getBroadcastStatus(item.시작시간))}>
+                                   {getBroadcastStatus(item.시작시간)}
+                                 </span>
+                               </div>
                              </div>
                            </div>
                          </div>

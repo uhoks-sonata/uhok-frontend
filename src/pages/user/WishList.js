@@ -82,15 +82,14 @@ const WishList = () => {
       // 콕 쇼핑몰 상품들 추가
       if (kokResponse.data && kokResponse.data.liked_products) {
         const kokProducts = kokResponse.data.liked_products.map(product => ({
-          ...product,
           type: 'shopping',
           // 콕 상품 필드명을 통일
-          product_id: product.kok_product_id,
-          product_name: product.kok_product_name,
-          store_name: product.kok_store_name,
-          thumb_img_url: product.kok_thumbnail,
-          dc_price: product.kok_discounted_price,
-          dc_rate: product.kok_discount_rate
+          kok_product_id: product.kok_product_id,
+          kok_product_name: product.kok_product_name,
+          kok_store_name: product.kok_store_name,
+          kok_thumbnail: product.kok_thumbnail,
+          kok_discounted_price: product.kok_discounted_price,
+          kok_discount_rate: product.kok_discount_rate
         }));
         allProducts.push(...kokProducts);
       }
@@ -98,21 +97,20 @@ const WishList = () => {
       // 홈쇼핑 상품들 추가
       if (homeshoppingResponse.data && homeshoppingResponse.data.liked_products) {
         const homeshoppingProducts = homeshoppingResponse.data.liked_products.map(product => ({
-          ...product,
           type: 'homeshopping',
-          // 홈쇼핑 상품 필드명을 통일
-          kok_product_id: product.product_id,
-          kok_product_name: product.product_name,
-          kok_store_name: product.store_name,
-          kok_thumbnail: product.thumb_img_url,
-          kok_discounted_price: product.dc_price,
-          kok_discount_rate: product.dc_rate,
+          // 홈쇼핑 상품 필드명을 통일 (hs_product_id 사용)
+          hs_product_id: product.product_id,
+          hs_product_name: product.product_name,
+          hs_store_name: product.store_name,
+          hs_thumbnail: product.thumb_img_url,
+          hs_discounted_price: product.dc_price,
+          hs_discount_rate: product.dc_rate,
           // 더미 데이터로 방송 정보 추가 (실제로는 API에서 제공되어야 함)
-          broadcast_date: "2024-01-15",
-          broadcast_status: "방송예정",
-          broadcast_time: "20:00",
-          channel_name: "홈앤쇼핑",
-          channel_logo: homeshoppingLogoHomeandshopping
+          // broadcast_date: "2024-01-15",
+          // broadcast_status: "방송예정",
+          // broadcast_time: "20:00",
+          // channel_name: "홈앤쇼핑",
+          // channel_logo: homeshoppingLogoHomeandshopping
         }));
         allProducts.push(...homeshoppingProducts);
       }
@@ -143,13 +141,13 @@ const WishList = () => {
             type: "shopping"
           },
           {
-            kok_product_id: 25,
-            kok_product_name: "[산해직송] 산해직송 전라도 맛있는 파김치 남도식 국산 국내산",
-            kok_thumbnail: testImage2, 
-            kok_product_price: 30800,
-            kok_store_name: "산해직송",
-            kok_discount_rate: 52,
-            kok_discounted_price: 14800,
+            hs_product_id: 25,
+            hs_product_name: "[산해직송] 산해직송 전라도 맛있는 파김치 남도식 국산 국내산",
+            hs_thumbnail: testImage2, 
+            hs_product_price: 30800,
+            hs_store_name: "산해직송",
+            hs_discount_rate: 52,
+            hs_discounted_price: 14800,
             type: "homeshopping",
             broadcast_date: "2024-01-15",
             broadcast_status: "방송예정",
@@ -158,13 +156,13 @@ const WishList = () => {
             channel_logo: homeshoppingLogoHomeandshopping
           },
           {
-            kok_product_id: 30,
-            kok_product_name: "[현대홈쇼핑] 프리미엄 무선 이어폰 블루투스 5.0",
-            kok_thumbnail: testImage1,
-            kok_product_price: 99000,
-            kok_store_name: "현대홈쇼핑",
-            kok_discount_rate: 30,
-            kok_discounted_price: 69300,
+            hs_product_id: 30,
+            hs_product_name: "[현대홈쇼핑] 프리미엄 무선 이어폰 블루투스 5.0",
+            hs_thumbnail: testImage1,
+            hs_product_price: 99000,
+            hs_store_name: "현대홈쇼핑",
+            hs_discount_rate: 30,
+            hs_discounted_price: 69300,
             type: "homeshopping",
             broadcast_date: "2024-01-16",
             broadcast_status: "방송중",
@@ -262,8 +260,14 @@ const WishList = () => {
   };
 
   // 상품 클릭 핸들러
-  const handleProductClick = (productId) => {
-    navigate(`/kok/product/${productId}`);
+  const handleProductClick = (productId, productType) => {
+    if (productType === 'homeshopping') {
+      // 홈쇼핑 상품 클릭 시 홈쇼핑 상품 상세 페이지로 이동
+      navigate(`/homeshopping/product/${productId}`);
+    } else {
+      // 콕 상품 클릭 시 콕 상품 상세 페이지로 이동
+      navigate(`/kok/product/${productId}`);
+    }
   };
 
   // 검색 핸들러
@@ -421,59 +425,61 @@ const WishList = () => {
         ) : (
           <div className="wishlist-products">
                          {filteredProducts.map((product, index) => (
-               <div key={`${product.type}-${product.kok_product_id}-${index}`} className="wishlist-product-container">
-                                 <div className="wishlist-product" onClick={() => handleProductClick(product.kok_product_id)}>
+                               <div key={`${product.type}-${product.type === 'homeshopping' ? product.hs_product_id : product.kok_product_id}-${index}`} className="wishlist-product-container">
+                  <div className="wishlist-product" onClick={() => handleProductClick(product.type === 'homeshopping' ? product.hs_product_id : product.kok_product_id, product.type)}>
                    <div className="product-image">
                      <img 
-                       src={product.kok_thumbnail} 
-                       alt={product.kok_product_name}
+                       src={activeTab === 'homeshopping' ? product.hs_thumbnail : product.kok_thumbnail} 
+                       alt={activeTab === 'homeshopping' ? product.hs_product_name : product.kok_product_name}
                      />
                    </div>
                    <div className="product-info">
-                     {activeTab === 'homeshopping' ? (
-                                               // 홈쇼핑 탭 레이아웃 - 방송사, 상품명, 방송정보, 가격 순
-                        <div className="product-channel-info">
-                          <div className="channel-info">
-                            <img 
-                              src={product.channel_logo} 
-                              alt={product.channel_name}
-                              className="channel-logo"
-                            />
-                            <span className="channel-number">[CH 8]</span>
-                          </div>
-                          <div className="wishlist-product-name">
-                            <span className="wishlist-brand-name">{product.kok_store_name}</span> | {product.kok_product_name}
-                          </div>
-                          <div className="broadcast-info">
-                            <div className="broadcast-date-time">
-                              <span className="broadcast-date">{product.broadcast_date}</span>
-                              <span className="broadcast-time">{product.broadcast_time}</span>
-                            </div>
-                            <span className="broadcast-status">{product.broadcast_status}</span>
-                          </div>
-                          <div className="price-section">
-                            <div className="price-info">
-                              {product.kok_discount_rate > 0 && (
-                                <span className="discount-rate-small wishlist-discount-rate-pink">{product.kok_discount_rate}%</span>
-                              )}
-                              <span className="discounted-price">{formatPrice(product.kok_discounted_price)}</span>
-     
-                              <button 
-                                className="heart-button"
-                                data-product-id={product.kok_product_id}
-                                onClick={(e) => {
-                                  e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
-                                  handleHeartToggle(product.kok_product_id, product.type);
-                                }}>
-                                <img 
-                                  src={unlikedProducts.has(product.kok_product_id) ? emptyHeartIcon : filledHeartIcon} 
-                                  alt="찜 토글" 
-                                  className="heart-icon"
-                                />
-                              </button>
-                            </div>
-                          </div>
-                        </div>
+                                           {activeTab === 'homeshopping' ? (
+                                                // 홈쇼핑 탭 레이아웃 - 방송사, 상품명, 방송정보, 가격 순
+                         <div className="product-channel-info">
+                           <div className="channel-info">
+                             <img 
+                               src={product.channel_logo} 
+                               alt={product.channel_name}
+                               className="channel-logo"
+                             />
+                             <span className="channel-number">[CH 8]</span>
+                           </div>
+                           <div className="wishlist-product-name">
+                             <span className="wishlist-brand-name">{product.hs_store_name}</span> | {product.hs_product_name}
+                           </div>
+                           <div className="broadcast-info">
+                             <div className="broadcast-date-time">
+                               <span className="broadcast-date">{product.broadcast_date}</span>
+                               <span className="broadcast-time">{product.broadcast_time}</span>
+                             </div>
+                           </div>
+                           <div className="price-section">
+                             <div className="price-info">
+                               {product.hs_discount_rate > 0 && (
+                                 <span className="discount-rate-small wishlist-discount-rate-pink">{product.hs_discount_rate}%</span>
+                               )}
+                               <span className="discounted-price">{formatPrice(product.hs_discounted_price)}</span>
+                             </div>
+                             {/* 오른쪽: 하트 아이콘과 방송상태를 나란히 배치 */}
+                             <div className="wishlist-right-info">
+                               <button 
+                                 className="shopping-heart-button"
+                                 data-product-id={product.hs_product_id}
+                                 onClick={(e) => {
+                                   e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
+                                   handleHeartToggle(product.hs_product_id, product.type);
+                                 }}>
+                                 <img 
+                                   src={unlikedProducts.has(product.hs_product_id) ? emptyHeartIcon : filledHeartIcon} 
+                                   alt="찜 토글" 
+                                   className="shopping-heart-icon"
+                                 />
+                               </button>
+                               <span className="broadcast-status">{product.broadcast_status}</span>
+                             </div>
+                           </div>
+                         </div>
                                        ) : (
                       // 쇼핑몰 탭 레이아웃 - 이미지 참고하여 개선
                       <div className="shopping-product-info">
