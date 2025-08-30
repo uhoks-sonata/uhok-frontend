@@ -749,7 +749,7 @@ const HomeShoppingProductDetail = () => {
             </div>
           
                      {/* 방송 상태에 따른 UI 분기 */}
-           {broadcastStatus?.status === 'live' ? (
+           {/* {broadcastStatus?.status === 'live' ? (
              // 방송 중일 때: 라이브 영상 표시
              <div className="live-stream-section">
                <h3 className="live-stream-title">🔴 라이브 방송</h3>
@@ -820,7 +820,7 @@ const HomeShoppingProductDetail = () => {
                  </div>
                </div>
              )
-           )}
+           )} */}
         </div>
         
                   {/* 상품 기본 정보 */}

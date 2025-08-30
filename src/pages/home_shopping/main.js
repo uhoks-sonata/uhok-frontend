@@ -121,11 +121,12 @@ const Main = () => {
         
         // API 명세서에 맞춰 쿼리 파라미터를 설정합니다
         const today = new Date();
-        const date = today.toISOString().split('T')[0]; // YYYY-MM-DD 형식
-        const hour = today.getHours(); // 현재 시간
-        
-        // 오늘 날짜 문자열 생성 (if-else 블록 밖에서 공통으로 사용)
-        const todayString = today.toISOString().split('T')[0]; // YYYY-MM-DD 형식
+        // 한국 시간 기준으로 날짜와 시간 계산 (UTC+9 조정 제거)
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const todayString = `${year}-${month}-${day}`; // YYYY-MM-DD 형식 (한국 시간 기준)
+        const hour = today.getHours(); // 현재 시간 (한국 시간)
         
         // 홈쇼핑 편성표 API 호출 (오늘 날짜 데이터만)
         // getSchedule 함수에서 자동으로 오늘 날짜를 설정하므로 파라미터로 전달하지 않음
@@ -145,51 +146,71 @@ const Main = () => {
           console.log('오늘 날짜 편성표:', todaySchedules);
           
           // 첫 번째 아이템의 구조를 자세히 로그로 출력 (디버깅용)
-          if (todaySchedules.length > 0) {
-            console.log('첫 번째 아이템 상세 구조:', {
-              item: todaySchedules[0],
-              live_id: todaySchedules[0].live_id,
-              product_id: todaySchedules[0].product_id,
-              id: todaySchedules[0].id,
-              keys: Object.keys(todaySchedules[0])
-            });
-          }
+          // if (todaySchedules.length > 0) {
+            // console.log('첫 번째 아이템 상세 구조:', {
+            //   item: todaySchedules[0],
+            //   live_id: todaySchedules[0].live_id,
+            //   product_id: todaySchedules[0].product_id,
+            //   id: todaySchedules[0].id,
+            //   keys: Object.keys(todaySchedules[0])
+            // });
+          // }
           
           // 오늘 날짜 데이터가 있는 경우에만 API 데이터 사용
           if (todaySchedules.length > 0) {
-            // API 응답 데이터를 UI 형식으로 변환
-            const apiSchedule = todaySchedules.map(item => ({
-              상품_아이디: item.product_id || item.id, // 각 상품의 고유 ID
-              라이브_아이디: item.live_id, // 라이브 방송 ID (상품 상세 페이지 이동용) - fallback 제거
-              홈쇼핑_아이디: item.homeshopping_id, // 홈쇼핑 채널 ID - fallback 제거
-              홈쇼핑명: item.homeshopping_name || item.store_name || '홈쇼핑',
-              채널명: item.homeshopping_name || item.store_name || '홈쇼핑',
-              채널로고: item.channel_logo || getLogoByHomeshoppingId(item.homeshopping_id),
-              채널번호: item.homeshopping_channel || item.channel_number || item.channel || '채널',
-              원가: item.sale_price ? `${item.sale_price.toLocaleString()}원` : '0원',
-              할인율: item.dc_rate ? `${item.dc_rate}%` : '0%',
-              할인된가격: item.dc_price ? `${item.dc_price.toLocaleString()}원` : '0원',
-              시작시간: item.live_start_time ? item.live_start_time.substring(0, 5) : '00:00',
-              썸네일: item.thumb_img_url || item.thumbnail || item.product_image || null,
-              알림여부: item.notification_enabled || false,
-              상품명: item.product_name || item.title || '상품명 없음'
-            }));
+                         // API 응답 데이터를 UI 형식으로 변환
+             const apiSchedule = todaySchedules.map(item => {
+               // live_end_time이 없는 경우 시작 시간 + 1시간 30분으로 계산
+               let endTime = '00:00';
+               if (item.live_end_time) {
+                 endTime = item.live_end_time.substring(0, 5);
+               } else if (item.live_start_time) {
+                 // 시작 시간이 있는 경우 기본 방송 시간(1시간 30분) 추가
+                //  const startTime = item.live_start_time.substring(0, 5);
+                //  const [hours, minutes] = startTime.split(':').map(Number);
+                //  const endHours = hours + 1;
+                //  const endMinutes = minutes + 30;
+                //  if (endMinutes >= 60) {
+                //    endTime = `${endHours + 1}:${String(endMinutes - 60).padStart(2, '0')}`;
+                //  } else {
+                //    endTime = `${endHours}:${String(endMinutes).padStart(2, '0')}`;
+                //  }
+               }
+               
+               return {
+                 상품_아이디: item.product_id || item.id, // 각 상품의 고유 ID
+                 라이브_아이디: item.live_id, // 라이브 방송 ID (상품 상세 페이지 이동용) - fallback 제거
+                 홈쇼핑_아이디: item.homeshopping_id, // 홈쇼핑 채널 ID - fallback 제거
+                 홈쇼핑명: item.homeshopping_name || item.store_name || '홈쇼핑',
+                 채널명: item.homeshopping_name || item.store_name || '홈쇼핑',
+                 채널로고: item.channel_logo || getLogoByHomeshoppingId(item.homeshopping_id),
+                 채널번호: item.homeshopping_channel || item.channel_number || item.channel || '채널',
+                 원가: item.sale_price ? `${item.sale_price.toLocaleString()}원` : '0원',
+                 할인율: item.dc_rate ? `${item.dc_rate}%` : '0%',
+                 할인된가격: item.dc_price ? `${item.dc_price.toLocaleString()}원` : '0원',
+                 시작시간: item.live_start_time ? item.live_start_time.substring(0, 5) : '00:00',
+                 종료시간: endTime, // 계산된 종료 시간 사용
+                 썸네일: item.thumb_img_url || item.thumbnail || item.product_image || null,
+                 알림여부: item.notification_enabled || false,
+                 상품명: item.product_name || item.title || '상품명 없음'
+               };
+             });
             
             // 매핑된 데이터도 로그로 출력 (디버깅용)
-            console.log('매핑된 데이터 샘플:', apiSchedule[0]);
+            // console.log('매핑된 데이터 샘플:', apiSchedule[0]);
             
-            setScheduleData({
-              date: todayString,
-              time: `${today.getHours()}:${String(today.getMinutes()).padStart(2, '0')}`,
-              channel_id: null,
-              schedule: apiSchedule
-            });
+                         setScheduleData({
+               date: todayString,
+               time: `${hour}:${String(today.getMinutes()).padStart(2, '0')}`,
+               channel_id: null,
+               schedule: apiSchedule
+             });
           } else {
             // 오늘 날짜 데이터가 없는 경우 빈 배열로 설정
             console.log('오늘 날짜 편성표 데이터가 없습니다.');
             setScheduleData({
               date: todayString,
-              time: `${today.getHours()}:${String(today.getMinutes()).padStart(2, '0')}`,
+              time: `${hour}:${String(today.getMinutes()).padStart(2, '0')}`,
               channel_id: null,
               schedule: []
             });
@@ -199,7 +220,7 @@ const Main = () => {
           console.log('API 데이터가 없습니다.');
           setScheduleData({
             date: todayString,
-            time: `${today.getHours()}:${String(today.getMinutes()).padStart(2, '0')}`,
+            time: `${hour}:${String(today.getMinutes()).padStart(2, '0')}`,
             channel_id: null,
             schedule: []
           });
@@ -210,14 +231,17 @@ const Main = () => {
         console.error('편성표 데이터 로딩 실패:', err);
         setError('편성표 데이터를 불러오는데 실패했습니다.');
         
-        // 에러 시 빈 데이터로 설정
-        const today = new Date();
-        const date = today.toISOString().split('T')[0];
-        const time = `${today.getHours()}:${String(today.getMinutes()).padStart(2, '0')}`;
+        // 에러 시 빈 데이터로 설정 (한국 시간 기준)
+        const errorToday = new Date();
+        const errorYear = errorToday.getFullYear();
+        const errorMonth = String(errorToday.getMonth() + 1).padStart(2, '0');
+        const errorDay = String(errorToday.getDate()).padStart(2, '0');
+        const errorDate = `${errorYear}-${errorMonth}-${errorDay}`;
+        const errorTime = `${errorToday.getHours()}:${String(errorToday.getMinutes()).padStart(2, '0')}`;
         
         setScheduleData({
-          date: date,
-          time: time,
+          date: errorDate,
+          time: errorTime,
           channel_id: null,
           schedule: []
         });
@@ -314,23 +338,38 @@ const Main = () => {
   };
 
   // 현재 시간과 비교하여 방송 상태를 구분하는 함수를 정의합니다
-  const getBroadcastStatus = (startTime) => {
-    const now = new Date();
-    const currentTime = now.getHours() * 60 + now.getMinutes(); // 현재 시간을 분으로 변환
+  const getBroadcastStatus = (startTime, endTime, currentTimeInMinutes) => {
+    // 시작 시간과 종료 시간이 유효한지 확인
+    if (!startTime || !endTime || startTime === '00:00' || endTime === '00:00') {
+      // console.warn('유효하지 않은 시간:', { startTime, endTime });
+      return '방송예정'; // 기본값으로 방송예정 반환
+    }
     
-    const [hours, minutes] = startTime.split(':').map(Number);
-    const startTimeInMinutes = hours * 60 + minutes; // 시작 시간을 분으로 변환
-    
-    // 방송 시간을 2시간으로 가정 (실제로는 API에서 방송 종료 시간을 받아와야 함)
-    const broadcastDuration = 120; // 2시간 = 120분
-    const endTimeInMinutes = startTimeInMinutes + broadcastDuration;
-    
-    if (startTimeInMinutes > currentTime) {
-      return '방송예정';
-    } else if (currentTime <= endTimeInMinutes) {
-      return '방송중';
-    } else {
-      return '방송종료';
+    try {
+      const [startHours, startMinutes] = startTime.split(':').map(Number);
+      const startTimeInMinutes = startHours * 60 + startMinutes; // 시작 시간을 분으로 변환
+      
+      const [endHours, endMinutes] = endTime.split(':').map(Number);
+      const endTimeInMinutes = endHours * 60 + endMinutes; // 종료 시간을 분으로 변환
+      
+      // 디버깅용 로그 (실제로 로그를 확인하려면 주석 해제)
+      // console.log(`시간 비교: 시작=${startTime}(${startTimeInMinutes}분), 종료=${endTime}(${endTimeInMinutes}분), 현재=${currentTimeInMinutes}분`);
+      
+      // 현재 시간이 시작 시간보다 이전이면 방송예정
+      if (startTimeInMinutes > currentTimeInMinutes) {
+        return '방송예정';
+      } 
+      // 현재 시간이 시작 시간과 종료 시간 사이면 방송중
+      else if (currentTimeInMinutes >= startTimeInMinutes && currentTimeInMinutes <= endTimeInMinutes) {
+        return '방송중';
+      } 
+      // 현재 시간이 종료 시간을 지났으면 방송종료
+      else {
+        return '방송종료';
+      }
+    } catch (error) {
+      console.error('시간 파싱 오류:', error, { startTime, endTime });
+      return '방송예정'; // 오류 시 기본값으로 방송예정 반환
     }
   };
 
@@ -348,14 +387,30 @@ const Main = () => {
     }
   };
 
+  // 현재 시간 계산 (한 번만 계산하여 일관성 유지)
+  const now = new Date();
+  const currentTimeString = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+  const currentTimeInMinutes = now.getHours() * 60 + now.getMinutes(); // 현재 시간을 분으로 변환
+  
+  // console.log(`현재 시간: ${currentTimeString} (한국 시간), 분으로 변환: ${currentTimeInMinutes}분`);
+  
   // 전체 스케줄을 시간 순으로 정렬한 후 방송 상태별로 분류합니다
   const sortedSchedule = scheduleData.schedule
-    .filter(item => getBroadcastStatus(item.시작시간) !== '방송종료') // 방송 종료는 제외
+    .filter(item => {
+      const status = getBroadcastStatus(item.시작시간, item.종료시간, currentTimeInMinutes);
+      // 방송 종료된 상품은 제외하고, 방송예정과 방송중인 상품만 표시
+      const shouldShow = status !== '방송종료';
+      
+      // 디버깅용 로그 (실제로 로그를 확인하려면 주석 해제)
+      // console.log(`상품: ${item.상품명}, 시작시간: ${item.시작시간}, 종료시간: ${item.종료시간}, 상태: ${status}, 표시여부: ${shouldShow}`);
+      
+      return shouldShow;
+    })
     .sort((a, b) => a.시작시간.localeCompare(b.시작시간)); // 전체를 시간 순으로 정렬
   
   // 정렬된 스케줄을 방송 상태별로 분류합니다
-  const scheduledItems = sortedSchedule.filter(item => getBroadcastStatus(item.시작시간) === '방송예정');
-  const onAirItems = sortedSchedule.filter(item => getBroadcastStatus(item.시작시간) === '방송중');
+  const scheduledItems = sortedSchedule.filter(item => getBroadcastStatus(item.시작시간, item.종료시간, currentTimeInMinutes) === '방송예정');
+  const onAirItems = sortedSchedule.filter(item => getBroadcastStatus(item.시작시간, item.종료시간, currentTimeInMinutes) === '방송중');
 
   // 로딩 중일 때 표시할 UI를 렌더링합니다
   if (loading || userLoading) {
@@ -506,10 +561,10 @@ const Main = () => {
                                        className="shopping-heart-icon"
                                      />
                                    </button>
-                                   {/* 방송상태 표시 */}
-                                   <span className={`broadcast-status ${getBroadcastStatus(item.시작시간) === '방송중' ? 'on-air' : ''}`}>
-                                     {getBroadcastStatus(item.시작시간)}
-                                   </span>
+                                                                                                           {/* 방송상태 표시 */}
+                                     <span className={`broadcast-status ${getBroadcastStatus(item.시작시간, item.종료시간, currentTimeInMinutes) === '방송중' ? 'on-air' : ''}`}>
+                                       {getBroadcastStatus(item.시작시간, item.종료시간, currentTimeInMinutes)}
+                                     </span>
                                  </div>
                                </div>
                              </div>
