@@ -25,21 +25,11 @@ const api = axios.create({
   timeout: 60000, // 60초로 타임아웃 증가 (검색 히스토리 API 대응)
  });
 
-// API 설정 로깅
-console.log('API 설정:', {
-  baseURL: '프록시 사용',
-  timeout: 60000
-});
+
 
 // 요청 인터셉터: 토큰 자동 추가 및 로그인 상태 확인
 api.interceptors.request.use(
   (config) => {
-    console.log('🔍 API 요청 시작:', {
-      url: config.url,
-      method: config.method?.toUpperCase(),
-      params: config.params,
-      data: config.data
-    });
 
     // 토큰이 있는 경우 헤더에 추가
     const token = localStorage.getItem('access_token');
@@ -61,24 +51,8 @@ api.interceptors.request.use(
         return Promise.reject(new Error('토큰이 만료되었습니다.'));
       }
       
-      console.log('✅ API 요청 - 토큰 있음:', {
-        url: config.url,
-        method: config.method?.toUpperCase(),
-        tokenLength: token.length,
-        tokenStart: token.substring(0, 20) + '...',
-        authorizationHeader: `Bearer ${token}`,
-        fullHeaders: config.headers
-      });
       config.headers.Authorization = `Bearer ${token}`;
-      
-      // 토큰 설정 후 최종 헤더 확인
-      console.log('🔍 최종 설정된 Authorization 헤더:', config.headers.Authorization);
     } else {
-      console.log('API 요청 - 토큰 없음:', {
-        url: config.url,
-        method: config.method?.toUpperCase()
-      });
-      
       // 인증이 필요한 페이지에서 토큰이 없으면 요청을 중단
       const currentPath = window.location.pathname;
       const authRequiredPaths = [
@@ -93,7 +67,6 @@ api.interceptors.request.use(
       const isAuthRequiredPath = authRequiredPaths.some(path => currentPath.startsWith(path));
       
       if (isAuthRequiredPath) {
-        console.log('인증이 필요한 페이지에서 토큰 없음, 요청 중단:', currentPath);
         // 중복 알림 방지를 위해 한 번만 표시
         if (!window.authRequiredAlertShown) {
           window.authRequiredAlertShown = true;
@@ -109,7 +82,6 @@ api.interceptors.request.use(
     return config;
   },
   (error) => {
-    console.error('요청 인터셉터 에러:', error);
     return Promise.reject(error);
   }
 );
@@ -117,12 +89,6 @@ api.interceptors.request.use(
 // 응답 인터셉터: 토큰 만료 시 자동 로그아웃
 api.interceptors.response.use(
   (response) => {
-    console.log('✅ API 응답 성공:', {
-      url: response.config.url,
-      method: response.config.method?.toUpperCase(),
-      status: response.status,
-      statusText: response.statusText
-    });
     return response;
   },
   (error) => {

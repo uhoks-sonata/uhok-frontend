@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { homeShoppingApi, convertLiveIdToHomeshoppingId } from '../../api/homeShoppingApi';
+import { homeShoppingApi } from '../../api/homeShoppingApi';
 import { useUser } from '../../contexts/UserContext';
 import HeaderNavSchedule from '../../layout/HeaderNavSchedule';
 import BottomNav from '../../layout/BottomNav';
@@ -63,12 +63,8 @@ const HomeShoppingProductDetail = () => {
         setLoading(true);
         setError(null);
         
-        console.log('🛍️ 홈쇼핑 상품 상세 정보 가져오기 (live_id):', live_id, `(시도 ${retryCount + 1}/${maxRetries + 1})`);
-        console.log('🔍 live_id 상세 정보:', { value: live_id, type: typeof live_id, length: String(live_id).length });
-        
         // 상품 상세 정보 가져오기 (live_id 사용)
         const detailResponse = await homeShoppingApi.getProductDetail(live_id);
-        console.log('✅ 상품 상세 정보:', detailResponse);
         
         if (!isMounted) return;
         
@@ -91,22 +87,19 @@ const HomeShoppingProductDetail = () => {
                  // 콕 상품 추천과 레시피 추천은 productDetail이 설정된 후에 호출
          // 이 부분은 useEffect의 의존성 배열에 productDetail을 추가하여 처리
         
-        // 라이브 스트림 정보 가져오기 (live_id를 homeshopping_id로 변환하여 사용)
+        // 라이브 스트림 정보 가져오기 (상품 상세 정보에서 homeshopping_id 사용)
         try {
-          // live_id를 homeshopping_id로 변환
-          const homeshoppingId = convertLiveIdToHomeshoppingId(live_id);
+          // 상품 상세 정보에서 homeshopping_id 가져오기
+          const homeshoppingId = detailResponse.product?.homeshopping_id;
           
           if (homeshoppingId) {
-            console.log(`📹 라이브 스트림 API 호출: live_id=${live_id} → homeshopping_id=${homeshoppingId}`);
             const streamResponse = await homeShoppingApi.getLiveStreamUrl(homeshoppingId);
-            console.log('📹 라이브 스트림 정보:', streamResponse);
             
             if (isMounted) {
               setStreamData(streamResponse);
               
               // API 명세서에 맞게 HTML 템플릿을 렌더링하여 window.__LIVE_SRC__ 설정
               if (streamResponse?.html_template) {
-                console.log('🔧 HTML 템플릿 렌더링하여 window.__LIVE_SRC__ 설정');
                 try {
                   // HTML 템플릿을 임시 div에 렌더링하여 스크립트 실행
                   const tempDiv = document.createElement('div');
@@ -119,7 +112,6 @@ const HomeShoppingProductDetail = () => {
                     if (script.textContent.includes('window.__LIVE_SRC__')) {
                       // window.__LIVE_SRC__ 설정 스크립트 실행
                       eval(script.textContent);
-                      console.log('✅ window.__LIVE_SRC__ 설정 완료:', window.__LIVE_SRC__);
                     }
                   });
                   
@@ -131,7 +123,6 @@ const HomeShoppingProductDetail = () => {
               }
             }
           } else {
-            console.log(`⚠️ live_id ${live_id}를 homeshopping_id로 변환할 수 없음`);
             setStreamData(null);
           }
         } catch (streamError) {
@@ -147,7 +138,6 @@ const HomeShoppingProductDetail = () => {
         // 500 에러인 경우 재시도 로직
         if (error.response?.status === 500 && retryCount < maxRetries) {
           retryCount++;
-          console.log(`🔄 상품 상세 정보 재시도 ${retryCount}/${maxRetries} (3초 후)`);
           
           setTimeout(() => {
             if (isMounted) {
@@ -194,51 +184,35 @@ const HomeShoppingProductDetail = () => {
      let isMounted = true;
      
      const fetchRecommendations = async () => {
-       try {
-                   // 콕 상품 추천 가져오기 (새로운 API 엔드포인트 사용)
-          console.log('🔍 콕 상품 추천 API 호출 시작 (product_id):', productDetail.product_id);
+               try {
+          // 콕 상품 추천 가져오기 (새로운 API 엔드포인트 사용)
           const kokResponse = await homeShoppingApi.getKokRecommendations(productDetail.product_id);
-          console.log('💡 콕 상품 추천 응답:', kokResponse);
          
-         if (isMounted) {
-           const products = kokResponse?.products || [];
-           console.log('✅ 콕 상품 추천 설정:', {
-             count: products.length,
-             products: products
-           });
-           setKokRecommendations(products);
-         }
-         
-         // 상품이 식재료인지 확인하고 레시피 추천 가져오기
-         console.log('🔍 레시피 추천 API 호출 (product_id):', productDetail.product_id);
-         try {
-           const recipeResponse = await homeShoppingApi.getRecipeRecommendations(productDetail.product_id);
-           console.log('💡 레시피 추천 응답:', recipeResponse);
-           
-           // 새로운 API 응답에서 is_ingredient 정보를 가져와서 productDetail에 저장
-           if (isMounted && recipeResponse) {
-             setProductDetail(prev => ({
-               ...prev,
-               is_ingredient: recipeResponse.is_ingredient || false
-             }));
-             
-             if (recipeResponse.is_ingredient) {
-               console.log('🥬 식재료 상품 확인됨, 레시피 추천 버튼 표시');
-             } else {
-               console.log('📦 완제품 상품이므로 레시피 추천 버튼 숨김');
-             }
-           }
-         } catch (error) {
-           console.log('❌ 레시피 추천 API 호출 실패, 기본값으로 설정:', error);
-           // API 호출 실패 시 기본값으로 설정
-           if (isMounted) {
-             setProductDetail(prev => ({
-               ...prev,
-               is_ingredient: false
-             }));
-             console.log('📦 API 호출 실패로 인해 완제품으로 설정');
-           }
-         }
+        if (isMounted) {
+          const products = kokResponse?.products || [];
+          setKokRecommendations(products);
+        }
+        
+        // 상품이 식재료인지 확인하고 레시피 추천 가져오기
+        try {
+          const recipeResponse = await homeShoppingApi.getRecipeRecommendations(productDetail.product_id);
+          
+          // 새로운 API 응답에서 is_ingredient 정보를 가져와서 productDetail에 저장
+          if (isMounted && recipeResponse) {
+            setProductDetail(prev => ({
+              ...prev,
+              is_ingredient: recipeResponse.is_ingredient || false
+            }));
+          }
+        } catch (error) {
+          // API 호출 실패 시 기본값으로 설정
+          if (isMounted) {
+            setProductDetail(prev => ({
+              ...prev,
+              is_ingredient: false
+            }));
+          }
+        }
          
        } catch (error) {
          console.error('❌ 추천 데이터 가져오기 실패:', error);
@@ -271,7 +245,6 @@ const HomeShoppingProductDetail = () => {
       if (response.data && response.data.liked_products) {
         const likedProductIds = new Set(response.data.liked_products.map(product => product.product_id || product.live_id));
         setWishlistedProducts(likedProductIds);
-        console.log('찜 상태 초기화 완료:', likedProductIds.size, '개 상품 (product_id 기준)');
       }
     } catch (error) {
       console.error('찜 상태 초기화 실패:', error);
@@ -284,7 +257,6 @@ const HomeShoppingProductDetail = () => {
       // 토큰 확인
       const token = localStorage.getItem('access_token');
       if (!token) {
-        console.log('토큰이 없어서 로그인 필요 팝업 표시');
         // 다른 파일들과 동일하게 alert만 표시하고 제자리에 유지
         alert('로그인이 필요한 서비스입니다.');
         return;
@@ -301,29 +273,23 @@ const HomeShoppingProductDetail = () => {
         }
       });
 
-      console.log('찜 토글 응답:', response.data);
-
-             // 찜 토글 성공 후 백엔드 응답에 따라 상태 업데이트
-       if (response.data) {
-         console.log('찜 토글 성공! 백엔드 응답에 따라 상태를 업데이트합니다.');
-         
-         // 백엔드 응답의 liked 상태에 따라 찜 상태 업데이트
-         const isLiked = response.data.liked;
-         const productId = productDetail?.product_id || liveId;
-         
-         setWishlistedProducts(prev => {
-           const newSet = new Set(prev);
-           if (isLiked) {
-             // 백엔드에서 찜된 상태로 응답
-             newSet.add(productId);
-             console.log('✅ 찜이 추가되었습니다. 채워진 하트로 변경됩니다.');
-           } else {
-             // 백엔드에서 찜 해제된 상태로 응답
-             newSet.delete(productId);
-             console.log('❌ 찜이 해제되었습니다. 빈 하트로 변경됩니다.');
-           }
-           return newSet;
-         });
+            // 찜 토글 성공 후 백엔드 응답에 따라 상태 업데이트
+      if (response.data) {
+        // 백엔드 응답의 liked 상태에 따라 찜 상태 업데이트
+        const isLiked = response.data.liked;
+        const productId = productDetail?.product_id || liveId;
+        
+        setWishlistedProducts(prev => {
+          const newSet = new Set(prev);
+          if (isLiked) {
+            // 백엔드에서 찜된 상태로 응답
+            newSet.add(productId);
+          } else {
+            // 백엔드에서 찜 해제된 상태로 응답
+            newSet.delete(productId);
+          }
+          return newSet;
+        });
         
         // 애니메이션 효과 추가
         const heartButton = document.querySelector(`[data-product-id="${liveId}"]`);
@@ -362,33 +328,24 @@ const HomeShoppingProductDetail = () => {
   
   // 라이브 스트림 재생 (현재 창에서)
   const handleLiveStream = () => {
-    console.log('🔍 handleLiveStream 호출됨');
-    console.log('🔍 현재 상태:', {
-      windowLIVE_SRC: window.__LIVE_SRC__,
-      streamData: streamData,
-      streamDataUrl: streamData?.stream_url,
-      productDetail: productDetail
-    });
-    
     const streamUrl = window.__LIVE_SRC__ || streamData?.stream_url;
-    console.log('🔍 최종 streamUrl:', streamUrl);
     
     if (streamUrl) {
-      console.log('🎬 스트림 재생 시작 (현재 창):', streamUrl);
-      
       // 현재 창에서 라이브 스트림 페이지로 이동
       navigate('/live-stream', {
         state: {
           streamUrl: streamUrl,
           productName: productDetail?.product_name || '홈쇼핑 라이브',
-          homeshoppingId: productDetail?.homeshopping_id
+          homeshopping_id: productDetail?.homeshopping_id,
+          homeshopping_name: productDetail?.homeshopping_name,
+          product_name: productDetail?.product_name,
+          // 방송 시간 정보 추가
+          live_date: productDetail?.live_date,
+          live_start_time: productDetail?.live_start_time,
+          live_end_time: productDetail?.live_end_time
         }
       });
     } else {
-      console.log('❌ 스트림 URL 없음:', { 
-        windowLIVE_SRC: window.__LIVE_SRC__, 
-        streamDataUrl: streamData?.stream_url 
-      });
       alert('현재 스트림을 사용할 수 없습니다.');
     }
   };
@@ -431,11 +388,6 @@ const HomeShoppingProductDetail = () => {
   // 방송 상태 확인
   const getBroadcastStatus = () => {
     if (!productDetail || !productDetail.live_date || !productDetail.live_start_time || !productDetail.live_end_time) {
-      console.log('❌ 방송 상태 확인 실패: 필수 데이터 누락', {
-        live_date: productDetail?.live_date,
-        live_start_time: productDetail?.live_start_time,
-        live_end_time: productDetail?.live_end_time
-      });
       return null;
     }
     
@@ -460,32 +412,101 @@ const HomeShoppingProductDetail = () => {
     const liveStart = new Date(year, month - 1, day, startHour, startMinute);
     const liveEnd = new Date(year, month - 1, day, endHour, endMinute);
     
-    console.log('🔍 방송 상태 확인 상세:', {
-      현재시간_UTC: now.toLocaleString(),
-      현재시간_한국: koreaTime.toLocaleString(),
-      방송시작: liveStart.toLocaleString(),
-      방송종료: liveEnd.toLocaleString(),
-      현재시간_타임스탬프: koreaTime.getTime(),
-      시작시간_타임스탬프: liveStart.getTime(),
-      종료시간_타임스탬프: liveEnd.getTime(),
-      시간차이: {
-        시작까지: liveStart.getTime() - koreaTime.getTime(),
-        종료까지: liveEnd.getTime() - koreaTime.getTime()
-      }
+    // 현재 날짜가 방송 날짜와 같은지 확인 (한국 시간 기준)
+    const currentDate = new Date(koreaTime.getFullYear(), koreaTime.getMonth(), koreaTime.getDate());
+    const broadcastDate = new Date(year, month - 1, day);
+    const isSameDate = currentDate.getTime() === broadcastDate.getTime();
+    
+    // 디버깅을 위한 로그
+    console.log('📅 방송 상태 확인:', {
+      현재한국시간: koreaTime.toLocaleString('ko-KR'),
+      방송날짜: productDetail.live_date,
+      방송시작: liveStart.toLocaleString('ko-KR'),
+      방송종료: liveEnd.toLocaleString('ko-KR'),
+      날짜일치: isSameDate,
+      현재시간: koreaTime.getTime(),
+      방송시작시간: liveStart.getTime(),
+      방송종료시간: liveEnd.getTime()
     });
     
-    // 현재 시간과 방송 시간 비교
+    // 날짜가 다르면 방송 예정 또는 방송 종료로 표시
+    if (!isSameDate) {
+      if (koreaTime < liveStart) {
+        return { status: 'upcoming', text: '방송 예정' };
+      } else {
+        return { status: 'ended', text: '방송 종료' };
+      }
+    }
+    
+    // 같은 날짜인 경우 시간 비교
     if (koreaTime < liveStart) {
-      console.log('✅ 방송 예정 - 현재시간 < 방송시작시간');
       return { status: 'upcoming', text: '방송 예정' };
-    } else if (koreaTime >= liveStart && koreaTime <= liveEnd) {
-      console.log('✅ 방송 중 (LIVE) - 방송시작시간 <= 현재시간 <= 방송종료시간');
+    } else if (koreaTime >= liveStart && koreaTime < liveEnd) {
       return { status: 'live', text: 'LIVE' };
     } else {
-      console.log('✅ 방송 종료 - 현재시간 > 방송종료시간');
       return { status: 'ended', text: '방송 종료' };
     }
   };
+
+  // 현재 시간이 라이브 방송 시간인지 확인하는 함수 (정확한 날짜와 시간 비교)
+  const isCurrentlyLive = () => {
+    if (!productDetail || !productDetail.live_date || !productDetail.live_start_time || !productDetail.live_end_time) {
+      console.log('❌ 방송 정보가 부족합니다:', { 
+        live_date: productDetail?.live_date, 
+        live_start_time: productDetail?.live_start_time, 
+        live_end_time: productDetail?.live_end_time 
+      });
+      return false;
+    }
+    
+    // 현재 시간 사용 (브라우저의 로컬 시간대 기준)
+    const koreaTime = new Date();
+    
+    // 방송 날짜와 시간을 파싱하여 한국 시간 기준으로 Date 객체 생성
+    const [year, month, day] = productDetail.live_date.split('-').map(Number);
+    const [startHour, startMinute] = productDetail.live_start_time.split(':').map(Number);
+    const [endHour, endMinute] = productDetail.live_end_time.split(':').map(Number);
+    
+    // 한국 시간 기준으로 방송 시작/종료 시간 생성
+    const liveStart = new Date(year, month - 1, day, startHour, startMinute);
+    const liveEnd = new Date(year, month - 1, day, endHour, endMinute);
+    
+    // 현재 날짜가 방송 날짜와 같은지 확인 (한국 시간 기준)
+    const currentDate = new Date(koreaTime.getFullYear(), koreaTime.getMonth(), koreaTime.getDate());
+    const broadcastDate = new Date(year, month - 1, day);
+    
+    // 날짜 비교 (년, 월, 일만 비교)
+    const isSameDate = currentDate.getTime() === broadcastDate.getTime();
+    
+    // 현재 시간이 방송 시작 시간과 종료 시간 사이에 있는지 확인 (시작 시간 포함, 종료 시간 제외)
+    const isWithinTimeRange = koreaTime >= liveStart && koreaTime < liveEnd;
+    
+    // 디버깅을 위한 로그 (더 자세한 정보)
+    console.log('🔍 라이브 상태 확인:', {
+      현재한국시간: koreaTime.toLocaleString('ko-KR'),
+      방송날짜: productDetail.live_date,
+      방송시작: liveStart.toLocaleString('ko-KR'),
+      방송종료: liveEnd.toLocaleString('ko-KR'),
+      날짜일치: isSameDate,
+      시간범위내: isWithinTimeRange,
+      최종결과: isSameDate && isWithinTimeRange,
+      // 추가 디버깅 정보
+      현재시간타임스탬프: koreaTime.getTime(),
+      방송시작타임스탬프: liveStart.getTime(),
+      방송종료타임스탬프: liveEnd.getTime(),
+      시간차: {
+        방송시작까지: liveStart.getTime() - koreaTime.getTime(),
+        방송종료까지: liveEnd.getTime() - koreaTime.getTime()
+      }
+    });
+    
+    // 두 조건 모두 만족해야 라이브 상태
+    // 1. 오늘 날짜와 방송 날짜가 같아야 함 (한국 시간 기준)
+    // 2. 현재 시간이 방송 시작~종료 시간 사이에 있어야 함 (한국 시간 기준)
+    return isSameDate && isWithinTimeRange;
+  };
+
+
   
   // 로딩 상태
   if (loading) {
@@ -622,17 +643,6 @@ const HomeShoppingProductDetail = () => {
                  // 이미지 URL 검증 및 수정
                  let imageUrl = productDetail.thumb_img_url;
                  
-                 // 디버깅: 이미지 URL 상세 출력
-                 console.log('🔍 이미지 URL 검증 상세:', {
-                   original: imageUrl,
-                   type: typeof imageUrl,
-                   length: imageUrl ? imageUrl.length : 0,
-                   includesProduct1: imageUrl ? imageUrl.includes('product/1') : false,
-                   includesHomeshopping: imageUrl ? imageUrl.includes('homeshopping') : false,
-                   includesWebapp: imageUrl ? imageUrl.includes('webapp.uhok.com') : false,
-                   includes3001: imageUrl ? imageUrl.includes('3001') : false
-                 });
-                 
                                    // 실제 문제가 되는 URL 패턴만 차단 (정상적인 외부 이미지는 허용)
                   if (imageUrl && (
                     // 실제 문제가 되는 패턴들만 차단
@@ -656,97 +666,80 @@ const HomeShoppingProductDetail = () => {
                     imageUrl.includes('localhost:3001') ||
                     imageUrl.includes('127.0.0.1:3001')
                   )) {
-                    console.log('⚠️ 문제가 되는 이미지 URL 감지 및 차단:', imageUrl);
-                    console.log('🚫 차단 사유: product/1 또는 잘못된 로컬 URL');
                     imageUrl = null; // 문제가 되는 URL만 무시
                   }
                  
                  // 최종 검증: imageUrl이 유효한지 확인
                  if (imageUrl && (imageUrl.trim() === '' || imageUrl === 'null' || imageUrl === 'undefined')) {
-                   console.log('⚠️ 빈 값 또는 null/undefined 이미지 URL 차단:', imageUrl);
                    imageUrl = null;
                  }
                  
-                 return imageUrl ? (
-                  <div className="product-image-wrapper">
-                    <img 
-                      src={imageUrl} 
-                      alt={productDetail.product_name}
-                      className="hsproduct-product-image"
-                      onError={(e) => {
-                        console.log('❌ 이미지 로드 실패:', imageUrl);
-                        e.target.style.display = 'none'; // 이미지 숨기기
-                        // 이미지 로드 실패 시 placeholder 표시
-                        const placeholder = e.target.parentNode.querySelector('.image-error-placeholder');
-                        if (placeholder) {
-                          placeholder.style.display = 'block';
-                        }
-                      }}
-                    />
-                    {/* 이미지 로드 실패 시 표시할 placeholder */}
-                    <div className="image-error-placeholder" style={{ display: 'none' }}>
-                      <span>이미지 로드 실패</span>
-                    </div>
-                    {/* 방송 상태에 따른 UI 분기 */}
-                    {broadcastStatus?.status === 'live' ? (
-                      // 방송 중일 때: 영상 플레이어 표시
-                      <div className="live-video-overlay">
-                        <LiveStreamPlayer
-                          src={window.__LIVE_SRC__ || streamData?.stream_url}
-                          autoPlay={true}
-                          muted={true}
-                          controls={true}
-                          width="100%"
-                          height="100%"
-                          style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover'
-                          }}
-                          onError={(error) => {
-                            console.error('스트림 로드 실패:', error);
-                            // 에러 시 썸네일로 폴백
-                            const videoContainer = document.querySelector('.live-video-overlay');
-                            if (videoContainer) {
-                              videoContainer.innerHTML = `
-                                <div style="
-                                  position: absolute;
-                                  top: 0;
-                                  left: 0;
-                                  width: 100%;
-                                  height: 100%;
-                                  background: rgba(0,0,0,0.7);
-                                  display: flex;
-                                  align-items: center;
-                                  justify-content: center;
-                                  color: white;
-                                  font-size: 14px;
-                                ">
-                                  <div>라이브 스트림을 불러올 수 없습니다</div>
-                                </div>
-                              `;
-                            }
-                          }}
-                          onLoadStart={() => {
-                            console.log('라이브 스트림 로딩 시작');
-                          }}
-                          onLoadedData={() => {
-                            console.log('라이브 스트림 로딩 완료');
-                          }}
-                        />
-                      </div>
-                    ) : (
-                      // 방송 예정/종료일 때: 방송 상태 텍스트 오버레이
-                      broadcastStatus && (
-                        <div className="center-broadcast-status">
-                          <span className="center-status-text">{broadcastStatus.text}</span>
-                        </div>
-                      )
-                    )}
-                  </div>
+                                   return imageUrl ? (
+                   <div className="product-image-wrapper">
+                     {isCurrentlyLive() ? (
+                       // 방송 중일 때: 라이브 스트림 플레이어 표시
+                       <LiveStreamPlayer
+                         src={window.__LIVE_SRC__ || streamData?.stream_url}
+                         autoPlay={true}
+                         muted={true}
+                         controls={true}
+                         width="100%"
+                         height="100%"
+                         style={{
+                           width: '100%',
+                           height: '100%',
+                           objectFit: 'cover'
+                         }}
+                         onError={(error) => {
+                           // 에러 시 썸네일로 폴백
+                           const videoContainer = document.querySelector('.product-image-wrapper');
+                           if (videoContainer) {
+                             videoContainer.innerHTML = `
+                               <div style="
+                                 width: 100%;
+                                 height: 100%;
+                                 background: rgba(0,0,0,0.7);
+                                 display: flex;
+                                 align-items: center;
+                                 justify-content: center;
+                                 color: white;
+                                 font-size: 14px;
+                               ">
+                                 <div>라이브 스트림을 불러올 수 없습니다</div>
+                               </div>
+                             `;
+                           }
+                         }}
+                       />
+                     ) : (
+                       // 방송 예정/종료일 때: 상품 이미지와 방송 상태 표시
+                       <>
+                         <img 
+                           src={imageUrl} 
+                           alt={productDetail.product_name}
+                           className="hsproduct-product-image"
+                           onError={(e) => {
+                             e.target.style.display = 'none'; // 이미지 숨기기
+                             // 이미지 로드 실패 시 placeholder 표시
+                             const placeholder = e.target.parentNode.querySelector('.image-error-placeholder');
+                             if (placeholder) {
+                               placeholder.style.display = 'block';
+                             }
+                           }}
+                         />
+                         {/* 이미지 로드 실패 시 표시할 placeholder */}
+                         <div className="image-error-placeholder" style={{ display: 'none' }}>
+                           <span>이미지 로드 실패</span>
+                         </div>
+                         {/* 방송 상태 텍스트 오버레이 */}
+                         {broadcastStatus && (
+                           <div className="center-broadcast-status">
+                             <span className="center-status-text">{broadcastStatus.text}</span>
+                           </div>
+                         )}
+                       </>
+                     )}
+                   </div>
                 ) : (
                   <div className="no-image-placeholder">
                     <span>이미지 없음</span>
