@@ -165,27 +165,29 @@ export const homeShoppingApi = {
     }
   },
 
-  // 홈쇼핑 라이브 영상 URL 조회 (homeshopping_id 사용) - 새로운 API 사용
-  getLiveStreamUrl: async (homeshoppingId) => {
+  // 홈쇼핑 라이브 영상 URL 조회 (homeshopping_id 또는 src 사용) - API 명세서와 일치
+  getLiveStreamUrl: async (homeshoppingId, src = null) => {
     try {
-      console.log('📹 라이브 스트림 URL API 요청:', { homeshoppingId });
+      console.log('📹 라이브 스트림 URL API 요청:', { homeshoppingId, src });
       
-      // 새로운 API 엔드포인트 사용
-      const response = await api.get('/api/homeshopping/schedule/live-stream', {
-        params: { homeshopping_id: homeshoppingId }
-      });
+      // API 명세서에 맞게 homeshopping_id 또는 src 중 하나를 사용
+      const params = {};
+      if (homeshoppingId) params.homeshopping_id = homeshoppingId;
+      if (src) params.src = src;
+      
+      const response = await api.get('/api/homeshopping/schedule/live-stream', { params });
       
       console.log('✅ 라이브 스트림 URL API 응답 전체:', response);
       console.log('✅ 응답 데이터 타입:', typeof response.data);
       console.log('✅ 응답 데이터 길이:', response.data ? response.data.length : 'undefined');
       console.log('✅ 응답 데이터 샘플:', response.data ? response.data.substring(0, 200) + '...' : 'undefined');
       
-      // HTML 템플릿에서 m3u8 URL 추출
+      // HTML 템플릿에서 m3u8 URL 추출 (API 명세서와 일치: window.__LIVE_SRC__)
       if (response.data && typeof response.data === 'string') {
         console.log('🔍 HTML에서 m3u8 URL 추출 시도...');
         
-        // HTML에서 window.LIVE_SRC 값 추출 (실제 HTML에 맞게 수정)
-        const match = response.data.match(/window\.LIVE_SRC\s*=\s*"([^"]+)"/);
+        // API 명세서에 맞게 window.__LIVE_SRC__ 사용
+        const match = response.data.match(/window\.__LIVE_SRC__\s*=\s*"([^"]+)"/);
         console.log('🔍 정규식 매치 결과:', match);
         
         if (match && match[1]) {
@@ -209,11 +211,12 @@ export const homeShoppingApi = {
     }
   },
 
-  // 홈쇼핑 라이브 스트림 HTML 템플릿 조회 (새로운 API)
+  // 홈쇼핑 라이브 스트림 HTML 템플릿 조회 (API 명세서와 일치)
   getLiveStreamTemplate: async (homeshoppingId = null, src = null) => {
     try {
       console.log('📺 라이브 스트림 HTML 템플릿 API 요청:', { homeshoppingId, src });
       
+      // API 명세서에 맞게 homeshopping_id 또는 src 중 하나를 사용
       const params = {};
       if (homeshoppingId) params.homeshopping_id = homeshoppingId;
       if (src) params.src = src;
