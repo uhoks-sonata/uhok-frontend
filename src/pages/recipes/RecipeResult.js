@@ -201,13 +201,13 @@ const RecipeResult = () => {
          filteredOut: initialRecipes.length - uniqueInitialRecipes.length
        });
        
-       setRecipes(uniqueInitialRecipes);
-       setIngredients(initialIngredients);
-       setTotal(location.state.total || 0);
-       setCurrentPage(initialPage);
-       setCombinationNumber(location.state.combination_number || 1);
-       setHasMoreCombinations(location.state.has_more_combinations || false);
-       setSearchType(location.state.searchType || 'ingredient'); // 검색 타입 설정
+             setRecipes(uniqueInitialRecipes);
+      setIngredients(initialIngredients);
+      setTotal(location.state.total || 0);
+      setCurrentPage(initialPage);
+      setCombinationNumber(location.state.combination_number || 1);
+      setHasMoreCombinations(location.state.has_more_combinations || false);
+      setSearchType(location.state.searchType || 'ingredient'); // 검색 타입 설정
       
       // 초기 데이터를 캐시에 저장
       if (initialRecipes.length > 0) {
