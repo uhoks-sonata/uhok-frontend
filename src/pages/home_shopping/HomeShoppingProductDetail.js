@@ -642,11 +642,64 @@ const HomeShoppingProductDetail = () => {
                     <div className="image-error-placeholder" style={{ display: 'none' }}>
                       <span>이미지 로드 실패</span>
                     </div>
-                    {/* 가운데 방송 상태 텍스트 오버레이 */}
-                    {broadcastStatus && (
-                      <div className="center-broadcast-status">
-                        <span className="center-status-text">{broadcastStatus.text}</span>
+                    {/* 방송 상태에 따른 UI 분기 */}
+                    {broadcastStatus?.status === 'live' ? (
+                      // 방송 중일 때: 영상 플레이어 표시
+                      <div className="live-video-overlay">
+                        <LiveStreamPlayer
+                          src={window.__LIVE_SRC__ || streamData?.stream_url}
+                          autoPlay={true}
+                          muted={true}
+                          controls={true}
+                          width="100%"
+                          height="100%"
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover'
+                          }}
+                          onError={(error) => {
+                            console.error('스트림 로드 실패:', error);
+                            // 에러 시 썸네일로 폴백
+                            const videoContainer = document.querySelector('.live-video-overlay');
+                            if (videoContainer) {
+                              videoContainer.innerHTML = `
+                                <div style="
+                                  position: absolute;
+                                  top: 0;
+                                  left: 0;
+                                  width: 100%;
+                                  height: 100%;
+                                  background: rgba(0,0,0,0.7);
+                                  display: flex;
+                                  align-items: center;
+                                  justify-content: center;
+                                  color: white;
+                                  font-size: 14px;
+                                ">
+                                  <div>라이브 스트림을 불러올 수 없습니다</div>
+                                </div>
+                              `;
+                            }
+                          }}
+                          onLoadStart={() => {
+                            console.log('라이브 스트림 로딩 시작');
+                          }}
+                          onLoadedData={() => {
+                            console.log('라이브 스트림 로딩 완료');
+                          }}
+                        />
                       </div>
+                    ) : (
+                      // 방송 예정/종료일 때: 방송 상태 텍스트 오버레이
+                      broadcastStatus && (
+                        <div className="center-broadcast-status">
+                          <span className="center-status-text">{broadcastStatus.text}</span>
+                        </div>
+                      )
                     )}
                   </div>
                 ) : (
@@ -657,73 +710,62 @@ const HomeShoppingProductDetail = () => {
               })()}
             </div>
           
-                                                                                                                                     {/* 라이브 스트림 비디오 플레이어 */}
-              <div className="live-stream-section">
-                <h3 className="live-stream-title">
-                  {broadcastStatus?.status === 'live' ? '🔴 라이브 방송' : '📺 방송 영상'}
-                </h3>
-                {(streamData?.stream_url || window.__LIVE_SRC__) ? (
-                  <>
-                    <div className="video-container">
-                      <LiveStreamPlayer
-                        src={window.__LIVE_SRC__ || streamData?.stream_url}
-                        autoPlay={true}
-                        muted={true}
-                        controls={true}
-                        width="100%"
-                        height="auto"
-                        style={{
-                          boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)'
-                        }}
-                        onError={(error) => {
-                          console.error('스트림 로드 실패:', error);
-                          alert('스트림을 로드할 수 없습니다. 스트림 URL을 확인해주세요.');
-                        }}
-                        onLoadStart={() => {
-                          console.log('스트림 로딩 시작');
-                        }}
-                        onLoadedData={() => {
-                          console.log('스트림 로딩 완료');
-                        }}
-                      />
-                    </div>
-                    <div className="live-stream-info">
-                      <p><strong>스트림 상태:</strong> {streamData?.is_live ? '라이브' : '녹화 영상'}</p>
-                      <p><strong>방송 상태:</strong> {broadcastStatus?.status === 'live' ? '방송 중' : broadcastStatus?.status === 'upcoming' ? '방송 예정' : '방송 종료'}</p>
-                      <p><strong>스트림 URL:</strong> {window.__LIVE_SRC__ || streamData?.stream_url}</p>
-                      {window.__LIVE_SRC__ && (
-                        <p><strong>전역 스트림 URL:</strong> {window.__LIVE_SRC__}</p>
-                      )}
-                    </div>
-                  </>
-                ) : (
-                  <div className="video-container" style={{ 
-                    backgroundColor: '#f8f9fa', 
-                    border: '2px dashed #dee2e6',
-                    borderRadius: '12px',
-                    padding: '40px',
-                    textAlign: 'center',
-                    color: '#6c757d'
-                  }}>
-                    <div style={{ fontSize: '48px', marginBottom: '16px' }}>📺</div>
-                    <div style={{ fontSize: '18px', marginBottom: '8px' }}>스트림을 불러올 수 없습니다</div>
-                    <div style={{ fontSize: '14px' }}>스트림 URL이 설정되지 않았습니다</div>
+          {/* 라이브 스트림 정보 섹션 (방송 중일 때만 표시) */}
+          {broadcastStatus?.status === 'live' && (
+            <div className="live-stream-section">
+              <h3 className="live-stream-title">🔴 라이브 방송</h3>
+              {(streamData?.stream_url || window.__LIVE_SRC__) ? (
+                <>
+                  <div className="live-stream-info">
+                    <p><strong>스트림 상태:</strong> {streamData?.is_live ? '라이브' : '녹화 영상'}</p>
+                    <p><strong>방송 상태:</strong> 방송 중</p>
+                    <p><strong>스트림 URL:</strong> {window.__LIVE_SRC__ || streamData?.stream_url}</p>
+                    {window.__LIVE_SRC__ && (
+                      <p><strong>전역 스트림 URL:</strong> {window.__LIVE_SRC__}</p>
+                    )}
                   </div>
-                )}
-              </div>
+                </>
+              ) : (
+                <div className="video-container" style={{ 
+                  backgroundColor: '#f8f9fa', 
+                  border: '2px dashed #dee2e6',
+                  borderRadius: '12px',
+                  padding: '40px',
+                  textAlign: 'center',
+                  color: '#6c757d'
+                }}>
+                  <div style={{ fontSize: '48px', marginBottom: '16px' }}>📺</div>
+                  <div style={{ fontSize: '18px', marginBottom: '8px' }}>스트림을 불러올 수 없습니다</div>
+                  <div style={{ fontSize: '14px' }}>스트림 URL이 설정되지 않았습니다</div>
+                </div>
+              )}
+            </div>
+          )}
              
-                           {/* 라이브 스트림 버튼 */}
+                                     {/* 라이브 스트림 버튼 (방송 상태에 따라 다르게 표시) */}
+          {broadcastStatus?.status === 'live' ? (
+            // 방송 중일 때: 새 창에서 라이브 시청하기
+            <button 
+              className="live-stream-button"
+              onClick={handleLiveStream}
+              disabled={isStreamLoading}
+              style={{ marginTop: '10px' }}
+            >
+              {isStreamLoading ? '로딩 중...' : '새 창에서 라이브 시청하기'}
+            </button>
+          ) : (
+            // 방송 예정/종료일 때: 스트림 시청하기 (녹화 영상)
+            (streamData?.stream_url || window.__LIVE_SRC__) && (
               <button 
                 className="live-stream-button"
                 onClick={handleLiveStream}
                 disabled={isStreamLoading}
                 style={{ marginTop: '10px' }}
               >
-                {isStreamLoading ? '로딩 중...' : 
-                  (streamData?.stream_url || window.__LIVE_SRC__) ? 
-                    (broadcastStatus?.status === 'live' ? '새 창에서 라이브 시청하기' : '새 창에서 영상 시청하기') :
-                    '스트림 시청하기'}
+                {isStreamLoading ? '로딩 중...' : '새 창에서 영상 시청하기'}
               </button>
+            )
+          )}
              
              {/* 스트림 데이터 디버깅 정보 */}
              <div className="live-stream-section" style={{ borderColor: '#95a5a6', opacity: 0.7 }}>
