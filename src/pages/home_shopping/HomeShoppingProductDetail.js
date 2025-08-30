@@ -768,7 +768,7 @@ const HomeShoppingProductDetail = () => {
           )}
              
              {/* 스트림 데이터 디버깅 정보 */}
-             {/* <div className="live-stream-section" style={{ borderColor: '#95a5a6', opacity: 0.7 }}>
+             <div className="live-stream-section" style={{ borderColor: '#95a5a6', opacity: 0.7 }}>
                <h3 className="live-stream-title" style={{ color: '#95a5a6' }}>
                    📺 스트림 디버깅 정보
                  </h3>
@@ -782,7 +782,7 @@ const HomeShoppingProductDetail = () => {
                    <p><strong>window.__LIVE_SRC__ 길이:</strong> {window.__LIVE_SRC__ ? String(window.__LIVE_SRC__).length : 0}</p>
                    <p><strong>현재 시간:</strong> {new Date().toLocaleString()}</p>
                  </div>
-               </div> */}
+               </div>
         </div>
         
                   {/* 상품 기본 정보 */}

@@ -431,47 +431,49 @@ const WishList = () => {
                    </div>
                    <div className="product-info">
                      {activeTab === 'homeshopping' ? (
-                       // 홈쇼핑 탭 레이아웃
-                       <div className="product-channel-info">
-                         <div className="price-section">
-                           <div className="price-info">
-                             {product.kok_discount_rate > 0 && (
-                               <span className="discount-rate-small">{product.kok_discount_rate}%</span>
-                             )}
-                             <span className="discounted-price">{formatPrice(product.kok_discounted_price)}</span>
-                           </div>
-                           <button 
-                             className="heart-button"
-                             data-product-id={product.kok_product_id}
-                             onClick={(e) => {
-                               e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
-                               handleHeartToggle(product.kok_product_id, product.type);
-                             }}>
-                             <img 
-                               src={unlikedProducts.has(product.kok_product_id) ? emptyHeartIcon : filledHeartIcon} 
-                               alt="찜 토글" 
-                               className="heart-icon"
-                             />
-                           </button>
-                         </div>
-                         <div className="channel-info">
-                           <img 
-                             src={product.channel_logo} 
-                             alt={product.channel_name}
-                             className="channel-logo"
-                           />
-                           <span className="channel-name">{product.channel_name}</span>
-                           <span className="channel-number">[CH 8]</span>
-                         </div>
-                         <div className="wishlist-product-name">
-                           <span className="wishlist-brand-name">{product.kok_store_name}</span> | {product.kok_product_name}
-                         </div>
-                         <div className="broadcast-info">
-                           <span className="broadcast-date">{product.broadcast_date}</span>
-                           <span className="broadcast-status">{product.broadcast_status}</span>
-                           <span className="broadcast-time">{product.broadcast_time}</span>
-                         </div>
-                       </div>
+                                               // 홈쇼핑 탭 레이아웃 - 방송사, 상품명, 방송정보, 가격 순
+                        <div className="product-channel-info">
+                          <div className="channel-info">
+                            <img 
+                              src={product.channel_logo} 
+                              alt={product.channel_name}
+                              className="channel-logo"
+                            />
+                            <span className="channel-number">[CH 8]</span>
+                          </div>
+                          <div className="wishlist-product-name">
+                            <span className="wishlist-brand-name">{product.kok_store_name}</span> | {product.kok_product_name}
+                          </div>
+                          <div className="broadcast-info">
+                            <div className="broadcast-date-time">
+                              <span className="broadcast-date">{product.broadcast_date}</span>
+                              <span className="broadcast-time">{product.broadcast_time}</span>
+                            </div>
+                            <span className="broadcast-status">{product.broadcast_status}</span>
+                          </div>
+                          <div className="price-section">
+                            <div className="price-info">
+                              {product.kok_discount_rate > 0 && (
+                                <span className="discount-rate-small wishlist-discount-rate-pink">{product.kok_discount_rate}%</span>
+                              )}
+                              <span className="discounted-price">{formatPrice(product.kok_discounted_price)}</span>
+     
+                              <button 
+                                className="heart-button"
+                                data-product-id={product.kok_product_id}
+                                onClick={(e) => {
+                                  e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
+                                  handleHeartToggle(product.kok_product_id, product.type);
+                                }}>
+                                <img 
+                                  src={unlikedProducts.has(product.kok_product_id) ? emptyHeartIcon : filledHeartIcon} 
+                                  alt="찜 토글" 
+                                  className="heart-icon"
+                                />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
                                        ) : (
                       // 쇼핑몰 탭 레이아웃 - 이미지 참고하여 개선
                       <div className="shopping-product-info">
@@ -482,9 +484,9 @@ const WishList = () => {
                         </div>
                                                  <div className="shopping-price-section">
                            <div className="shopping-price-info">
-                             {product.kok_discount_rate > 0 && (
-                               <span className="shopping-discount-rate-small">{product.kok_discount_rate}%</span>
-                             )}
+                                                           {product.kok_discount_rate > 0 && (
+                                <span className="shopping-discount-rate-small wishlist-discount-rate-pink">{product.kok_discount_rate}%</span>
+                              )}
                              <span className="shopping-discounted-price">{formatPrice(product.kok_discounted_price)}</span>
                            </div>
                           <button 
