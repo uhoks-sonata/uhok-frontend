@@ -1587,3 +1587,29 @@
   width: 12px;
   height: 12px;
 }
+
+/* 비디오 플레이어 컨테이너 스타일 */
+.video-player-container {
+  width: 100%;
+  margin: 16px 0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.video-player-container video {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.no-stream-container {
+  margin: 16px 0;
+  transition: all 0.3s ease;
+}
+
+.no-stream-container:hover {
+  background-color: #e9ecef !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+}
