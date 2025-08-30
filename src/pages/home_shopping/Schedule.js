@@ -133,28 +133,49 @@ const Schedule = () => {
               validatedItem.dc_price = validatedItem.sale_price;
             }
             
-            // 방송 상태 계산
-            const now = new Date();
-            const targetDateObj = targetDate ? new Date(targetDate) : new Date();
-            targetDateObj.setHours(0, 0, 0, 0);
-            
-            const liveStart = new Date(targetDateObj);
-            const [startHour, startMinute] = validatedItem.live_start_time.split(':').map(Number);
-            liveStart.setHours(startHour, startMinute, 0, 0);
-            
-            const liveEnd = new Date(targetDateObj);
-            const [endHour, endMinute] = validatedItem.live_end_time.split(':').map(Number);
-            liveEnd.setHours(endHour, endMinute, 0, 0);
-            
-            const currentTime = new Date(targetDateObj);
-            currentTime.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
-            
-            let status = 'LIVE 예정';
-            if (currentTime >= liveStart && currentTime <= liveEnd) {
-              status = 'LIVE';
-            } else if (currentTime > liveEnd) {
-              status = '종료';
-            }
+                         // 방송 상태 계산
+             const now = new Date();
+             const today = new Date();
+             today.setHours(0, 0, 0, 0);
+             
+             // 방송 날짜 파싱 (YYYY-MM-DD 형식)
+             const liveDate = new Date(validatedItem.live_date);
+             liveDate.setHours(0, 0, 0, 0);
+             
+             // 오늘 날짜와 방송 날짜 비교
+             const isToday = liveDate.getTime() === today.getTime();
+             const isPast = liveDate.getTime() < today.getTime();
+             const isFuture = liveDate.getTime() > today.getTime();
+             
+             let status = 'LIVE 예정';
+             
+             if (isPast) {
+               // 과거 날짜면 종료
+               status = '종료';
+             } else if (isFuture) {
+               // 미래 날짜면 예정
+               status = 'LIVE 예정';
+             } else if (isToday) {
+               // 오늘 날짜면 시간 비교
+               const liveStart = new Date(today);
+               const [startHour, startMinute] = validatedItem.live_start_time.split(':').map(Number);
+               liveStart.setHours(startHour, startMinute, 0, 0);
+               
+               const liveEnd = new Date(today);
+               const [endHour, endMinute] = validatedItem.live_end_time.split(':').map(Number);
+               liveEnd.setHours(endHour, endMinute, 0, 0);
+               
+               const currentTime = new Date(today);
+               currentTime.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
+               
+               if (currentTime >= liveStart && currentTime <= liveEnd) {
+                 status = 'LIVE';
+               } else if (currentTime > liveEnd) {
+                 status = '종료';
+               } else {
+                 status = 'LIVE 예정';
+               }
+             }
             
             return {
               ...validatedItem,
@@ -405,7 +426,7 @@ const Schedule = () => {
           
           if (response && response.data && response.data.schedules) {
             console.log('✅ schedules 배열 길이:', response.data.schedules.length);
-            console.log('✅ 첫 번째 schedule:', response.data.schedules[0]);
+            // console.log('✅ 첫 번째 schedule:', response.data.schedules[0]);
             
             // API 명세에 따른 데이터 구조 검증
             const schedules = response.data.schedules;
@@ -436,57 +457,76 @@ const Schedule = () => {
               return validatedItem;
             });
             
-            console.log('✅ 검증된 schedules 데이터:', validatedSchedules.length, '개');
-            console.log('✅ 첫 번째 검증된 아이템:', validatedSchedules[0]);
+            // console.log('✅ 검증된 schedules 데이터:', validatedSchedules.length, '개');
+            // console.log('✅ 첫 번째 검증된 아이템:', validatedSchedules[0]);
             
             // 가격 데이터 상세 로그 (안전하게 처리)
             if (validatedSchedules.length > 0) {
               const firstItem = validatedSchedules[0];
-              console.log('💰 가격 데이터 상세:');
-              console.log('  - sale_price:', firstItem.sale_price, typeof firstItem.sale_price);
-              console.log('  - dc_price:', firstItem.dc_price, typeof firstItem.dc_price);
-              console.log('  - dc_rate:', firstItem.dc_rate, typeof firstItem.dc_rate);
+              // console.log('💰 가격 데이터 상세:');
+              // console.log('  - sale_price:', firstItem.sale_price, typeof firstItem.sale_price);
+              // console.log('  - dc_price:', firstItem.dc_price, typeof firstItem.dc_price);
+              // console.log('  - dc_rate:', firstItem.dc_rate, typeof firstItem.dc_rate);
               
               // 첫 번째 아이템의 모든 필드 확인
-              console.log('🔍 첫 번째 아이템 전체 필드:');
-              console.log(Object.keys(firstItem));
-              console.log('📋 첫 번째 아이템 전체 데이터:', JSON.stringify(firstItem, null, 2));
+              // console.log('🔍 첫 번째 아이템 전체 필드:');
+              // console.log(Object.keys(firstItem));
+              // console.log('📋 첫 번째 아이템 전체 데이터:', JSON.stringify(firstItem, null, 2));
             } else {
               console.log('📋 schedules 배열이 비어있음');
             }
             
-            // API 응답에 status 필드가 없으므로 계산해서 추가
-            // 선택된 날짜와 현재 시간을 기준으로 방송 상태 판단
-            const schedulesWithStatus = validatedSchedules.map(item => {
-              const now = new Date();
-              const targetDateObj = targetDate ? new Date(targetDate) : new Date();
-              targetDateObj.setHours(0, 0, 0, 0); // 선택된 날짜의 시작 (00:00:00)
-              
-              // 방송 날짜를 선택된 날짜로 설정하여 시간만 비교
-              const liveStart = new Date(targetDateObj);
-              const [startHour, startMinute] = item.live_start_time.split(':').map(Number);
-              liveStart.setHours(startHour, startMinute, 0, 0);
-              
-              const liveEnd = new Date(targetDateObj);
-              const [endHour, endMinute] = item.live_end_time.split(':').map(Number);
-              liveEnd.setHours(endHour, endMinute, 0, 0);
-              
-              // 현재 시간을 선택된 날짜 기준으로 설정
-              const currentTime = new Date(targetDateObj);
-              currentTime.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
-              
-              let status = 'LIVE 예정';
-              if (currentTime >= liveStart && currentTime <= liveEnd) {
-                status = 'LIVE';
-              } else if (currentTime > liveEnd) {
-                status = '종료';
-              }
-              
-              return {
-                ...item,
-                status
-              };
-            });
+                         // API 응답에 status 필드가 없으므로 계산해서 추가
+             // 실제 방송 날짜와 오늘 날짜를 비교하여 방송 상태 판단
+             const schedulesWithStatus = validatedSchedules.map(item => {
+               const now = new Date();
+               const today = new Date();
+               today.setHours(0, 0, 0, 0); // 오늘 날짜의 시작 (00:00:00)
+               
+               // 방송 날짜 파싱 (YYYY-MM-DD 형식)
+               const liveDate = new Date(item.live_date);
+               liveDate.setHours(0, 0, 0, 0);
+               
+               // 오늘 날짜와 방송 날짜 비교
+               const isToday = liveDate.getTime() === today.getTime();
+               const isPast = liveDate.getTime() < today.getTime();
+               const isFuture = liveDate.getTime() > today.getTime();
+               
+               let status = 'LIVE 예정';
+               
+               if (isPast) {
+                 // 과거 날짜면 종료
+                 status = '종료';
+               } else if (isFuture) {
+                 // 미래 날짜면 예정
+                 status = 'LIVE 예정';
+               } else if (isToday) {
+                 // 오늘 날짜면 시간 비교
+                 const liveStart = new Date(today);
+                 const [startHour, startMinute] = item.live_start_time.split(':').map(Number);
+                 liveStart.setHours(startHour, startMinute, 0, 0);
+                 
+                 const liveEnd = new Date(today);
+                 const [endHour, endMinute] = item.live_end_time.split(':').map(Number);
+                 liveEnd.setHours(endHour, endMinute, 0, 0);
+                 
+                 const currentTime = new Date(today);
+                 currentTime.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
+                 
+                 if (currentTime >= liveStart && currentTime <= liveEnd) {
+                   status = 'LIVE';
+                 } else if (currentTime > liveEnd) {
+                   status = '종료';
+                 } else {
+                   status = 'LIVE 예정';
+                 }
+               }
+               
+               return {
+                 ...item,
+                 status
+               };
+             });
             
                          setScheduleData(schedulesWithStatus);
              
@@ -908,7 +948,11 @@ const Schedule = () => {
                 onClick={() => handleChannelClick(channel)}
                 style={{ cursor: 'pointer' }}
               >
-                <img src={channel.logo} alt={channel.name} />
+                <img 
+                  src={channel.logo} 
+                  alt={channel.name} 
+                  style={{ width: '32px', height: '32px', objectFit: 'contain' }}
+                />
                 {selectedHomeshopping && selectedHomeshopping.id === channel.id && (
                   <div className="channel-selection-indicator">✓</div>
                 )}
@@ -976,7 +1020,7 @@ const Schedule = () => {
     return (
       <div className="schedule-timeline" ref={scheduleContentRef}>
         {filteredData.map((item) => {
-          console.log('스케줄 아이템 product_id:', item.product_id, typeof item.product_id);
+          // console.log('스케줄 아이템 product_id:', item.product_id, typeof item.product_id);
           
           // 각 아이템의 방송 시간 계산
           const itemStartTime = item.live_start_time?.substring(0, 5) || '';
@@ -989,6 +1033,15 @@ const Schedule = () => {
           // homeshopping_id에 해당하는 로고와 채널 정보 가져오기
           const channelLogo = getLogoByHomeshoppingId(item.homeshopping_id);
           const channelInfo = getChannelInfoByHomeshoppingId(item.homeshopping_id);
+          
+          // 로고 정보 디버깅 (개발 환경에서만)
+          // if (process.env.NODE_ENV === 'development') {
+          //   console.log('로고 정보:', {
+          //     homeshopping_id: item.homeshopping_id,
+          //     channelLogo: channelLogo,
+          //     channelInfo: channelInfo
+          //   });
+          // }
           
           return (
             <div key={item.live_id} className="schedule-item-wrapper">
@@ -1022,9 +1075,17 @@ const Schedule = () => {
                   <div className="channel-info">
                     {/* 홈쇼핑 로고 표시 */}
                     <div className="schedule-channel-logo-small">
-                      <img src={channelLogo} alt={channelInfo.name} />
+                      {channelLogo && channelLogo.logo ? (
+                        <img 
+                          src={channelLogo.logo} 
+                          alt={channelLogo.name || '홈쇼핑 로고'} 
+                        />
+                      ) : (
+                        <div className="default-logo-placeholder">
+                          {item.homeshopping_name?.charAt(0) || '홈'}
+                        </div>
+                      )}
                     </div>
-                    <span className="schedule-channel-name">{item.homeshopping_name}</span>
 
                   </div>
                   <div className="schedule-product-meta">
