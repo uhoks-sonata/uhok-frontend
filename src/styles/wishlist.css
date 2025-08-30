@@ -120,7 +120,6 @@
   color: #333;
   margin-top: 1px;
   cursor: pointer;
-  transition: color 0.2s ease;
   /* 텍스트가 길 경우 말줄임표 처리 */
   overflow: hidden;
   text-overflow: ellipsis;
@@ -130,21 +129,12 @@
   line-clamp: 2;
 }
 
-.wishlist-product-name:hover {
-  color: #007bff;
-}
-
 /* 쇼핑몰 상품 상세 정보 */
 .shopping-product-details {
   display: flex;
   flex-direction: column;
   gap: 8px;
   cursor: pointer;
-  transition: color 0.2s ease;
-}
-
-.shopping-product-details:hover {
-  color: #007bff;
 }
 
 .shopping-product-name {
@@ -213,11 +203,13 @@
   align-items: center;
   justify-content: center;
   transition: transform 0.15s ease-in-out;
+  width: 35px;
+  height: 36px;
 }
 
 .shopping-heart-icon {
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: auto;
 }
 
 .wishlist-product-container {
@@ -244,6 +236,7 @@
   cursor: pointer;
   transition: all 0.2s ease;
   border: 1px solid transparent;
+  align-items: center;
 }
 
 .wishlist-product:hover {
@@ -260,6 +253,9 @@
   overflow: hidden;
   flex-shrink: 0;
   transition: transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .product-image:hover {
@@ -291,6 +287,13 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
+}
+
+/* 오른쪽 정보 컨테이너 (하트 + 방송상태) */
+.wishlist-right-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .price-info {
@@ -333,11 +336,12 @@
 
 /* 홈쇼핑 탭 전용 스타일 */
 .broadcast-info {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto;
   align-items: center;
-  justify-content: space-between;
   width: 100%;
   flex-shrink: 0;
+  height: 24px;
 }
 
 .broadcast-date-time {
@@ -363,6 +367,9 @@
   font-size: 12px;
   flex-shrink: 0;
   white-space: nowrap;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: 500;
 }
 
 .broadcast-time {
@@ -437,6 +444,25 @@
   
   .discount-rate {
     font-size: 12px;
+  }
+  
+  .wishlist-right-info {
+    gap: 6px;
+  }
+  
+  .shopping-heart-button {
+    width: 30px;
+    height: 31px;
+  }
+  
+  .shopping-heart-icon {
+    width: 30px;
+    height: 31px;
+  }
+  
+  .broadcast-status {
+    font-size: 11px;
+    padding: 3px 6px;
   }
 }
 
