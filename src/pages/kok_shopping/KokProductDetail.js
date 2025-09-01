@@ -9,8 +9,10 @@ import '../../styles/kok_product_detail.css';
 import emptyHeartIcon from '../../assets/heart_empty.png';
 import filledHeartIcon from '../../assets/heart_filled.png';
 import CartButton from '../../components/CartButton';
+import VideoPopUp from '../../components/VideoPopUp';
 import api from '../api';
 import { cartApi } from '../../api/cartApi';
+import LiveStreamPlayer from '../../components/player/LiveStreamPlayer';
 
 
 const KokProductDetail = () => {
@@ -31,6 +33,15 @@ const KokProductDetail = () => {
   const [showQuantityModal, setShowQuantityModal] = useState(false);
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  
+  // VideoPopUp 상태 관리
+  const [showVideoPopup, setShowVideoPopup] = useState(false);
+  const [videoPopupData, setVideoPopupData] = useState({
+    videoUrl: '',
+    productName: '',
+    homeshoppingName: '',
+    kokProductId: ''
+  });
 
 
 
@@ -208,6 +219,17 @@ const KokProductDetail = () => {
   // };
 
 
+
+  // VideoPopUp 표시 함수
+  const showVideoPopupHandler = () => {
+    setVideoPopupData({
+      videoUrl: '', // 콕 상품 페이지에서는 영상 URL이 없으므로 빈 문자열로 설정
+      productName: kokProduct?.name || '상품명',
+      homeshoppingName: '콕 쇼핑몰',
+      kokProductId: productId
+    });
+    setShowVideoPopup(true);
+  };
 
   useEffect(() => {
     const loadKokProductData = async () => {
@@ -917,6 +939,56 @@ API 연결 테스트 결과:
       />
       
       <div className="product-content">
+        {/* 홈쇼핑에서 넘어온 경우 영상 표시 */}
+        {(() => {
+          console.log('🔍 홈쇼핑 영상 표시 조건 확인:', {
+            locationState: location.state,
+            fromHomeshopping: location.state?.fromHomeshopping,
+            streamUrl: location.state?.streamUrl,
+            windowLiveSrc: window.__LIVE_SRC__,
+            hasStreamUrl: !!(location.state?.streamUrl || window.__LIVE_SRC__)
+          });
+          
+          const shouldShowVideo = location.state && 
+            location.state.fromHomeshopping && 
+            (location.state.streamUrl || window.__LIVE_SRC__);
+          
+          console.log('🎬 영상 표시 여부:', shouldShowVideo);
+          
+          if (shouldShowVideo) {
+            return (
+              <div className="homeshopping-video-section">
+                <LiveStreamPlayer
+                  src={location.state.streamUrl || window.__LIVE_SRC__ || ''}
+                  autoPlay={true}
+                  muted={true}
+                  controls={true}
+                  width="100%"
+                  height="100%"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    borderRadius: '8px'
+                  }}
+                  onError={(error) => {
+                    console.error('홈쇼핑 영상 로드 실패:', error);
+                  }}
+                />
+                {/* 홈쇼핑 정보 오버레이 */}
+                <div className="homeshopping-video-overlay">
+                  <div className="homeshopping-name">
+                    {location.state.homeshoppingName || '홈쇼핑'}
+                  </div>
+                  <div className="product-name">
+                    {location.state.productName || '상품명'}
+                  </div>
+                </div>
+              </div>
+            );
+          }
+          return null;
+        })()}
                  {/* 제품 이미지 */}
                    <div className="product-image-section" style={{ 
             marginBottom: '24px',
@@ -937,9 +1009,10 @@ API 연결 테스트 결과:
                 borderRadius: '8px',
                 display: 'block',
                 maxWidth: '100%',
-                minHeight: '300px'
+                minHeight: '300px',
+                cursor: 'pointer'
               }}
-                           
+              onClick={showVideoPopupHandler}
              
            />
            
@@ -1057,6 +1130,16 @@ API 연결 테스트 결과:
       <div style={{ position: 'relative' }}>
         <UpBtn />
       </div>
+      
+      {/* VideoPopUp */}
+      <VideoPopUp
+        videoUrl={videoPopupData.videoUrl}
+        productName={videoPopupData.productName}
+        homeshoppingName={videoPopupData.homeshoppingName}
+        kokProductId={videoPopupData.kokProductId}
+        isVisible={showVideoPopup}
+        onClose={() => setShowVideoPopup(false)}
+      />
       
       {/* 수량 선택 모달 */}
       {showQuantityModal && (

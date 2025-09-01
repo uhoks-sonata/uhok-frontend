@@ -537,8 +537,13 @@ const Main = () => {
                                      className="main-brand-image"
                                    />
                                  </div>
-                                 {/* 채널 번호를 표시합니다 */}
-                                 <span className="main-channel">[CH {item.채널번호}]</span>
+                                 {/* 채널 번호와 방송상태를 같은 라인에 표시 */}
+                                 <div className="main-channel-status-container">
+                                   <span className="main-channel">[CH {item.채널번호}]</span>
+                                   <span className={`broadcast-status ${getBroadcastStatus(item.시작시간, item.종료시간, currentTimeInMinutes) === '방송중' ? 'on-air' : ''}`}>
+                                     {getBroadcastStatus(item.시작시간, item.종료시간, currentTimeInMinutes)}
+                                   </span>
+                                 </div>
                                </div>
                                {/* 상품명을 표시합니다 */}
                                <div className="main-product-name">{item.상품명}</div>
@@ -553,7 +558,7 @@ const Main = () => {
                                    {/* 할인된 가격을 표시합니다 */}
                                    <span className="main-price">{item.할인된가격}</span>
                                  </div>
-                                 {/* 오른쪽: 하트 아이콘과 방송상태 */}
+                                 {/* 오른쪽: 하트 아이콘만 */}
                                  <div className="wishlist-right-info">
                                    {/* 하트 아이콘 */}
                                    <button 
@@ -569,10 +574,6 @@ const Main = () => {
                                        className="shopping-heart-icon"
                                      />
                                    </button>
-                                                                                                           {/* 방송상태 표시 */}
-                                     <span className={`broadcast-status ${getBroadcastStatus(item.시작시간, item.종료시간, currentTimeInMinutes) === '방송중' ? 'on-air' : ''}`}>
-                                       {getBroadcastStatus(item.시작시간, item.종료시간, currentTimeInMinutes)}
-                                     </span>
                                  </div>
                                </div>
                              </div>

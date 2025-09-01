@@ -9,6 +9,7 @@ import UpBtn from '../../components/UpBtn';
 import HomeshoppingKokRecommendation from '../../components/HomeshoppingKokRecommendation';
 import LiveStreamPlayer from '../../components/player/LiveStreamPlayer';
 import ModalManager, { showWishlistNotification, showWishlistUnlikedNotification, showNoRecipeNotification, hideModal } from '../../components/LoadingModal';
+import VideoPopUp from '../../components/VideoPopUp';
 import emptyHeartIcon from '../../assets/heart_empty.png';
 import filledHeartIcon from '../../assets/heart_filled.png';
 import api from '../../pages/api';
@@ -41,6 +42,15 @@ const HomeShoppingProductDetail = () => {
   
   // 모달 상태 관리
   const [modalState, setModalState] = useState({ isVisible: false, modalType: 'loading' });
+  
+  // VideoPopUp 상태 관리
+  const [showVideoPopup, setShowVideoPopup] = useState(false);
+  const [videoPopupData, setVideoPopupData] = useState({
+    videoUrl: '',
+    productName: '',
+    homeshoppingName: '',
+    kokProductId: ''
+  });
   
   // 상품 상세 정보 가져오기
   useEffect(() => {
@@ -352,7 +362,16 @@ const HomeShoppingProductDetail = () => {
   
   // 콕 상품으로 이동
   const handleKokProductClick = (kokProductId) => {
-    navigate(`/kok/product/${kokProductId}`);
+    // 홈쇼핑에서 콕 상품 페이지로 이동 (영상 데이터 포함)
+    navigate(`/kok/product/${kokProductId}`, {
+      state: {
+        fromHomeshopping: true,
+        streamUrl: window.__LIVE_SRC__ || streamData?.stream_url || '',
+        productName: productDetail?.product_name || '상품명',
+        homeshoppingName: productDetail?.homeshopping_name || '홈쇼핑',
+        homeshoppingId: productDetail?.homeshopping_id || null
+      }
+    });
   };
 
   // 레시피 가용성 확인 함수
@@ -997,11 +1016,21 @@ const HomeShoppingProductDetail = () => {
          <UpBtn />
        </div>
        
-       {/* 모달 관리자 */}
-       <ModalManager
-         {...modalState}
-         onClose={closeModal}
-       />
+               {/* 모달 관리자 */}
+        <ModalManager
+          {...modalState}
+          onClose={closeModal}
+        />
+        
+        {/* VideoPopUp */}
+        <VideoPopUp
+          videoUrl={videoPopupData.videoUrl}
+          productName={videoPopupData.productName}
+          homeshoppingName={videoPopupData.homeshoppingName}
+          kokProductId={videoPopupData.kokProductId}
+          isVisible={showVideoPopup}
+          onClose={() => setShowVideoPopup(false)}
+        />
     </div>
   );
 };
