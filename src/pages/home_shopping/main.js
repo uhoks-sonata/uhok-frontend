@@ -8,6 +8,8 @@ import BottomNav from '../../layout/BottomNav';
 // 로딩 컴포넌트를 가져옵니다
 import Loading from '../../components/Loading';
 import UpBtn from '../../components/UpBtn';
+// 모달 관리자 import
+import ModalManager, { showWishlistNotification, showWishlistUnlikedNotification, hideModal } from '../../components/LoadingModal';
 // 메인 페이지 스타일을 가져옵니다
 import '../../styles/main.css';
 // API 설정을 가져옵니다
@@ -44,6 +46,9 @@ const Main = () => {
   const [error, setError] = useState(null);
   // 찜한 상품 목록을 관리합니다
   const [likedProducts, setLikedProducts] = useState(new Set());
+  
+  // 모달 상태 관리
+  const [modalState, setModalState] = useState({ isVisible: false, modalType: 'loading' });
 
 
 
@@ -271,6 +276,11 @@ const Main = () => {
     }
   };
 
+  // 모달 닫기 함수
+  const closeModal = () => {
+    setModalState(hideModal());
+  };
+
   // 하트 아이콘 클릭 시 실행되는 핸들러 함수를 정의합니다
   const handleHeartClick = async (productId, event) => {
     event.stopPropagation(); // 상품 카드 클릭 이벤트 전파 방지
@@ -291,14 +301,19 @@ const Main = () => {
       
       // API 성공 시에만 UI 상태 업데이트
       if (response.data) {
+        // 백엔드 응답의 liked 상태에 따라 찜 상태 업데이트
+        const isLiked = response.data.liked;
+        
         setLikedProducts(prev => {
           const newSet = new Set(prev);
-          if (newSet.has(productId)) {
-            newSet.delete(productId);
-            console.log('찜 해제:', productId);
-          } else {
+          if (isLiked) {
+            // 백엔드에서 찜된 상태로 응답
             newSet.add(productId);
             console.log('찜 추가:', productId);
+          } else {
+            // 백엔드에서 찜 해제된 상태로 응답
+            newSet.delete(productId);
+            console.log('찜 해제:', productId);
           }
           return newSet;
         });
@@ -308,6 +323,15 @@ const Main = () => {
         if (heartIcon) {
           heartIcon.classList.add('liked');
           setTimeout(() => heartIcon.classList.remove('liked'), 600);
+        }
+        
+        // 찜 상태에 따른 알림 모달 표시
+        if (isLiked) {
+          // 찜 추가 시 알림
+          setModalState(showWishlistNotification());
+        } else {
+          // 찜 해제 시 알림
+          setModalState(showWishlistUnlikedNotification());
         }
       }
     } catch (error) {
@@ -567,6 +591,12 @@ const Main = () => {
       {/* 하단 네비게이션 */}
       <BottomNav />
       <UpBtn />
+      
+      {/* 모달 관리자 */}
+      <ModalManager
+        {...modalState}
+        onClose={closeModal}
+      />
     </div>
   );
 };

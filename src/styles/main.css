@@ -41,6 +41,7 @@
 
 /* 메인 페이지 제목 */
 .main-page-title {
+  margin-top: 10px;
   margin-bottom: 10px;
   font-size: 24px;
   font-weight: 700;
@@ -331,6 +332,7 @@
 }
 
 .main-time-display {
+  margin-top: 15px;
   color: #666666;
   font-size: 17px;
   text-align: left;

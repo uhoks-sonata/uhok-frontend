@@ -953,9 +953,9 @@ const Schedule = () => {
                   alt={channel.name} 
                   // style={{ width: '32px', height: '32px', objectFit: 'contain' }}
                 />
-                {selectedHomeshopping && selectedHomeshopping.id === channel.id && (
+                {/* {selectedHomeshopping && selectedHomeshopping.id === channel.id && (
                   <div className="channel-selection-indicator">✓</div>
-                )}
+                )} */}
               </div>
             </div>
           ))}

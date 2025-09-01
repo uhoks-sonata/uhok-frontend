@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import HeaderNavWishList from '../../layout/HeaderNavWishList';
 import BottomNav from '../../layout/BottomNav';
 import Loading from '../../components/Loading';
+// 모달 관리자 import
+import ModalManager, { showWishlistNotification, showWishlistUnlikedNotification, hideModal } from '../../components/LoadingModal';
 import api from '../api';
 import emptyHeartIcon from '../../assets/heart_empty.png';
 import filledHeartIcon from '../../assets/heart_filled.png';
@@ -22,6 +24,10 @@ const WishList = () => {
   const [unlikedProducts, setUnlikedProducts] = useState(new Set()); // 찜 해제된 상품 ID들을 저장
   const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태 추가
   const hasInitialized = useRef(false); // 중복 실행 방지용 ref
+  
+  // 모달 상태 관리
+  const [modalState, setModalState] = useState({ isVisible: false, modalType: 'loading' });
+  
   const navigate = useNavigate();
 
   // 로그인 상태 확인 함수
@@ -182,6 +188,11 @@ const WishList = () => {
     }
   };
 
+  // 모달 닫기 함수
+  const closeModal = () => {
+    setModalState(hideModal());
+  };
+
   // 찜 토글 함수
   const handleHeartToggle = async (productId, productType) => {
     try {
@@ -222,15 +233,18 @@ const WishList = () => {
       if (response.data) {
         console.log('찜 토글 성공! 하트 아이콘 상태만 변경합니다.');
         
+        // 백엔드 응답의 liked 상태에 따라 찜 상태 업데이트
+        const isLiked = response.data.liked;
+        
         // 하트 아이콘 상태만 토글 (즉시 피드백)
         setUnlikedProducts(prev => {
           const newSet = new Set(prev);
-          if (newSet.has(productId)) {
-            // 찜 해제된 상태에서 찜 추가
+          if (isLiked) {
+            // 백엔드에서 찜된 상태로 응답
             newSet.delete(productId);
             console.log('찜이 추가되었습니다. 채워진 하트로 변경됩니다.');
           } else {
-            // 찜된 상태에서 찜 해제
+            // 백엔드에서 찜 해제된 상태로 응답
             newSet.add(productId);
             console.log('찜이 해제되었습니다. 빈 하트로 변경됩니다.');
           }
@@ -244,6 +258,15 @@ const WishList = () => {
           setTimeout(() => {
             heartButton.style.transform = 'scale(1)';
           }, 150);
+        }
+        
+        // 찜 상태에 따른 알림 모달 표시
+        if (isLiked) {
+          // 찜 추가 시 알림
+          setModalState(showWishlistNotification());
+        } else {
+          // 찜 해제 시 알림
+          setModalState(showWishlistUnlikedNotification());
         }
         
         // 위시리스트 데이터는 즉시 동기화하지 않음
@@ -525,6 +548,12 @@ const WishList = () => {
       </div>
       
       <BottomNav />
+      
+      {/* 모달 관리자 */}
+      <ModalManager
+        {...modalState}
+        onClose={closeModal}
+      />
     </div>
   );
 };
