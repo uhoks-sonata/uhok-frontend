@@ -946,7 +946,27 @@ API 연결 테스트 결과:
              marginBottom: '24px',
              width: '100%',
              maxWidth: '448px',
-             minHeight: '200px',
+             minHeight: (() => {
+               const fromHomeshopping = location.state?.fromHomeshopping;
+               const streamUrl = location.state?.streamUrl || window.__LIVE_SRC__ || '';
+               const broadcastStatus = location.state?.broadcastStatus;
+               
+               const isValidStreamUrl = streamUrl && 
+                 streamUrl.trim() !== '' && 
+                 streamUrl !== 'undefined' && 
+                 streamUrl !== 'null' &&
+                 (streamUrl.includes('http') || streamUrl.includes('m3u8') || streamUrl.includes('mp4'));
+               
+               const shouldShowVideo = fromHomeshopping && 
+                 isValidStreamUrl && 
+                 broadcastStatus?.status === 'live';
+               
+               const shouldShowStatusMessage = fromHomeshopping && 
+                 (broadcastStatus?.status === 'upcoming' || broadcastStatus?.status === 'ended');
+               
+               // 홈쇼핑에서 넘어온 경우에만 최소 높이 설정
+               return (shouldShowVideo || shouldShowStatusMessage) ? '200px' : 'auto';
+             })(),
              position: 'relative',
              overflow: 'hidden'
            }}>
