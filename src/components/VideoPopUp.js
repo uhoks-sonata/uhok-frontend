@@ -8,7 +8,9 @@ const VideoPopUp = ({
   homeshoppingName = '홈쇼핑',
   kokProductId = '',
   onClose,
-  isVisible = false 
+  isVisible = false,
+  broadcastStatus = null,
+  thumbnailUrl = null
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -144,28 +146,97 @@ const VideoPopUp = ({
 
         {/* 비디오 플레이어 */}
         <div className="video-popup-player">
-          {videoUrl ? (
-            <video
-              ref={videoRef}
-              src={videoUrl}
-              className="video-popup-video"
-              onLoadedMetadata={handleLoadedMetadata}
-              onTimeUpdate={handleTimeUpdate}
-              onPlay={() => setIsPlaying(true)}
-              onPause={() => setIsPlaying(false)}
-              onEnded={() => setIsPlaying(false)}
-              muted={isMuted}
-              volume={volume}
-            />
-          ) : (
-            <div className="video-popup-no-video">
-              <div className="no-video-icon">📺</div>
-              <div className="no-video-text">영상을 불러올 수 없습니다</div>
-            </div>
-          )}
+          {(() => {
+            // 방송 상태가 'live'이고 유효한 비디오 URL이 있을 때만 영상 표시
+            const shouldShowVideo = videoUrl && broadcastStatus?.status === 'live';
+            
+            // 방송 예정이나 종료 상태일 때 메시지 표시
+            const shouldShowStatusMessage = broadcastStatus && 
+              (broadcastStatus.status === 'upcoming' || broadcastStatus.status === 'ended');
+            
+            if (shouldShowVideo) {
+              return (
+                <video
+                  ref={videoRef}
+                  src={videoUrl}
+                  className="video-popup-video"
+                  onLoadedMetadata={handleLoadedMetadata}
+                  onTimeUpdate={handleTimeUpdate}
+                  onPlay={() => setIsPlaying(true)}
+                  onPause={() => setIsPlaying(false)}
+                  onEnded={() => setIsPlaying(false)}
+                  muted={isMuted}
+                  volume={volume}
+                />
+              );
+            } else if (shouldShowStatusMessage) {
+              return (
+                <div className="video-popup-no-video" style={{
+                  position: 'relative',
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}>
+                  {/* 썸네일 이미지 배경 */}
+                  {thumbnailUrl && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '0',
+                      left: '0',
+                      width: '100%',
+                      height: '100%',
+                      backgroundImage: `url(${thumbnailUrl})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      filter: 'brightness(0.3)'
+                    }} />
+                  )}
+                  
+                  {/* 방송 상태 메시지 오버레이 */}
+                  <div style={{
+                    position: 'relative',
+                    zIndex: 2,
+                    textAlign: 'center',
+                    color: 'white'
+                  }}>
+                    <div className="no-video-icon">📺</div>
+                    <div className="no-video-text">{broadcastStatus.text}</div>
+                    <div className="no-video-subtext">
+                      {broadcastStatus.status === 'upcoming' ? '방송 시작을 기다려주세요' : '방송이 종료되었습니다'}
+                    </div>
+                  </div>
+                </div>
+              );
+            } else if (videoUrl) {
+              return (
+                <video
+                  ref={videoRef}
+                  src={videoUrl}
+                  className="video-popup-video"
+                  onLoadedMetadata={handleLoadedMetadata}
+                  onTimeUpdate={handleTimeUpdate}
+                  onPlay={() => setIsPlaying(true)}
+                  onPause={() => setIsPlaying(false)}
+                  onEnded={() => setIsPlaying(false)}
+                  muted={isMuted}
+                  volume={volume}
+                />
+              );
+            } else {
+              return (
+                <div className="video-popup-no-video">
+                  <div className="no-video-icon">📺</div>
+                  <div className="no-video-text">영상을 불러올 수 없습니다</div>
+                </div>
+              );
+            }
+          })()}
           
-          {/* 비디오 컨트롤 - 영상이 있을 때만 표시 */}
-          {videoUrl && (
+          {/* 비디오 컨트롤 - 라이브 방송일 때만 표시 */}
+          {videoUrl && broadcastStatus?.status === 'live' && (
             <div className="video-popup-controls-overlay">
               <div className="video-popup-progress">
                 <input

@@ -370,6 +370,9 @@ const HomeShoppingProductDetail = () => {
       streamUrl !== 'null' &&
       (streamUrl.includes('http') || streamUrl.includes('m3u8') || streamUrl.includes('mp4'));
     
+    // 방송 상태 확인
+    const broadcastStatus = getBroadcastStatus();
+    
     console.log('🚀 콕 상품으로 이동:', {
       kokProductId,
       streamUrl,
@@ -377,17 +380,21 @@ const HomeShoppingProductDetail = () => {
       windowLiveSrc: window.__LIVE_SRC__,
       streamDataUrl: streamData?.stream_url,
       productName: productDetail?.product_name,
-      homeshoppingName: productDetail?.homeshopping_name
+      homeshoppingName: productDetail?.homeshopping_name,
+      broadcastStatus,
+      thumbnailUrl: productDetail?.thumb_img_url
     });
     
-    // 홈쇼핑에서 콕 상품 페이지로 이동 (영상 데이터 포함)
+    // 홈쇼핑에서 콕 상품 페이지로 이동 (영상 데이터, 방송 상태, 썸네일 이미지 포함)
     navigate(`/kok/product/${kokProductId}`, {
       state: {
         fromHomeshopping: true,
         streamUrl: isValidStreamUrl ? streamUrl : '',
         productName: productDetail?.product_name || '상품명',
         homeshoppingName: productDetail?.homeshopping_name || '홈쇼핑',
-        homeshoppingId: productDetail?.homeshopping_id || null
+        homeshoppingId: productDetail?.homeshopping_id || null,
+        broadcastStatus: broadcastStatus,
+        thumbnailUrl: productDetail?.thumb_img_url || null
       }
     });
   };
