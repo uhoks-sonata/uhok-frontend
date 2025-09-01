@@ -362,11 +362,29 @@ const HomeShoppingProductDetail = () => {
   
   // 콕 상품으로 이동
   const handleKokProductClick = (kokProductId) => {
+    // 스트림 URL 검증 및 로깅
+    const streamUrl = window.__LIVE_SRC__ || streamData?.stream_url || '';
+    const isValidStreamUrl = streamUrl && 
+      streamUrl.trim() !== '' && 
+      streamUrl !== 'undefined' && 
+      streamUrl !== 'null' &&
+      (streamUrl.includes('http') || streamUrl.includes('m3u8') || streamUrl.includes('mp4'));
+    
+    console.log('🚀 콕 상품으로 이동:', {
+      kokProductId,
+      streamUrl,
+      isValidStreamUrl,
+      windowLiveSrc: window.__LIVE_SRC__,
+      streamDataUrl: streamData?.stream_url,
+      productName: productDetail?.product_name,
+      homeshoppingName: productDetail?.homeshopping_name
+    });
+    
     // 홈쇼핑에서 콕 상품 페이지로 이동 (영상 데이터 포함)
     navigate(`/kok/product/${kokProductId}`, {
       state: {
         fromHomeshopping: true,
-        streamUrl: window.__LIVE_SRC__ || streamData?.stream_url || '',
+        streamUrl: isValidStreamUrl ? streamUrl : '',
         productName: productDetail?.product_name || '상품명',
         homeshoppingName: productDetail?.homeshopping_name || '홈쇼핑',
         homeshoppingId: productDetail?.homeshopping_id || null

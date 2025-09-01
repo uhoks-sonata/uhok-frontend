@@ -236,6 +236,8 @@ const KokProductDetail = () => {
       try {
         setKokLoading(true);
         
+                 // 홈쇼핑에서 넘어온 경우 영상 표시는 상단에 고정으로 처리됨
+        
         // 개별 API들을 병렬로 호출하여 데이터 가져오기
         console.log('개별 API들을 사용하여 데이터 로딩');
         
@@ -938,57 +940,119 @@ API 연결 테스트 결과:
         onCartClick={handleKokCartClick}
       />
       
-      <div className="product-content">
-        {/* 홈쇼핑에서 넘어온 경우 영상 표시 */}
-        {(() => {
-          console.log('🔍 홈쇼핑 영상 표시 조건 확인:', {
-            locationState: location.state,
-            fromHomeshopping: location.state?.fromHomeshopping,
-            streamUrl: location.state?.streamUrl,
-            windowLiveSrc: window.__LIVE_SRC__,
-            hasStreamUrl: !!(location.state?.streamUrl || window.__LIVE_SRC__)
-          });
-          
-          const shouldShowVideo = location.state && 
-            location.state.fromHomeshopping && 
-            (location.state.streamUrl || window.__LIVE_SRC__);
-          
-          console.log('🎬 영상 표시 여부:', shouldShowVideo);
-          
-          if (shouldShowVideo) {
-            return (
-              <div className="homeshopping-video-section">
-                <LiveStreamPlayer
-                  src={location.state.streamUrl || window.__LIVE_SRC__ || ''}
-                  autoPlay={true}
-                  muted={true}
-                  controls={true}
-                  width="100%"
-                  height="100%"
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    borderRadius: '8px'
-                  }}
-                  onError={(error) => {
-                    console.error('홈쇼핑 영상 로드 실패:', error);
-                  }}
-                />
-                {/* 홈쇼핑 정보 오버레이 */}
-                <div className="homeshopping-video-overlay">
-                  <div className="homeshopping-name">
-                    {location.state.homeshoppingName || '홈쇼핑'}
+             <div className="product-content">
+         {/* 홈쇼핑에서 넘어온 경우 영상 표시 - 헤더 네비게이션 형태 */}
+         {(() => {
+           // 스트림 URL 검증 및 로깅
+           const streamUrl = location.state?.streamUrl || window.__LIVE_SRC__ || '';
+           const fromHomeshopping = location.state?.fromHomeshopping;
+           
+           // 스트림 URL이 유효한지 확인
+           const isValidStreamUrl = streamUrl && 
+             streamUrl.trim() !== '' && 
+             streamUrl !== 'undefined' && 
+             streamUrl !== 'null' &&
+             (streamUrl.includes('http') || streamUrl.includes('m3u8') || streamUrl.includes('mp4'));
+           
+           const shouldShowVideo = fromHomeshopping && isValidStreamUrl;
+           
+           console.log('🎬 영상 표시 여부:', shouldShowVideo, '유효한 스트림 URL:', isValidStreamUrl);
+           
+           if (shouldShowVideo) {
+             return (
+                               <div className="video-popup-overlay" style={{
+                  width: '100%',
+                  height: '400px',
+                  position: 'relative',
+                  marginBottom: '24px',
+                  borderRadius: '8px',
+                  overflow: 'hidden',
+                  backgroundColor: '#000',
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}>
+                 {/* 비디오 플레이어 */}
+                 <div className="video-popup-player" style={{ flex: 1 }}>
+                   <LiveStreamPlayer
+                     src={streamUrl}
+                     autoPlay={true}
+                     muted={true}
+                     controls={true}
+                     width="100%"
+                     height="100%"
+                     style={{
+                       width: '100%',
+                       height: '100%',
+                       objectFit: 'cover',
+                       borderRadius: '8px'
+                     }}
+                     onError={(error) => {
+                       console.error('홈쇼핑 영상 로드 실패:', error);
+                     }}
+                     onLoadStart={() => {
+                       console.log('🎬 라이브 스트림 로딩 시작:', streamUrl);
+                     }}
+                     onLoadedData={() => {
+                       console.log('🎬 라이브 스트림 로딩 완료:', streamUrl);
+                     }}
+                   />
+                 </div>
+                 
+                                   {/* 헤더 정보 */}
+                  <div className="video-popup-header" style={{
+                    position: 'absolute',
+                    top: '0',
+                    left: '0',
+                    right: '0',
+                    background: 'linear-gradient(rgba(0,0,0,0.7), transparent)',
+                    color: 'white',
+                    padding: '16px',
+                    display: 'flex',
+                    justifyContent: 'flex-start',
+                    alignItems: 'center'
+                  }}>
+                    <div className="video-popup-info">
+                      <div className="video-popup-title" style={{ fontSize: '14px', fontWeight: 'bold' }}>
+                        <span className="video-popup-homeshopping">{location.state?.homeshoppingName || '홈쇼핑'}</span>
+                        <span className="video-popup-separator" style={{ margin: '0 8px' }}>→</span>
+                        <span className="video-popup-product">{location.state?.productName || '상품명'}</span>
+                      </div>
+                      <div className="video-popup-subtitle" style={{ fontSize: '12px', opacity: 0.8, marginTop: '4px' }}>
+                        콕에서 비슷한 상품을 확인해보세요!
+                      </div>
+                    </div>
                   </div>
-                  <div className="product-name">
-                    {location.state.productName || '상품명'}
-                  </div>
-                </div>
-              </div>
-            );
-          }
-          return null;
-        })()}
+               </div>
+             );
+           } else if (fromHomeshopping) {
+             // 홈쇼핑에서 왔지만 스트림 URL이 없는 경우
+             console.log('⚠️ 홈쇼핑에서 왔지만 스트림 URL이 없습니다');
+             return (
+               <div style={{
+                 width: '100%',
+                 height: '200px',
+                 backgroundColor: '#f8f9fa',
+                 border: '2px dashed #dee2e6',
+                 borderRadius: '8px',
+                 display: 'flex',
+                 alignItems: 'center',
+                 justifyContent: 'center',
+                 flexDirection: 'column',
+                 gap: '8px',
+                 marginBottom: '24px',
+                 color: '#6c757d'
+               }}>
+                 <div style={{ fontSize: '48px' }}>📺</div>
+                 <div style={{ fontSize: '16px', fontWeight: 'bold' }}>라이브 스트림</div>
+                 <div style={{ fontSize: '14px' }}>스트림을 불러올 수 없습니다</div>
+                 <div style={{ fontSize: '12px', opacity: 0.7 }}>
+                   {location.state?.homeshoppingName || '홈쇼핑'} - {location.state?.productName || '상품명'}
+                 </div>
+               </div>
+             );
+           }
+           return null;
+         })()}
                  {/* 제품 이미지 */}
                    <div className="product-image-section" style={{ 
             marginBottom: '24px',
@@ -999,22 +1063,19 @@ API 연결 테스트 결과:
             overflow: 'hidden'
           }}>
 
-                       <img 
-              src={kokProduct.image}
-              alt={kokProduct.name}
-              style={{ 
-                width: '100%', 
-                height: '300px', 
-                objectFit: 'cover',
-                borderRadius: '8px',
-                display: 'block',
-                maxWidth: '100%',
-                minHeight: '300px',
-                cursor: 'pointer'
-              }}
-              onClick={showVideoPopupHandler}
-             
-           />
+                                               <img 
+               src={kokProduct.image}
+               alt={kokProduct.name}
+               style={{ 
+                 width: '100%', 
+                 height: '300px', 
+                 objectFit: 'cover',
+                 borderRadius: '8px',
+                 display: 'block',
+                 maxWidth: '100%',
+                 minHeight: '300px'
+               }}
+            />
            
          </div>
 
@@ -1131,15 +1192,7 @@ API 연결 테스트 결과:
         <UpBtn />
       </div>
       
-      {/* VideoPopUp */}
-      <VideoPopUp
-        videoUrl={videoPopupData.videoUrl}
-        productName={videoPopupData.productName}
-        homeshoppingName={videoPopupData.homeshoppingName}
-        kokProductId={videoPopupData.kokProductId}
-        isVisible={showVideoPopup}
-        onClose={() => setShowVideoPopup(false)}
-      />
+             {/* VideoPopUp - 제거됨 (상단에 고정 영상으로 대체) */}
       
       {/* 수량 선택 모달 */}
       {showQuantityModal && (
@@ -1348,6 +1401,16 @@ API 연결 테스트 결과:
            productImage: kokProduct?.image || kokProductImages[0]?.kok_img_url
          }}
        />
+      
+      {/* VideoPopUp 렌더링 */}
+      {/* <VideoPopUp
+        videoUrl={location.state?.streamUrl || ''}
+        productName={location.state?.productName || kokProduct?.name || '상품명'}
+        homeshoppingName={location.state?.homeshoppingName || '홈쇼핑'}
+        kokProductId={productId}
+        isVisible={showVideoPopup}
+        onClose={() => setShowVideoPopup(false)}
+      /> */}
     </div>
   );
 };

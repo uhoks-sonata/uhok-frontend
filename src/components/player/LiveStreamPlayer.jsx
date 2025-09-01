@@ -25,7 +25,26 @@ const LiveStreamPlayer = ({
   });
 
   useEffect(() => {
-    if (!src || !videoRef.current) return;
+    // 스트림 URL 검증
+    if (!src || !videoRef.current) {
+      console.log('❌ LiveStreamPlayer: 유효하지 않은 src 또는 videoRef');
+      return;
+    }
+
+    // 스트림 URL 유효성 검사
+    const isValidUrl = src && 
+      src.trim() !== '' && 
+      src !== 'undefined' && 
+      src !== 'null' &&
+      (src.includes('http') || src.includes('m3u8') || src.includes('mp4'));
+    
+    if (!isValidUrl) {
+      console.error('❌ LiveStreamPlayer: 유효하지 않은 스트림 URL:', src);
+      const error = new Error(`유효하지 않은 스트림 URL: ${src}`);
+      setError(error);
+      onError?.(error);
+      return;
+    }
 
     const video = videoRef.current;
     
@@ -34,10 +53,15 @@ const LiveStreamPlayer = ({
       src: src,
       hlsSupported: Hls.isSupported(),
       videoReady: !!videoRef.current,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      isValidUrl: isValidUrl
     });
     
-    console.log('🎬 LiveStreamPlayer 초기화:', { src, hlsSupported: Hls.isSupported() });
+    console.log('🎬 LiveStreamPlayer 초기화:', { 
+      src, 
+      hlsSupported: Hls.isSupported(),
+      isValidUrl: isValidUrl
+    });
     
     // HLS 지원 여부 확인
     if (Hls.isSupported()) {
