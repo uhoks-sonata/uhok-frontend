@@ -56,6 +56,69 @@ const RecipeDetail = () => {
         // 재료 상태 조회
         try {
           const statusData = await recipeApi.getRecipeIngredientStatus(recipeId);
+          console.log('🔍 재료 상태 API 응답 데이터:', statusData);
+          
+          // 소진 희망 재료 검색에서 온 경우, API 응답과 초기 설정을 병합
+          if (location.state?.searchType === 'ingredient' && location.state?.ingredients) {
+            const resultIngredients = location.state.ingredients;
+            
+            // API 응답의 재료 상태를 수정하여 소진 희망 재료들을 보유로 설정
+            if (statusData.ingredients_status) {
+              const { owned = [], cart = [], not_owned = [] } = statusData.ingredients_status;
+              
+              // 소진 희망 재료들을 보유 목록에 추가
+              recipeData.materials.forEach(material => {
+                const isOwned = resultIngredients.some(ing => {
+                  let inputIngredientName = '';
+                  
+                  if (typeof ing === 'string') {
+                    inputIngredientName = ing.toLowerCase().trim();
+                  } else if (ing?.name) {
+                    inputIngredientName = ing.name.toLowerCase().trim();
+                  }
+                  
+                  const materialName = material.material_name.toLowerCase().trim();
+                  
+                  // 정확한 매칭 로직
+                  if (inputIngredientName === materialName) return true;
+                  
+                  const normalizedInput = inputIngredientName.replace(/\s+/g, '');
+                  const normalizedMaterial = materialName.replace(/\s+/g, '');
+                  
+                  if (normalizedInput === normalizedMaterial) return true;
+                  
+                  if (normalizedInput.length > normalizedMaterial.length) {
+                    return normalizedInput.includes(normalizedMaterial);
+                  } else {
+                    return normalizedMaterial.includes(normalizedInput);
+                  }
+                });
+
+                if (isOwned) {
+                  // 이미 owned에 없으면 추가
+                  if (!owned.some(item => item.material_name === material.material_name)) {
+                    owned.push({ material_name: material.material_name });
+                  }
+                  // not_owned에서 제거
+                  const notOwnedIndex = not_owned.findIndex(item => item.material_name === material.material_name);
+                  if (notOwnedIndex !== -1) {
+                    not_owned.splice(notOwnedIndex, 1);
+                  }
+                }
+              });
+              
+              // summary 업데이트
+              statusData.summary = {
+                total_ingredients: recipeData.materials.length,
+                owned_count: owned.length,
+                cart_count: cart.length,
+                not_owned_count: not_owned.length
+              };
+              
+              console.log('🔍 소진 희망 재료 반영된 재료 상태:', statusData);
+            }
+          }
+          
           setIngredientsStatus(statusData);
         } catch (statusError) {
           console.log('재료 상태 조회 실패:', statusError);
@@ -78,7 +141,9 @@ const RecipeDetail = () => {
           }
         }
         
-        // 재료별 콕 쇼핑몰 상품 조회
+        // 재료별 콕 쇼핑몰 상품 조회 (임시 비활성화 - API 명세서에 없음)
+        // TODO: 백엔드 개발자에게 올바른 콕 상품 조회 API 엔드포인트 확인 필요
+        /*
         if (recipeData.materials && recipeData.materials.length > 0) {
           const productsPromises = recipeData.materials.map(async (material) => {
             try {
@@ -97,6 +162,7 @@ const RecipeDetail = () => {
           });
           setKokProducts(productsMap);
         }
+        */
         
       } catch (err) {
         console.error('레시피 상세 정보 조회 실패:', err);
@@ -117,6 +183,12 @@ const RecipeDetail = () => {
       // RecipeResult에서 전달받은 재료 목록
       const resultIngredients = location.state.ingredients;
       
+      console.log('🔍 RecipeDetail에서 받은 재료 정보:', {
+        resultIngredients,
+        recipeMaterials: recipe.materials,
+        searchType: location.state?.searchType
+      });
+      
       // 초기 재료 상태 설정 (API 응답 전까지 임시로 사용)
       const initialStatus = {
         ingredients_status: {
@@ -132,27 +204,81 @@ const RecipeDetail = () => {
         }
       };
 
-      // RecipeResult에서 보유로 표시되었던 재료들을 owned로 설정
-      recipe.materials.forEach(material => {
-        const isOwned = resultIngredients.some(ing => {
-          if (typeof ing === 'string') {
-            return ing.toLowerCase().includes(material.material_name.toLowerCase()) ||
-                   material.material_name.toLowerCase().includes(ing.toLowerCase());
-          } else if (ing?.name) {
-            return ing.name.toLowerCase().includes(material.material_name.toLowerCase()) ||
-                   material.material_name.toLowerCase().includes(ing.name.toLowerCase());
-          }
-          return false;
-        });
+      // 소진 희망 재료 검색에서만 입력한 재료들을 보유 상태로 설정
+      if (location.state?.searchType === 'ingredient') {
+        console.log('🔍 소진 희망 재료 검색 - 재료 매칭 시작');
+        console.log('입력된 재료들:', resultIngredients);
+        console.log('레시피 재료들:', recipe.materials.map(m => m.material_name));
+        
+        recipe.materials.forEach(material => {
+          console.log(`\n🔍 재료 매칭 중: ${material.material_name}`);
+          
+          const isOwned = resultIngredients.some((ing, index) => {
+            let inputIngredientName = '';
+            
+            if (typeof ing === 'string') {
+              // 문자열인 경우 직접 사용
+              inputIngredientName = ing.toLowerCase().trim();
+              console.log(`  - 입력 재료[${index}] (문자열): "${inputIngredientName}"`);
+            } else if (ing?.name) {
+              // 객체인 경우 name 속성 사용
+              inputIngredientName = ing.name.toLowerCase().trim();
+              console.log(`  - 입력 재료[${index}] (객체): "${inputIngredientName}"`);
+            } else {
+              console.log(`  - 입력 재료[${index}] (알 수 없는 타입):`, ing);
+              return false;
+            }
+            
+            const materialName = material.material_name.toLowerCase().trim();
+            console.log(`  - 레시피 재료: "${materialName}"`);
+            
+            // 정확한 매칭 로직
+            // 1. 완전 일치
+            if (inputIngredientName === materialName) {
+              console.log(`  ✅ 완전 일치!`);
+              return true;
+            }
+            
+            // 2. 부분 일치 (공백 제거 후)
+            const normalizedInput = inputIngredientName.replace(/\s+/g, '');
+            const normalizedMaterial = materialName.replace(/\s+/g, '');
+            
+            if (normalizedInput === normalizedMaterial) {
+              console.log(`  ✅ 정규화 후 일치!`);
+              return true;
+            }
+            
+            // 3. 포함 관계 (더 긴 문자열이 더 짧은 문자열을 포함)
+            if (normalizedInput.length > normalizedMaterial.length) {
+              const includes = normalizedInput.includes(normalizedMaterial);
+              console.log(`  - 포함 검사 (입력이 더 김): ${includes}`);
+              return includes;
+            } else {
+              const includes = normalizedMaterial.includes(normalizedInput);
+              console.log(`  - 포함 검사 (재료가 더 김): ${includes}`);
+              return includes;
+            }
+          });
 
-        if (isOwned) {
-          initialStatus.ingredients_status.owned.push({ material_name: material.material_name });
-          initialStatus.summary.owned_count++;
-          initialStatus.summary.not_owned_count--;
-        } else {
+          if (isOwned) {
+            initialStatus.ingredients_status.owned.push({ material_name: material.material_name });
+            initialStatus.summary.owned_count++;
+            initialStatus.summary.not_owned_count--;
+            console.log(`✅ 보유 재료로 설정: ${material.material_name}`);
+          } else {
+            initialStatus.ingredients_status.not_owned.push({ material_name: material.material_name });
+            console.log(`❌ 미보유 재료: ${material.material_name}`);
+          }
+        });
+      } else {
+        // 키워드 검색의 경우 모든 재료를 미보유로 설정
+        console.log('🔍 키워드 검색 - 모든 재료를 미보유로 설정');
+        recipe.materials.forEach(material => {
           initialStatus.ingredients_status.not_owned.push({ material_name: material.material_name });
-        }
-      });
+        });
+      }
+
+      console.log('🔍 초기 재료 상태 설정:', initialStatus);
 
       // API 응답이 오기 전까지 임시 상태 사용
       if (!ingredientsStatus || ingredientsStatus.summary.total_ingredients === 0) {
@@ -302,7 +428,29 @@ const RecipeDetail = () => {
               let status = 'not-owned';
               let statusText = '미보유';
               
-              if (ingredientsStatus && ingredientsStatus.ingredients_status) {
+              // API 명세서에 따른 새로운 구조 확인
+              if (ingredientsStatus && ingredientsStatus.ingredients) {
+                const ingredientData = ingredientsStatus.ingredients.find(
+                  item => item.material_name === material.material_name
+                );
+                if (ingredientData) {
+                  status = ingredientData.status;
+                  switch (ingredientData.status) {
+                    case 'owned':
+                      statusText = '보유';
+                      break;
+                    case 'cart':
+                      statusText = '장바구니';
+                      break;
+                    case 'not_owned':
+                    default:
+                      statusText = '미보유';
+                      break;
+                  }
+                }
+              }
+              // 기존 구조도 지원 (하위 호환성)
+              else if (ingredientsStatus && ingredientsStatus.ingredients_status) {
                 const { owned = [], cart = [], not_owned = [] } = ingredientsStatus.ingredients_status;
                 
                 if (owned.some(item => item.material_name === material.material_name)) {
@@ -326,7 +474,21 @@ const RecipeDetail = () => {
                         {material.measure_amount} {material.measure_unit}
                       </span>
                     </div>
-                    <span className={`ingredient-status ${status}`}>
+                    <span 
+                      className={`ingredient-status ${status}`}
+                      style={{
+                        backgroundColor: status === 'owned' ? '#000000' : 
+                                        status === 'cart' ? '#000000' : '#FA5F8C',
+                        color: '#ffffff',
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        minWidth: '80px',
+                        textAlign: 'center',
+                        display: 'inline-block'
+                      }}
+                    >
                       {statusText}
                     </span>
                   </div>

@@ -242,18 +242,21 @@ const RecipeRecommendation = () => {
 
   return (
     <div className="recipe-recommendation-page">
-      {/* 로딩 */}
-      {console.log('렌더링 시 isLoading:', isLoading)} {/* 디버깅용 */}
-      {isLoading && (
-        <Loading message="레시피를 찾고 있어요..." />
-      )}
-      
       <HeaderNavRecipeRecommendation 
         onBackClick={handleBack}
       />
 
+      {/* 로딩 */}
+      {console.log('렌더링 시 isLoading:', isLoading)} {/* 디버깅용 */}
+      {isLoading && (
+        <div className="loading-section">
+          <Loading message="레시피를 찾고 있어요..." />
+        </div>
+      )}
+
       {/* 메인 컨텐츠 */}
-      <main className="recipe-main-content">
+      {!isLoading && (
+        <main className="recipe-main-content">
         {/* 검색 버튼들 */}
         <div className={`search-buttons-container ${(isIngredientActive || isRecipeActive) ? 'slide-up' : ''}`}>
           <button 
@@ -398,7 +401,8 @@ const RecipeRecommendation = () => {
             </button>
           </div>
         )}
-      </main>
+        </main>
+      )}
 
       {/* 하단 네비게이션 */}
       <BottomNav />

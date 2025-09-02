@@ -297,12 +297,12 @@ export const recipeApi = {
 
   /**
    * 8. 콕 쇼핑몰 내 ingredient 관련 상품 정보 조회
-   * GET /api/recipes/kok
+   * GET /api/kok/products
    */
   getKokProducts: async (ingredient, signal) => {
     try {
       const qs = buildQuery({ ingredient });
-      const url = `/api/recipes/kok?${qs}`;
+      const url = `/api/kok/products?${qs}`;
       
       console.log('🔍 콕 상품 정보 API 요청:', { url, ingredient });
       

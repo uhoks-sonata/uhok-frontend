@@ -244,7 +244,7 @@ const KokPayment = () => {
     setCardHolderName('홍길동');
   }, [location]);
 
-  // 결제 처리 함수 (비동기) - 3단계 프로세스: 주문 생성 + 결제 확인 + 결제 요청 응답 확인
+  // 결제 처리 함수 (비동기) - 3단계 프로세스: 주문 생성 + 결제 확인 + 결제 요청 응답 확인 (v2 롱폴링+웹훅)
   const handlePayment = async () => {
     if (!validatePaymentForm()) {
       return;
@@ -411,9 +411,9 @@ const KokPayment = () => {
          throw new Error('사용자 정보를 확인할 수 없습니다. 다시 로그인해주세요.');
        }
 
-               // ===== 3단계: 결제 요청 응답 확인 =====
-        console.log('🚀 3단계: 결제 요청 응답 확인 시작');
-        console.log('🔍 API 호출: POST /api/orders/kok/order-unit/{order_id}/payment/confirm');
+               // ===== 3단계: 결제 요청 응답 확인 (v2 롱폴링+웹훅) =====
+        console.log('🚀 3단계: 결제 요청 응답 확인 시작 (v2 롱폴링+웹훅)');
+        console.log('🔍 API 호출: POST /api/orders/payment/{order_id}/confirm/v2');
         console.log('🔍 사용할 orderId:', orderId);
         console.log('🔍 orderId 타입:', typeof orderId);
         console.log('🔍 orderId 값 검증:', orderId);
@@ -468,14 +468,14 @@ const KokPayment = () => {
         tokenValid: !!currentToken
       });
       
-            // 백엔드 결제 확인 요청
-      console.log('🚀 3단계: 백엔드 결제 확인 요청 시작');
-      const paymentResponse = await orderApi.confirmPayment(orderId);
+            // 백엔드 결제 확인 요청 (v2 롱폴링+웹훅 방식 사용)
+      console.log('🚀 3단계: 백엔드 결제 확인 요청 시작 (v2 롱폴링+웹훅)');
+      const paymentResponse = await orderApi.confirmPaymentV2(orderId);
       
       console.log('✅ 3단계: 백엔드 결제 확인 응답 수신 완료:', paymentResponse);
 
       // 결제 상태 확인 - 결제가 성공한 경우에만 주문 내역에 저장
-      console.log('🔍 3단계: 결제 응답 상세 분석:', {
+              console.log('🔍 3단계: 결제 응답 상세 분석 (v2):', {
         hasResponse: !!paymentResponse,
         status: paymentResponse?.status,
         paymentId: paymentResponse?.payment_id,
@@ -484,66 +484,104 @@ const KokPayment = () => {
         kok_order_ids_타입: typeof paymentResponse?.kok_order_ids,
         kok_order_ids_길이: paymentResponse?.kok_order_ids?.length,
         hs_order_id: paymentResponse?.hs_order_id,
+        tx_id: paymentResponse?.tx_id,
+        order_id_internal: paymentResponse?.order_id_internal,
         전체_응답: JSON.stringify(paymentResponse, null, 2)
       });
       
-      // 백엔드 결제 확인 응답이 성공한 경우에만 상태 업데이트 진행
-      if (paymentResponse && (paymentResponse.status === 'COMPLETED' || paymentResponse.status === 'PAYMENT_COMPLETED')) {
-          console.log('✅ 3단계: 결제 성공 확인됨 - 자동 상태 업데이트 시작');
+      // 백엔드 결제 확인 응답 처리 (v2 롱폴링+웹훅 방식)
+      if (paymentResponse && paymentResponse.status === 'PENDING') {
+        // PENDING 상태: 백엔드에서 웹훅으로 완료 신호 대기
+        console.log('⏳ 3단계: 결제 PENDING 상태 - 백엔드 웹훅 완료 신호 대기');
+        console.log('🔍 PENDING 상태 상세:', {
+          tx_id: paymentResponse.tx_id,
+          order_id_internal: paymentResponse.order_id_internal,
+          payment_id: paymentResponse.payment_id
+        });
+        
+        // PENDING 상태를 "진행중"으로 처리
+        setPaymentStatus('processing');
+        setErrorMessage('결제가 진행 중입니다. 백엔드에서 완료 신호를 기다리고 있습니다. 잠시 후 주문 내역에서 확인해주세요.');
+        
+        // PENDING 상태에서는 백엔드에서 웹훅으로 상태를 업데이트하므로
+        // 프론트엔드에서 자동 상태 업데이트를 호출하지 않음
+        console.log('⚠️ PENDING 상태 - 프론트엔드에서 자동 상태 업데이트 호출하지 않음');
+        console.log('⚠️ 백엔드에서 웹훅으로 완료 신호를 보낼 때까지 대기');
+        console.log('⚠️ 현재 백엔드에서 롱폴링 API가 구현되지 않음');
+        
+        // 실제 환경에서는 여기서 롱폴링이나 WebSocket 연결을 시작해야 함
+        // 현재는 백엔드 구현이 완료될 때까지 대기 상태로 유지
+        console.log('🔄 백엔드 롱폴링 API 구현 대기 중...');
+        
+        // 개발 환경에서만 임시로 5초 후 사용자에게 안내
+        if (process.env.NODE_ENV === 'development') {
+          setTimeout(() => {
+            console.log('⚠️ 개발 환경: 백엔드 롱폴링 API 미구현으로 인한 임시 처리');
+            setPaymentStatus('processing');
+            setErrorMessage('개발 환경: 백엔드 롱폴링 API가 구현되지 않았습니다. 실제 환경에서는 백엔드에서 완료 신호를 보낼 때까지 대기합니다.');
+          }, 5000);
+        }
+        
+      } else if (paymentResponse && (paymentResponse.status === 'COMPLETED' || paymentResponse.status === 'PAYMENT_COMPLETED')) {
+        // 즉시 완료된 경우 (기존 로직)
+        console.log('✅ 3단계: 결제 즉시 완료 확인됨 - 자동 상태 업데이트 시작');
+        
+        // ===== 3-1단계: 자동 상태 업데이트 =====
+        console.log('🚀 3-1단계: 자동 상태 업데이트 시작');
+        
+        try {
+          // 백엔드 결제 응답의 모든 주문 ID를 포함한 업데이트된 주문 정보 생성 (v2)
+          const orderInfoWithPaymentResponse = {
+            ...updatedOrderInfo,
+            kok_order_ids: paymentResponse?.kok_order_ids || [], // 백엔드 응답의 kok_order_ids 우선 사용
+            hs_order_id: paymentResponse?.hs_order_id || 0, // 백엔드 응답의 hs_order_id 추가 (v2에서는 0)
+            payment_id: paymentResponse?.payment_id,
+            payment_status: paymentResponse?.status,
+            payment_amount: paymentResponse?.payment_amount,
+            payment_method: paymentResponse?.method,
+            confirmed_at: paymentResponse?.confirmed_at,
+            tx_id: paymentResponse?.tx_id, // v2에서 추가된 tx_id (밑줄 보존)
+            order_id_internal: paymentResponse?.order_id_internal // v2에서 추가된 order_id_internal
+          };
           
-          // ===== 3-1단계: 자동 상태 업데이트 =====
-          console.log('🚀 3-1단계: 자동 상태 업데이트 시작');
+          console.log('🔍 백엔드 결제 응답 포함된 주문 정보:', orderInfoWithPaymentResponse);
           
-          try {
-            // 백엔드 결제 응답의 모든 주문 ID를 포함한 업데이트된 주문 정보 생성
-            const orderInfoWithPaymentResponse = {
-              ...updatedOrderInfo,
-              kok_order_ids: paymentResponse?.kok_order_ids || [], // 백엔드 응답의 kok_order_ids 우선 사용
-              hs_order_id: paymentResponse?.hs_order_id || null, // 백엔드 응답의 hs_order_id 추가
-              payment_id: paymentResponse?.payment_id,
-              payment_status: paymentResponse?.status,
-              payment_amount: paymentResponse?.payment_amount,
-              payment_method: paymentResponse?.method,
-              confirmed_at: paymentResponse?.confirmed_at
-            };
+          // 통일된 주문 상태 업데이트 함수 사용
+          const updateResult = await performOrderStatusUpdate(orderInfoWithPaymentResponse);
+          
+          if (updateResult.success) {
+            console.log(`✅ 3-1단계: 자동 상태 업데이트 완료 - 성공: ${updateResult.successfulCount}개, 실패: ${updateResult.failedCount}개`);
             
-            console.log('🔍 백엔드 결제 응답 포함된 주문 정보:', orderInfoWithPaymentResponse);
-            
-            // 통일된 주문 상태 업데이트 함수 사용
-            const updateResult = await performOrderStatusUpdate(orderInfoWithPaymentResponse);
-            
-            if (updateResult.success) {
-              console.log(`✅ 3-1단계: 자동 상태 업데이트 완료 - 성공: ${updateResult.successfulCount}개, 실패: ${updateResult.failedCount}개`);
-              
-              if (updateResult.failedCount > 0) {
-                console.warn(`⚠️ ${updateResult.failedCount}개의 상태 업데이트가 실패했지만 결제는 성공으로 처리됩니다.`);
-              }
-            } else {
-              console.error('❌ 3-1단계: 자동 상태 업데이트 실패:', updateResult.error);
-              console.log('⚠️ 상태 업데이트 실패했지만 결제는 성공으로 처리됩니다.');
+            if (updateResult.failedCount > 0) {
+              console.warn(`⚠️ ${updateResult.failedCount}개의 상태 업데이트가 실패했지만 결제는 성공으로 처리됩니다.`);
             }
-          } catch (updateError) {
-            // 상태 업데이트 실패는 로그만 남기고 결제는 성공으로 처리
-            console.error('❌ 3-1단계: 자동 상태 업데이트 실패:', updateError);
+          } else {
+            console.error('❌ 3-1단계: 자동 상태 업데이트 실패:', updateResult.error);
             console.log('⚠️ 상태 업데이트 실패했지만 결제는 성공으로 처리됩니다.');
           }
+        } catch (updateError) {
+          // 상태 업데이트 실패는 로그만 남기고 결제는 성공으로 처리
+          console.error('❌ 3-1단계: 자동 상태 업데이트 실패:', updateError);
+          console.log('⚠️ 상태 업데이트 실패했지만 결제는 성공으로 처리됩니다.');
+        }
 
-          // ===== 4단계: 결제 완료 처리 =====
-          console.log('🚀 4단계: 결제 완료 처리 시작');
-          setPaymentStatus('completed');
-          alert('결제가 완료되었습니다!');
-          
-          // 결제 완료 - 주문내역 페이지로 이동
-          console.log('🚀 4단계: 결제 완료 - 주문내역 페이지로 이동');
-          navigate('/orderlist', { replace: true });
-        } else {
-         // 결제가 실패한 경우
-         console.log('❌ 3단계: 결제 실패 - 주문 내역에 저장하지 않음');
-         console.log('❌ 3단계: 결제 실패 상세:', {
-           paymentResponse: paymentResponse,
-           responseType: typeof paymentResponse,
-           status: paymentResponse?.status
-         });
+        // ===== 4단계: 결제 완료 처리 =====
+        console.log('🚀 4단계: 결제 완료 처리 시작');
+        setPaymentStatus('completed');
+        alert('결제가 완료되었습니다!');
+        
+        // 결제 완료 - 주문내역 페이지로 이동
+        console.log('🚀 4단계: 결제 완료 - 주문내역 페이지로 이동');
+        navigate('/orderlist', { replace: true });
+        
+      } else {
+        // 실제 실패 상태인 경우만 실패로 처리
+        console.log('❌ 3단계: 결제 실패 - 주문 내역에 저장하지 않음');
+        console.log('❌ 3단계: 결제 실패 상세:', {
+          paymentResponse: paymentResponse,
+          responseType: typeof paymentResponse,
+          status: paymentResponse?.status
+        });
         setPaymentStatus('failed');
         setErrorMessage('결제가 실패했습니다. 다시 시도해주세요.');
         
