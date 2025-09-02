@@ -183,28 +183,20 @@ const HomeShoppingRecipeRecommendation = () => {
                      : recipe.recipe_name}
                  </h3>
                  
-                 {/* 요리 시간, 난이도, 스크랩 수를 한 줄로 표시 */}
-                 {(recipe.cooking_time || recipe.difficulty || recipe.scrap_count) && (
+                 {/* 인분수, 스크랩 수를 한 줄로 표시 */}
+                 {(recipe.number_of_serving || recipe.scrap_count) && (
                    <div className="recipe-stats">
-                     {recipe.cooking_time && (
-                       <span className="serving serving-small">{recipe.cooking_time}</span>
+                     {recipe.number_of_serving && (
+                       <span className="serving serving-small">{recipe.number_of_serving}</span>
                      )}
-                     {recipe.cooking_time && recipe.difficulty && (
+                     {recipe.number_of_serving && recipe.scrap_count && (
                        <span className="separator"> | </span>
                      )}
-                     {recipe.difficulty && (
-                       <span className="scrap-count">{recipe.difficulty}</span>
-                     )}
                      {recipe.scrap_count && (
-                       <>
-                         {(recipe.cooking_time || recipe.difficulty) && (
-                           <span className="separator"> | </span>
-                         )}
-                         <span className="scrap-count">
-                           <img className="bookmark-icon" src={bookmarkIcon} alt="북마크" />
-                           <span className="bookmark-count">{recipe.scrap_count}</span>
-                         </span>
-                       </>
+                       <span className="scrap-count">
+                         <img className="bookmark-icon" src={bookmarkIcon} alt="북마크" />
+                         <span className="bookmark-count">{recipe.scrap_count}</span>
+                       </span>
                      )}
                    </div>
                  )}

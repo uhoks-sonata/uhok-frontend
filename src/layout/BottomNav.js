@@ -34,6 +34,16 @@ const BottomNav = ({ selectedItemsCount = 0, handlePayment = null, productInfo =
   const location = useLocation();
   const navigate = useNavigate();
 
+  // 홈쇼핑 주문하기 함수
+  const hs_order = () => {
+    console.log('🏠 홈쇼핑 주문하기 버튼 클릭');
+    // 전화주문/모바일주문 모달 표시
+    const orderModalEvent = new CustomEvent('showHomeshoppingOrderModal', {
+      detail: { productInfo: productInfo }
+    });
+    window.dispatchEvent(orderModalEvent);
+  };
+
   // 공통 함수: 결제 페이지로 이동하는 로직 (단순 인터페이스 이동)
   const navigateToPayment = (orderType = 'ORDER') => {
     if (selectedItems.size === 0) {
@@ -139,7 +149,7 @@ const BottomNav = ({ selectedItemsCount = 0, handlePayment = null, productInfo =
 
   // 특정 페이지에서 주문/결제 버튼을 표시할지 확인하는 함수
   const shouldShowOrderButton = () => {
-    const orderPages = ['/kok/product', '/cart', '/kok/payment'];
+    const orderPages = ['/kok/product', '/cart', '/kok/payment', '/homeshopping/product'];
     return orderPages.some(page => location.pathname.startsWith(page));
   };
 
@@ -147,6 +157,9 @@ const BottomNav = ({ selectedItemsCount = 0, handlePayment = null, productInfo =
   const getOrderButtonText = () => {
     if (location.pathname.startsWith('/kok/payment')) {
       return '결제하기';
+    }
+    if (location.pathname.startsWith('/homeshopping/product')) {
+      return '주문하기';
     }
     return '주문하기';
   };
@@ -217,6 +230,10 @@ const BottomNav = ({ selectedItemsCount = 0, handlePayment = null, productInfo =
                       detail: { productId: location.pathname.split('/').pop() }
                     });
                     window.dispatchEvent(orderButtonEvent);
+                  } else if (location.pathname.startsWith('/homeshopping/product/')) {
+                    // 홈쇼핑 상품 상세페이지에서 주문하기 버튼 클릭 시
+                    console.log('홈쇼핑 주문하기 버튼 클릭');
+                    hs_order();
                   } else {
                     // 장바구니에서 주문하기 버튼 클릭 시 - 단순 인터페이스 이동
                     console.log('주문하기 버튼 클릭 - 결제 페이지로 이동 (단순 인터페이스 이동)');
