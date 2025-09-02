@@ -905,17 +905,10 @@ const HomeShoppingProductDetail = () => {
                } else {
                  return (
                    <>
-                                           {/* 할인 없는 경우 - 정가만 표시 */}
-                      <div className="hsproduct-original-price">
-                        <span className="hsproduct-original-price-text">
-                          {salePrice.toLocaleString()}원
-                        </span>
-                      </div>
-                      {/* 할인 없음 표시 */}
-                      <div className="hsproduct-discount-info">
-                        <span className="hsproduct-no-discount">할인 없음</span>
-                        <span className="hsproduct-discounted-price">{salePrice.toLocaleString()}원</span>
-                      </div>
+                     {/* 할인 없는 경우 - 할인가격만 표시 */}
+                     <div className="hsproduct-discount-info">
+                       <span className="hsproduct-discounted-price">{salePrice.toLocaleString()}원</span>
+                     </div>
                    </>
                  );
                }
