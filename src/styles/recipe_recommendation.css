@@ -458,6 +458,15 @@
   background: #bbb;
 }
 
+/* 로딩 컨테이너 스타일 */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60vh;
+  background-color: #ffffff;
+}
+
 /* 로딩 섹션 스타일 */
 .loading-section {
   display: flex;

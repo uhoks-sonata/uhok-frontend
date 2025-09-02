@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import BottomNav from '../../layout/BottomNav';
 import HeaderNavRecipeRecommendation from '../../layout/HeaderNavRecipeRecommendation';
 import Loading from '../../components/Loading';
-import LoadingModal from '../../components/LoadingModal';
 import IngredientTag from '../../components/IngredientTag';
 import '../../styles/recipe_recommendation.css';
 import '../../styles/ingredient-tag.css';
@@ -161,18 +160,16 @@ const RecipeRecommendation = () => {
 
         console.log('정규화된 레시피 데이터:', normalizedRecipes);
 
-        // 로딩 모달이 보이도록 약간의 지연 추가
-        setTimeout(() => {
-          navigate('/recipes/result', { 
-            state: { 
-              recipes: normalizedRecipes,
-              total,
-              page,
-              ingredients: selectedIngredients,
-              searchType: 'ingredient' // 검색 타입 추가
-            }
-          });
-        }, 500); // 0.5초 지연
+        // 바로 결과 페이지로 이동
+        navigate('/recipes/result', { 
+          state: { 
+            recipes: normalizedRecipes,
+            total,
+            page,
+            ingredients: selectedIngredients,
+            searchType: 'ingredient' // 검색 타입 추가
+          }
+        });
         
       } else if (isRecipeActive) {
         if (!recipeInput.trim()) {
@@ -197,19 +194,16 @@ const RecipeRecommendation = () => {
         // API 응답 데이터를 정규화
         const normalizedRecipes = recipes.map(recipe => recipeApi.normalizeRecipeData(recipe));
         
-        // 결과 페이지로 이동하며 검색결과 전달 (state 기반)
-        // 로딩 모달이 보이도록 약간의 지연 추가
-        setTimeout(() => {
-          navigate('/recipes/result', {
-            state: {
-              recipes: normalizedRecipes,
-              total,
-              page,
-              ingredients: [{ name: recipeInput, amount: '', unit: '' }], // 검색어를 재료 형태로 전달
-              searchType: 'keyword' // 검색 타입 추가
-            },
-          });
-        }, 500); // 0.5초 지연
+        // 바로 결과 페이지로 이동
+        navigate('/recipes/result', {
+          state: {
+            recipes: normalizedRecipes,
+            total,
+            page,
+            ingredients: [{ name: recipeInput, amount: '', unit: '' }], // 검색어를 재료 형태로 전달
+            searchType: 'keyword' // 검색 타입 추가
+          },
+        });
       }
     } catch (error) {
       console.error('API 호출 중 오류 발생:', error);
@@ -228,11 +222,18 @@ const RecipeRecommendation = () => {
           }
         });
       } else {
-        // 레시피명/식재료명 검색 에러 시 기존 방식으로 이동
-        const payload = encodeURIComponent(
-          JSON.stringify({ mode: 'keyword', keyword: recipeInput, result: { recipes: [], page: 1, total: 0 }, timeout: true })
-        );
-        navigate(`/recipes/by-ingredients?keywordResult=${payload}`);
+        // 레시피명/식재료명 검색 에러 시 결과페이지로 이동
+        navigate('/recipes/result', {
+          state: {
+            recipes: [],
+            total: 0,
+            page: 1,
+            ingredients: [{ name: recipeInput, amount: '', unit: '' }],
+            searchType: 'keyword',
+            error: true,
+            errorMessage: '검색 중 오류가 발생했습니다. 다시 시도해주세요.'
+          }
+        });
       }
     } finally {
       console.log('로딩 종료'); // 디버깅용
@@ -242,18 +243,22 @@ const RecipeRecommendation = () => {
 
   return (
     <div className="recipe-recommendation-page">
-      {/* 로딩 */}
-      {console.log('렌더링 시 isLoading:', isLoading)} {/* 디버깅용 */}
-      {isLoading && (
-        <Loading message="레시피를 찾고 있어요..." />
-      )}
-      
       <HeaderNavRecipeRecommendation 
         onBackClick={handleBack}
       />
 
       {/* 메인 컨텐츠 */}
       <main className="recipe-main-content">
+        {/* 로딩 상태 */}
+        {isLoading && (
+          <div className="loading-container">
+            <Loading message="레시피를 찾고 있어요..." />
+          </div>
+        )}
+        
+        {/* 일반 컨텐츠 - 로딩 중이 아닐 때만 표시 */}
+        {!isLoading && (
+          <>
         {/* 검색 버튼들 */}
         <div className={`search-buttons-container ${(isIngredientActive || isRecipeActive) ? 'slide-up' : ''}`}>
           <button 
@@ -397,6 +402,8 @@ const RecipeRecommendation = () => {
               레시피 추천 받기
             </button>
           </div>
+        )}
+          </>
         )}
       </main>
 
