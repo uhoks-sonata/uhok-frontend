@@ -4,6 +4,7 @@
   background: none;
   border: none;
   padding: 0;
+  padding-bottom: 3px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;

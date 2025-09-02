@@ -42,26 +42,27 @@ const Notification = () => {
       console.log('홈쇼핑 통합 알림 API 응답:', response);
       
       if (response && response.notifications) {
-        const transformedNotifications = response.notifications.map(notification => ({
-          id: notification.notification_id,
-          type: notification.notification_type,
-          title: notification.title,
-          message: notification.message,
-          time: new Date(notification.created_at).toLocaleString('ko-KR', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
-          }),
-          isRead: notification.is_read,
-          relatedEntityType: notification.related_entity_type,
-          relatedEntityId: notification.related_entity_id,
-          homeshoppingOrderId: notification.homeshopping_order_id,
-          statusId: notification.status_id,
-          productName: notification.product_name,
-          orderStatus: notification.title
-        }));
+                 const transformedNotifications = response.notifications.map(notification => ({
+           id: notification.notification_id,
+           type: notification.notification_type,
+           title: notification.title,
+           message: notification.notification_type === 'broadcast_start' 
+             ? notification.message.replace(/(\d{4}-\d{2}-\d{2}T)?(\d{2}):(\d{2}):(\d{2})/, '$2:$3')
+             : notification.message,
+           time: new Date(notification.created_at).toLocaleString('ko-KR', {
+             year: 'numeric',
+             month: '2-digit',
+             day: '2-digit',
+             hour: '2-digit',
+             minute: '2-digit'
+           }),
+           isRead: notification.is_read,
+           relatedEntityType: notification.related_entity_type,
+           relatedEntityId: notification.related_entity_id,
+           homeshoppingOrderId: notification.homeshopping_order_id,
+           statusId: notification.status_id,
+           productName: notification.product_name
+         }));
         
         setNotifications(transformedNotifications);
       }
@@ -114,22 +115,22 @@ const Notification = () => {
       console.log('콕 쇼핑몰 알림 API 응답:', response);
       
       if (response && response.notifications) {
-        const transformedNotifications = response.notifications.map(notification => ({
-          id: notification.notification_id,
-          type: notification.notification_type,
-          title: notification.title,
-          message: notification.message,
-          time: new Date(notification.created_at).toLocaleString('ko-KR', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
-          }),
-          isRead: notification.is_read,
-          relatedEntityType: notification.related_entity_type,
-          relatedEntityId: notification.related_entity_id
-        }));
+                 const transformedNotifications = response.notifications.map(notification => ({
+           id: notification.notification_id,
+           type: notification.notification_type,
+           title: notification.title,
+           message: notification.message,
+           time: new Date(notification.created_at).toLocaleString('ko-KR', {
+             year: 'numeric',
+             month: '2-digit',
+             day: '2-digit',
+             hour: '2-digit',
+             minute: '2-digit'
+           }),
+           isRead: notification.is_read,
+           relatedEntityType: notification.related_entity_type,
+           relatedEntityId: notification.related_entity_id
+         }));
         
         setNotifications(transformedNotifications);
       }
@@ -277,27 +278,37 @@ const Notification = () => {
                 key={notification.id}
                 className={`notification-item ${!notification.isRead ? 'unread' : ''} ${getNotificationTypeClass(notification.type)}`}
               >
-                {renderNotificationIcon(notification.type)}
-                <div className="notification-content-body">
-                  <div className="notification-status">
-                    {activeTab === 'shopping' && notification.orderStatus 
-                      ? notification.orderStatus 
-                      : (activeTab === 'homeshopping' && notification.orderStatus)
-                      ? notification.orderStatus
-                      : notification.title}
+                {/* 1. 날짜 시간과 타이틀을 같은 줄에 배치 */}
+                <div className="notification-header-row">
+                  {/* 2. 타이틀 - 좌측 */}
+                  <div className="notification-title">
+                    [{notification.type === 'broadcast_start' ? '방송 알림' : notification.title}]
                   </div>
-                  {(activeTab === 'shopping' || (activeTab === 'homeshopping' && notification.productName)) && notification.productName && (
-                    <div className="notification-product">
-                      {notification.productName}
-                    </div>
-                  )}
-                  <div className="notification-message">
-                    {notification.message}
+                  
+                  {/* 1. 날짜 시간 - 우측 */}
+                  <div className="notification-time">
+                    {notification.time}
                   </div>
                 </div>
-                <div className="notification-time">
-                  {notification.time}
+
+                {/* 3. 상품 타이틀 (방송 알림인 경우) */}
+                {notification.type === 'broadcast_start' && notification.title && (
+                  <div className="notification-product-title">
+                    {notification.title}
+                  </div>
+                )}
+
+                {/* 4. 메시지 */}
+                <div className={`notification-message ${notification.type === 'broadcast_start' ? 'broadcast' : notification.type === 'order_status' ? 'order' : ''}`}>
+                  {notification.message}
                 </div>
+                
+                {/* 상품명이 있는 경우 추가 표시 */}
+                {(activeTab === 'shopping' || (activeTab === 'homeshopping' && notification.productName)) && notification.productName && (
+                  <div className="notification-product">
+                    {notification.productName}
+                  </div>
+                )}
               </div>
             ))
           )}

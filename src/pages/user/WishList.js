@@ -8,8 +8,8 @@ import ModalManager, { showWishlistNotification, showWishlistUnlikedNotification
 import api from '../api';
 import emptyHeartIcon from '../../assets/heart_empty.png';
 import filledHeartIcon from '../../assets/heart_filled.png';
-import testImage1 from '../../assets/test/test1.png';
-import testImage2 from '../../assets/test/test2.png';
+// import testImage1 from '../../assets/test/test1.png';
+// import testImage2 from '../../assets/test/test2.png';
 import { getLogoByHomeshoppingId } from '../../components/homeshoppingLogo';
 import '../../styles/wishlist.css';
 
@@ -70,7 +70,7 @@ const WishList = () => {
       // 홈쇼핑 찜한 상품 조회
       const homeshoppingResponse = await api.get('/api/homeshopping/likes', {
         params: {
-          limit: 50
+          // limit: 50
         },
         headers: {
           'Authorization': `Bearer ${token}`
@@ -464,23 +464,26 @@ const WishList = () => {
                    <div className="product-info">
                                            {activeTab === 'homeshopping' ? (
                                                 // 홈쇼핑 탭 레이아웃 - 방송사, 상품명, 방송정보, 가격 순
-                         <div className="product-channel-info">
-                                                       <div className="channel-info">
-                              <img 
-                                src={product.channel_logo} 
-                                alt="채널 로고"
-                                className="channel-logo"
-                              />
-                              <span className="channel-number">[CH 8]</span>
-                            </div>
+                                                 <div className="product-channel-info">
+                                                      <div className="channel-info-row">
+                             <div className="channel-info">
+                               <img 
+                                 src={product.channel_logo} 
+                                 alt="채널 로고"
+                                 className="channel-logo"
+                               />
+                               {/* <span className="channel-number">[CH 8]</span> */}
+                             </div>
+                             <span className="broadcast-status">{product.broadcast_status}</span>
+                           </div>
                            <div className="wishlist-product-name">
                              <span className="wishlist-brand-name">{product.hs_store_name}</span> | {product.hs_product_name}
                            </div>
                            <div className="broadcast-info">
-                             <div className="broadcast-date-time">
-                               <span className="broadcast-date">{product.broadcast_date}</span>
-                               <span className="broadcast-time">{product.broadcast_time}</span>
-                             </div>
+                                                         <div className="broadcast-date-time">
+                              <span className="broadcast-date">{product.broadcast_date}</span>
+                              <span className="broadcast-time">{product.broadcast_time?.substring(0, 5)}</span>
+                            </div>
                            </div>
                            <div className="price-section">
                              <div className="price-info">
@@ -489,23 +492,22 @@ const WishList = () => {
                                )}
                                <span className="discounted-price">{formatPrice(product.hs_discounted_price)}</span>
                              </div>
-                             {/* 오른쪽: 하트 아이콘과 방송상태를 나란히 배치 */}
-                             <div className="wishlist-right-info">
-                               <button 
-                                 className="shopping-heart-button"
-                                 data-product-id={product.hs_product_id}
-                                 onClick={(e) => {
-                                   e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
-                                   handleHeartToggle(product.hs_product_id, product.type);
-                                 }}>
-                                 <img 
-                                   src={unlikedProducts.has(product.hs_product_id) ? emptyHeartIcon : filledHeartIcon} 
-                                   alt="찜 토글" 
-                                   className="shopping-heart-icon"
-                                 />
-                               </button>
-                               <span className="broadcast-status">{product.broadcast_status}</span>
-                             </div>
+                                                         {/* 오른쪽: 하트 아이콘만 배치 */}
+                            <div className="wishlist-right-info">
+                              <button 
+                                className="shopping-heart-button"
+                                data-product-id={product.hs_product_id}
+                                onClick={(e) => {
+                                  e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
+                                  handleHeartToggle(product.hs_product_id, product.type);
+                                }}>
+                                <img 
+                                  src={unlikedProducts.has(product.hs_product_id) ? emptyHeartIcon : filledHeartIcon} 
+                                  alt="찜 토글" 
+                                  className="shopping-heart-icon"
+                                />
+                              </button>
+                            </div>
                            </div>
                          </div>
                                        ) : (
