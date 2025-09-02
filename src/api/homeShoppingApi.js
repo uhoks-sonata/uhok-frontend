@@ -204,9 +204,13 @@ export const homeShoppingApi = {
   },
 
   // 검색어 저장
-  saveSearchHistory: async (keyword) => {
+  saveSearchHistory: async (keyword, token) => {
     try {
-      const response = await api.post('/api/homeshopping/search/history', { keyword });
+      const headers = {};
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+      const response = await api.post('/api/homeshopping/search/history', { keyword }, { headers });
       return response.data;
     } catch (error) {
       console.error('❌ 검색어 저장 실패:', error);
@@ -215,10 +219,15 @@ export const homeShoppingApi = {
   },
 
   // 검색어 조회
-  getSearchHistory: async (limit = 5) => {
+  getSearchHistory: async (limit = 20, token) => {
     try {
+      const headers = {};
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
       const response = await api.get('/api/homeshopping/search/history', {
-        params: { limit }
+        params: { limit },
+        headers
       });
       return response.data;
     } catch (error) {
@@ -228,10 +237,15 @@ export const homeShoppingApi = {
   },
 
   // 검색어 삭제
-  deleteSearchHistory: async (historyId) => {
+  deleteSearchHistory: async (historyId, token) => {
     try {
+      const headers = {};
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
       const response = await api.delete('/api/homeshopping/search/history', {
-        data: { homeshopping_history_id: historyId }
+        data: { homeshopping_history_id: historyId },
+        headers
       });
       return response.data;
     } catch (error) {

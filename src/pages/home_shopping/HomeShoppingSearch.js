@@ -31,6 +31,8 @@ const HomeShoppingSearch = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchHistory, setSearchHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(true); // 초기값을 true로 설정하여 로딩 상태로 시작
+  const [historyLoaded, setHistoryLoaded] = useState(false); // 검색 히스토리 로드 완료 플래그 추가
   const searchType = 'home'; // 홈쇼핑 검색 타입 (상수로 변경)
   
   // 무한 스크롤을 위한 상태 변수들
@@ -40,11 +42,32 @@ const HomeShoppingSearch = () => {
 
   // 홈쇼핑 검색 히스토리 로드 (API 사용)
   const loadSearchHistory = useCallback(async () => {
-    console.log('🔍 홈쇼핑 검색 히스토리 로드 시작:', { isLoggedIn });
+    // 이미 로드된 경우 중복 호출 방지
+    if (historyLoaded) {
+      console.log('🔍 홈쇼핑 검색 히스토리가 이미 로드됨 - 중복 호출 방지');
+      return;
+    }
+    
+    console.log('🔍 홈쇼핑 검색 히스토리 로드 시작:', { 
+      isLoggedIn, 
+      historyLoaded, 
+      userToken: user?.token ? '있음' : '없음',
+      userEmail: user?.email 
+    });
+    setHistoryLoading(true); // 로딩 상태 시작
+    
     try {
       if (isLoggedIn && user?.token) {
         // 로그인된 사용자는 서버에서 홈쇼핑 검색 히스토리 가져오기
-        const response = await homeShoppingApi.getSearchHistory(); // limit 파라미터 제거
+        console.log('🔍 홈쇼핑 API 호출 시작:', { 
+          endpoint: '/api/homeshopping/search/history',
+          limit: 20,
+          token: user.token ? 'Bearer ' + user.token.substring(0, 20) + '...' : '없음'
+        });
+        
+        const response = await homeShoppingApi.getSearchHistory(20, user.token); // limit을 20으로 제한
+        console.log('🔍 홈쇼핑 API 응답 전체:', response);
+        
         const history = response.history || [];
         
         console.log('🔍 백엔드에서 받은 원본 히스토리:', {
@@ -88,6 +111,8 @@ const HomeShoppingSearch = () => {
         });
         
         setSearchHistory(sortedHistory);
+        // 로컬스토리지도 업데이트하여 다음 로드 시 빠르게 표시
+        localStorage.setItem('homeshopping_searchHistory', JSON.stringify(sortedHistory));
       } else {
         // 비로그인 사용자는 로컬스토리지에서 가져오기
         const history = JSON.parse(localStorage.getItem('homeshopping_searchHistory') || '[]');
@@ -106,6 +131,9 @@ const HomeShoppingSearch = () => {
         console.error('로컬스토리지 홈쇼핑 검색 히스토리 로드 실패:', localError);
         setSearchHistory([]);
       }
+    } finally {
+      setHistoryLoading(false); // 로딩 상태 종료
+      setHistoryLoaded(true); // 로드 완료 플래그 설정
     }
   }, [isLoggedIn, user?.token]);
 
@@ -267,77 +295,55 @@ const HomeShoppingSearch = () => {
     try {
       console.log('홈쇼핑 검색 실행:', query);
       
-      // 검색 히스토리에 저장 (함수 내부에서 직접 처리)
-      try {
-        if (isLoggedIn && user?.token) {
-          // 백엔드에서 현재 히스토리를 가져와서 중복 체크
-          try {
-            const response = await homeShoppingApi.getSearchHistory(20);
-            const currentHistory = response.history || [];
-            
-            // 시간 정보를 활용한 중복 체크
-            const existingItem = currentHistory.find(item => item.homeshopping_keyword === query);
-            const currentTime = new Date();
-            
-                         if (existingItem) {
-               console.log('🔍 이미 백엔드에 존재하는 검색어입니다. UI에서 맨 위로 올리기:', query);
-               
-               // 기존 항목의 시간과 현재 시간 비교 (1분 이내면 중복으로 간주)
-               const existingTime = new Date(existingItem.created_at);
-               const timeDiff = currentTime - existingTime;
-               const isRecentDuplicate = timeDiff < 60000; // 1분 = 60000ms
-               
-               if (isRecentDuplicate) {
-                 console.log('🔍 최근에 검색된 키워드입니다. DB 저장 생략, UI에서 맨 위로 이동:', query);
-                 // DB 저장 없이 UI에서만 맨 위로 이동
-                 setSearchHistory(prevHistory => {
-                   const filteredHistory = prevHistory.filter(item => item !== query);
-                   return [query, ...filteredHistory].slice(0, 10);
-                 });
-               } else {
-                 // 시간이 충분히 지난 경우 새로운 검색으로 처리
-                 console.log('🔍 시간이 지난 검색어입니다. 새로운 검색으로 저장:', query);
-                 await homeShoppingApi.saveSearchHistory(query);
-                 
-                 // 히스토리 다시 로드하여 최신 순으로 정렬
-                 await loadSearchHistory();
-               }
-            } else {
-              // 새로운 검색어만 백엔드에 저장
-              console.log('🔍 새로운 검색어를 백엔드에 저장:', query);
-              await homeShoppingApi.saveSearchHistory(query);
+             // 검색 히스토리에 저장 (단순화된 로직)
+       try {
+         if (isLoggedIn && user?.token) {
+           console.log('🔍 로그인된 사용자 - 홈쇼핑 검색 히스토리 저장:', query);
+           
+                       // 백엔드에 검색 히스토리 저장
+            try {
+              console.log('🔍 홈쇼핑 검색 히스토리 저장 API 호출:', {
+                endpoint: '/api/homeshopping/search/history',
+                keyword: query,
+                token: user.token ? 'Bearer ' + user.token.substring(0, 20) + '...' : '없음'
+              });
               
-              // 히스토리 다시 로드하여 최신 순으로 정렬
-              await loadSearchHistory();
-            }
-          } catch (historyError) {
-            console.error('히스토리 중복 체크 실패, 기본 저장 로직 실행:', historyError);
-            // 히스토리 가져오기 실패 시 기본 저장 로직 실행
-            await homeShoppingApi.saveSearchHistory(query);
-            setSearchHistory(prevHistory => {
-              const currentHistory = prevHistory.filter(item => item !== query);
-              return [query, ...currentHistory].slice(0, 10);
-            });
-          }
-        } else {
-          // 비로그인 사용자는 로컬스토리지에 저장
-          const history = JSON.parse(localStorage.getItem('homeshopping_searchHistory') || '[]');
-          const updatedHistory = [query, ...history.filter(item => item !== query)].slice(0, 20);
-          localStorage.setItem('homeshopping_searchHistory', JSON.stringify(updatedHistory));
-          setSearchHistory(updatedHistory.slice(0, 10));
-        }
-      } catch (error) {
-        console.error('홈쇼핑 검색 히스토리 저장 실패:', error);
-        // API 실패 시 로컬스토리지에 저장
-        try {
-          const history = JSON.parse(localStorage.getItem('homeshopping_searchHistory') || '[]');
-          const updatedHistory = [query, ...history.filter(item => item !== query)].slice(0, 20);
-          localStorage.setItem('homeshopping_searchHistory', JSON.stringify(updatedHistory));
-          setSearchHistory(updatedHistory.slice(0, 10));
-        } catch (localError) {
-          console.error('로컬스토리지 홈쇼핑 검색 히스토리 저장 실패:', localError);
-        }
-      }
+              await homeShoppingApi.saveSearchHistory(query, user.token);
+              console.log('✅ 홈쇼핑 검색 히스토리 저장 성공:', query);
+             
+             // 히스토리 다시 로드하여 최신 순으로 정렬
+             setHistoryLoaded(false); // 플래그 리셋
+             await loadSearchHistory();
+           } catch (saveError) {
+             console.error('❌ 홈쇼핑 검색 히스토리 저장 실패:', saveError);
+             
+             // 저장 실패 시 로컬스토리지에 저장
+             const history = JSON.parse(localStorage.getItem('homeshopping_searchHistory') || '[]');
+             const updatedHistory = [query, ...history.filter(item => item !== query)].slice(0, 20);
+             localStorage.setItem('homeshopping_searchHistory', JSON.stringify(updatedHistory));
+             setSearchHistory(updatedHistory.slice(0, 10));
+           }
+         } else {
+           // 비로그인 사용자는 로컬스토리지에 저장
+           console.log('🔍 비로그인 사용자 - 로컬스토리지에 홈쇼핑 검색 히스토리 저장:', query);
+           const history = JSON.parse(localStorage.getItem('homeshopping_searchHistory') || '[]');
+           const updatedHistory = [query, ...history.filter(item => item !== query)].slice(0, 20);
+           localStorage.setItem('homeshopping_searchHistory', JSON.stringify(updatedHistory));
+           setSearchHistory(updatedHistory.slice(0, 10));
+         }
+       } catch (error) {
+         console.error('❌ 홈쇼핑 검색 히스토리 저장 중 오류:', error);
+         
+         // 에러 발생 시 로컬스토리지에 저장
+         try {
+           const history = JSON.parse(localStorage.getItem('homeshopping_searchHistory') || '[]');
+           const updatedHistory = [query, ...history.filter(item => item !== query)].slice(0, 20);
+           localStorage.setItem('homeshopping_searchHistory', JSON.stringify(updatedHistory));
+           setSearchHistory(updatedHistory.slice(0, 10));
+         } catch (localError) {
+           console.error('❌ 로컬스토리지 홈쇼핑 검색 히스토리 저장 실패:', localError);
+         }
+       }
       
       // URL 업데이트 (쿼리 파라미터 추가)
       navigate(`/homeshopping/search?q=${encodeURIComponent(query)}`, { replace: true });
@@ -447,6 +453,49 @@ const HomeShoppingSearch = () => {
       setLoading(false);
     }
   }, [searchQuery, navigate, isLoggedIn, user?.token]);
+
+  // 컴포넌트 마운트 시 홈쇼핑 검색 히스토리 로드
+  useEffect(() => {
+    // 사용자 정보가 완전히 로드된 후에만 실행
+    if (userLoading) {
+      console.log('⏳ 사용자 정보 로딩 중 - 검색 히스토리 로드 대기');
+      return;
+    }
+    
+    console.log('🔄 HomeShoppingSearch 컴포넌트 마운트 - 검색 히스토리 초기 로드 시작');
+    
+    // 먼저 로컬스토리지에서 데이터를 가져와서 초기 렌더링 개선
+    try {
+      const localHistory = JSON.parse(localStorage.getItem('homeshopping_searchHistory') || '[]');
+      console.log('📱 로컬스토리지에서 초기 데이터 로드:', { 개수: localHistory.length, 데이터: localHistory });
+      
+      if (localHistory.length > 0) {
+        const uniqueHistory = localHistory.filter((keyword, index, self) => self.indexOf(keyword) === index);
+        console.log('✅ 로컬 데이터로 초기 렌더링:', { 개수: uniqueHistory.length, 데이터: uniqueHistory });
+        setSearchHistory(uniqueHistory.slice(0, 10));
+        setHistoryLoading(false); // 로컬 데이터가 있으면 로딩 상태 해제
+      } else {
+        console.log('📭 로컬스토리지에 데이터가 없음');
+        // 로컬 데이터가 없으면 서버에서 가져오기
+        if (isLoggedIn && user?.token) {
+          console.log('🌐 서버에서 최신 데이터 가져오기 시작');
+          loadSearchHistory();
+        } else {
+          console.log('👤 로그인되지 않음 - 검색 히스토리 로드 생략');
+          setHistoryLoading(false);
+        }
+      }
+    } catch (error) {
+      console.error('❌ 로컬스토리지 초기 로드 실패:', error);
+      // 에러 발생 시 서버에서 가져오기
+      if (isLoggedIn && user?.token) {
+        console.log('🌐 서버에서 최신 데이터 가져오기 시작');
+        loadSearchHistory();
+      } else {
+        setHistoryLoading(false);
+      }
+    }
+  }, [userLoading, isLoggedIn, user?.token]); // userLoading 의존성 추가
 
   // URL 쿼리 파라미터에서 초기 검색어 가져오기 (홈쇼핑 전용)
   useEffect(() => {
@@ -662,11 +711,6 @@ const HomeShoppingSearch = () => {
     }
   }, [hasMore, loadingMore, searchResults.length, searchQuery, currentPage]);
 
-  // 컴포넌트 마운트 시 홈쇼핑 검색 히스토리 로드
-  useEffect(() => {
-    loadSearchHistory();
-  }, [loadSearchHistory]); // loadSearchHistory 의존성 추가
-
   // 사용자 정보가 변경될 때마다 콘솔에 출력 (디버깅용)
   useEffect(() => {
     console.log('HomeShoppingSearch - 사용자 정보 상태:', {
@@ -678,6 +722,17 @@ const HomeShoppingSearch = () => {
       userLoading: userLoading
     });
   }, [user, isLoggedIn, userLoading]);
+
+  // 검색 히스토리 상태 변경 시 콘솔에 출력 (디버깅용)
+  useEffect(() => {
+    console.log('HomeShoppingSearch - 검색 히스토리 상태:', {
+      searchHistory: searchHistory,
+      historyLength: searchHistory.length,
+      historyLoading: historyLoading,
+      historyLoaded: historyLoaded,
+      historyItems: searchHistory.map((query, index) => `${index + 1}. ${query}`)
+    });
+  }, [searchHistory, historyLoading, historyLoaded]);
 
   // 뒤로가기 핸들러
   const handleBack = () => {
@@ -700,17 +755,18 @@ const HomeShoppingSearch = () => {
   // 홈쇼핑 검색 히스토리 삭제 핸들러 (API 사용)
   const handleDeleteHistory = async (queryToDelete) => {
     try {
-      if (isLoggedIn && user?.token) {
-        // 로그인된 사용자는 서버에서 홈쇼핑 검색어 삭제
-        const response = await homeShoppingApi.getSearchHistory(20);
-        const history = response.history || [];
-        const targetHistory = history.find(item => item.homeshopping_keyword === queryToDelete);
-        
-        if (targetHistory) {
-          await homeShoppingApi.deleteSearchHistory(targetHistory.homeshopping_history_id);
-        }
-        // 삭제 후 히스토리 다시 로드
-        await loadSearchHistory();
+             if (isLoggedIn && user?.token) {
+         // 로그인된 사용자는 서버에서 홈쇼핑 검색어 삭제
+         const response = await homeShoppingApi.getSearchHistory(20, user.token);
+         const history = response.history || [];
+         const targetHistory = history.find(item => item.homeshopping_keyword === queryToDelete);
+         
+         if (targetHistory) {
+           await homeShoppingApi.deleteSearchHistory(targetHistory.homeshopping_history_id, user.token);
+         }
+                 // 삭제 후 히스토리 다시 로드
+         setHistoryLoaded(false); // 플래그 리셋
+         await loadSearchHistory();
       } else {
         // 비로그인 사용자는 로컬스토리지에서 삭제
         const history = JSON.parse(localStorage.getItem('homeshopping_searchHistory') || '[]');
@@ -746,105 +802,125 @@ const HomeShoppingSearch = () => {
   // 홈쇼핑 검색 히스토리 전체 삭제 핸들러 (API 사용)
   const handleClearAllHistory = async () => {
     try {
-      if (isLoggedIn) {
-        // 로그인된 사용자는 서버에서 모든 홈쇼핑 검색어 삭제
-        // 백엔드 제한을 고려하여 작은 숫자로 히스토리를 가져옴
-        const response = await homeShoppingApi.getSearchHistory(20);
-        const history = response.history || [];
-        
-        if (history.length === 0) {
-          console.log('삭제할 검색 히스토리가 없습니다.');
-          alert('삭제할 검색 히스토리가 없습니다.');
-          return;
-        }
-        
-        console.log(`총 ${history.length}개의 검색 히스토리를 삭제합니다...`);
-        
-        // 모든 검색어를 병렬로 삭제 (더 빠름)
-        const deletePromises = history.map(async (item) => {
-          try {
-            await homeShoppingApi.deleteSearchHistory(item.homeshopping_history_id);
-            console.log(`✅ 검색어 삭제 성공: ${item.homeshopping_keyword} (ID: ${item.homeshopping_history_id})`);
-            return { success: true, id: item.homeshopping_history_id };
-          } catch (error) {
-            console.error(`❌ 검색어 삭제 실패 (ID: ${item.homeshopping_history_id}):`, error);
-            return { success: false, id: item.homeshopping_history_id, error };
-          }
-        });
-        
-        // 모든 삭제 작업 완료 대기
-        const results = await Promise.allSettled(deletePromises);
-        
-        // 결과 확인
-        const successCount = results.filter(result => 
-          result.status === 'fulfilled' && result.value.success
-        ).length;
-        
-        console.log(`전체 삭제 완료: ${successCount}/${history.length}개 성공`);
-        
-        // 삭제 후 히스토리 다시 로드
-        await loadSearchHistory();
-        
-        // sessionStorage에서 모든 홈쇼핑 검색 결과 삭제
-        const keysToRemove = [];
-        for (let i = 0; i < sessionStorage.length; i++) {
-          const key = sessionStorage.key(i);
-          if (key && key.startsWith('homeshopping_search_')) {
-            keysToRemove.push(key);
-          }
-        }
-        keysToRemove.forEach(key => {
-          sessionStorage.removeItem(key);
-          console.log('🗑️ sessionStorage에서 검색 결과 삭제:', key);
-        });
-        
-        // 성공 메시지 표시
-        if (successCount > 0) {
-          alert(`검색 히스토리 ${successCount}개가 삭제되었습니다.`);
-        }
-      } else {
-        // 비로그인 사용자는 로컬스토리지에서 삭제
-        const history = JSON.parse(localStorage.getItem('homeshopping_searchHistory') || '[]');
-        localStorage.removeItem('homeshopping_searchHistory');
-        setSearchHistory([]);
-        console.log(`로컬 검색 히스토리 ${history.length}개 삭제 완료`);
-        
-        // sessionStorage에서 모든 홈쇼핑 검색 결과 삭제
-        const keysToRemove = [];
-        for (let i = 0; i < sessionStorage.length; i++) {
-          const key = sessionStorage.key(i);
-          if (key && key.startsWith('homeshopping_search_')) {
-            keysToRemove.push(key);
-          }
-        }
-        keysToRemove.forEach(key => {
-          sessionStorage.removeItem(key);
-          console.log('🗑️ sessionStorage에서 검색 결과 삭제:', key);
-        });
-        
-        alert(`검색 히스토리 ${history.length}개가 삭제되었습니다.`);
-      }
-    } catch (error) {
-      console.error('홈쇼핑 검색 히스토리 전체 삭제 실패:', error);
-      // API 실패 시 로컬스토리지에서 삭제
-      const history = JSON.parse(localStorage.getItem('homeshopping_searchHistory') || '[]');
-      localStorage.removeItem('homeshopping_searchHistory');
-      setSearchHistory([]);
+      // 현재 UI에 표시된 검색 히스토리 개수 확인
+      const currentHistoryCount = searchHistory.length;
       
-      // sessionStorage에서 모든 홈쇼핑 검색 결과 삭제
+      if (currentHistoryCount === 0) {
+        console.log('삭제할 검색 히스토리가 없습니다.');
+        alert('삭제할 검색 히스토리가 없습니다.');
+        return;
+      }
+      
+      console.log(`총 ${currentHistoryCount}개의 검색 히스토리를 삭제합니다...`);
+      
+      if (isLoggedIn && user?.token) {
+        try {
+                     // 서버에서 현재 히스토리를 가져와서 삭제 시도
+           const response = await homeShoppingApi.getSearchHistory(20, user.token);
+          const serverHistory = response.history || [];
+          
+          if (serverHistory.length > 0) {
+            console.log(`서버에 ${serverHistory.length}개의 검색 히스토리가 있습니다. 서버에서 삭제합니다.`);
+            
+                         // 모든 검색어를 병렬로 삭제 (더 빠름)
+             const deletePromises = serverHistory.map(async (item) => {
+               try {
+                 await homeShoppingApi.deleteSearchHistory(item.homeshopping_history_id, user.token);
+                console.log(`✅ 서버 검색어 삭제 성공: ${item.homeshopping_keyword} (ID: ${item.homeshopping_history_id})`);
+                return { success: true, id: item.homeshopping_history_id };
+              } catch (error) {
+                console.error(`❌ 서버 검색어 삭제 실패 (ID: ${item.homeshopping_history_id}):`, error);
+                return { success: false, id: item.homeshopping_history_id, error };
+              }
+            });
+            
+            // 모든 삭제 작업 완료 대기
+            const results = await Promise.allSettled(deletePromises);
+            
+            // 결과 확인
+            const successCount = results.filter(result => 
+              result.status === 'fulfilled' && result.value.success
+            ).length;
+            
+            console.log(`서버 삭제 완료: ${successCount}/${serverHistory.length}개 성공`);
+          } else {
+            console.log('서버에 검색 히스토리가 없습니다. 로컬 데이터만 삭제합니다.');
+          }
+        } catch (serverError) {
+          console.error('서버 히스토리 삭제 실패:', serverError);
+          console.log('서버 삭제 실패로 로컬 데이터만 삭제합니다.');
+        }
+      }
+      
+             // 로컬스토리지에서 검색 히스토리 삭제
+       const localHistory = JSON.parse(localStorage.getItem('homeshopping_searchHistory') || '[]');
+       localStorage.removeItem('homeshopping_searchHistory');
+       setSearchHistory([]);
+       setHistoryLoaded(false); // 플래그 리셋
+      console.log(`로컬 검색 히스토리 ${localHistory.length}개 삭제 완료`);
+      
+      // sessionStorage에서 현재 검색 히스토리에 해당하는 검색 결과만 삭제
       const keysToRemove = [];
       for (let i = 0; i < sessionStorage.length; i++) {
         const key = sessionStorage.key(i);
         if (key && key.startsWith('homeshopping_search_')) {
-          keysToRemove.push(key);
+          // 검색어 추출 (homeshopping_search_감자 -> 감자)
+          const searchKeyword = key.replace('homeshopping_search_', '');
+          // 현재 검색 히스토리에 있는 검색어만 삭제
+          if (searchHistory.includes(searchKeyword)) {
+            keysToRemove.push(key);
+          }
         }
       }
-      keysToRemove.forEach(key => {
-        sessionStorage.removeItem(key);
-        console.log('🗑️ sessionStorage에서 검색 결과 삭제:', key);
-      });
       
-      alert(`검색 히스토리 ${history.length}개가 삭제되었습니다. (로컬 저장소)`);
+      if (keysToRemove.length > 0) {
+        keysToRemove.forEach(key => {
+          sessionStorage.removeItem(key);
+          console.log('🗑️ sessionStorage에서 검색 결과 삭제:', key);
+        });
+        console.log(`✅ sessionStorage에서 ${keysToRemove.length}개의 검색 결과 삭제 완료`);
+      } else {
+        console.log('📝 sessionStorage에서 삭제할 검색 결과가 없음');
+      }
+      
+      // 성공 메시지 표시
+      alert(`검색 히스토리 ${currentHistoryCount}개가 삭제되었습니다.`);
+      
+    } catch (error) {
+      console.error('홈쇼핑 검색 히스토리 전체 삭제 실패:', error);
+      
+      // 에러 발생 시에도 로컬 데이터는 삭제
+      try {
+        const history = JSON.parse(localStorage.getItem('homeshopping_searchHistory') || '[]');
+                 localStorage.removeItem('homeshopping_searchHistory');
+         setSearchHistory([]);
+         setHistoryLoaded(false); // 플래그 리셋
+         console.log(`에러 발생으로 로컬 검색 히스토리 ${history.length}개만 삭제 완료`);
+        
+        // 에러 발생 시에도 sessionStorage에서 해당 검색 결과만 삭제
+        const keysToRemove = [];
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const key = sessionStorage.key(i);
+          if (key && key.startsWith('homeshopping_search_')) {
+            const searchKeyword = key.replace('homeshopping_search_', '');
+            if (history.includes(searchKeyword)) {
+              keysToRemove.push(key);
+            }
+          }
+        }
+        
+        if (keysToRemove.length > 0) {
+          keysToRemove.forEach(key => {
+            sessionStorage.removeItem(key);
+            console.log('🗑️ 에러 발생 시 sessionStorage에서 검색 결과 삭제:', key);
+          });
+        }
+        
+        alert(`검색 히스토리 ${history.length}개가 삭제되었습니다. (로컬 저장소)`);
+      } catch (localError) {
+        console.error('로컬 데이터 삭제도 실패:', localError);
+        alert('검색 히스토리 삭제 중 오류가 발생했습니다.');
+      }
     }
   };
 
@@ -917,18 +993,36 @@ const HomeShoppingSearch = () => {
          {/* 검색 결과가 없고 로딩 중이 아닐 때 */}
          {!loading && searchResults.length === 0 && !searchQuery && (
           <div className="search-empty-state">
-            {/* 최근 검색어 섹션 */}
-            {searchHistory.length > 0 && (
-              <div className="search-history-section">
-                <div className="section-header">
-                  <h3>최근 검색어</h3>
-                  <button 
-                    className="clear-all-btn"
-                    onClick={handleClearAllHistory}
-                  >
-                    전체 삭제
-                  </button>
+            {/* 최근 검색어 섹션 - 항상 표시 */}
+            <div className="search-history-section">
+              <div className="section-header">
+                <h3>최근 검색어</h3>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {!historyLoading && searchHistory.length > 0 && (
+                    <button 
+                      className="clear-all-btn"
+                      onClick={handleClearAllHistory}
+                    >
+                      전체 삭제
+                    </button>
+                  )}
                 </div>
+              </div>
+              
+              {historyLoading ? (
+                <div style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
+                  <div style={{
+                    width: '20px',
+                    height: '20px',
+                    border: '2px solid #f3f3f3',
+                    borderTop: '2px solid #FA5F8C',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite',
+                    margin: '0 auto 10px'
+                  }}></div>
+                  검색 히스토리를 불러오는 중...
+                </div>
+              ) : searchHistory.length > 0 ? (
                 <div className="search-history">
                   {searchHistory.map((query, index) => (
                     <div key={index} className="history-item">
@@ -947,8 +1041,12 @@ const HomeShoppingSearch = () => {
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
+              ) : (
+                <div style={{ textAlign: 'center', padding: '20px', color: '#999' }}>
+                  검색 히스토리가 없습니다
+                </div>
+              )}
+            </div>
           </div>
         )}
 
