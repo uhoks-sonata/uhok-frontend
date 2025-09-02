@@ -296,8 +296,7 @@
   gap: 8px;
   min-height: 100px;
   overflow: hidden;
-  max-width: calc(100% - 140px);
-  padding-left: 10px;
+  max-width: calc(100%);
 }
 
 .mypage-product-name {

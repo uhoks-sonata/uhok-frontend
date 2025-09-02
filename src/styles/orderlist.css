@@ -36,6 +36,8 @@
     margin: 0;
   }
   
+
+
   /* 주문 내역 콘텐츠 */
   .order-list-content {
     width: 100%;
@@ -98,50 +100,22 @@
   }
   
   /* 개별 주문 아이템 */
-  .order-item {
-    margin-bottom: 20px;
+  .order-list-page .order-item {
+    margin-bottom: 20px !important;
   }
   
-  /* 주문 헤더 - 회색 박스 밖에 위치 */
-  .order-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-    padding: 0;
-    border-bottom: none;
-  }
-  
-  .order-info {
-    flex: 1;
-  }
-  
-  .order-id {
-    font-size: 14px;
-    font-weight: 500;
-    color: #333;
-    margin: 0;
-  }
-  
-  .order-date {
-    font-size: 14px;
-    color: #333;
-    margin: 0;
-  }
-  
-  .order-number {
-    font-size: 10px;
-    color: #666;
-    margin-top: 4px;
-  }
+
   
   /* 회색 박스 컨테이너 */
-  .order-content-box {
-    background-color: transparent;
-    border-radius: 8px;
-    padding: 16px;
-    border: 1px solid #e0e0e0;
-    box-shadow: none;
+  .order-list-page .order-content-box {
+    background-color: #ffffff !important;
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 12px !important;
+    padding: 13px !important;
+    gap: 10px !important;
+    box-shadow: none !important;
+    width: 430px !important;
+    height: 170px !important;
   }
   
   /* 주문 상태 */
@@ -206,65 +180,73 @@
     border-bottom: none;
   }
   
-  .product-info {
-    display: flex;
-    gap: 5px;
-    align-items: center;
-    flex-direction: inherit;
+  .order-list-page .product-info {
+    display: flex !important;
+    gap: 5px !important;
+    align-items: center !important;
+    flex-direction: row !important;
+    padding: 5px 0 !important;
+    width: 100%
   }
 
   /* 같은 주문번호 내에서 여러 상품이 있을 때만 구분선 추가 */
-  .order-content-box .product-info:not(:last-child) {
+  .order-list-page .order-content-box .product-info:not(:last-child) {
     border-bottom: 1px solid #f0f0f0 !important;
     padding-bottom: 20px !important;
     margin-bottom: 20px !important;
   }
 
   /* 상품이 하나만 있을 때는 구분선 제거 */
-  .order-content-box .product-info:only-child {
+  .order-list-page .order-content-box .product-info:only-child {
     border-bottom: none !important;
     padding-bottom: 0 !important;
     margin-bottom: 0 !important;
   }
 
-  .order-item .product-image {
-    width: 120px;
-    height: 120px;
-    border-radius: 8px;
-    object-fit: cover;
-    border: 1px solid #e9ecef;
+  .order-list-page .order-item .product-image {
+    width: 110px !important;
+    height: 110px !important;
+    border-radius: 8px !important;
+    object-fit: cover !important;
+    border: 1px solid #e9ecef !important;
+    flex-shrink: 0 !important;
   }
 
-  .order-item .product-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  .order-list-page .order-item .product-image img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
   }
 
-  .product-details {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    gap: 8px;
-    min-height: 100px;
-    overflow: hidden;
-    max-width: calc(100% - 140px);
+  .order-list-page .product-details {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    gap: 30px !important;
+    min-height: 100px !important;
+    overflow: hidden !important;
+    min-width: calc(100%) !important;
   }
 
-  .product-name {
-    font-size: 16px;
-    font-weight: 600;
-    color: #333;
-    line-height: 1.4;
-    margin-bottom: 0;
-    white-space: nowrap !important;
+  .order-list-page .product-name {
+    font-size: 16px !important;
+    font-weight: 400 !important;
+    color: #333 !important;
+    line-height: 1.4 !important;
+    margin-bottom: 0 !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
-    max-width: 100%;
-    display: block;
-    width: 100%;
-    box-sizing: border-box;
+    max-width: 100% !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .order-list-page .product-name strong {
+    font-weight: 700 !important;
   }
 
   .product-description {
@@ -274,32 +256,37 @@
     margin-bottom: 0;
   }
 
-  .product-price {
-    font-size: 16px;
-    font-weight: 400;
-    color: #666;
-    margin-top: auto;
+  .order-list-page .product-price {
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    color: #333 !important;
+    margin-top: 8px !important;
+    margin-bottom: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
   }
+
+
   
   /* 배송 상태 */
-  .delivery-status {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 12px;
-    padding: 0;
+  .order-list-page .delivery-status {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin-bottom: 0px !important;
+    padding: 0 !important;
   }
   
-  .delivery-status-text {
-    font-size: 16px;
-    color: #333;
-    font-weight: 500;
+  .order-list-page .delivery-status-text {
+    font-size: 20px !important;
+    color: #666 !important;
+    font-weight: 500 !important;
   }
   
-  .delivery-date {
-    font-size: 14px;
-    color: #333;
-    font-weight: 600;
+  .order-list-page .delivery-date {
+    font-size: 18px !important;
+    color: #ff6b9d !important;
+    font-weight: 600 !important;
   }
   
   /* 주문 푸터 */
@@ -451,16 +438,14 @@
         max-height: calc(100vh - 185px);
         overflow-y: auto;
     }
+
+
     
-    .order-item {
-      padding: 16px;
+    .order-list-page .order-item {
+      padding: 16px !important;
     }
     
-    .order-header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 8px;
-    }
+
     
     .order-status {
       align-self: flex-start;
@@ -486,9 +471,9 @@
       padding: 12px;
     }
     
-    .order-item .product-image {
-      width: 50px;
-      height: 50px;
+    .order-list-page .order-item .product-image {
+      width: 100px !important;
+      height: 100px !important;
     }
     
     .total-amount {

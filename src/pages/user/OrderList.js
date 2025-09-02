@@ -39,6 +39,8 @@ const OrderList = () => {
     size: 20 // 페이지당 주문 개수
   });
 
+
+
   // 데이터 로딩 상태를 관리합니다 (true: 로딩 중, false: 로딩 완료)
   const [loading, setLoading] = useState(true);
   // 에러 상태를 관리합니다 (null: 에러 없음, string: 에러 메시지)
@@ -381,6 +383,8 @@ const OrderList = () => {
     window.history.back();
   };
 
+
+
   // 주문 상세 보기 핸들러를 정의합니다 (kok_order_id 사용)
   const handleOrderDetailClick = async (orderId, kokOrderId = null) => {
     try {
@@ -440,7 +444,7 @@ const OrderList = () => {
 
   // 주문 내역 페이지 JSX 반환
   return (
-    <div className="order-list-container">
+    <div className="order-list-page order-list-container">
       {/* 주문 내역 헤더 네비게이션 */}
       <HeaderNavOrder 
         onBackClick={handleBack}
@@ -502,16 +506,6 @@ const OrderList = () => {
                 
                 return (
                   <div key={orderId} className="order-item">
-                    {/* 주문 정보 헤더 - 회색 박스 밖에 위치 */}
-                    <div className="order-header">
-                      <div className="order-info">
-                        <p className="order-date">{formatDate(firstOrder.order_date)}</p>
-                      </div>
-                      <div className="order-number">
-                        주문번호 {firstOrder.order_number || orderId}
-                      </div>
-                    </div>
-
                     {/* 회색 박스 컨테이너 */}
                     <div className="order-content-box">
                       {/* 배송 상태 - 회색 박스 상단 왼쪽 */}
@@ -533,44 +527,30 @@ const OrderList = () => {
                             <img src={order.items[0].product_image} alt={order.items[0].product_name} />
                           </div>
                           
-                          {/* 상품 상세 정보 */}
+                          {/* 상품 상세 정보와 주문 번호를 가로로 배치 */}
                           <div className="product-details">
                             {/* 상품명을 표시합니다 */}
                             <div className="product-name" title={order.items[0].product_name}>
-                              {order.items[0].product_name.length > 20 
-                                ? `${order.items[0].product_name.substring(0, 20)}...`
-                                : order.items[0].product_name
-                              }
+                              {(() => {
+                                const productName = order.items[0].product_name;
+                                const displayName = productName.length > 40 
+                                  ? `${productName.substring(0, 40)}...`
+                                  : productName;
+                                
+                                // 대괄호 안의 텍스트를 <strong> 태그로 감싸기
+                                const formattedName = displayName.replace(/\[([^\]]+)\]/g, '<strong>[$1]</strong>');
+                                
+                                return <span dangerouslySetInnerHTML={{ __html: formattedName }} />;
+                              })()}
                             </div>
-                            {/* kok_order_id 표시 (개발용) */}
-                            {order.kok_order_id && (
-                              <div className="kok-order-id" style={{ fontSize: '12px', color: '#999' }}>
-                                KOK ID: {order.kok_order_id}
-                              </div>
-                            )}
-                            {/* 레시피 관련 정보 표시 */}
-                            {order.items[0].recipe_related && order.items[0].recipe_title && (
-                              <div className="recipe-info">
-                                <span className="recipe-title">{order.items[0].recipe_title}</span>
-                                {order.items[0].recipe_rating && (
-                                  <span className="recipe-rating">★ {order.items[0].recipe_rating}</span>
-                                )}
-                                {order.items[0].recipe_scrap_count && (
-                                  <span className="recipe-scrap">♥ {order.items[0].recipe_scrap_count}</span>
-                                )}
-                              </div>
-                            )}
-                            {/* 재료 정보 표시 */}
-                            {order.items[0].ingredients_owned !== null && order.items[0].total_ingredients !== null && (
-                              <div className="ingredients-info">
-                                <span className="ingredients-count">
-                                  재료 {order.items[0].ingredients_owned}/{order.items[0].total_ingredients}
-                                </span>
-                              </div>
-                            )}
-                            {/* 가격과 수량을 표시합니다 */}
-                            <div className="product-price">{formatPrice(order.items[0].price)} · {order.items[0].quantity}개</div>
+                            
+                            {/* 가격과 수량 정보 */}
+                            <div className="product-price">
+                              {order.items[0].price ? `${order.items[0].price.toLocaleString()}원` : '가격 정보 없음'} · {order.items[0].quantity || 1}개
+                            </div>
                           </div>
+                          
+
                         </div>
                       ))}
                     </div>
