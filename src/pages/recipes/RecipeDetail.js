@@ -5,6 +5,8 @@ import HeaderNavRecipeDetail from '../../layout/HeaderNavRecipeDetail';
 import '../../styles/recipe_detail.css';
 import fallbackImg from '../../assets/no_items.png';
 import { recipeApi } from '../../api/recipeApi';
+// LoadingModal import
+import ModalManager, { showAlert, hideModal } from '../../components/LoadingModal';
 
 const RecipeDetail = () => {
   const navigate = useNavigate();
@@ -20,6 +22,14 @@ const RecipeDetail = () => {
   const [error, setError] = useState(null);
   const [showDescription, setShowDescription] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
+  
+  // ===== 모달 상태 관리 =====
+  const [modalState, setModalState] = useState({ isVisible: false });
+
+  // ===== 모달 핸들러 =====
+  const handleModalClose = () => {
+    setModalState(hideModal());
+  };
   const [ingredientsStatus, setIngredientsStatus] = useState({
     ingredients_status: {
       owned: [],
@@ -295,17 +305,17 @@ const RecipeDetail = () => {
   // 별점 등록 (확인 버튼 클릭 시)
   const handleRatingSubmit = async () => {
     if (userRating === 0) {
-      alert('별점을 선택해주세요.');
+      setModalState(showAlert('별점을 선택해주세요.'));
       return;
     }
     
     try {
       const result = await recipeApi.postRecipeRating(recipeId, userRating);
       setRating(result);
-      alert('별점이 등록되었습니다.');
+      setModalState(showAlert('별점이 등록되었습니다.'));
     } catch (error) {
       console.error('별점 등록 실패:', error);
-      alert('별점 등록에 실패했습니다.');
+      setModalState(showAlert('별점 등록에 실패했습니다.'));
     }
   };
 
@@ -594,7 +604,13 @@ const RecipeDetail = () => {
       </div>
 
       {/* 하단 네비게이션 */}
-      <BottomNav />
+      <BottomNav modalState={modalState} setModalState={setModalState} />
+      
+      {/* 모달 컴포넌트 */}
+      <ModalManager
+        {...modalState}
+        onClose={handleModalClose}
+      />
     </div>
   );
 };

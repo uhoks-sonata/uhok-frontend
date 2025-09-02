@@ -4,7 +4,7 @@ import HeaderNavWishList from '../../layout/HeaderNavWishList';
 import BottomNav from '../../layout/BottomNav';
 import Loading from '../../components/Loading';
 // 모달 관리자 import
-import ModalManager, { showWishlistNotification, showWishlistUnlikedNotification, hideModal } from '../../components/LoadingModal';
+import ModalManager, { showWishlistNotification, showWishlistUnlikedNotification, showLoginRequiredNotification, showAlert, hideModal } from '../../components/LoadingModal';
 import api from '../api';
 import emptyHeartIcon from '../../assets/heart_empty.png';
 import filledHeartIcon from '../../assets/heart_filled.png';
@@ -30,6 +30,15 @@ const WishList = () => {
   
   const navigate = useNavigate();
 
+  // ===== 모달 핸들러 =====
+  const handleModalClose = () => {
+    setModalState(hideModal());
+    // 로그인 필요 모달인 경우에만 이전 페이지로 돌아가기
+    if (modalState.modalType === 'alert' && modalState.alertMessage === '로그인이 필요한 서비스입니다.') {
+      window.history.back();
+    }
+  };
+
   // 로그인 상태 확인 함수
   const checkLoginStatus = () => {
     const token = localStorage.getItem('access_token');
@@ -40,10 +49,10 @@ const WishList = () => {
 
   // 찜한 상품 목록을 가져오는 함수
   const fetchWishlistData = async () => {
-    // 로그인하지 않은 경우 알림 후 이전 화면으로 돌아가기
+    // 로그인하지 않은 경우 로딩 중단하고 모달 표시
     if (!checkLoginStatus()) {
-      alert('로그인이 필요한 서비스입니다.');
-      window.history.back();
+      setLoading(false);
+      setModalState(showLoginRequiredNotification());
       return;
     }
 
@@ -53,7 +62,8 @@ const WishList = () => {
       // 토큰 확인
       const token = localStorage.getItem('access_token');
       if (!token) {
-        alert('로그인이 필요한 서비스입니다.');
+        setLoading(false);
+        setModalState(showLoginRequiredNotification());
         return;
       }
 
@@ -136,9 +146,10 @@ const WishList = () => {
     } catch (err) {
       console.error('찜한 상품 목록 로딩 실패:', err);
       
-      // 401 에러 (인증 실패) 시 이전 화면으로 돌아가기
+      // 401 에러 (인증 실패) 시 로딩 중단하고 모달 표시
       if (err.response?.status === 401) {
-        alert('로그인이 필요한 서비스입니다.');
+        setLoading(false);
+        setModalState(showLoginRequiredNotification());
         return;
       }
       
@@ -275,15 +286,14 @@ const WishList = () => {
     } catch (err) {
       console.error('찜 토글 실패:', err);
       
-      // 401 에러 (인증 실패) 시 로그인 페이지로 이동
+      // 401 에러 (인증 실패) 시 모달 표시
       if (err.response?.status === 401) {
-        alert('로그인이 필요합니다.');
-        window.location.href = '/';
+        setModalState(showLoginRequiredNotification());
         return;
       }
       
       // 다른 에러의 경우 사용자에게 알림
-      alert('찜 상태 변경에 실패했습니다. 다시 시도해주세요.');
+      setModalState(showAlert('찜 상태 변경에 실패했습니다. 다시 시도해주세요.'));
     }
   };
 
@@ -363,9 +373,9 @@ const WishList = () => {
     if (loginStatus) {
       fetchWishlistData();
     } else {
-      // 로그인하지 않은 경우 알림 후 이전 화면으로 돌아가기
-      alert('로그인이 필요한 서비스입니다.');
-      window.history.back();
+      // 로그인하지 않은 경우 로딩 중단하고 모달 표시
+      setLoading(false);
+      setModalState(showLoginRequiredNotification());
     }
     
     // 페이지를 벗어날 때 찜 상태 동기화
@@ -389,7 +399,7 @@ const WishList = () => {
         <div className="wishlist-content">
           <Loading message="찜한 상품을 불러오는 중 ..." />
         </div>
-        <BottomNav />
+        <BottomNav modalState={modalState} setModalState={setModalState} />
       </div>
     );
   }
@@ -407,7 +417,7 @@ const WishList = () => {
         <div className="wishlist-content">
           <div className="error">오류: {error}</div>
         </div>
-        <BottomNav />
+        <BottomNav modalState={modalState} setModalState={setModalState} />
       </div>
     );
   }
@@ -549,12 +559,12 @@ const WishList = () => {
         )}
       </div>
       
-      <BottomNav />
+      <BottomNav modalState={modalState} setModalState={setModalState} />
       
       {/* 모달 관리자 */}
       <ModalManager
         {...modalState}
-        onClose={closeModal}
+        onClose={handleModalClose}
       />
     </div>
   );

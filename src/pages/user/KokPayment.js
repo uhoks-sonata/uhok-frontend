@@ -9,6 +9,8 @@ import api from '../api';
 import { checkBackendConnection } from '../../utils/authUtils';
 import { performOrderStatusUpdate } from '../../utils/orderUpdateUtils';
 import '../../styles/kok_payment.css';
+// LoadingModal import
+import ModalManager, { showLoginRequiredNotification, showAlert, hideModal } from '../../components/LoadingModal';
 
 const KokPayment = () => {
   const [paymentMethod, setPaymentMethod] = useState('card');
@@ -23,6 +25,18 @@ const KokPayment = () => {
   
   const navigate = useNavigate();
   const location = useLocation();
+
+  // ===== 모달 상태 관리 =====
+  const [modalState, setModalState] = useState({ isVisible: false });
+
+  // ===== 모달 핸들러 =====
+  const handleModalClose = () => {
+    setModalState(hideModal());
+    // 로그인 필요 모달인 경우에만 이전 페이지로 돌아가기
+    if (modalState.modalType === 'alert' && modalState.alertMessage === '로그인이 필요한 서비스입니다.') {
+      window.history.back();
+    }
+  };
 
   // URL 파라미터나 state에서 주문 정보 가져오기
   useEffect(() => {
@@ -280,7 +294,8 @@ const KokPayment = () => {
       
       const token = localStorage.getItem('access_token');
       if (!token) {
-        throw new Error('로그인이 필요한 서비스입니다.');
+        setModalState(showLoginRequiredNotification());
+        return;
       }
 
       // ===== 1단계: 주문 생성 =====
@@ -309,7 +324,8 @@ const KokPayment = () => {
           // 토큰 확인
           const token = localStorage.getItem('access_token');
           if (!token) {
-            throw new Error('로그인이 필요한 서비스입니다.');
+            setModalState(showLoginRequiredNotification());
+            return;
           }
           
           // 직접 API 호출 (유효성 검증 없이)
@@ -433,7 +449,8 @@ const KokPayment = () => {
       });
       
       if (!currentToken) {
-        throw new Error('로그인이 필요한 서비스입니다.');
+        setModalState(showLoginRequiredNotification());
+        return;
       }
       
       // 토큰 만료 확인
@@ -568,7 +585,7 @@ const KokPayment = () => {
         // ===== 4단계: 결제 완료 처리 =====
         console.log('🚀 4단계: 결제 완료 처리 시작');
         setPaymentStatus('completed');
-        alert('결제가 완료되었습니다!');
+        setModalState(showAlert('결제가 완료되었습니다!'));
         
         // 결제 완료 - 주문내역 페이지로 이동
         console.log('🚀 4단계: 결제 완료 - 주문내역 페이지로 이동');
@@ -603,7 +620,7 @@ const KokPayment = () => {
       
       // API 오류 메시지 처리
       if (error.response?.status === 401) {
-        setErrorMessage('로그인이 필요한 서비스입니다.');
+        setModalState(showLoginRequiredNotification());
       } else if (error.response?.status === 422) {
         const errorDetails = error.response.data?.message || error.response.data?.error || '데이터 형식이 올바르지 않습니다.';
         setErrorMessage(`주문 생성 실패: ${errorDetails}`);
@@ -685,7 +702,7 @@ const KokPayment = () => {
           
           if (confirmationResult.success) {
             setPaymentStatus('completed');
-            alert('결제가 완료되었습니다!');
+            setModalState(showAlert('결제가 완료되었습니다!'));
             navigate('/mypage');
             return;
           }
@@ -701,7 +718,7 @@ const KokPayment = () => {
           
           if (confirmationResult.success) {
             setPaymentStatus('completed');
-            alert('결제가 완료되었습니다!');
+            setModalState(showAlert('결제가 완료되었습니다!'));
             navigate('/mypage');
             return;
           }
@@ -713,7 +730,7 @@ const KokPayment = () => {
       // 결제 확인 성공 처리
       if (confirmationResult?.success) {
         setPaymentStatus('completed');
-        alert('결제가 완료되었습니다!');
+        setModalState(showAlert('결제가 완료되었습니다!'));
         navigate('/mypage');
         return;
       }
@@ -733,19 +750,19 @@ const KokPayment = () => {
   const validatePaymentForm = () => {
     if (paymentMethod === 'card') {
       if (!cardNumber.trim()) {
-        alert('카드 번호를 입력해주세요.');
+        setModalState(showAlert('카드 번호를 입력해주세요.'));
         return false;
       }
       if (!expiryDate.trim()) {
-        alert('만료일을 입력해주세요.');
+        setModalState(showAlert('만료일을 입력해주세요.'));
         return false;
       }
       if (!cvv.trim()) {
-        alert('CVV를 입력해주세요.');
+        setModalState(showAlert('CVV를 입력해주세요.'));
         return false;
       }
       if (!cardHolderName.trim()) {
-        alert('카드 소유자명을 입력해주세요.');
+        setModalState(showAlert('카드 소유자명을 입력해주세요.'));
         return false;
       }
     }
@@ -1033,7 +1050,13 @@ const KokPayment = () => {
         {/* 결제하기 버튼은 BottomNav에서 처리하므로 여기서는 제거 */}
       </div>
       
-      <BottomNav handlePayment={handlePayment} />
+      <BottomNav handlePayment={handlePayment} modalState={modalState} setModalState={setModalState} />
+      
+      {/* 모달 컴포넌트 */}
+      <ModalManager
+        {...modalState}
+        onClose={handleModalClose}
+      />
     </div>
   );
 };

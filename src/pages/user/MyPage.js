@@ -23,7 +23,7 @@ import { cartApi } from '../../api/cartApi';
 // 사용자 Context import
 import { useUser } from '../../contexts/UserContext';
 // LoadingModal import
-import ModalManager, { showLogoutCompleteNotification, hideModal } from '../../components/LoadingModal';
+import ModalManager, { showLogoutCompleteNotification, showAlert, hideModal } from '../../components/LoadingModal';
 // 기본 사용자 아이콘 이미지를 가져옵니다
 import userIcon from '../../assets/user_icon.png';
 // 상품 없음 이미지를 가져옵니다
@@ -57,8 +57,10 @@ const MyPage = () => {
   // ===== 모달 핸들러 =====
   const handleModalClose = () => {
     setModalState(hideModal());
-    // 모달 닫은 후 홈페이지로 이동
-    navigate('/');
+    // 로그아웃 완료 모달인 경우에만 홈페이지로 이동
+    if (modalState.modalType === 'alert' && modalState.alertMessage === '로그아웃이 완료되었습니다.') {
+      navigate('/');
+    }
   };
   
   // 유저 정보를 저장할 상태를 초기화합니다 (API에서 받아옴)
@@ -404,7 +406,7 @@ const MyPage = () => {
     try {
       // 선택된 주문이 있는지 확인
       if (!selectedOrders || selectedOrders.length === 0) {
-        alert('선택된 주문 상품이 없어서 레시피를 추천받을 수 없습니다.');
+        setModalState(showAlert('선택된 주문 상품이 없어서 레시피를 추천받을 수 없습니다.'));
         return;
       }
 
@@ -456,7 +458,7 @@ const MyPage = () => {
 
     } catch (error) {
       console.error('레시피 추천 처리 중 오류:', error);
-      alert('레시피 추천을 불러오는데 실패했습니다. 다시 시도해주세요.');
+      setModalState(showAlert('레시피 추천을 불러오는데 실패했습니다. 다시 시도해주세요.'));
     } finally {
       setLoading(false);
     }
@@ -501,7 +503,7 @@ const MyPage = () => {
       localStorage.removeItem('refresh_token');
       
       // 에러 메시지 표시
-      alert('로그아웃 중 오류가 발생했습니다. 다시 시도해주세요.');
+      setModalState(showAlert('로그아웃 중 오류가 발생했습니다. 다시 시도해주세요.'));
       
       // 홈페이지로 이동
       navigate('/');
@@ -523,7 +525,7 @@ const MyPage = () => {
           <Loading message="마이페이지를 불러오는 중 ..." />
         </div>
         {/* 하단 네비게이션을 렌더링합니다 */}
-        <BottomNav />
+        <BottomNav modalState={modalState} setModalState={setModalState} />
       </div>
     );
   }
@@ -805,7 +807,7 @@ const MyPage = () => {
       </div>
 
       {/* 하단 네비게이션 */}
-      <BottomNav />
+      <BottomNav modalState={modalState} setModalState={setModalState} />
       
       {/* 모달 컴포넌트 */}
       <ModalManager

@@ -10,6 +10,8 @@ import outOfStockIcon from '../../assets/out_of_stock_icon.png';
 import chefIcon from '../../assets/chef_icon.png';
 import searchIcon from '../../assets/search_icon.png';
 import { recipeApi } from '../../api/recipeApi';
+// LoadingModal import
+import ModalManager, { showLoginRequiredNotification, showAlert, hideModal } from '../../components/LoadingModal';
 
 const RecipeRecommendation = () => {
   const navigate = useNavigate();
@@ -24,7 +26,17 @@ const RecipeRecommendation = () => {
   const [isLoading, setIsLoading] = useState(false);
   const hasInitialized = useRef(false); // 중복 실행 방지용 ref
   
+  // ===== 모달 상태 관리 =====
+  const [modalState, setModalState] = useState({ isVisible: false });
 
+  // ===== 모달 핸들러 =====
+  const handleModalClose = () => {
+    setModalState(hideModal());
+    // 로그인 필요 모달인 경우에만 이전 페이지로 돌아가기
+    if (modalState.modalType === 'alert' && modalState.alertMessage === '로그인이 필요한 서비스입니다.') {
+      window.history.back();
+    }
+  };
 
   // 로그인 상태 확인 함수
   const checkLoginStatus = () => {
@@ -44,8 +56,7 @@ const RecipeRecommendation = () => {
     
     const isLoggedIn = checkLoginStatus();
     if (!isLoggedIn) {
-      alert('로그인이 필요한 서비스입니다.');
-      window.history.back();
+      setModalState(showLoginRequiredNotification());
       return;
     }
   }, []); // 빈 의존성 배열로 한 번만 실행
@@ -90,12 +101,12 @@ const RecipeRecommendation = () => {
 
   const handleAddIngredient = () => {
     if (!ingredientInput.trim()) {
-      alert('소진하고 싶은 재료명을 입력해주세요!');
+      setModalState(showAlert('소진하고 싶은 재료명을 입력해주세요!'));
       return;
     }
     
     if (!quantityInput.trim()) {
-      alert('식재료의 분량을 입력해주세요!');
+      setModalState(showAlert('식재료의 분량을 입력해주세요!'));
       return;
     }
     
@@ -112,7 +123,7 @@ const RecipeRecommendation = () => {
     );
     
     if (isDuplicate) {
-      alert('이미 추가된 재료입니다!');
+      setModalState(showAlert('이미 추가된 재료입니다!'));
       return;
     }
     
@@ -131,7 +142,7 @@ const RecipeRecommendation = () => {
       if (isIngredientActive) {
         // 최소 3개 재료 검증
         if (selectedIngredients.length < 3) {
-          alert('최소 3개 이상의 재료를 입력해주세요!');
+          setModalState(showAlert('최소 3개 이상의 재료를 입력해주세요!'));
           setIsLoading(false); // 로딩 중단
           return;
         }
@@ -179,7 +190,7 @@ const RecipeRecommendation = () => {
         
       } else if (isRecipeActive) {
         if (!recipeInput.trim()) {
-          alert('레시피명을 입력해주세요!');
+          setModalState(showAlert('레시피명을 입력해주세요!'));
           setIsLoading(false); // 로딩 중단
           return;
         }
@@ -413,7 +424,13 @@ const RecipeRecommendation = () => {
       </main>
 
       {/* 하단 네비게이션 */}
-      <BottomNav />
+      <BottomNav modalState={modalState} setModalState={setModalState} />
+      
+      {/* 모달 컴포넌트 */}
+      <ModalManager
+        {...modalState}
+        onClose={handleModalClose}
+      />
     </div>
   );
 };

@@ -171,6 +171,17 @@ export const showLogoutCompleteNotification = () => {
   };
 };
 
+// 로그인 필요 알림 모달 표시 함수
+export const showLoginRequiredNotification = () => {
+  return { 
+    modalType: 'alert', 
+    alertMessage: '로그인이 필요한 서비스입니다.', 
+    alertButtonText: '확인',
+    alertButtonStyle: 'primary',
+    isVisible: true 
+  };
+};
+
 export const hideModal = () => {
   return { isVisible: false };
 };

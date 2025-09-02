@@ -9,6 +9,8 @@ import '../../styles/cart.css';
 import heartIcon from '../../assets/heart_empty.png';
 import heartFilledIcon from '../../assets/heart_filled.png';
 import test1Image from '../../assets/test/test1.png';
+// LoadingModal import
+import ModalManager, { showLoginRequiredNotification, showAlert, hideModal } from '../../components/LoadingModal';
 
 const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -18,11 +20,24 @@ const Cart = () => {
   const [showQuantityModal, setShowQuantityModal] = useState(false);
   const [selectedCartItemId, setSelectedCartItemId] = useState(null);
   const [likedProducts, setLikedProducts] = useState(new Set()); // 찜한 상품 ID들을 저장
+  const navigate = useNavigate();
+  
+  // ===== 모달 상태 관리 =====
+  const [modalState, setModalState] = useState({ isVisible: false });
+
+  // ===== 모달 핸들러 =====
+  const handleModalClose = () => {
+    setModalState(hideModal());
+    // 로그인 필요 모달인 경우에만 이전 페이지로 돌아가기
+    if (modalState.modalType === 'alert' && modalState.alertMessage === '로그인이 필요한 서비스입니다.') {
+      window.history.back();
+    }
+  };
+  
   const [isRecipeLoading, setIsRecipeLoading] = useState(false); // 레시피 추천 로딩 상태
   const [recipeRecommendations, setRecipeRecommendations] = useState([]); // 레시피 추천 데이터
   const [recipeLoading, setRecipeLoading] = useState(false); // 레시피 API 로딩 상태
   const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태 추가
-  const navigate = useNavigate();
   const isInitialLoadRef = useRef(false); // 중복 호출 방지용 ref
 
   // 로그인 상태 확인 함수
@@ -45,9 +60,8 @@ const Cart = () => {
     if (loginStatus) {
       loadCartItems();
     } else {
-      // 로그인하지 않은 경우 알림 후 이전 화면으로 돌아가기
-      alert('로그인이 필요한 서비스입니다.');
-      window.history.back();
+      // 로그인하지 않은 경우 모달 표시
+      setModalState(showLoginRequiredNotification());
       return;
     }
   }, []);
@@ -81,7 +95,7 @@ const Cart = () => {
     try {
       const token = localStorage.getItem('access_token');
       if (!token) {
-        alert('로그인이 필요한 서비스입니다.');
+        setModalState(showLoginRequiredNotification());
         return;
       }
 
@@ -144,12 +158,12 @@ const Cart = () => {
       
       // 401 에러 (인증 실패) 시 제자리에 유지
       if (error.response?.status === 401) {
-        alert('로그인이 필요한 서비스입니다.');
+        setModalState(showLoginRequiredNotification());
         return;
       }
       
       // 다른 에러의 경우 사용자에게 알림
-      alert('찜 상태 변경에 실패했습니다. 다시 시도해주세요.');
+      setModalState(showAlert('찜 상태 변경에 실패했습니다. 다시 시도해주세요.'));
     }
   };
 
@@ -264,18 +278,18 @@ const Cart = () => {
         setSelectedItems(new Set());
         
         // 성공 메시지 표시
-        alert(result.message);
+        setModalState(showAlert(result.message));
       }
     } catch (error) {
       console.error('선택된 상품 삭제 실패:', error);
-      alert('선택된 상품 삭제에 실패했습니다. 다시 시도해주세요.');
+      setModalState(showAlert('선택된 상품 삭제에 실패했습니다. 다시 시도해주세요.'));
     }
   };
 
   // 공통 함수: 결제 페이지로 이동하는 로직
   const navigateToPayment = async (orderType = 'ORDER') => {
     if (selectedItems.size === 0) {
-      alert('주문할 상품을 선택해주세요.');
+      setModalState(showAlert('주문할 상품을 선택해주세요.'));
       return;
     }
 
@@ -287,7 +301,7 @@ const Cart = () => {
       // 재확인 후 선택된 상품들이 여전히 유효한지 확인
       const currentSelectedItems = cartItems.filter(item => selectedItems.has(item.kok_cart_id));
       if (currentSelectedItems.length === 0) {
-        alert('선택한 상품이 장바구니에서 삭제되었거나 변경되었습니다. 장바구니를 다시 확인해주세요.');
+        setModalState(showAlert('선택한 상품이 장바구니에서 삭제되었거나 변경되었습니다. 장바구니를 다시 확인해주세요.'));
         return;
       }
       
@@ -335,7 +349,7 @@ const Cart = () => {
     } catch (error) {
       console.error(`❌ ${orderType === 'ORDER' ? '주문하기' : '테스트'} - 처리 실패:`, error);
       console.error(`❌ ${orderType === 'ORDER' ? '주문하기' : '테스트'} - 에러 상세:`, error.message, error.stack);
-      alert(`${orderType === 'ORDER' ? '주문' : '테스트'} 처리에 실패했습니다. 다시 시도해주세요.`);
+      setModalState(showAlert(`${orderType === 'ORDER' ? '주문' : '테스트'} 처리에 실패했습니다. 다시 시도해주세요.`));
     }
   };
 
@@ -352,7 +366,7 @@ const Cart = () => {
     try {
       // 선택된 상품이 있는지 확인
       if (selectedItems.size === 0) {
-        alert('레시피 추천을 받으려면 상품을 선택해주세요.');
+        setModalState(showAlert('레시피 추천을 받으려면 상품을 선택해주세요.'));
         return;
       }
 
@@ -384,7 +398,7 @@ const Cart = () => {
     } catch (error) {
       setIsRecipeLoading(false);
       console.error('레시피 추천 처리 중 오류:', error);
-      alert('레시피 추천을 불러오는데 실패했습니다. 다시 시도해주세요.');
+      setModalState(showAlert('레시피 추천을 불러오는데 실패했습니다. 다시 시도해주세요.'));
     }
   };
 
@@ -425,7 +439,7 @@ const Cart = () => {
         <div className="cart-content">
           <div className="loading">장바구니를 불러오는 중...</div>
         </div>
-        <BottomNav selectedItemsCount={selectedItems.size} cartItems={cartItems} selectedItems={selectedItems} />
+        <BottomNav selectedItemsCount={selectedItems.size} cartItems={cartItems} selectedItems={selectedItems} modalState={modalState} setModalState={setModalState} />
       </div>
     );
   }
@@ -449,7 +463,7 @@ const Cart = () => {
             }}
           />
         </div>
-        <BottomNav />
+        <BottomNav modalState={modalState} setModalState={setModalState} />
       </div>
     );
   }
@@ -682,7 +696,7 @@ const Cart = () => {
         </div>
       )}
 
-              <BottomNav selectedItemsCount={selectedItems.size} cartItems={cartItems} selectedItems={selectedItems} />
+              <BottomNav selectedItemsCount={selectedItems.size} cartItems={cartItems} selectedItems={selectedItems} modalState={modalState} setModalState={setModalState} />
 
       {/* 수량 선택 모달 */}
       {showQuantityModal && (
@@ -706,6 +720,12 @@ const Cart = () => {
           </div>
         </div>
       )}
+      
+      {/* 모달 컴포넌트 */}
+      <ModalManager
+        {...modalState}
+        onClose={handleModalClose}
+      />
     </div>
   );
 };

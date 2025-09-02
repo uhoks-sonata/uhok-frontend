@@ -26,10 +26,12 @@ import bottomIconHeartBlack from "../assets/bottom_icon_heart_black.svg";
 import bottomIconMypage from "../assets/bottom_icon_mypage.svg";
 // 마이페이지 아이콘 (비활성 상태) import
 import bottomIconMypageBlack from "../assets/bottom_icon_mypage_black.svg";
+// LoadingModal import
+import { showAlert } from '../components/LoadingModal';
 
 // ===== 하단 네비게이션 컴포넌트 =====
 // 앱 하단에 위치하는 메인 네비게이션 바 컴포넌트
-const BottomNav = ({ selectedItemsCount = 0, handlePayment = null, productInfo = null, cartItems = [], selectedItems = new Set() }) => {
+const BottomNav = ({ selectedItemsCount = 0, handlePayment = null, productInfo = null, cartItems = [], selectedItems = new Set(), modalState = null, setModalState = null }) => {
   // 현재 페이지의 경로 정보를 가져오는 훅
   const location = useLocation();
   const navigate = useNavigate();
@@ -47,7 +49,11 @@ const BottomNav = ({ selectedItemsCount = 0, handlePayment = null, productInfo =
   // 공통 함수: 결제 페이지로 이동하는 로직 (단순 인터페이스 이동)
   const navigateToPayment = (orderType = 'ORDER') => {
     if (selectedItems.size === 0) {
-      alert('주문할 상품을 선택해주세요.');
+      if (setModalState) {
+        setModalState(showAlert('주문할 상품을 선택해주세요.'));
+      } else {
+        alert('주문할 상품을 선택해주세요.');
+      }
       return;
     }
 
@@ -84,7 +90,11 @@ const BottomNav = ({ selectedItemsCount = 0, handlePayment = null, productInfo =
       
     } catch (error) {
       console.error(`❌ 주문하기 - 결제 페이지 이동 실패:`, error);
-      alert('결제 페이지로 이동하는 중 오류가 발생했습니다. 다시 시도해주세요.');
+      if (setModalState) {
+        setModalState(showAlert('결제 페이지로 이동하는 중 오류가 발생했습니다. 다시 시도해주세요.'));
+      } else {
+        alert('결제 페이지로 이동하는 중 오류가 발생했습니다. 다시 시도해주세요.');
+      }
     }
   };
 

@@ -39,14 +39,8 @@ api.interceptors.request.use(
         console.warn('토큰이 만료되었습니다. 로그아웃 처리합니다.');
         localStorage.removeItem('access_token');
         localStorage.removeItem('token_type');
-        // 중복 알림 방지를 위해 한 번만 표시
-        if (!window.tokenExpiredAlertShown) {
-          window.tokenExpiredAlertShown = true;
-          alert('로그인이 만료되었습니다. 다시 로그인해주세요.');
-          setTimeout(() => {
-            window.tokenExpiredAlertShown = false;
-          }, 1000);
-        }
+        // 토큰 만료 시 로그인 페이지로 이동 (alert 제거)
+        console.log('토큰이 만료되었습니다. 로그인 페이지로 이동합니다.');
         window.location.href = '/login';
         return Promise.reject(new Error('토큰이 만료되었습니다.'));
       }
@@ -67,14 +61,8 @@ api.interceptors.request.use(
       const isAuthRequiredPath = authRequiredPaths.some(path => currentPath.startsWith(path));
       
       if (isAuthRequiredPath) {
-        // 중복 알림 방지를 위해 한 번만 표시
-        if (!window.authRequiredAlertShown) {
-          window.authRequiredAlertShown = true;
-          alert('로그인이 필요한 서비스입니다.');
-          setTimeout(() => {
-            window.authRequiredAlertShown = false;
-          }, 1000);
-        }
+        // 인증이 필요한 서비스에서 토큰이 없으면 로그인 페이지로 이동 (alert 제거)
+        console.log('로그인이 필요한 서비스입니다. 로그인 페이지로 이동합니다.');
         // 확인 버튼을 누르면 제자리에 유지
         return Promise.reject(new Error('토큰이 없어서 요청을 중단합니다.'));
       }

@@ -8,6 +8,8 @@ import api from '../api';
 
 import { homeShoppingApi } from '../../api/homeShoppingApi';
 import { orderApi } from '../../api/orderApi';
+// LoadingModal import
+import ModalManager, { showLoginRequiredNotification, hideModal } from '../../components/LoadingModal';
 
 const Notification = () => {
   const navigate = useNavigate();
@@ -17,6 +19,16 @@ const Notification = () => {
   const [error, setError] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태 추가
   const isInitialLoadRef = useRef(false); // 중복 호출 방지용 ref
+  
+  // ===== 모달 상태 관리 =====
+  const [modalState, setModalState] = useState({ isVisible: false });
+
+  // ===== 모달 핸들러 =====
+  const handleModalClose = () => {
+    setModalState(hideModal());
+    // 모달 닫은 후 이전 페이지로 돌아가기
+    window.history.back();
+  };
 
   // 로그인 상태 확인 함수
   const checkLoginStatus = () => {
@@ -28,10 +40,9 @@ const Notification = () => {
 
   // 홈쇼핑 통합 알림 API 호출 (주문 + 방송)
   const fetchHomeShoppingAllNotifications = async (limit = 100) => {
-    // 로그인하지 않은 경우 알림 후 이전 화면으로 돌아가기
+    // 로그인하지 않은 경우 모달 표시
     if (!checkLoginStatus()) {
-      alert('로그인이 필요한 서비스입니다.');
-      window.history.back();
+      setModalState(showLoginRequiredNotification());
       return;
     }
 
@@ -100,10 +111,9 @@ const Notification = () => {
 
   // 콕 쇼핑몰 알림 API 호출
   const fetchShoppingNotifications = async (limit = 20) => {
-    // 로그인하지 않은 경우 알림 후 이전 화면으로 돌아가기
+    // 로그인하지 않은 경우 모달 표시
     if (!checkLoginStatus()) {
-      alert('로그인이 필요한 서비스입니다.');
-      window.history.back();
+      setModalState(showLoginRequiredNotification());
       return;
     }
 
@@ -159,8 +169,7 @@ const Notification = () => {
         await fetchHomeShoppingAllNotifications();
       } else {
         // 로그인하지 않은 경우 알림 후 이전 화면으로 돌아가기
-        alert('로그인이 필요한 서비스입니다.');
-        window.history.back();
+        setModalState(showLoginRequiredNotification());
         return;
       }
       setLoading(false);
@@ -213,7 +222,7 @@ const Notification = () => {
           onBackClick={() => navigate(-1)}
         />
         <Loading message="알림을 불러오는 중..." />
-        <BottomNav />
+        <BottomNav modalState={modalState} setModalState={setModalState} />
       </div>
     );
   }
@@ -315,7 +324,13 @@ const Notification = () => {
         </div>
       </div>
       
-      <BottomNav />
+      <BottomNav modalState={modalState} setModalState={setModalState} />
+      
+      {/* 모달 컴포넌트 */}
+      <ModalManager
+        {...modalState}
+        onClose={handleModalClose}
+      />
     </div>
   );
 };

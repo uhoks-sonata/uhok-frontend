@@ -11,6 +11,8 @@ import Loading from '../../components/Loading';
 import '../../styles/orderlist.css';
 // 상품 없음 이미지를 가져옵니다
 import noItemsIcon from '../../assets/no_items.png';
+// LoadingModal import
+import ModalManager, { showLoginRequiredNotification, hideModal } from '../../components/LoadingModal';
 
 // API 설정을 가져옵니다
 import api from '../api';
@@ -26,6 +28,16 @@ const OrderList = () => {
   const navigate = useNavigate();
   // 사용자 정보 가져오기
   const { user, isLoggedIn } = useUser();
+  
+  // ===== 모달 상태 관리 =====
+  const [modalState, setModalState] = useState({ isVisible: false });
+
+  // ===== 모달 핸들러 =====
+  const handleModalClose = () => {
+    setModalState(hideModal());
+    // 모달 닫은 후 이전 페이지로 돌아가기
+    window.history.back();
+  };
   
   // 주문 내역 데이터를 저장할 상태를 초기화합니다 (API에서 받아옴)
   const [orderData, setOrderData] = useState({
@@ -85,10 +97,9 @@ const OrderList = () => {
 
   // 주문 내역 데이터를 가져오는 함수
   const loadOrderData = async () => {
-    // 로그인하지 않은 경우 알림 후 이전 화면으로 돌아가기
+    // 로그인하지 않은 경우 모달 표시 후 로그인 페이지로 이동
     if (!checkLoginStatus()) {
-      alert('로그인이 필요한 서비스입니다.');
-      navigate('/login');
+      setModalState(showLoginRequiredNotification());
       return;
     }
 
@@ -106,8 +117,7 @@ const OrderList = () => {
       });
       if (!token) {
         console.log('❌ OrderList.js - 토큰 없음, 로그인 페이지로 이동');
-        alert('로그인이 필요한 서비스입니다.');
-        navigate('/login');
+        setModalState(showLoginRequiredNotification());
         setLoading(false);
         return;
       }
@@ -206,8 +216,7 @@ const OrderList = () => {
         // 토큰이 유효하지 않으면 로그인 페이지로 이동
         localStorage.removeItem('access_token');
         localStorage.removeItem('token_type');
-        alert('로그인이 만료되었습니다. 다시 로그인해주세요.');
-        navigate('/login');
+        setModalState(showLoginRequiredNotification());
         return;
       }
       // 422 에러 특별 처리
@@ -418,6 +427,12 @@ const OrderList = () => {
 
       {/* 하단 네비게이션 컴포넌트 */}
       <BottomNav />
+      
+      {/* 모달 컴포넌트 */}
+      <ModalManager
+        {...modalState}
+        onClose={handleModalClose}
+      />
     </div>
   );
 };
