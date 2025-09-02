@@ -481,7 +481,7 @@ export const orderApi = {
 
   // ===== 기존 결제 관련 (하위 호환성 유지) =====
   
-  // 결제요청 (폴링) - 주문 결제 확인 v1 (API 명세서에 맞게 수정)
+    // 결제요청 (폴링) - 주문 결제 확인 v1 (API 명세서에 맞게 수정)
   confirmPayment: async (orderId, method = null) => {
     try {
       console.log('🚀 결제요청 (폴링) v1 API 요청:', { orderId, method });
@@ -495,15 +495,15 @@ export const orderApi = {
       const requestData = method ? { method } : {};
       
              console.log('🔍 결제 확인 요청 상세:', {
-         url: `/api/orders/payment/${orderId}/confirm/v1`,
-         method: 'POST',
-         data: requestData,
-         orderId: orderId,
-         orderIdType: typeof orderId
-       });
-       
-       // API 명세서에 맞는 엔드포인트 사용
-       const response = await api.post(`/api/orders/payment/${orderId}/confirm/v1`, requestData);
+        url: `/api/orders/payment/${orderId}/confirm/v1`,
+        method: 'POST',
+        data: requestData,
+        orderId: orderId,
+        orderIdType: typeof orderId
+      });
+      
+      // API 명세서에 맞는 엔드포인트 사용
+      const response = await api.post(`/api/orders/payment/${orderId}/confirm/v1`, requestData);
       console.log('✅ 결제요청 (폴링) v1 API 응답:', response.data);
       return response.data;
     } catch (error) {
@@ -542,6 +542,121 @@ export const orderApi = {
         });
       }
       
+      throw error;
+    }
+  },
+
+  // 결제요청 (롱폴링+웹훅) - 주문 결제 확인 v2 (API 명세서에 맞게 수정)
+  confirmPaymentV2: async (orderId) => {
+    try {
+      console.log('🚀 결제요청 (롱폴링+웹훅) v2 API 요청:', { orderId });
+      
+      // orderId 유효성 검증
+      if (!orderId || orderId === 'undefined' || orderId === 'null') {
+        throw new Error('유효하지 않은 주문 ID입니다.');
+      }
+      
+      console.log('🔍 결제 확인 요청 상세:', {
+        url: `/api/orders/payment/${orderId}/confirm/v2`,
+        method: 'POST',
+        orderId: orderId,
+        orderIdType: typeof orderId
+      });
+      
+      // API 명세서에 맞는 엔드포인트 사용
+      const response = await api.post(`/api/orders/payment/${orderId}/confirm/v2`);
+      
+      // 응답 데이터에서 tx_id 보존 (밑줄 포함)
+      const responseData = response.data;
+      if (responseData && responseData.tx_id) {
+        console.log('🔍 원본 tx_id 보존:', responseData.tx_id);
+        // tx_id를 그대로 보존 (가공하지 않음)
+        responseData.tx_id = responseData.tx_id; // 명시적으로 보존
+      }
+      
+      console.log('✅ 결제요청 (롱폴링+웹훅) v2 API 응답:', responseData);
+      return responseData;
+    } catch (error) {
+      console.error('❌ 결제요청 (롱폴링+웹훅) v2 실패:', error);
+      
+      // 백엔드 서버가 실행되지 않은 경우 모의 응답 제공 (개발 환경)
+      if (error.response?.status === 500 || error.code === 'ERR_NETWORK' || error.response?.status === 404) {
+        console.warn('🔄 백엔드 서버 연결 실패, 개발 환경에서 모의 결제 응답 제공');
+        
+        // 개발 환경에서만 모의 응답 제공
+        if (process.env.NODE_ENV === 'development') {
+          const mockTxId = `tx_233U6yJU1X2CqI_${Date.now()}`; // 밑줄 포함한 모의 tx_id
+          return {
+            payment_id: `pay_mock_v2_${Date.now()}`,
+            order_id: parseInt(orderId),
+            kok_order_ids: [119],
+            hs_order_id: 0,
+            status: "PENDING", // PENDING 상태로 모의 응답
+            payment_amount: 6900,
+            method: "CARD",
+            confirmed_at: new Date().toISOString(),
+            order_id_internal: parseInt(orderId),
+            tx_id: mockTxId, // 밑줄 포함한 tx_id 보존
+            is_mock: true
+          };
+        }
+      }
+      
+      // 403 에러 상세 분석
+      if (error.response?.status === 403) {
+        console.error('❌ 403 권한 오류 상세:', {
+          errorDetail: error.response.data?.detail,
+          orderId: orderId,
+          requestUrl: error.config?.url,
+          requestMethod: error.config?.method,
+          responseData: error.response?.data
+        });
+      }
+      
+      throw error;
+    }
+  },
+
+  // 롱폴링으로 결제 완료 상태 확인 (v2 전용)
+  pollPaymentCompletion: async (txId) => {
+    try {
+      console.log('🔄 롱폴링 결제 완료 상태 확인:', { txId });
+      
+      // txId 유효성 검증
+      if (!txId || txId === 'undefined' || txId === 'null') {
+        throw new Error('유효하지 않은 tx_id입니다.');
+      }
+      
+      console.log('🔍 롱폴링 요청 상세:', {
+        url: `/api/orders/payment/poll/${txId}`,
+        method: 'GET',
+        txId: txId,
+        txIdType: typeof txId
+      });
+      
+      // 실제 환경에서는 백엔드의 롱폴링 API 호출
+      // const response = await api.get(`/api/orders/payment/poll/${txId}`);
+      
+      // 개발 환경에서는 모의 응답
+      if (process.env.NODE_ENV === 'development') {
+        // 임시로 3초 후 완료 상태 반환
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        
+        return {
+          tx_id: txId, // 원본 tx_id 보존 (밑줄 포함)
+          status: "COMPLETED",
+          payment_id: `pay_completed_${Date.now()}`,
+          confirmed_at: new Date().toISOString(),
+          is_mock: true
+        };
+      }
+      
+      // 실제 환경에서는 백엔드 응답 반환
+      // console.log('✅ 롱폴링 응답:', response.data);
+      // return response.data;
+      
+    } catch (error) {
+      console.error('❌ 롱폴링 결제 완료 상태 확인 실패:', error);
       throw error;
     }
   }

@@ -78,10 +78,11 @@
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* 헤더 스타일 */
-.recipe-header {
+/* 레시피 추천 페이지 헤더 스타일 */
+.recipe-recommendation-page .recipe-header {
   display: flex;
   align-items: center;
+  font-size: 20px;
   padding: 16px 20px;
   background-color: #ffffff;
   border-bottom: 1px solid #f0f0f0;
@@ -109,7 +110,8 @@
   background-color: #ffffff;
 }
 
-.recipe-title {
+/* 레시피 추천 페이지의 제목만 적용 */
+.recipe-recommendation-page .recipe-title {
   font-size: 18px;
   font-weight: 600;
   color: #000000;
@@ -476,7 +478,6 @@
   align-items: center;
   padding: 20px;
   margin: 16px 0;
-  background-color: #f8f9fa;
+  background-color: #ffffff;
   border-radius: 8px;
-  border: 1px solid #e9ecef;
 }

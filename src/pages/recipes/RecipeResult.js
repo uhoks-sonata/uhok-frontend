@@ -241,7 +241,7 @@ const RecipeResult = () => {
         fetchRecipeIngredients(recipeIds);
       }
     }
-  }, [searchType, recipes, recipeIngredientsCache, fetchRecipeIngredients, isFetchingIngredients]);
+  }, [searchType, recipes, fetchRecipeIngredients, isFetchingIngredients]); // recipeIngredientsCache 제거
 
   const handleBack = () => {
     navigate('/recipes');
@@ -256,7 +256,8 @@ const RecipeResult = () => {
       navigate(`/recipes/${recipeId}`, {
         state: {
           ingredients: ingredients,
-          recipeData: recipe
+          recipeData: recipe,
+          searchType: searchType // 검색 타입도 함께 전달
         }
       });
     }
@@ -526,9 +527,15 @@ const RecipeResult = () => {
               const finalUsedIngredients = recipeObj.used_ingredients || cachedIngredients?.used_ingredients || [];
               const finalTotalIngredients = recipeObj.summary?.total_ingredients || recipeObj.total_ingredients_count || cachedIngredients?.total_ingredients || finalUsedIngredients.length;
 
-              // 실제 일치하는 재료 수 계산 (API 명세서 형식에 맞게)
-              const actualMatchedCount = Array.isArray(finalUsedIngredients) ? 
-                finalUsedIngredients.filter(usedIng => 
+              // 실제 일치하는 재료 수 계산
+              // 1. API에서 제공하는 matched_ingredient_count를 우선 사용
+              // 2. 없으면 직접 계산
+              let actualMatchedCount = 0;
+              
+              if (typeof recipeObj.matched_ingredient_count === 'number') {
+                actualMatchedCount = recipeObj.matched_ingredient_count;
+              } else if (Array.isArray(finalUsedIngredients)) {
+                actualMatchedCount = finalUsedIngredients.filter(usedIng => 
                   displayIngredients.some(displayIng => {
                     const displayName = typeof displayIng === 'string' ? displayIng : displayIng.name || '';
                     const usedIngName = usedIng && (usedIng.material_name || usedIng.name || '');
@@ -537,16 +544,21 @@ const RecipeResult = () => {
                       usedIngName.toLowerCase().includes(displayName.toLowerCase())
                     );
                   })
-                ).length : 0;
+                ).length;
+              }
              
              // 디버깅을 위한 콘솔 로그
-             console.log('Recipe object:', recipeObj);
-             console.log('matched_ingredient_count:', recipeObj.matched_ingredient_count);
-             console.log('total_ingredients_count:', recipeObj.total_ingredients_count);
-             console.log('used_ingredients:', recipeObj.used_ingredients);
-             console.log('used_ingredients type:', typeof recipeObj.used_ingredients);
-             console.log('used_ingredients isArray:', Array.isArray(recipeObj.used_ingredients));
-             console.log('Actual matched count:', actualMatchedCount);
+             console.log('🔍 재료 매칭 디버깅:', {
+               recipeTitle: recipeObj.recipe_title || recipeObj.name,
+               displayIngredients: displayIngredients,
+               finalUsedIngredients: finalUsedIngredients,
+               actualMatchedCount: actualMatchedCount,
+               matched_ingredient_count: recipeObj.matched_ingredient_count,
+               usedAPIValue: typeof recipeObj.matched_ingredient_count === 'number',
+               recipeObjKeys: Object.keys(recipeObj),
+               cachedIngredients: cachedIngredients,
+               searchType: searchType
+             });
              
                            return (
                 <div key={recipeObj.recipe_id || recipeObj.id || idx} 
