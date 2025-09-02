@@ -276,6 +276,17 @@
   color: #333;
 }
 
+.method-option.selected {
+  border-color: #FA5F8C;
+  background-color: rgba(250, 95, 140, 0.05);
+  cursor: default;
+}
+
+.method-option.selected span {
+  color: #FA5F8C;
+  font-weight: 600;
+}
+
 .card-form {
   background: white;
   border-radius: 12px;
