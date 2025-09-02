@@ -114,6 +114,7 @@
   width: 100%;
   max-width: 480px;
   overflow-y: scroll;
+  overflow-x: hidden; /* 가로 스크롤 방지 */
   height: calc(100vh - 200px);
 }
 
@@ -1030,6 +1031,89 @@
   scrollbar-color: #e0e0e0 transparent;
 }
 
+/* 홈쇼핑 주문 모달 스타일 */
+.homeshopping-order-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  backdrop-filter: blur(4px);
+}
+
+.homeshopping-order-modal-content {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 40px 30px;
+  width: 400px;
+  max-width: 90vw;
+  position: relative;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.order-option {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+
+
+
+.order-option-icon {
+  width: 48px;
+  height: 48px;
+  background-color: #f5f5f5;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #333;
+  flex-shrink: 0;
+}
+
+.order-option-text {
+  flex: 1;
+  color: #333;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.order-option-arrow {
+  color: #666;
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+.order-modal-close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  background-color: #f5f5f5;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #333;
+  transition: all 0.2s ease;
+}
+
+
+
 /* 반응형 디자인 */
 @media (max-width: 768px) {
   .product-detail-container {
@@ -1042,6 +1126,19 @@
   
   .tab-content {
     padding: 24px;
+  }
+  
+  .homeshopping-order-modal-content {
+    width: 300px;
+    padding: 30px 20px;
+  }
+  
+  .order-option {
+    padding: 16px 0;
+  }
+  
+  .order-option-text {
+    font-size: 16px;
   }
   
   .hsproduct-product-name {

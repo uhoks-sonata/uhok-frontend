@@ -52,6 +52,9 @@ const HomeShoppingProductDetail = () => {
     kokProductId: ''
   });
   
+  // 홈쇼핑 주문 모달 상태 관리
+  const [showHomeshoppingOrderModal, setShowHomeshoppingOrderModal] = useState(false);
+  
   // 상품 상세 정보 가져오기
   useEffect(() => {
     // live_id가 유효하지 않으면 API 호출하지 않음
@@ -238,6 +241,20 @@ const HomeShoppingProductDetail = () => {
        isMounted = false;
      };
    }, [productDetail?.product_id]);
+   
+   // 홈쇼핑 주문 모달 이벤트 리스너
+   useEffect(() => {
+     const handleShowHomeshoppingOrderModal = (event) => {
+       console.log('🏠 홈쇼핑 주문 모달 이벤트 수신:', event.detail);
+       setShowHomeshoppingOrderModal(true);
+     };
+     
+     window.addEventListener('showHomeshoppingOrderModal', handleShowHomeshoppingOrderModal);
+     
+     return () => {
+       window.removeEventListener('showHomeshoppingOrderModal', handleShowHomeshoppingOrderModal);
+     };
+   }, []);
   
   // 찜 상태 초기화 함수
   const initializeWishlistStatus = async () => {
@@ -427,6 +444,27 @@ const HomeShoppingProductDetail = () => {
   // 모달 닫기 함수
   const closeModal = () => {
     setModalState(hideModal());
+  };
+  
+  // 홈쇼핑 주문 모달 닫기 함수
+  const closeHomeshoppingOrderModal = () => {
+    setShowHomeshoppingOrderModal(false);
+  };
+  
+  // 전화 주문 함수
+  const handlePhoneOrder = () => {
+    console.log('📞 전화 주문 클릭');
+    // 전화 주문 로직 구현
+    alert('전화 주문 기능이 곧 제공될 예정입니다.');
+    closeHomeshoppingOrderModal();
+  };
+  
+  // 모바일 주문 함수
+  const handleMobileOrder = () => {
+    console.log('📱 모바일 주문 클릭');
+    // 모바일 주문 로직 구현
+    alert('모바일 주문 기능이 곧 제공될 예정입니다.');
+    closeHomeshoppingOrderModal();
   };
   
   // 방송 상태 확인
@@ -1049,6 +1087,51 @@ const HomeShoppingProductDetail = () => {
           isVisible={showVideoPopup}
           onClose={() => setShowVideoPopup(false)}
         />
+        
+        {/* 홈쇼핑 주문 모달 */}
+        {showHomeshoppingOrderModal && (
+          <div className="homeshopping-order-modal-overlay" onClick={closeHomeshoppingOrderModal}>
+            <div className="homeshopping-order-modal-content" onClick={(e) => e.stopPropagation()}>
+              {/* 전화 주문 옵션 */}
+              <div className="order-option" onClick={handlePhoneOrder}>
+                <div className="order-option-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 16.92V19.92C22.0011 20.1985 21.9441 20.4742 21.8325 20.7293C21.7209 20.9845 21.5573 21.2136 21.3521 21.4019C21.1468 21.5901 20.9046 21.7335 20.6407 21.8227C20.3769 21.9119 20.0974 21.9451 19.82 21.92C16.7428 21.5856 13.787 20.5341 11.19 18.85C8.77382 17.3147 6.72533 15.2662 5.18999 12.85C3.49997 10.2412 2.44824 7.27099 2.11999 4.18C2.095 3.90347 2.12787 3.62476 2.21649 3.36162C2.30512 3.09849 2.44756 2.85669 2.63476 2.65162C2.82196 2.44655 3.0498 2.28271 3.30379 2.17052C3.55777 2.05833 3.83233 2.00026 4.10999 2H7.10999C7.59531 1.99522 8.06679 2.16708 8.43376 2.48353C8.80073 2.79999 9.04207 3.23945 9.11999 3.72C9.23662 4.68007 9.47144 5.62273 9.81999 6.53C9.94454 6.88792 9.97366 7.27691 9.90401 7.65088C9.83436 8.02485 9.66818 8.36811 9.42499 8.64L8.08999 9.97C9.51355 12.4584 11.5416 14.4864 14.03 15.91L15.36 14.58C15.6319 14.3368 15.9751 14.1706 16.3491 14.101C16.7231 14.0313 17.1121 14.0604 17.47 14.185C18.3773 14.5336 19.3199 14.7684 20.28 14.885C20.7658 14.9636 21.2094 15.2071 21.5265 15.5775C21.8437 15.9479 22.0122 16.4206 22 16.92Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+                <div className="order-option-text">전화 주문</div>
+                <div className="order-option-arrow">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+              
+              {/* 모바일 주문 옵션 */}
+              <div className="order-option" onClick={handleMobileOrder}>
+                <div className="order-option-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17 2H7C5.89543 2 5 2.89543 5 4V20C5 21.1046 5.89543 22 7 22H17C18.1046 22 19 21.1046 19 20V4C19 2.89543 18.1046 2 17 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M12 18H12.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+                <div className="order-option-text">모바일 주문</div>
+                <div className="order-option-arrow">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+              
+              {/* 닫기 버튼 */}
+              <button className="order-modal-close-btn" onClick={closeHomeshoppingOrderModal}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
     </div>
   );
 };

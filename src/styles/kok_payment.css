@@ -409,11 +409,11 @@
   transition: all 0.3s ease;
 }
 
-.order-button:hover:not(:disabled) {
+/* .order-button:hover:not(:disabled) {
   background-color: #FA5F8C;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(246, 140, 177, 0.4);
-}
+} */
 
 .order-button:active:not(:disabled) {
   transform: translateY(0);

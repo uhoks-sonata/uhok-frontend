@@ -43,6 +43,9 @@ const Schedule = () => {
   const [isProductDetailLoading, setIsProductDetailLoading] = useState(false);
   const [loadingProductId, setLoadingProductId] = useState(null);
   
+  // 전체 페이지 로딩 상태 (상품 상세 페이지로 이동할 때)
+  const [isNavigatingToProduct, setIsNavigatingToProduct] = useState(false);
+  
   // 모달 상태 관리
   const [modalState, setModalState] = useState({ isVisible: false, modalType: 'loading' });
   
@@ -638,6 +641,9 @@ const Schedule = () => {
     try {
       console.log('상품 클릭 (live_id):', liveId);
       
+      // 전체 페이지 로딩 상태 시작
+      setIsNavigatingToProduct(true);
+      
       // 로딩 상태 시작
       setIsProductDetailLoading(true);
       setLoadingProductId(liveId);
@@ -671,6 +677,7 @@ const Schedule = () => {
       // 로딩 상태 종료
       setIsProductDetailLoading(false);
       setLoadingProductId(null);
+      setIsNavigatingToProduct(false);
     }
   };
 
@@ -1183,6 +1190,38 @@ const Schedule = () => {
         onSearchClick={(searchTerm) => navigate('/homeshopping/search?type=homeshopping')}
         onNotificationClick={handleNotification}
       />
+      
+      {/* 전체 페이지 로딩 오버레이 */}
+      {isNavigatingToProduct && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: '80px',
+            left: '0',
+            right: '0',
+            bottom: '0',
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 9999,
+            backdropFilter: 'blur(2px)'
+          }}
+        >
+          <div 
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: '100%',
+              height: '100%',
+              backgroundColor: 'transparent'
+            }}
+          >
+            <Loading message="상품 정보를 불러오는 중..." />
+          </div>
+        </div>
+      )}
 
       <div className="schedule-main-container">
         {/* 메인 콘텐츠 */}
