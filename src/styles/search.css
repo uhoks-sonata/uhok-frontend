@@ -271,6 +271,12 @@
   padding: 60px 20px;
 }
 
+/* 스피너 애니메이션 */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 /* ===== 검색 에러 상태 ===== */
 
 .search-error {

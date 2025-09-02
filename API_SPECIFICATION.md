@@ -385,6 +385,45 @@
   }
   ```
 
+### 9. 레시피 추천
+- **기능**: 선택된 상품들(KOK 상품, 홈쇼핑 상품)을 기반으로 레시피를 추천
+- **HTTP 메서드**: GET
+- **엔드포인트 URL**: `/api/kok/carts/recipe-recommend`
+- **Header**: `Authorization: Bearer <access_token>`
+- **Query Parameters**:
+  - `product_ids` (string, 필수): 상품 ID 목록 (쉼표로 구분) - 예시: "35390738,123456,12345,67890"
+  - `page` (integer, 필수): 페이지 번호 (1부터 시작) - 예시: 1
+  - `size` (integer, 필수): 페이지당 레시피 수 (1-100) - 예시: 5
+- **Request Body**: -
+- **Response Code**: 200
+- **Response Value**:
+  ```json
+  {
+    "recipes": [
+      {
+        "recipe_id": 0,
+        "recipe_title": "string",
+        "cooking_introduction": "string",
+        "thumbnail_url": "string",
+        "number_of_serving": "string",
+        "scrap_count": 0,
+        "matched_ingredient_count": 0,
+        "total_ingredients_count": 0,
+        "used_ingredients": []
+      }
+    ],
+    "total_count": 0,
+    "page": 1,
+    "size": 5,
+    "total_pages": 0,
+    "keyword_extraction": ["string"]
+  }
+  ```
+- **사용 예시**:
+  ```
+  GET /api/kok/carts/recipe-recommend?product_ids=35390738,123456,12345,67890&page=1&size=5
+  ```
+
 ### 수정된 컴포넌트
 - `src/pages/user/Login.js`: 새로운 API에 맞게 수정
 - `src/pages/user/Signup.js`: 새로운 API에 맞게 수정

@@ -404,37 +404,26 @@ const CartRecipeResult = () => {
                     </span>
                   </div>
                   
-                  {/* matched-ingredients 표시 */}
-                  {typeof recipeObj.matched_ingredient_count === 'number' && (
-                    <div className="matched-ingredients">
-                      <span className="matched-count">{recipeObj.matched_ingredient_count}개 재료 일치</span>
-                      <span className="separator"> | </span>
-                      <span className="total-ingredients">재료 총 {recipeObj.total_ingredients_count || recipeIngredients?.total_ingredients || 0}개</span>
-                    </div>
-                  )}
-                  
                   {/* 레시피 설명 표시 */}
                   {recipeObj.cooking_introduction && (
                     <p className="recipe-description">{recipeObj.cooking_introduction}</p>
                   )}
                   
-                  {/* 재료 정보 표시 (키워드 검색에서만) */}
-                  {searchType === 'keyword' && recipeIngredients && (
-                    <div className="recipe-ingredients">
-                      <div className="ingredients-tags-container">
-                        {recipeIngredients.used_ingredients.slice(0, 3).map((ingredient, ingIdx) => (
-                          <IngredientTag 
-                            key={ingIdx}
-                            ingredient={ingredient}
-                            isOwned={true}
-                          />
-                        ))}
-                        {recipeIngredients.used_ingredients.length > 3 && (
-                          <span className="more-ingredients">+{recipeIngredients.used_ingredients.length - 3}개 더</span>
-                        )}
-                      </div>
+                  {/* 재료 정보 표시 - homeshopping-recommendation 스타일 적용 */}
+                  {recipeObj.used_ingredients && recipeObj.used_ingredients.length > 0 && (
+                    <div className="used-ingredients-list">
+                      {recipeObj.used_ingredients.slice(0, 3).map((ingredient, idx) => (
+                        <span key={idx} className="used-ingredient-item">
+                          {typeof ingredient === 'string' ? ingredient : ingredient.material_name || ingredient.name || ingredient}
+                        </span>
+                      ))}
+                      {recipeObj.used_ingredients.length > 3 && (
+                        <span className="more-ingredients">외 {recipeObj.used_ingredients.length - 3}개</span>
+                      )}
                     </div>
                   )}
+                  
+
                 </div>
               </div>
             );
