@@ -496,7 +496,7 @@ const Cart = () => {
                   전체 선택
                 </label>
                 <span className="selection-count">
-                  {selectedItems.size} | {cartItems.length}
+                  {selectedItems.size} / {cartItems.length}
                 </span>
               </div>
               <button 
@@ -542,13 +542,14 @@ const Cart = () => {
                       
                       <div className="item-details">
                         <div className="item-option">
-                          {item.recipe_id ? `레시피 ID: ${item.recipe_id}` : '옵션 없음'}
-                          <span className="separator"> | </span>
-                          <span className="free-shipping-text">무료배송</span>
+                          <div className="free-shipping-text">무료배송</div>
+                          <div className="option-text">
+                            {item.recipe_id ? `레시피 ID: ${item.recipe_id}` : '옵션 없음'}
+                          </div>
                         </div>
                         <div className="item-price">
-                          <span className="discounted-price">{item.kok_discounted_price.toLocaleString()}원</span>
                           <span className="original-price">{item.kok_product_price.toLocaleString()}원</span>
+                          <span className="discounted-price">{item.kok_discounted_price.toLocaleString()}원</span>
                         </div>
                       </div>
                       

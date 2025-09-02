@@ -27,13 +27,16 @@
 }
 
 .ingredient-tag .ingredient-name {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 400;
   color: #333;
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   user-select: none;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
 }
 
 .ingredient-tag .remove-ingredient-btn {
@@ -49,16 +52,9 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: all 0.2s ease;
   flex-shrink: 0;
   margin-left: 2px;
   font-weight: bold;
-}
-
-.ingredient-tag .remove-ingredient-btn:hover {
-  background-color: #ff4444;
-  color: #ffffff;
-  transform: scale(1.1);
 }
 
 .ingredient-tag .remove-ingredient-btn:focus {
@@ -72,7 +68,7 @@
   flex-wrap: wrap;
   gap: 4px;
   min-height: 32px;
-  padding: 8px;
+  padding: 8px 0px;
   border-radius: 8px;
 }
 
@@ -81,19 +77,22 @@
 /* 반응형 디자인 */
 @media (max-width: 768px) {
   .ingredient-tag {
+    height: 21px;
+    max-height: 32px;
     max-width: 150px;
     padding: 5px 10px;
     font-size: 10px;
   }
   
   .ingredient-tag .ingredient-name {
-    font-size: 10px;
+    font-size: 12px;
+    line-height: 1.2;
   }
   
   .ingredient-tag .remove-ingredient-btn {
     width: 10px;
     height: 10px;
-    font-size: 10px;
+    font-size: 11px;
   }
 }
 
