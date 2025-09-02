@@ -22,6 +22,8 @@ import { homeShoppingApi } from '../../api/homeShoppingApi';
 import { cartApi } from '../../api/cartApi';
 // 사용자 Context import
 import { useUser } from '../../contexts/UserContext';
+// LoadingModal import
+import ModalManager, { showLogoutCompleteNotification, hideModal } from '../../components/LoadingModal';
 // 기본 사용자 아이콘 이미지를 가져옵니다
 import userIcon from '../../assets/user_icon.png';
 // 상품 없음 이미지를 가져옵니다
@@ -48,6 +50,16 @@ const MyPage = () => {
   // 사용자 정보 가져오기
   const { user, isLoggedIn, isLoading: userContextLoading, logout, login } = useUser();
   const hasInitialized = useRef(false); // 중복 호출 방지용 ref
+  
+  // ===== 모달 상태 관리 =====
+  const [modalState, setModalState] = useState({ isVisible: false });
+
+  // ===== 모달 핸들러 =====
+  const handleModalClose = () => {
+    setModalState(hideModal());
+    // 모달 닫은 후 홈페이지로 이동
+    navigate('/');
+  };
   
   // 유저 정보를 저장할 상태를 초기화합니다 (API에서 받아옴)
   const [userData, setUserData] = useState({
@@ -480,11 +492,8 @@ const MyPage = () => {
       
       // 로컬 스토리지에서 토큰 제거 (userApi에서 이미 처리됨)
       
-      // 성공 메시지 표시 (선택사항)
-      alert('로그아웃이 완료되었습니다.');
-      
-      // 홈페이지로 이동
-      navigate('/');
+      // 로그아웃 완료 모달 표시
+      setModalState(showLogoutCompleteNotification());
       
     } catch (error) {
       // API 호출 실패 시에도 로컬 토큰은 제거
@@ -797,6 +806,12 @@ const MyPage = () => {
 
       {/* 하단 네비게이션 */}
       <BottomNav />
+      
+      {/* 모달 컴포넌트 */}
+      <ModalManager
+        {...modalState}
+        onClose={handleModalClose}
+      />
     </div>
   );
 };

@@ -19,10 +19,6 @@ import { orderApi } from '../../api/orderApi';
 // 사용자 Context import
 import { useUser } from '../../contexts/UserContext';
 
-// 테스트용 상품 이미지들을 가져옵니다
-import testImage1 from '../../assets/test/test1.png';
-import testImage2 from '../../assets/test/test2.png';
-import testImage3 from '../../assets/test/test3.png';
 
 // 주문 내역 페이지 메인 컴포넌트를 정의합니다
 const OrderList = () => {
@@ -92,7 +88,7 @@ const OrderList = () => {
     // 로그인하지 않은 경우 알림 후 이전 화면으로 돌아가기
     if (!checkLoginStatus()) {
       alert('로그인이 필요한 서비스입니다.');
-      window.history.back();
+      navigate('/login');
       return;
     }
 
@@ -102,10 +98,16 @@ const OrderList = () => {
       
       // 토큰 확인 (장바구니와 동일한 방식)
       const token = localStorage.getItem('access_token');
-      console.log('🔍 OrderList.js - 토큰 체크:', { hasToken: !!token, token: token ? token.substring(0, 20) + '...' : '없음' });
+      console.log('🔍 OrderList.js - 토큰 체크:', { 
+        hasToken: !!token, 
+        token: token ? token.substring(0, 20) + '...' : '없음',
+        tokenLength: token?.length,
+        tokenType: token?.includes('dev_signature_') ? '개발용' : token?.includes('temp_token_') ? '임시' : 'JWT'
+      });
       if (!token) {
-        console.log('❌ OrderList.js - 토큰 없음, 제자리에 유지');
+        console.log('❌ OrderList.js - 토큰 없음, 로그인 페이지로 이동');
         alert('로그인이 필요한 서비스입니다.');
+        navigate('/login');
         setLoading(false);
         return;
       }
@@ -115,10 +117,18 @@ const OrderList = () => {
       let ordersData;
       
       try {
-        // 최근 7일 주문내역 조회 (오늘부터 7일 전까지)
-        ordersResponse = await orderApi.getRecentOrders(7);
+        // 새로운 API 구조: 사용자의 모든 주문 목록 조회
+        ordersResponse = await orderApi.getUserOrders(20); // limit 20으로 설정
         ordersData = ordersResponse;
-        console.log('최근 7일 주문 내역 API 응답:', ordersData);
+        console.log('사용자 주문 목록 API 응답:', ordersData);
+        console.log('🔍 OrderList.js - API 응답 상세:', {
+          responseType: typeof ordersData,
+          responseKeys: ordersData ? Object.keys(ordersData) : 'response is null/undefined',
+          hasOrderGroups: ordersData?.order_groups ? true : false,
+          orderGroupsLength: ordersData?.order_groups?.length || 0,
+          totalCount: ordersData?.total_count,
+          limit: ordersData?.limit
+        });
       } catch (error) {
         console.error('주문 내역 API 호출 실패:', error);
         
@@ -127,69 +137,16 @@ const OrderList = () => {
           console.log('401 에러 발생 - 토큰이 유효하지 않습니다. 더미 데이터를 사용합니다.');
         }
         
-        // API 실패 시 더미 데이터 사용 (최근 7일 주문내역 API 구조에 맞춤)
+        // API 실패 시 빈 데이터로 설정
         ordersData = {
-          days: 7,
-          order_count: 2,
-          orders: [
-            {
-              order_id: 151,
-              order_number: "000000000151",
-              order_date: "2025. 8. 19",
-              delivery_status: "배송완료",
-              delivery_date: "7/28(월) 도착",
-              total_amount: 6900,
-              order_details: [
-                {
-                  kok_order_id: 119,
-                  kok_product_id: 10045061,
-                  kok_product_name: "[강원뜰] 강원도 산지직송 알감자/설봉감자 1.5kg ~ 20kg 모음전",
-                  quantity: 1,
-                  unit_price: 6900,
-                  total_price: 6900
-                }
-              ],
-              product_image: testImage1,
-              recipe_related: false,
-              recipe_title: null,
-              recipe_rating: null,
-              recipe_scrap_count: null,
-              recipe_description: null,
-              ingredients_owned: null,
-              total_ingredients: null
-            },
-            {
-              order_id: 152,
-              order_number: "000000000152",
-              order_date: "2025. 8. 13",
-              delivery_status: "배송완료",
-              delivery_date: "7/28(월) 도착",
-              total_amount: 8500,
-              order_details: [
-                {
-                  kok_order_id: 120,
-                  kok_product_id: 10045062,
-                  kok_product_name: "초코파이 12개입",
-                  quantity: 1,
-                  unit_price: 8500,
-                  total_price: 8500
-                }
-              ],
-              product_image: testImage2,
-              recipe_related: false,
-              recipe_title: null,
-              recipe_rating: null,
-              recipe_scrap_count: null,
-              recipe_description: null,
-              ingredients_owned: null,
-              total_ingredients: null
-            }
-          ]
+          limit: 20,
+          total_count: 0,
+          order_groups: []
         };
       }
       
-      // 최근 7일 주문내역 API 응답 구조 확인
-      if (!ordersData || !ordersData.orders || !Array.isArray(ordersData.orders) || ordersData.orders.length === 0) {
+      // 새로운 API 응답 구조 확인
+      if (!ordersData || !ordersData.order_groups || !Array.isArray(ordersData.order_groups) || ordersData.order_groups.length === 0) {
         // 주문이 없는 경우 빈 배열로 설정
         setOrderData({
           orders: [],
@@ -201,65 +158,32 @@ const OrderList = () => {
         return;
       }
       
-      // 최근 7일 주문내역 API 응답 구조를 프론트엔드 형식으로 변환
-      const transformedOrders = ordersData.orders.map((order) => {
-        // order_details가 있는 경우 (장바구니 주문)와 없는 경우 (단일 상품 주문) 구분
-        if (order.order_details && Array.isArray(order.order_details)) {
-          // 장바구니 주문: order_details의 각 항목을 개별 주문으로 변환
-          return order.order_details.map((detail) => {
-            return {
-              order_id: order.order_id,
-              kok_order_id: detail.kok_order_id, // kok_order_id 추가
-              order_number: order.order_number,
-              order_date: order.order_date,
-              status: 'delivered',
-              total_amount: detail.total_price,
-              items: [{
-                product_id: detail.kok_product_id,
-                kok_order_id: detail.kok_order_id, // kok_order_id 추가
-                product_name: detail.kok_product_name || '상품명 없음',
-                product_image: order.product_image || testImage1,
-                quantity: detail.quantity,
-                price: detail.unit_price,
-                delivery_status: order.delivery_status,
-                delivery_date: order.delivery_date,
-                recipe_related: order.recipe_related,
-                recipe_title: order.recipe_title,
-                recipe_rating: order.recipe_rating,
-                recipe_scrap_count: order.recipe_scrap_count,
-                recipe_description: order.recipe_description,
-                ingredients_owned: order.ingredients_owned,
-                total_ingredients: order.total_ingredients
-              }]
-            };
-          });
-        } else {
-          // 단일 상품 주문: 기존 방식 유지
-          return {
-            order_id: order.order_id,
-            order_number: order.order_number,
-            order_date: order.order_date,
-            status: 'delivered',
-            total_amount: order.price * order.quantity,
-            items: [{
-              product_id: null,
-              product_name: order.product_name || '상품명 없음',
-              product_image: order.product_image || testImage1,
-              quantity: order.quantity,
-              price: order.price,
-              delivery_status: order.delivery_status,
-              delivery_date: order.delivery_date,
-              recipe_related: order.recipe_related,
-              recipe_title: order.recipe_title,
-              recipe_rating: order.recipe_rating,
-              recipe_scrap_count: order.recipe_scrap_count,
-              recipe_description: order.recipe_description,
-              ingredients_owned: order.ingredients_owned,
-              total_ingredients: order.total_ingredients
-            }]
-          };
-        }
-      }).flat(); // 중첩된 배열을 평탄화
+      // 새로운 API 응답 구조를 프론트엔드 형식으로 변환
+      const transformedOrders = ordersData.order_groups.map((orderGroup) => {
+        return {
+          order_id: orderGroup.order_id,
+          order_number: orderGroup.order_number,
+          order_date: orderGroup.order_date,
+          status: 'delivered',
+          total_amount: orderGroup.total_amount,
+          item_count: orderGroup.item_count,
+          items: orderGroup.items.map((item) => ({
+            product_name: item.product_name || '상품명 없음',
+            product_image: item.product_image,
+            price: item.price,
+            quantity: item.quantity,
+            delivery_status: item.delivery_status,
+            delivery_date: item.delivery_date,
+            recipe_related: item.recipe_related,
+            recipe_title: item.recipe_title,
+            recipe_rating: item.recipe_rating,
+            recipe_scrap_count: item.recipe_scrap_count,
+            recipe_description: item.recipe_description,
+            ingredients_owned: item.ingredients_owned,
+            total_ingredients: item.total_ingredients
+          }))
+        };
+      });
       
       // 파싱된 데이터를 상태에 저장합니다
       setOrderData({
@@ -278,87 +202,35 @@ const OrderList = () => {
       
       // 401 에러 특별 처리 (인증 필요)
       if (error.response?.status === 401) {
-        console.log('401 에러 발생 - 로그인이 필요합니다.');
-        alert('로그인이 필요한 서비스입니다.');
+        console.log('401 에러 발생 - 토큰이 유효하지 않거나 만료되었습니다.');
+        // 토큰이 유효하지 않으면 로그인 페이지로 이동
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('token_type');
+        alert('로그인이 만료되었습니다. 다시 로그인해주세요.');
+        navigate('/login');
         return;
       }
       // 422 에러 특별 처리
       else if (error.response?.status === 422) {
         console.log('422 에러 발생 - API 엔드포인트나 파라미터 문제일 수 있습니다.');
-        console.log('더미 데이터를 사용합니다.');
         setError(null); // 에러 상태 초기화
       }
-      // 네트워크 에러인 경우 더미 데이터 사용, 그 외에는 에러 메시지 표시
+      // 네트워크 에러인 경우 빈 데이터 사용, 그 외에는 에러 메시지 표시
       else if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED' || 
           (error.name === 'TypeError' && error.message.includes('Failed to fetch')) ||
           error.message.includes('Network Error')) {
-        console.log('백엔드 서버 연결 실패 - 더미 데이터를 사용합니다.');
+        console.log('백엔드 서버 연결 실패 - 빈 데이터로 설정합니다.');
         setError(null); // 에러 상태 초기화
       } else {
         setError(error.message);
       }
       setLoading(false);
       
-      // API 연결 실패 시 더미 데이터 사용 (네트워크 오류 등)
-      console.log('API 연결 실패 - 더미 데이터를 사용합니다.');
+      // API 연결 실패 시 빈 데이터로 설정 (토큰은 유지)
+      console.log('API 연결 실패 - 빈 데이터로 설정합니다.');
       setOrderData({
-        orders: [
-          {
-            order_id: 54,
-            kok_order_id: 119, // kok_order_id 추가
-            order_number: "000000000054",
-            order_date: "2025. 8. 19",
-            status: 'delivered',
-            total_amount: 23800,
-            items: [
-              {
-                product_id: 10045061,
-                kok_order_id: 119, // kok_order_id 추가
-                product_name: '신선한 채소 세트',
-                product_image: testImage1,
-                quantity: 2,
-                price: 11900,
-                delivery_status: "배송완료",
-                delivery_date: "7/28(월) 도착",
-                recipe_related: false,
-                recipe_title: null,
-                recipe_rating: null,
-                recipe_scrap_count: null,
-                recipe_description: null,
-                ingredients_owned: null,
-                total_ingredients: null
-              }
-            ]
-          },
-          {
-            order_id: 25,
-            kok_order_id: 120, // kok_order_id 추가
-            order_number: "000000000025",
-            order_date: "2025. 8. 13",
-            status: 'delivered',
-            total_amount: 32000,
-            items: [
-              {
-                product_id: 10045062,
-                kok_order_id: 120, // kok_order_id 추가
-                product_name: '유기농 과일 박스',
-                product_image: testImage2,
-                quantity: 1,
-                price: 32000,
-                delivery_status: "배송완료",
-                delivery_date: "7/28(월) 도착",
-                recipe_related: false,
-                recipe_title: null,
-                recipe_rating: null,
-                recipe_scrap_count: null,
-                recipe_description: null,
-                ingredients_owned: null,
-                total_ingredients: null
-              }
-            ]
-          }
-        ],
-        total_count: 2,
+        orders: [],
+        total_count: 0,
         page: 1,
         size: 20
       });
@@ -463,76 +335,61 @@ const OrderList = () => {
             </div>
           ) : (
             // 주문번호별로 그룹화하여 렌더링합니다
-            (() => {
-              // 주문번호별로 상품들을 그룹화합니다
-              const groupedOrders = orderData.orders.reduce((groups, order) => {
-                if (!groups[order.order_id]) {
-                  groups[order.order_id] = [];
-                }
-                groups[order.order_id].push(order);
-                return groups;
-              }, {});
-              
-              // 각 그룹 내에서 상품들을 정렬하고, 전체 그룹을 날짜순으로 정렬합니다
-              const sortedOrders = Object.entries(groupedOrders)
-                .map(([orderId, orders]) => {
-                  // 각 주문 그룹 내에서 상품들을 정렬 (최근 구매 순)
-                  const sortedItems = orders.sort((a, b) => {
-                    // 주문 시간이 있다면 그것을 기준으로, 없다면 상품 ID로 정렬
-                    if (a.order_time && b.order_time) {
-                      return new Date(b.order_time) - new Date(a.order_time);
-                    }
-                    return b.items[0].product_id - a.items[0].product_id;
-                  });
-                  
-                  return [orderId, sortedItems];
-                })
-                .sort((a, b) => {
-                  // 전체 주문 그룹을 날짜순으로 정렬 (최근 날짜순)
-                  const dateA = new Date(a[1][0].order_date);
-                  const dateB = new Date(b[1][0].order_date);
-                  
-                  // 날짜가 같다면 주문번호로 정렬 (최근 주문번호가 먼저)
-                  if (dateA.getTime() === dateB.getTime()) {
-                    return b[0] - a[0];
-                  }
-                  
-                  return dateB - dateA; // 최근 날짜가 먼저 오도록 내림차순 정렬
-                });
-              
-              // 정렬된 주문들을 렌더링합니다
-              return sortedOrders.map(([orderId, orders]) => {
-                const firstOrder = orders[0]; // 첫 번째 상품의 정보를 사용
+            orderData.orders
+              .sort((a, b) => {
+                // 전체 주문 그룹을 날짜순으로 정렬 (최근 날짜순)
+                const dateA = new Date(a.order_date);
+                const dateB = new Date(b.order_date);
                 
+                // 날짜가 같다면 주문번호로 정렬 (최근 주문번호가 먼저)
+                if (dateA.getTime() === dateB.getTime()) {
+                  return b.order_id - a.order_id;
+                }
+                
+                return dateB - dateA; // 최근 날짜가 먼저 오도록 내림차순 정렬
+              })
+              .map((order) => {
                 return (
-                  <div key={orderId} className="order-item">
+                  <div key={order.order_id} className="order-item">
                     {/* 회색 박스 컨테이너 */}
                     <div className="order-content-box">
-                      {/* 배송 상태 - 회색 박스 상단 왼쪽 */}
+                      {/* 주문 정보 헤더 */}
+                      <div className="order-header">
+                        <div className="order-info">
+                          <span className="order-number">주문번호: {order.order_number}</span>
+                          <span className="order-date">{order.order_date}</span>
+                        </div>
+                        <div className="order-summary">
+                          <span className="total-amount">{formatPrice(order.total_amount)}</span>
+                          <span className="item-count">총 {order.item_count}개 상품</span>
+                        </div>
+                      </div>
+                      
+                      {/* 배송 상태 */}
                       <div className="delivery-status">
-                        <span className="delivery-status-text">{firstOrder.items[0].delivery_status || '배송완료'}</span>
-                        <span className="delivery-date">{firstOrder.items[0].delivery_date || `${formatDate(firstOrder.order_date)} 도착`}</span>
+                        <span className="delivery-status-text">{order.items[0]?.delivery_status || '배송완료'}</span>
+                        <span className="delivery-date">{order.items[0]?.delivery_date || `${formatDate(order.order_date)} 도착`}</span>
                       </div>
                       
                       {/* 상품 정보들 - 같은 주문번호의 모든 상품을 표시합니다 */}
-                      {orders.map((order, index) => (
+                      {order.items.map((item, index) => (
                         <div 
-                          key={`${orderId}-${index}`} 
+                          key={`${order.order_id}-${index}`} 
                           className="product-info"
-                          onClick={() => handleOrderDetailClick(order.order_id, order.kok_order_id)}
+                          onClick={() => handleOrderDetailClick(order.order_id)}
                           style={{ cursor: 'pointer' }}
                         >
                           {/* 상품 이미지를 표시합니다 */}
                           <div className="product-image">
-                            <img src={order.items[0].product_image} alt={order.items[0].product_name} />
+                            <img src={item.product_image} alt={item.product_name} />
                           </div>
                           
-                          {/* 상품 상세 정보와 주문 번호를 가로로 배치 */}
+                          {/* 상품 상세 정보 */}
                           <div className="product-details">
                             {/* 상품명을 표시합니다 */}
-                            <div className="product-name" title={order.items[0].product_name}>
+                            <div className="product-name" title={item.product_name}>
                               {(() => {
-                                const productName = order.items[0].product_name;
+                                const productName = item.product_name;
                                 const displayName = productName.length > 40 
                                   ? `${productName.substring(0, 40)}...`
                                   : productName;
@@ -546,18 +403,15 @@ const OrderList = () => {
                             
                             {/* 가격과 수량 정보 */}
                             <div className="product-price">
-                              {order.items[0].price ? `${order.items[0].price.toLocaleString()}원` : '가격 정보 없음'} · {order.items[0].quantity || 1}개
+                              {item.price ? `${item.price.toLocaleString()}원` : '가격 정보 없음'} · {item.quantity || 1}개
                             </div>
                           </div>
-                          
-
                         </div>
                       ))}
                     </div>
                   </div>
                 );
-              });
-            })()
+              })
           )}
         </div>
       </main>

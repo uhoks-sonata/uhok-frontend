@@ -149,6 +149,28 @@ export const showNoRecipeNotification = () => {
   };
 };
 
+// 로그인 완료 알림 모달 표시 함수
+export const showLoginCompleteNotification = () => {
+  return { 
+    modalType: 'alert', 
+    alertMessage: '로그인이 완료되었습니다.', 
+    alertButtonText: '확인',
+    alertButtonStyle: 'primary',
+    isVisible: true 
+  };
+};
+
+// 로그아웃 완료 알림 모달 표시 함수
+export const showLogoutCompleteNotification = () => {
+  return { 
+    modalType: 'alert', 
+    alertMessage: '로그아웃이 완료되었습니다.', 
+    alertButtonText: '확인',
+    alertButtonStyle: 'primary',
+    isVisible: true 
+  };
+};
+
 export const hideModal = () => {
   return { isVisible: false };
 };

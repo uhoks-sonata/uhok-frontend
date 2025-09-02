@@ -115,17 +115,23 @@ api.interceptors.response.use(
         currentPath: window.location.pathname
       });
       
+      // OrderList 페이지에서는 토큰을 삭제하지 않고 에러만 전달
+      const currentPath = window.location.pathname;
+      if (currentPath === '/orderlist') {
+        console.log('OrderList 페이지에서 401 에러 - 토큰 유지하고 에러만 전달');
+        return Promise.reject(error);
+      }
+      
+      // 다른 페이지에서는 기존 로직 유지
       // 토큰 제거
       localStorage.removeItem('access_token');
       localStorage.removeItem('token_type');
       
       // 인증이 필요한 페이지에서 401 에러가 발생하면 로그인 페이지로 리다이렉트
-      const currentPath = window.location.pathname;
       const authRequiredPaths = [
         '/notifications',
         '/cart',
         '/wishlist',
-        '/orderlist',
         '/kok/payment',
         '/recipes'
       ];

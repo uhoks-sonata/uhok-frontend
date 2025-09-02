@@ -234,7 +234,6 @@
   align-items: center;
   gap: 8px;
   margin-bottom: 15px;
-  padding: 8px 12px;
   border-radius: 8px;
 }
 
@@ -297,6 +296,7 @@
   min-height: 100px;
   overflow: hidden;
   max-width: calc(100%);
+  margin-left: 10px;
 }
 
 .mypage-product-name {

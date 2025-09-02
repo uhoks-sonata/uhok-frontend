@@ -1,11 +1,13 @@
 // React 관련 라이브러리 import
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 // React Router의 useNavigate 훅 import
 import { useNavigate } from 'react-router-dom';
 // userApi import
 import { userApi } from '../../api/userApi';
 // 사용자 Context import
 import { useUser } from '../../contexts/UserContext';
+// LoadingModal import
+import ModalManager, { showLogoutCompleteNotification, hideModal } from '../../components/LoadingModal';
 // 로그아웃 페이지 스타일 CSS 파일 import
 import '../../styles/logout.css';
 
@@ -19,6 +21,16 @@ const Logout = () => {
   // ===== 사용자 Context 훅 =====
   // 사용자 정보 관리
   const { logout } = useUser();
+
+  // ===== 모달 상태 관리 =====
+  const [modalState, setModalState] = useState({ isVisible: false });
+
+  // ===== 모달 핸들러 =====
+  const handleModalClose = () => {
+    setModalState(hideModal());
+    // 모달 닫은 후 로그인 페이지로 이동
+    navigate('/');
+  };
 
   // ===== useEffect =====
   // 컴포넌트 마운트 시 자동 로그아웃 실행
@@ -37,14 +49,16 @@ const Logout = () => {
         
         console.log('✅ 로그아웃 완료');
         
-        // 로그아웃 완료 후 로그인 페이지로 이동
-        navigate('/');
+        // 로그아웃 완료 모달 표시
+        setModalState(showLogoutCompleteNotification());
       } catch (error) {
         console.error('❌ 로그아웃 실패:', error);
         
         // 에러가 발생해도 로컬 상태는 정리
         logout();
-        navigate('/');
+        
+        // 로그아웃 완료 모달 표시 (에러가 있어도 로컬 상태는 정리됨)
+        setModalState(showLogoutCompleteNotification());
       }
     };
 
@@ -53,13 +67,21 @@ const Logout = () => {
 
   // 로그아웃 진행 중 표시
   return (
-    <div className="logout-container">
-      <h1>U+hok</h1>
-      <div className="logout-message">
-        <p>로그아웃 중입니다...</p>
-        <div className="loading-spinner"></div>
+    <>
+      <div className="logout-container">
+        <h1>U+hok</h1>
+        <div className="logout-message">
+          <p>로그아웃 중입니다...</p>
+          <div className="loading-spinner"></div>
+        </div>
       </div>
-    </div>
+      
+      {/* 모달 컴포넌트 */}
+      <ModalManager
+        {...modalState}
+        onClose={handleModalClose}
+      />
+    </>
   );
 };
 
