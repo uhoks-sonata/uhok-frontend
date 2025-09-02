@@ -186,7 +186,7 @@
   display: flex;
   background-color: #ffffff;
   border-radius: 12px;
-  padding: 12px; /* 패딩 증가: 6px → 12px */
+  padding: 8px; /* 패딩 증가: 6px → 12px */
   margin-bottom: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   cursor: pointer;
@@ -214,9 +214,9 @@
 }
 
 .recipe-image {
-  width: 130px; /* 이미지 크기 증가: 120px → 130px */
-  height: 130px; /* 이미지 크기 증가: 120px → 130px */
-  margin-right: 16px;
+  width: 140px; /* 이미지 크기 증가: 120px → 130px */
+  height: 140px; /* 이미지 크기 증가: 120px → 130px */
+  margin-right: 10px;
   flex-shrink: 0;
 }
 
@@ -412,18 +412,34 @@
 }
 
 .more-ingredients {
-  font-size: 12px;
+  font-size: 11px;
   color: #999;
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  padding: 2px 6px;
+  margin-left: 4px;
   text-align: center;
-  margin-left: 5px;
+  white-space: nowrap;
 }
 
 /* 키워드 검색 결과 추가 정보 스타일 */
 .keyword-search-info {
   margin-top: 8px;
+}
+
+/* 재료 정보 컨테이너 스타일 개선 */
+.recipe-ingredients {
+  margin-top: 8px;
+}
+
+.recipe-ingredients .ingredients-tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
 }
 
 .recipe-category {
@@ -454,15 +470,16 @@
   text-overflow: ellipsis;
 }
 
-/* 키워드 검색 결과용 레시피 설명 스타일 */
+/* 키워드 검색 결과용 레시피 설명 스타일 - 사진처럼 명확하게 */
 .recipe-result-page .recipe-description {
-  font-size: 12px;
+  font-size: 13px;
   color: #666;
-  line-height: 1.4;
-  margin: 8px 0 0 0;
+  line-height: 1.5;
+  margin: 4px 0 0px 0;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   overflow: hidden;
   text-overflow: ellipsis;
   word-break: break-word;

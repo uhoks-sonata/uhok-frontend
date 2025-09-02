@@ -281,22 +281,31 @@ export const cartApi = {
     try {
       console.log('🛒 레시피 추천 API 요청:', { selectedCartIds, page, size });
       
-      // 먼저 장바구니 아이템들을 조회하여 kok_product_id를 추출
+      // 먼저 장바구니 아이템들을 조회하여 상품 ID를 추출
       const cartResponse = await api.get('/api/kok/carts?limit=200');
       const cartItems = cartResponse.data?.cart_items || [];
       
       console.log('🔍 전체 장바구니 아이템:', cartItems);
       
-      // 선택된 장바구니 ID들에 해당하는 상품 ID들을 추출
+      // 모든 상품 ID를 product_id로 통일하여 추출
       const productIds = [];
+      
       selectedCartIds.forEach(cartId => {
         const cartItem = cartItems.find(item => 
           item.kok_cart_id === cartId || item.cart_id === cartId || item.id === cartId
         );
         
-        if (cartItem && cartItem.kok_product_id) {
-          productIds.push(cartItem.kok_product_id);
-          console.log('🔍 장바구니 ID', cartId, '에서 상품 ID 추출:', cartItem.kok_product_id);
+        if (cartItem) {
+          // 상품 ID 추출 (KOK 상품 ID 또는 홈쇼핑 상품 ID 모두 product_id로 통일)
+          const productId = cartItem.kok_product_id || 
+                           cartItem.homeshopping_product_id || 
+                           cartItem.home_shopping_product_id || 
+                           cartItem.product_id;
+          
+          if (productId) {
+            productIds.push(productId);
+            console.log('🔍 장바구니 ID', cartId, '에서 상품 ID 추출:', productId);
+          }
         } else {
           console.warn('⚠️ 장바구니 ID', cartId, '에 해당하는 상품을 찾을 수 없습니다.');
         }
@@ -309,8 +318,18 @@ export const cartApi = {
       console.log('🔍 추출된 상품 ID들:', productIds);
       
       // GET 요청만 사용 (POST는 지원되지 않음)
-      const kokProductIds = encodeURIComponent(productIds.join(','));
-      const response = await api.get(`/api/kok/carts/recipe-recommend?kok_product_ids=${kokProductIds}&page=${page}&size=${size}`);
+      // product_id로 통일하여 전송
+      // 중복 제거
+      const uniqueProductIds = [...new Set(productIds)];
+      const productIdsParam = uniqueProductIds.join(',');
+      
+      // Query 파라미터 구성
+      const queryParams = new URLSearchParams();
+      queryParams.append('product_ids', productIdsParam);
+      queryParams.append('page', page.toString());
+      queryParams.append('size', size.toString());
+      
+      const response = await api.get(`/api/kok/carts/recipe-recommend?${queryParams.toString()}`);
       
       console.log('✅ 레시피 추천 API 응답:', response.data);
       
@@ -492,42 +511,62 @@ export const cartApi = {
         console.log('🔍 첫 번째 주문의 모든 키:', Object.keys(recentOrders[0]));
       }
       
-      // 최근 주문에서 상품 ID들을 추출 (백엔드 API 호출을 위해)
-      const productIds = [];
+      // 최근 주문에서 KOK 상품과 홈쇼핑 상품 ID를 구분하여 추출
+      const kokProductIds = [];
+      const homeshoppingProductIds = [];
       
       // 각 주문에서 직접 상품 ID를 추출 (mypage-product-info에서)
       for (const order of recentOrders) {
         console.log('🔍 주문에서 상품 ID 추출 시도:', order);
         
-        // 주문 데이터에서 직접 상품 ID 추출 (다양한 필드명 시도)
-        const productId = order.product_id || 
-                         order.kok_product_id || 
-                         order.id || 
-                         order.productId ||
-                         order.kok_product_id ||
-                         order.productId ||
-                         order.item_id ||
-                         order.kok_item_id;
+        // 주문 타입을 확인하여 KOK 상품인지 홈쇼핑 상품인지 구분
+        const orderType = order.order_type || order.type || 'kok'; // 기본값은 KOK
         
-        if (productId && productId > 0) {
-          productIds.push(productId);
-          console.log('✅ 주문에서 직접 상품 ID 추출:', productId);
+        if (orderType === 'homeshopping' || orderType === 'home_shopping') {
+          // 홈쇼핑 상품 ID 추출
+          const productId = order.product_id || 
+                           order.homeshopping_product_id || 
+                           order.home_shopping_product_id ||
+                           order.id || 
+                           order.productId;
+          
+          if (productId && productId > 0) {
+            homeshoppingProductIds.push(productId);
+            console.log('✅ 홈쇼핑 상품 ID 추출:', productId);
+          }
         } else {
-          console.warn('⚠️ 주문에서 상품 ID를 찾을 수 없음:', {
-            order: order,
-            사용가능한_키: Object.keys(order),
-            product_id: order.product_id,
-            kok_product_id: order.kok_product_id,
-            id: order.id,
-            productId: order.productId,
-            item_id: order.item_id,
-            kok_item_id: order.kok_item_id
-          });
+          // KOK 상품 ID 추출
+          const productId = order.product_id || 
+                           order.kok_product_id || 
+                           order.id || 
+                           order.productId ||
+                           order.item_id ||
+                           order.kok_item_id;
+          
+          if (productId && productId > 0) {
+            kokProductIds.push(productId);
+            console.log('✅ KOK 상품 ID 추출:', productId);
+          }
+        }
+        
+        // 상품 타입이 명확하지 않은 경우, 기존 로직으로 KOK 상품으로 처리
+        if (!order.order_type && !order.type) {
+          const productId = order.product_id || 
+                           order.kok_product_id || 
+                           order.id || 
+                           order.productId ||
+                           order.item_id ||
+                           order.kok_item_id;
+          
+          if (productId && productId > 0) {
+            kokProductIds.push(productId);
+            console.log('✅ 기본값으로 KOK 상품 ID 추출:', productId);
+          }
         }
       }
       
-      // 상품 ID를 찾지 못한 경우 주문 상세 정보를 조회하여 kok_product_id를 가져옴
-      if (productIds.length === 0) {
+      // 상품 ID를 찾지 못한 경우 주문 상세 정보를 조회하여 상품 ID를 가져옴
+      if (kokProductIds.length === 0 && homeshoppingProductIds.length === 0) {
         console.log('🔍 상품 ID를 찾지 못해 주문 상세 정보를 조회합니다.');
         
         for (const order of recentOrders) {
@@ -543,10 +582,20 @@ export const cartApi = {
             // 주문 상세에서 상품 ID들을 추출
             if (orderDetail.items && Array.isArray(orderDetail.items)) {
               orderDetail.items.forEach(item => {
-                const productId = item.kok_product_id || item.product_id;
-                if (productId && productId > 0) {
-                  productIds.push(productId);
-                  console.log('✅ 주문 상세에서 상품 ID 추출:', productId);
+                const orderType = item.order_type || item.type || 'kok';
+                
+                if (orderType === 'homeshopping' || orderType === 'home_shopping') {
+                  const productId = item.homeshopping_product_id || item.home_shopping_product_id || item.product_id;
+                  if (productId && productId > 0) {
+                    homeshoppingProductIds.push(productId);
+                    console.log('✅ 주문 상세에서 홈쇼핑 상품 ID 추출:', productId);
+                  }
+                } else {
+                  const productId = item.kok_product_id || item.product_id;
+                  if (productId && productId > 0) {
+                    kokProductIds.push(productId);
+                    console.log('✅ 주문 상세에서 KOK 상품 ID 추출:', productId);
+                  }
                 }
               });
             }
@@ -556,9 +605,10 @@ export const cartApi = {
         }
       }
       
-      console.log('🔍 추출된 상품 ID들:', productIds);
+      console.log('🔍 추출된 KOK 상품 ID들:', kokProductIds);
+      console.log('🔍 추출된 홈쇼핑 상품 ID들:', homeshoppingProductIds);
       
-      if (productIds.length === 0) {
+      if (kokProductIds.length === 0 && homeshoppingProductIds.length === 0) {
         console.warn('⚠️ 상품 ID를 찾을 수 없어 상품명에서 키워드를 추출합니다.');
         
         // 상품명에서 키워드 추출
@@ -584,9 +634,10 @@ export const cartApi = {
           const dummyProductIds = [1, 2, 3].slice(0, keywords.length);
           console.log('🔍 더미 상품 ID 사용:', dummyProductIds);
           
-                     // 백엔드 API 호출 (더미 상품 ID 사용)
-           const kokProductIds = encodeURIComponent(dummyProductIds.join(','));
-           const requestUrl = `/api/kok/carts/recipe-recommend?kok_product_ids=${kokProductIds}&page=${page}&size=${size}`;
+                                           // 백엔드 API 호출 (더미 상품 ID 사용)
+            const uniqueDummyProductIds = [...new Set(dummyProductIds)];
+            const kokProductIds = uniqueDummyProductIds.join(',');
+            const requestUrl = `/api/kok/carts/recipe-recommend?kok_product_ids=${kokProductIds}&page=${page}&size=${size}`;
            
            console.log('🔍 마이페이지 레시피 추천 API 요청 URL (더미 ID):', requestUrl);
            console.log('🔍 요청 파라미터 확인 (더미 ID):', {
@@ -719,17 +770,28 @@ export const cartApi = {
         throw new Error('선택된 주문에서 상품 ID를 찾을 수 없고, 상품명도 없습니다.');
       }
       
-             // 백엔드 API 호출 (장바구니 레시피 추천 API와 동일한 구조 사용)
-       const kokProductIds = encodeURIComponent(productIds.join(','));
-       const requestUrl = `/api/kok/carts/recipe-recommend?kok_product_ids=${kokProductIds}&page=${page}&size=${size}`;
-       
-       console.log('🔍 마이페이지 레시피 추천 API 요청 URL:', requestUrl);
-       console.log('🔍 요청 파라미터 확인:', {
-         kok_product_ids: kokProductIds,
-         page: page,
-         size: size,
-         원본_productIds: productIds
-       });
+      // 백엔드 API 호출 (product_ids로 통일)
+      // 모든 상품 ID를 product_ids로 통일
+      const allProductIds = [...kokProductIds, ...homeshoppingProductIds];
+      const uniqueProductIds = [...new Set(allProductIds)];
+      const productIdsParam = uniqueProductIds.join(',');
+      
+      // Query 파라미터 구성
+      const queryParams = new URLSearchParams();
+      queryParams.append('product_ids', productIdsParam);
+      queryParams.append('page', page.toString());
+      queryParams.append('size', size.toString());
+      
+      const requestUrl = `/api/kok/carts/recipe-recommend?${queryParams.toString()}`;
+      
+      console.log('🔍 마이페이지 레시피 추천 API 요청 URL:', requestUrl);
+      console.log('🔍 요청 파라미터 확인:', {
+        product_ids: productIdsParam,
+        page: page,
+        size: size,
+        원본_kokProductIds: kokProductIds,
+        원본_homeshoppingProductIds: homeshoppingProductIds
+      });
        
        const apiResponse = await api.get(requestUrl);
       

@@ -574,9 +574,23 @@ const MyPage = () => {
                      {/* 주문 내역 링크 */}
            <div className="order-history-link" onClick={handleOrderHistoryClick}>
              <span className="order-history-text">주문 내역</span>
-             <span className="order-count">
-               {isLoggedIn && userData.username && userData.username.trim() !== '' ? `${userData.orderCount} >` : '로그인 필요 >'}
-             </span>
+                                     <span className="order-count">
+                          {isLoggedIn && userData.username && userData.username.trim() !== '' ? (
+                            <>
+                              {userData.orderCount}
+                              <svg className="order-count-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                            </>
+                          ) : (
+                            <>
+                              로그인 필요
+                              <svg className="order-count-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                            </>
+                          )}
+                        </span>
            </div>
         </div>
 
@@ -634,10 +648,22 @@ const MyPage = () => {
                             <div className="mypage-product-details">
                               {/* 상품명을 표시합니다 */}
                               <div className="mypage-product-name" title={order.product_name}>
-                                {order.product_name && order.product_name.length > 50 
-                                  ? `${order.product_name.substring(0, 50)}...`
-                                  : order.product_name || '상품명 없음'
-                                }
+                                {(() => {
+                                  const productName = order.product_name || '상품명 없음';
+                                  const displayName = productName.length > 50 
+                                    ? `${productName.substring(0, 50)}...`
+                                    : productName;
+                                  
+                                  // 대괄호 안의 텍스트를 찾아서 볼드 처리
+                                  const parts = displayName.split(/(\[[^\]]+\])/);
+                                  
+                                  return parts.map((part, index) => {
+                                    if (part.startsWith('[') && part.endsWith(']')) {
+                                      return <span key={index} className="bracket-bold">{part}</span>;
+                                    }
+                                    return part;
+                                  });
+                                })()}
                               </div>
                               {/* 가격과 수량을 표시합니다 */}
                               <div className="mypage-product-price">
@@ -661,7 +687,7 @@ const MyPage = () => {
                             className="recipe-recommend-btn" 
                             onClick={() => handleRecipeRecommendationClick(orders)}
                           >
-                            구매 재료들로 만들 수 있는 다른 레시피 추천받기 →
+                            구매한 식재료로 만들 수 있는 레시피 추천받기
                           </div>
                         </div>
                       </div>
