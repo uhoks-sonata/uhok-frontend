@@ -386,6 +386,14 @@
   flex-direction: column;
 }
 
+.channel-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
 .channel-info {
   margin: 0;
   display: flex;
@@ -394,7 +402,9 @@
 }
 
 .channel-logo {
-  width: 55px;
+  width: 79px;
+  margin-top: 3px;
+  margin-bottom: 7px;
   height: 32px;
   object-fit: contain;
 }

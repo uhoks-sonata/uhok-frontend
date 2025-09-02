@@ -17,7 +17,7 @@
 }
 
 .hn-wishlist-right {
-  gap: 3px; /* 벨과 장바구니 간격 */
+  /* gap: 3px; 벨과 장바구니 간격 */
   justify-content: center; /* 중앙 정렬 */
   padding-top: 7px;
 }
@@ -39,5 +39,5 @@
 .hn-wishlist-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  /* gap: 12px; */
 }

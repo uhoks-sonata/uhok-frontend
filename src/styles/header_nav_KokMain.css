@@ -3,7 +3,7 @@
 .hn-main-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  /* gap: 8px; */
 }
 
 .hn-main-left {
@@ -12,7 +12,7 @@
 
 .hn-main-right {
   padding-top: 7px;
-  gap: 3px; /* 알림과 장바구니 아이콘 간격 */
+  /* gap: 3px; 알림과 장바구니 아이콘 간격 */
   justify-content: center; /* 중앙 정렬 추가 */
 }
 
@@ -79,5 +79,5 @@
 .hn-main-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  /* gap: 12px; */
 }

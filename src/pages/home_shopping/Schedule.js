@@ -1073,7 +1073,7 @@ const Schedule = () => {
                 </div>
                 <div className="schedule-info">
                   <div className="channel-info">
-                    {/* 홈쇼핑 로고 표시 */}
+                    {/* 홈쇼핑 로고와 채널 번호 표시 */}
                     <div className="schedule-channel-logo-small">
                       {channelLogo && channelLogo.logo ? (
                         <img 
@@ -1086,7 +1086,10 @@ const Schedule = () => {
                         </div>
                       )}
                     </div>
-
+                    {/* 채널 번호 표시 */}
+                    <div className="schedule-channel-number">
+                      [CH {item.homeshopping_channel}]
+                    </div>
                   </div>
                   <div className="schedule-product-meta">
                     <div className="schedule-product-name">{item.product_name}</div>
