@@ -282,6 +282,66 @@ export const homeShoppingApi = {
     }
   },
 
+  // ===== 주문 관련 =====
+  
+  // 홈쇼핑 주문 생성
+  createOrder: async (productId, quantity = 1) => {
+    try {
+      const response = await api.post('/api/orders/homeshopping/order', {
+        product_id: productId,
+        quantity: quantity
+      });
+      return response.data;
+    } catch (error) {
+      console.error('❌ 홈쇼핑 주문 생성 실패:', error);
+      throw error;
+    }
+  },
+
+  // 홈쇼핑 주문 상태 조회
+  getOrderStatus: async (homeshoppingOrderId) => {
+    try {
+      const response = await api.get(`/api/orders/homeshopping/${homeshoppingOrderId}/status`);
+      return response.data;
+    } catch (error) {
+      console.error('❌ 홈쇼핑 주문 상태 조회 실패:', error);
+      throw error;
+    }
+  },
+
+  // 홈쇼핑 주문과 상태 함께 조회
+  getOrderWithStatus: async (homeshoppingOrderId) => {
+    try {
+      const response = await api.get(`/api/orders/homeshopping/${homeshoppingOrderId}/with-status`);
+      return response.data;
+    } catch (error) {
+      console.error('❌ 홈쇼핑 주문과 상태 함께 조회 실패:', error);
+      throw error;
+    }
+  },
+
+  // 홈쇼핑 결제 확인(단건)
+  confirmPayment: async (homeshoppingOrderId) => {
+    try {
+      const response = await api.post(`/api/orders/homeshopping/${homeshoppingOrderId}/payment/confirm`);
+      return response.data;
+    } catch (error) {
+      console.error('❌ 홈쇼핑 결제 확인 실패:', error);
+      throw error;
+    }
+  },
+
+  // 홈쇼핑 자동 상태 업데이트 시작 (테스트용)
+  startAutoUpdate: async (homeshoppingOrderId) => {
+    try {
+      const response = await api.post(`/api/orders/homeshopping/${homeshoppingOrderId}/auto-update`);
+      return response.data;
+    } catch (error) {
+      console.error('❌ 홈쇼핑 자동 상태 업데이트 시작 실패:', error);
+      throw error;
+    }
+  },
+
   // ===== 알림 관련 =====
   
   // 주문 알림 조회

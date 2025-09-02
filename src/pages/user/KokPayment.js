@@ -13,7 +13,7 @@ import '../../styles/kok_payment.css';
 import ModalManager, { showLoginRequiredNotification, showAlert, hideModal } from '../../components/LoadingModal';
 
 const KokPayment = () => {
-  const [paymentMethod, setPaymentMethod] = useState('card');
+  const [paymentMethod] = useState('card'); // 항상 신용카드만 사용
   const [cardNumber, setCardNumber] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
   const [cvv, setCvv] = useState('');
@@ -945,33 +945,13 @@ const KokPayment = () => {
         <div className="payment-methods">
           <h2>결제 방법</h2>
           <div className="method-options">
-            <label className="method-option">
-              <input
-                type="radio"
-                name="paymentMethod"
-                value="card"
-                checked={paymentMethod === 'card'}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-                disabled={isProcessing}
-              />
+            <div className="method-option selected">
               <span>신용카드</span>
-            </label>
-            <label className="method-option">
-              <input
-                type="radio"
-                name="paymentMethod"
-                value="bank"
-                checked={paymentMethod === 'bank'}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-                disabled={isProcessing}
-              />
-              <span>계좌이체</span>
-            </label>
+            </div>
           </div>
         </div>
 
-        {paymentMethod === 'card' && (
-          <div className="card-form">
+        <div className="card-form">
             <h2>카드 정보</h2>
             <div className="form-group">
               <label>카드 번호</label>
@@ -1019,7 +999,6 @@ const KokPayment = () => {
               />
             </div>
           </div>
-        )}
 
         {/* 에러 메시지 표시 */}
         {errorMessage && (
