@@ -23,6 +23,8 @@ const RecipeRecommendation = () => {
   const [recipeSearchType, setRecipeSearchType] = useState('name');
   const [isLoading, setIsLoading] = useState(false);
   const hasInitialized = useRef(false); // 중복 실행 방지용 ref
+  
+
 
   // 로그인 상태 확인 함수
   const checkLoginStatus = () => {
@@ -69,12 +71,14 @@ const RecipeRecommendation = () => {
     if (isRecipeActive) {
       // 이미 활성화된 상태면 비활성화
       setIsRecipeActive(false);
+      setRecipeInput('');
       console.log('레시피명/식재료명 검색 클릭: 비활성화');
     } else {
       // 비활성화된 상태면 활성화하고 다른 버튼은 비활성화
       setIsRecipeActive(true);
       setIsIngredientActive(false);
       setRecipeSearchType('name');
+      setRecipeInput('');
       console.log('레시피명/식재료명 검색 클릭: 활성화');
     }
   };
@@ -116,6 +120,8 @@ const RecipeRecommendation = () => {
     setIngredientInput('');
     setQuantityInput('');
   };
+
+
 
   const handleGetRecipeRecommendation = async () => {
     try {
@@ -386,11 +392,10 @@ const RecipeRecommendation = () => {
                   placeholder={recipeSearchType === 'name' ? '레시피명을 입력해주세요' : '식재료명을 입력해주세요'}
                   value={recipeInput}
                   onChange={(e) => setRecipeInput(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleGetRecipeRecommendation()}
                 />
               </div>
             </div>
-            
-
           </div>
         )}
         
