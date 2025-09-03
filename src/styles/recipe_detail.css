@@ -355,6 +355,9 @@
 
 .ingredient-item {
   padding: 1px 0;
+  min-height: 24px;
+  display: flex;
+  align-items: center;
 }
 
 .ingredient-info {
@@ -362,7 +365,7 @@
   justify-content: flex-start;
   align-items: center;
   width: 100%;
-  gap: 16px; /* 요소들 사이 간격 설정 */
+  gap: 0px; /* 요소들 사이 간격 설정 */
 }
 
 .ingredient-name {
@@ -376,13 +379,21 @@
   color: #666;
 }
 
+/* 버튼 옆에 표시될 수량 */
+.ingredient-amount-next-to-button {
+  font-size: 14px;
+  color: #666;
+  margin-right: 8px;
+  white-space: nowrap;
+}
+
 /* 재료명과 수량을 묶는 컨테이너 */
 .ingredient-name-amount {
   display: flex;
   align-items: center;
   gap: 8px;
   flex: 1; /* 남은 공간을 모두 차지 */
-  justify-content: space-between; /* 재료명은 왼쪽, 수량은 오른쪽 */
+  justify-content: flex-start; /* 재료명을 왼쪽에 배치 */
 }
 
 /* 레시피 상세 페이지에서만 재료명과 수량에 핑크색 밑줄 추가 */
@@ -399,12 +410,6 @@
 .recipe-detail-page .ingredient-name.cart,
 .recipe-detail-page .ingredient-amount.cart {
   text-decoration: none !important;
-}
-
-/* 미보유 재료는 글씨도 핑크색으로 변경 */
-.recipe-detail-page .ingredient-name.not-owned,
-.recipe-detail-page .ingredient-amount.not-owned {
-  color: #FA5F8C !important;
 }
 
 /* 재료 상태 기본 스타일 */
@@ -427,10 +432,23 @@
   color: #ffffff !important;
 }
 
+/* 보유 상태 재료명과 수량 - 밑줄 제거 */
+.recipe-detail-page .ingredient-name.owned,
+.recipe-detail-page .ingredient-amount.owned {
+  text-decoration: none !important;
+  color: #000000 !important;
+}
+
 /* 미보유 상태 - 핑크색 배경 */
 .recipe-detail-page .ingredient-status.not-owned {
   background-color: #FA5F8C !important;
   color: #ffffff !important;
+}
+
+/* 미보유 상태 재료명과 수량 - 핑크색으로 변경 */
+.recipe-detail-page .ingredient-name.not-owned,
+.recipe-detail-page .ingredient-amount.not-owned {
+  color: #FA5F8C !important;
 }
 
 /* 장바구니 상태 - 검은색 배경 */
