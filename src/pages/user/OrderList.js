@@ -14,13 +14,9 @@ import noItemsIcon from '../../assets/no_items.png';
 // LoadingModal import
 import ModalManager, { 
   showLoginRequiredNotification, 
-  showSessionExpiredNotification,
-  showAuthExpiredNotification,
   hideModal 
 } from '../../components/LoadingModal';
 
-// API 설정을 가져옵니다
-import api from '../api';
 // orderApi import
 import { orderApi } from '../../api/orderApi';
 // 사용자 Context import
@@ -84,29 +80,7 @@ const OrderList = () => {
     return price.toLocaleString('ko-KR') + '원';
   };
 
-  // 주문 상태를 한글로 변환하는 함수를 정의합니다
-  const getOrderStatusText = (status) => {
-    const statusMap = {
-      'pending': '주문 대기',
-      'confirmed': '주문 확인',
-      'shipping': '배송 중',
-      'delivered': '배송 완료',
-      'cancelled': '주문 취소'
-    };
-    return statusMap[status] || status;
-  };
 
-  // 주문 상태에 따른 CSS 클래스를 반환하는 함수를 정의합니다
-  const getOrderStatusClass = (status) => {
-    const statusClassMap = {
-      'pending': 'status-pending',
-      'confirmed': 'status-confirmed',
-      'shipping': 'status-shipping',
-      'delivered': 'status-delivered',
-      'cancelled': 'status-cancelled'
-    };
-    return statusClassMap[status] || 'status-default';
-  };
 
   // 날짜를 YYYY-MM-DD 형식으로 포맷팅하는 함수를 정의합니다
   const formatDate = (dateString) => {
@@ -145,6 +119,7 @@ const OrderList = () => {
   const loadOrderData = useCallback(async () => {
     // UserContext가 로딩 중인 경우 대기
     if (userContextLoading) {
+      console.log('UserContext 로딩 중 - loadOrderData 중단');
       return;
     }
     
@@ -175,13 +150,24 @@ const OrderList = () => {
       setLoading(true);
       setError(null);
 
+      // 토큰 상태 확인 (디버깅용)
+      const accessToken = localStorage.getItem('access_token');
+      const refreshToken = localStorage.getItem('refresh_token');
+      console.log('🔍 OrderList.js - API 호출 전 토큰 상태:', {
+        hasAccessToken: !!accessToken,
+        accessTokenLength: accessToken?.length || 0,
+        hasRefreshToken: !!refreshToken,
+        refreshTokenLength: refreshToken?.length || 0,
+        currentPath: window.location.pathname
+      });
+
       // orderApi를 활용하여 주문 내역 목록을 비동기로 조회합니다
-      let ordersResponse;
       let ordersData;
       
       try {
+        console.log('🚀 API 호출 시작 - getUserOrders(10)');
         // 새로운 API 구조: 사용자의 모든 주문 목록 조회
-        ordersResponse = await orderApi.getUserOrders(10); // limit 20으로 설정
+        const ordersResponse = await orderApi.getUserOrders(10);
         ordersData = ordersResponse;
         // console.log('사용자 주문 목록 API 응답:', ordersData);
         // console.log('🔍 OrderList.js - API 응답 상세:', {
@@ -194,6 +180,12 @@ const OrderList = () => {
         // });
       } catch (error) {
         console.error('주문 내역 API 호출 실패:', error);
+        console.log('에러 상세 정보:', {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          message: error.message,
+          code: error.code
+        });
         
         // 401 에러인 경우 토큰 갱신 시도
         if (error.response?.status === 401) {
@@ -278,32 +270,61 @@ const OrderList = () => {
         return;
       }
       
-      // 새로운 API 응답 구조를 프론트엔드 형식으로 변환
+      // 새로운 API 응답 구조를 프론트엔드 형식으로 안전하게 변환
       const transformedOrders = ordersData.order_groups.map((orderGroup) => {
+        // orderGroup이 유효한지 확인
+        if (!orderGroup || typeof orderGroup !== 'object') {
+          console.warn('유효하지 않은 orderGroup:', orderGroup);
+          return null;
+        }
+        
+        // items가 유효한지 확인
+        const items = Array.isArray(orderGroup.items) ? orderGroup.items : [];
+        
         return {
-          order_id: orderGroup.order_id,
-          order_number: orderGroup.order_number,
-          order_date: orderGroup.order_date,
+          order_id: orderGroup.order_id || `unknown_${Date.now()}`,
+          order_number: orderGroup.order_number || '주문번호 없음',
+          order_date: orderGroup.order_date || new Date().toISOString(),
           status: 'delivered',
-          total_amount: orderGroup.total_amount,
-          item_count: orderGroup.item_count,
-          items: orderGroup.items.map((item) => ({
-            product_name: item.product_name || '상품명 없음',
-            product_image: item.product_image,
-            price: item.price,
-            quantity: item.quantity,
-            delivery_status: item.delivery_status,
-            delivery_date: item.delivery_date,
-            recipe_related: item.recipe_related,
-            recipe_title: item.recipe_title,
-            recipe_rating: item.recipe_rating,
-            recipe_scrap_count: item.recipe_scrap_count,
-            recipe_description: item.recipe_description,
-            ingredients_owned: item.ingredients_owned,
-            total_ingredients: item.total_ingredients
-          }))
+          total_amount: orderGroup.total_amount || 0,
+          item_count: orderGroup.item_count || items.length,
+          items: items.map((item, index) => {
+            if (!item || typeof item !== 'object') {
+              console.warn('유효하지 않은 item:', item);
+              return null;
+            }
+            
+            return {
+              product_name: item.product_name || '상품명 없음',
+              product_image: item.product_image || '',
+              price: item.price || 0,
+              quantity: item.quantity || 1,
+              delivery_status: item.delivery_status || '배송완료',
+              delivery_date: item.delivery_date || '',
+              recipe_related: item.recipe_related || false,
+              recipe_title: item.recipe_title || '',
+              recipe_rating: item.recipe_rating || 0,
+              recipe_scrap_count: item.recipe_scrap_count || 0,
+              recipe_description: item.recipe_description || '',
+              ingredients_owned: item.ingredients_owned || 0,
+              total_ingredients: item.total_ingredients || 0
+            };
+          }).filter(Boolean) // null 값 제거
         };
-      });
+      }).filter(Boolean); // null 값 제거
+      
+      // 변환된 주문이 없는 경우 처리
+      if (transformedOrders.length === 0) {
+        console.log('변환된 주문이 없습니다.');
+        setOrderData({
+          orders: [],
+          total_count: 0,
+          page: 1,
+          size: 20
+        });
+        setLoading(false);
+        return;
+      }
       
       // 파싱된 데이터를 상태에 저장합니다
       setOrderData({
@@ -350,20 +371,22 @@ const OrderList = () => {
           setIsRefreshingToken(false);
         }
       }
+      
       // 422 에러 특별 처리
       else if (error.response?.status === 422) {
         console.log('422 에러 발생 - API 엔드포인트나 파라미터 문제일 수 있습니다.');
-        setError(null); // 에러 상태 초기화
+        setError(null);
       }
       // 네트워크 에러인 경우 빈 데이터 사용, 그 외에는 에러 메시지 표시
       else if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED' || 
           (error.name === 'TypeError' && error.message.includes('Failed to fetch')) ||
           error.message.includes('Network Error')) {
         console.log('백엔드 서버 연결 실패 - 빈 데이터로 설정합니다.');
-        setError(null); // 에러 상태 초기화
+        setError(null);
       } else {
         setError(error.message);
       }
+      
       setLoading(false);
       
       // API 연결 실패 시 빈 데이터로 설정 (토큰은 유지)
@@ -379,14 +402,23 @@ const OrderList = () => {
 
   // useEffect 추가
   useEffect(() => {
+    console.log('OrderList useEffect 실행:', { userContextLoading, isLoggedIn });
+    
+    // 토큰 상태 디버깅
+    debugTokenStatus();
+    
     // UserContext 로딩이 완료될 때까지 대기
     if (userContextLoading) {
+      console.log('UserContext 로딩 중 - 대기');
       return;
     }
     
     // 로그인 상태 확인 후 조건부로 API 호출
     const loginStatus = checkLoginStatus();
+    console.log('로그인 상태 확인 결과:', loginStatus);
+    
     if (loginStatus) {
+      console.log('로그인 상태 확인됨 - 주문 내역 로드 시작');
       loadOrderData();
     } else {
       // 로그인하지 않은 경우 로딩 상태만 해제
@@ -457,6 +489,25 @@ const OrderList = () => {
         <div className="error-container">
           <p className="error-message">주문 내역을 불러오는데 실패했습니다.</p>
           <p className="error-details">{error}</p>
+          <button 
+            className="retry-button" 
+            onClick={() => {
+              setError(null);
+              setLoading(true);
+              loadOrderData();
+            }}
+            style={{
+              marginTop: '10px',
+              padding: '8px 16px',
+              backgroundColor: '#007bff',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            다시 시도
+          </button>
         </div>
         <BottomNav />
       </div>
@@ -473,9 +524,11 @@ const OrderList = () => {
       
       {/* 주문 내역 메인 콘텐츠 */}
       <main className="order-list-main">
+        {/* 디버깅용 로그 */}
+        {console.log('OrderList 렌더링 - orderData 상태:', orderData)}
         {/* 주문 내역 목록 */}
         <div className="order-list-content">
-          {orderData.orders.length === 0 ? (
+          {!orderData.orders || orderData.orders.length === 0 ? (
             // 주문 내역이 없을 때 표시할 컴포넌트
             <div className="no-orders-container">
               <img src={noItemsIcon} alt="주문한 상품 없음" className="no-orders-icon" />
@@ -484,7 +537,8 @@ const OrderList = () => {
             </div>
           ) : (
             // 주문번호별로 그룹화하여 렌더링합니다
-            orderData.orders
+            (orderData.orders || [])
+              .filter(order => order && order.items && Array.isArray(order.items) && order.items.length > 0) // 유효한 주문만 필터링
               .sort((a, b) => {
                 // 전체 주문 그룹을 날짜순으로 정렬 (최근 날짜순)
                 const dateA = new Date(a.order_date);
@@ -499,46 +553,48 @@ const OrderList = () => {
               })
               .map((order) => {
                 return (
-                  <div key={order.order_id} className="order-item">
+                  <div key={order.order_id || `unknown_${Date.now()}`} className="order-item">
                     {/* 회색 박스 컨테이너 */}
                     <div className="order-content-box">
                       {/* 주문 정보 헤더 */}
                       <div className="order-header">
                         <div className="order-info">
-                          <span className="order-number">주문번호: {order.order_number}</span>
-                          <span className="order-date">{order.order_date}</span>
+                          <span className="order-number">주문번호: {order.order_number || '주문번호 없음'}</span>
+                          <span className="order-date">{order.order_date || '날짜 없음'}</span>
                         </div>
                         <div className="order-summary">
-                          <span className="total-amount">{formatPrice(order.total_amount)}</span>
-                          <span className="item-count">총 {order.item_count}개 상품</span>
+                          <span className="total-amount">{formatPrice(order.total_amount || 0)}</span>
+                          <span className="item-count">총 {order.item_count || 0}개 상품</span>
                         </div>
                       </div>
                       
                       {/* 배송 상태 */}
                       <div className="delivery-status">
-                        <span className="delivery-status-text">{order.items[0]?.delivery_status || '배송완료'}</span>
-                        <span className="delivery-date">{order.items[0]?.delivery_date || `${formatDate(order.order_date)} 도착`}</span>
+                        <span className="delivery-status-text">{(order.items && order.items[0])?.delivery_status || '배송완료'}</span>
+                        <span className="delivery-date">{(order.items && order.items[0])?.delivery_date || `${formatDate(order.order_date)} 도착`}</span>
                       </div>
                       
                       {/* 상품 정보들 - 같은 주문번호의 모든 상품을 표시합니다 */}
-                      {order.items.map((item, index) => (
+                      {(order.items || [])
+                        .filter(item => item && item.product_name) // 유효한 상품만 필터링
+                        .map((item, index) => (
                         <div 
-                          key={`${order.order_id}-${index}`} 
+                          key={`${order.order_id || 'unknown'}-${index}`} 
                           className="product-info"
-                          onClick={() => handleOrderDetailClick(order.order_id)}
+                          onClick={() => handleOrderDetailClick(order.order_id || 'unknown')}
                           style={{ cursor: 'pointer' }}
                         >
                           {/* 상품 이미지를 표시합니다 */}
                           <div className="product-image">
-                            <img src={item.product_image} alt={item.product_name} />
+                            <img src={item.product_image || ''} alt={item.product_name || '상품 이미지'} />
                           </div>
                           
                           {/* 상품 상세 정보 */}
                           <div className="product-details">
                             {/* 상품명을 표시합니다 */}
-                            <div className="product-name" title={item.product_name}>
+                            <div className="product-name" title={item.product_name || '상품명 없음'}>
                               {(() => {
-                                const productName = item.product_name;
+                                const productName = item.product_name || '상품명 없음';
                                 const displayName = productName.length > 40 
                                   ? `${productName.substring(0, 40)}...`
                                   : productName;
@@ -552,7 +608,7 @@ const OrderList = () => {
                             
                             {/* 가격과 수량 정보 */}
                             <div className="product-price">
-                              {item.price ? `${item.price.toLocaleString()}원` : '가격 정보 없음'} · {item.quantity || 1}개
+                              {item.price ? `${(item.price || 0).toLocaleString()}원` : '가격 정보 없음'} · {item.quantity || 1}개
                             </div>
                           </div>
                         </div>
@@ -568,15 +624,14 @@ const OrderList = () => {
       {/* 하단 네비게이션 컴포넌트 */}
       <BottomNav />
       
-             {/* 모달 컴포넌트 */}
-       <ModalManager
-         {...modalState}
-         onClose={handleModalClose}
-       />
-       {/* 모달 디버깅용 로그 */}
-       {console.log('ModalManager에 전달되는 props:', { ...modalState, onClose: handleModalClose })}
-       {console.log('modalState.isVisible:', modalState.isVisible)}
-       {console.log('modalState.modalType:', modalState.modalType)}
+      {/* 모달 컴포넌트 */}
+      <ModalManager
+        {...modalState}
+        onClose={handleModalClose}
+      />
+      
+      {/* 디버깅용 모달 상태 로그 */}
+      {console.log('OrderList - 모달 상태:', modalState)}
     </div>
   );
 };
