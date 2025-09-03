@@ -1105,24 +1105,30 @@ const KokSearch = () => {
                       src={result.image} 
                       alt={result.title}
                       onError={(e) => {
-                        e.target.src = 'https://via.placeholder.com/300x300/CCCCCC/666666?text=No+Image'; // 기본 이미지로 대체
-                        e.target.onerror = null; // 무한 루프 방지
+                        e.target.style.display = 'none';
+                        const parent = e.target.parentElement;
+                        if (!parent.querySelector('.image-placeholder')) {
+                          const placeholder = document.createElement('div');
+                          placeholder.className = 'image-placeholder';
+                          placeholder.textContent = '이미지 준비 중입니다.';
+                          parent.appendChild(placeholder);
+                        }
                       }}
                     />
                   </div>
                   <div className="result-info">
-                                         <h4 className="result-title">{result.title}</h4>
-                    
-                    
-                    
-                    <div className="result-rating">
-                      <span className="rating">★ {result.rating}</span>
-                      <span className="review-count">리뷰 {result.reviewCount}</span>
-                    </div>
+                    <h4 className="result-title" title={result.title}>
+                      {result.title && result.title.length > 50 
+                        ? result.title.substring(0, 50) + '...' 
+                        : result.title}
+                    </h4>
+
+
                     <div className="result-price">
-                      <span className="discount">{result.discount}</span>
+                      {result.discount && result.discount !== '0%' && result.discount !== 'null' && result.discount !== 'null%' && result.discount !== null && (
+                        <span className="discount">{result.discount}</span>
+                      )}
                       <span className="price">{result.price}</span>
-                      <span className="original-price">{result.originalPrice}</span>
                     </div>
                   </div>
                 </div>
@@ -1130,13 +1136,7 @@ const KokSearch = () => {
               
               {/* 무한 스크롤 상태 표시 */}
               {loadingMore && (
-                <div style={{
-                  textAlign: 'center',
-                  padding: '20px',
-                  color: '#666',
-                  fontSize: '14px',
-                  gridColumn: '1 / -1'
-                }}>
+                <div className="search-loading">
                   <div style={{
                     width: '20px',
                     height: '20px',
@@ -1151,17 +1151,8 @@ const KokSearch = () => {
               )}
               
               {!hasMore && searchResults.length > 0 && (
-                <div style={{
-                  textAlign: 'center',
-                  padding: '20px',
-                  color: '#999',
-                  fontSize: '14px',
-                  backgroundColor: '#f8f9fa',
-                  borderRadius: '8px',
-                  margin: '20px 0',
-                  gridColumn: '1 / -1'
-                }}>
-                  더 이상 로드할 검색 결과가 없습니다
+                <div className="no-results">
+                  <p>더 이상 로드할 검색 결과가 없습니다</p>
                 </div>
               )}
             </div>
