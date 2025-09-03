@@ -273,6 +273,7 @@ export const orderApi = {
   getUserOrders: async (limit = 10) => {
     try {
       console.log('🚀 사용자 주문 목록 조회 API 요청:', { limit });
+      
       const response = await api.get('/api/orders', {
         params: { limit }
       });
