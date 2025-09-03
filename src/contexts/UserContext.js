@@ -121,6 +121,24 @@ export const UserProvider = ({ children }) => {
     console.log('UserContext - 초기화 완료, isLoading: false');
   }, []);
 
+  // 토큰 만료 감지를 위한 주기적 검증
+  useEffect(() => {
+    if (!user || !user.token) return;
+    
+    const checkTokenExpiry = () => {
+      const isValid = validateToken(user.token);
+      if (!isValid) {
+        console.log('UserContext - 토큰 만료 감지, 자동 로그아웃');
+        logout();
+      }
+    };
+    
+    // 1분마다 토큰 검증
+    const interval = setInterval(checkTokenExpiry, 60000);
+    
+    return () => clearInterval(interval);
+  }, [user]);
+
   // 로그인 함수
   const login = async (userData) => {
     console.log('UserContext - 로그인 함수 호출:', userData);
@@ -205,6 +223,14 @@ export const UserProvider = ({ children }) => {
   // 토큰 갱신 함수 (외부에서 호출 가능)
   const refreshToken = async () => {
     console.log('UserContext - 토큰 갱신 시도');
+    
+    // 리프레시 토큰이 있는지 먼저 확인
+    const hasRefreshToken = localStorage.getItem('refresh_token');
+    if (!hasRefreshToken) {
+      console.log('UserContext - 리프레시 토큰이 없어서 갱신 불가능');
+      return false;
+    }
+    
     const success = await attemptTokenRefresh();
     
     if (success) {

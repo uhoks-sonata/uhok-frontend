@@ -1,5 +1,5 @@
 // React와 필요한 훅들을 가져옵니다
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 // 상단 네비게이션 컴포넌트를 가져옵니다
 import HeaderNavOrder from '../../layout/HeaderNavOrder';
@@ -12,7 +12,12 @@ import '../../styles/orderlist.css';
 // 상품 없음 이미지를 가져옵니다
 import noItemsIcon from '../../assets/no_items.png';
 // LoadingModal import
-import ModalManager, { showLoginRequiredNotification, hideModal } from '../../components/LoadingModal';
+import ModalManager, { 
+  showLoginRequiredNotification, 
+  showSessionExpiredNotification,
+  showAuthExpiredNotification,
+  hideModal 
+} from '../../components/LoadingModal';
 
 // API 설정을 가져옵니다
 import api from '../api';
@@ -27,16 +32,31 @@ const OrderList = () => {
   // 페이지 이동을 위한 navigate 훅
   const navigate = useNavigate();
   // 사용자 정보 가져오기
-  const { user, isLoggedIn, refreshToken } = useUser();
+  const { user, isLoggedIn, refreshToken, logout } = useUser();
   
   // ===== 모달 상태 관리 =====
-  const [modalState, setModalState] = useState({ isVisible: false });
+  const [modalState, setModalState] = useState({ 
+    isVisible: false,
+    modalType: null,
+    alertMessage: '',
+    alertButtonText: '확인',
+    alertButtonStyle: 'primary'
+  });
 
   // ===== 모달 핸들러 =====
   const handleModalClose = () => {
     setModalState(hideModal());
-    // 모달 닫은 후 이전 페이지로 돌아가기
-    window.history.back();
+    
+    // 인증 관련 모달인 경우 로그인 페이지로 이동
+    if (modalState.modalType === 'alert' && 
+        (modalState.alertMessage?.includes('세션이 만료되었습니다') || 
+         modalState.alertMessage?.includes('인증이 만료되었습니다'))) {
+      logout(); // UserContext 상태 정리
+      navigate('/login'); // 로그인 페이지로 이동
+    } else {
+      // 일반 모달인 경우 이전 페이지로 돌아가기
+      window.history.back();
+    }
   };
   
   // 주문 내역 데이터를 저장할 상태를 초기화합니다 (API에서 받아옴)
@@ -91,17 +111,43 @@ const OrderList = () => {
 
   // 로그인 상태 확인 함수
   const checkLoginStatus = () => {
+    console.log('checkLoginStatus 실행 - isLoggedIn:', isLoggedIn);
+    
+    // UserContext의 isLoggedIn 상태를 우선적으로 사용
+    if (isLoggedIn) {
+      console.log('UserContext isLoggedIn이 true - 로그인 상태로 확인');
+      return true;
+    }
+    
+    // fallback: localStorage의 토큰 확인
     const token = localStorage.getItem('access_token');
-    return !!token;
+    const hasToken = !!token;
+    console.log('localStorage 토큰 확인:', { hasToken, tokenLength: token?.length });
+    
+    return hasToken;
   };
 
   // 주문 내역 데이터를 가져오는 함수
-  const loadOrderData = async () => {
-    // 로그인하지 않은 경우 모달 표시 후 로그인 페이지로 이동
-    if (!checkLoginStatus()) {
-      setModalState(showLoginRequiredNotification());
-      return;
-    }
+  const loadOrderData = useCallback(async () => {
+         // UserContext의 isLoggedIn 상태를 우선적으로 확인
+     if (!isLoggedIn) {
+       console.log('UserContext에서 로그인되지 않은 상태로 확인됨');
+       const loginRequiredModal = showLoginRequiredNotification();
+       setModalState(loginRequiredModal);
+       console.log('로그인 필요 모달 상태 설정:', loginRequiredModal);
+       return;
+     }
+     
+     // 추가로 checkLoginStatus도 확인 (fallback)
+     if (!checkLoginStatus()) {
+       console.log('localStorage 토큰 확인에서도 로그인되지 않은 상태로 확인됨');
+       const loginRequiredModal = showLoginRequiredNotification();
+       setModalState(loginRequiredModal);
+       console.log('로그인 필요 모달 상태 설정:', loginRequiredModal);
+       return;
+     }
+    
+    console.log('로그인 상태 확인 완료 - API 호출 진행');
 
     try {
       setLoading(true);
@@ -131,37 +177,50 @@ const OrderList = () => {
         if (error.response?.status === 401) {
           console.log('401 에러 발생 - 토큰 갱신을 시도합니다.');
           
-                      try {
+          // 리프레시 토큰이 있는지 먼저 확인
+          const hasRefreshToken = localStorage.getItem('refresh_token');
+          
+          if (hasRefreshToken && refreshToken) {
+            try {
               // UserContext의 refreshToken 함수 사용
-              if (refreshToken) {
-                const refreshSuccess = await refreshToken();
-                if (refreshSuccess) {
-                  console.log('토큰 갱신 성공. API 재시도합니다.');
-                  // 토큰 갱신 성공 시 API 재시도
-                  ordersResponse = await orderApi.getUserOrders(20);
-                  ordersData = ordersResponse;
-                  console.log('토큰 갱신 후 API 재시도 성공:', ordersData);
-                } else {
-                  throw new Error('토큰 갱신 실패');
-                }
+              const refreshSuccess = await refreshToken();
+              if (refreshSuccess) {
+                console.log('토큰 갱신 성공. API 재시도합니다.');
+                // 토큰 갱신 성공 시 API 재시도
+                ordersResponse = await orderApi.getUserOrders(20);
+                ordersData = ordersResponse;
+                console.log('토큰 갱신 후 API 재시도 성공:', ordersData);
               } else {
-                throw new Error('토큰 갱신 함수를 사용할 수 없습니다.');
+                throw new Error('토큰 갱신 실패');
               }
             } catch (refreshError) {
-            console.error('토큰 갱신 실패:', refreshError);
-            
-            // 사용자에게 명확한 안내 제공
-            if (!window.authErrorShown) {
-              window.authErrorShown = true;
-              alert('로그인이 만료되었습니다. 다시 로그인해주세요.');
-              setTimeout(() => {
-                window.authErrorShown = false;
-              }, 2000);
+              console.error('토큰 갱신 실패:', refreshError);
               
-              // 로그인 페이지로 이동
-              navigate('/login');
-              return;
+                          // 토큰 갱신 실패 시 UserContext의 로그아웃 호출하여 상태 동기화
+            console.log('토큰 갱신 실패 - UserContext 로그아웃 호출');
+            
+            // 사용자에게 명확한 안내 제공 (토큰 갱신 실패)
+            const authExpiredModal = showAuthExpiredNotification();
+            setModalState(authExpiredModal);
+            console.log('인증 만료 모달 상태 설정:', authExpiredModal);
+            
+            // 자동 로그아웃 제거 - 사용자가 모달을 닫을 때 로그아웃
+            
+            return; // loadOrderData 함수 종료
             }
+          } else {
+            // 리프레시 토큰이 없으면 바로 로그아웃 처리
+            console.log('리프레시 토큰이 없음 - 바로 로그아웃 처리');
+            
+            // 사용자에게 명확한 안내 제공 (리프레시 토큰이 없는 경우)
+            const sessionExpiredModal = showSessionExpiredNotification();
+            console.log('showSessionExpiredNotification 반환값:', sessionExpiredModal);
+            setModalState(sessionExpiredModal);
+            console.log('세션 만료 모달 상태 설정 후 modalState:', modalState);
+            
+            // 자동 로그아웃 제거 - 사용자가 모달을 닫을 때 로그아웃
+            
+            return; // loadOrderData 함수 종료
           }
         }
         
@@ -230,15 +289,17 @@ const OrderList = () => {
       // 에러 발생 시 에러 상태를 설정하고 로딩 상태를 false로 설정합니다
       console.error('주문 내역 데이터 가져오기 실패:', error);
       
-      // 401 에러 특별 처리 (인증 필요)
-      if (error.response?.status === 401) {
-        console.log('401 에러 발생 - 토큰이 유효하지 않거나 만료되었습니다.');
-        // 토큰이 유효하지 않으면 로그인 페이지로 이동
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('token_type');
-        setModalState(showLoginRequiredNotification());
-        return;
-      }
+             // 401 에러 특별 처리 (인증 필요)
+       if (error.response?.status === 401) {
+         console.log('401 에러 발생 - 토큰이 유효하지 않거나 만료되었습니다.');
+         // 토큰이 유효하지 않으면 로그인 페이지로 이동
+         localStorage.removeItem('access_token');
+         localStorage.removeItem('token_type');
+         const loginRequiredModal = showLoginRequiredNotification();
+         setModalState(loginRequiredModal);
+         console.log('로그인 필요 모달 상태 설정:', loginRequiredModal);
+         return;
+       }
       // 422 에러 특별 처리
       else if (error.response?.status === 422) {
         console.log('422 에러 발생 - API 엔드포인트나 파라미터 문제일 수 있습니다.');
@@ -264,20 +325,34 @@ const OrderList = () => {
         size: 20
       });
     }
-  };
+  }, [isLoggedIn, refreshToken, navigate, setModalState, setLoading, setError, setOrderData, logout]);
 
   // useEffect 추가
   useEffect(() => {
-    // 로그인 상태 확인 후 조건부로 API 호출
-    const loginStatus = checkLoginStatus();
-    if (loginStatus) {
-      loadOrderData();
+    console.log('OrderList useEffect 실행 - isLoggedIn:', isLoggedIn);
+    
+    // UserContext의 로딩이 완료된 후에만 로그인 상태 확인
+    if (isLoggedIn !== undefined) {
+      const loginStatus = checkLoginStatus();
+      console.log('checkLoginStatus 결과:', loginStatus);
+      
+      if (loginStatus) {
+        console.log('로그인 상태 확인됨 - loadOrderData 호출');
+        loadOrderData();
+      } else {
+        // 로그인하지 않은 경우 로딩 상태만 해제
+        console.log('로그인하지 않은 상태: 주문 내역 API 호출 건너뜀');
+        setLoading(false);
+      }
     } else {
-      // 로그인하지 않은 경우 로딩 상태만 해제
-      console.log('로그인하지 않은 상태: 주문 내역 API 호출 건너뜀');
-      setLoading(false);
+      console.log('UserContext 로딩 중 - isLoggedIn이 아직 undefined');
     }
-  }, []);
+  }, [isLoggedIn, refreshToken, logout, loadOrderData]);
+
+  // 모달 상태 변화 감지를 위한 useEffect 추가
+  useEffect(() => {
+    console.log('모달 상태 변화 감지:', modalState);
+  }, [modalState]);
 
   // 뒤로가기 핸들러를 정의합니다
   const handleBack = () => {
@@ -448,11 +523,15 @@ const OrderList = () => {
       {/* 하단 네비게이션 컴포넌트 */}
       <BottomNav />
       
-      {/* 모달 컴포넌트 */}
-      <ModalManager
-        {...modalState}
-        onClose={handleModalClose}
-      />
+             {/* 모달 컴포넌트 */}
+       <ModalManager
+         {...modalState}
+         onClose={handleModalClose}
+       />
+       {/* 모달 디버깅용 로그 */}
+       {console.log('ModalManager에 전달되는 props:', { ...modalState, onClose: handleModalClose })}
+       {console.log('modalState.isVisible:', modalState.isVisible)}
+       {console.log('modalState.modalType:', modalState.modalType)}
     </div>
   );
 };
