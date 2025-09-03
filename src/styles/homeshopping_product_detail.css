@@ -1351,11 +1351,12 @@
 .detail-images-container {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0;
 }
 
 .detail-image-item {
   width: 100%;
+  margin: 0;
 }
 
 .detail-image-item img {
@@ -1363,6 +1364,8 @@
   height: auto;
   border-radius: 8px;
   cursor: pointer;
+  margin: 0;
+  display: block;
 }
 
 /* 상품 상세 정보 섹션 */
