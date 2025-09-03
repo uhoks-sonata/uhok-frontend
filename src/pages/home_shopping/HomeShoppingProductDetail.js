@@ -451,20 +451,61 @@ const HomeShoppingProductDetail = () => {
     setShowHomeshoppingOrderModal(false);
   };
   
+
   // 전화 주문 함수
-  const handlePhoneOrder = () => {
-    console.log('📞 전화 주문 클릭');
-    // 전화 주문 로직 구현
-    alert('전화 주문 기능이 곧 제공될 예정입니다.');
-    closeHomeshoppingOrderModal();
+  const handlePhoneOrder = async () => {
+    try {
+      console.log('📞 전화 주문 클릭');
+      
+      if (!productDetail || !productDetail.product_id) {
+        throw new Error('상품 정보를 찾을 수 없습니다.');
+      }
+      
+      // 홈쇼핑 주문 생성 API 호출
+      const orderResponse = await homeShoppingApi.createOrder(
+        productDetail.product_id, 
+        1 // 수량은 1로 고정
+      );
+      
+      console.log('✅ 전화 주문 생성 성공:', orderResponse);
+      
+      // 주문 성공 알림
+      alert(`전화 주문이 성공적으로 생성되었습니다!\n주문번호: ${orderResponse.order_id}\n상품: ${orderResponse.product_name}\n금액: ₩${orderResponse.order_price?.toLocaleString()}`);
+      
+      closeHomeshoppingOrderModal();
+      
+    } catch (error) {
+      console.error('❌ 전화 주문 실패:', error);
+      alert(`전화 주문 생성에 실패했습니다.\n${error.message || '알 수 없는 오류가 발생했습니다.'}`);
+    }
   };
   
   // 모바일 주문 함수
-  const handleMobileOrder = () => {
-    console.log('📱 모바일 주문 클릭');
-    // 모바일 주문 로직 구현
-    alert('모바일 주문 기능이 곧 제공될 예정입니다.');
-    closeHomeshoppingOrderModal();
+  const handleMobileOrder = async () => {
+    try {
+      console.log('📱 모바일 주문 클릭');
+      
+      if (!productDetail || !productDetail.product_id) {
+        throw new Error('상품 정보를 찾을 수 없습니다.');
+      }
+      
+      // 홈쇼핑 주문 생성 API 호출
+      const orderResponse = await homeShoppingApi.createOrder(
+        productDetail.product_id, 
+        1 // 수량은 1로 고정
+      );
+      
+      console.log('✅ 모바일 주문 생성 성공:', orderResponse);
+      
+      // 주문 성공 알림
+      alert(`모바일 주문이 성공적으로 생성되었습니다!\n주문번호: ${orderResponse.order_id}\n상품: ${orderResponse.product_name}\n금액: ₩${orderResponse.order_price?.toLocaleString()}`);
+      
+      closeHomeshoppingOrderModal();
+      
+    } catch (error) {
+      console.error('❌ 모바일 주문 실패:', error);
+      alert(`모바일 주문 생성에 실패했습니다.\n${error.message || '알 수 없는 오류가 발생했습니다.'}`);
+    }
   };
   
   // 방송 상태 확인
