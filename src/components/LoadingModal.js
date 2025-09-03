@@ -22,6 +22,8 @@ const LoadingModal = ({ message = "로딩 중..." }) => {
 };
 
 const AlertModal = ({ message, onClose, buttonText = "확인", buttonStyle = "primary" }) => {
+  console.log('AlertModal 렌더링:', { message, buttonText, buttonStyle });
+  
   return (
     <div className="loading-modal-overlay" onClick={onClose}>
       <div className="loading-modal-content" onClick={(e) => e.stopPropagation()}>
@@ -70,12 +72,30 @@ const ModalManager = ({
   alertButtonText,
   alertButtonStyle
 }) => {
-  if (!isVisible) return null;
+  console.log('=== ModalManager 컴포넌트 시작 ===');
+  console.log('ModalManager 렌더링 - props:', { 
+    isVisible, 
+    modalType, 
+    alertMessage, 
+    alertButtonText, 
+    alertButtonStyle 
+  });
+  console.log('ModalManager - isVisible 타입:', typeof isVisible, '값:', isVisible);
+  console.log('ModalManager - modalType 타입:', typeof modalType, '값:', modalType);
+  
+  if (!isVisible) {
+    console.log('ModalManager - isVisible이 false이므로 null 반환');
+    return null;
+  }
+  
+  console.log('ModalManager - isVisible이 true이므로 모달 렌더링 진행');
 
   switch (modalType) {
     case 'loading':
+      console.log('ModalManager - loading 모달 렌더링');
       return <LoadingModal message={loadingMessage} />;
     case 'alert':
+      console.log('ModalManager - alert 모달 렌더링:', { message: alertMessage, buttonText: alertButtonText, buttonStyle: alertButtonStyle });
       return <AlertModal 
         message={alertMessage} 
         onClose={onClose} 
@@ -83,6 +103,7 @@ const ModalManager = ({
         buttonStyle={alertButtonStyle}
       />;
     case 'confirm':
+      console.log('ModalManager - confirm 모달 렌더링');
       return (
         <ConfirmModal 
           message={confirmMessage} 
@@ -93,6 +114,7 @@ const ModalManager = ({
         />
       );
     default:
+      console.log('ModalManager - 알 수 없는 modalType:', modalType);
       return null;
   }
 };
@@ -178,6 +200,28 @@ export const showLoginRequiredNotification = () => {
     alertMessage: '로그인이 필요한 서비스입니다.', 
     alertButtonText: '확인',
     alertButtonStyle: 'primary',
+    isVisible: true 
+  };
+};
+
+// 세션 만료 알림 모달 표시 함수
+export const showSessionExpiredNotification = () => {
+  return { 
+    modalType: 'alert', 
+    alertMessage: '세션이 만료되었습니다.<br><span class="sub-message">보안을 위해 다시 로그인해주세요.</span>', 
+    alertButtonText: '로그인하기',
+    alertButtonStyle: 'warning',
+    isVisible: true 
+  };
+};
+
+// 인증 만료 알림 모달 표시 함수
+export const showAuthExpiredNotification = () => {
+  return { 
+    modalType: 'alert', 
+    alertMessage: '인증이 만료되었습니다.<br><span class="sub-message">보안을 위해 다시 로그인해주세요.</span>', 
+    alertButtonText: '로그인하기',
+    alertButtonStyle: 'warning',
     isVisible: true 
   };
 };

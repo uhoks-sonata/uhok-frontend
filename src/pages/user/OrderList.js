@@ -1,5 +1,5 @@
 // React와 필요한 훅들을 가져옵니다
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 // 상단 네비게이션 컴포넌트를 가져옵니다
 import HeaderNavOrder from '../../layout/HeaderNavOrder';
@@ -12,7 +12,12 @@ import '../../styles/orderlist.css';
 // 상품 없음 이미지를 가져옵니다
 import noItemsIcon from '../../assets/no_items.png';
 // LoadingModal import
-import ModalManager, { showLoginRequiredNotification, hideModal } from '../../components/LoadingModal';
+import ModalManager, { 
+  showLoginRequiredNotification, 
+  showSessionExpiredNotification,
+  showAuthExpiredNotification,
+  hideModal 
+} from '../../components/LoadingModal';
 
 // API 설정을 가져옵니다
 import api from '../api';
@@ -30,13 +35,28 @@ const OrderList = () => {
   const { user, isLoggedIn, refreshToken, isLoading: userContextLoading } = useUser();
   
   // ===== 모달 상태 관리 =====
-  const [modalState, setModalState] = useState({ isVisible: false });
+  const [modalState, setModalState] = useState({ 
+    isVisible: false,
+    modalType: null,
+    alertMessage: '',
+    alertButtonText: '확인',
+    alertButtonStyle: 'primary'
+  });
 
   // ===== 모달 핸들러 =====
   const handleModalClose = () => {
     setModalState(hideModal());
-    // 모달 닫은 후 이전 페이지로 돌아가기
-    window.history.back();
+    
+    // 인증 관련 모달인 경우 로그인 페이지로 이동
+    if (modalState.modalType === 'alert' && 
+        (modalState.alertMessage?.includes('세션이 만료되었습니다') || 
+         modalState.alertMessage?.includes('인증이 만료되었습니다'))) {
+      logout(); // UserContext 상태 정리
+      navigate('/login'); // 로그인 페이지로 이동
+    } else {
+      // 일반 모달인 경우 이전 페이지로 돌아가기
+      window.history.back();
+    }
   };
   
   // 주문 내역 데이터를 저장할 상태를 초기화합니다 (API에서 받아옴)
@@ -98,7 +118,10 @@ const OrderList = () => {
     
     // UserContext가 아직 로딩 중이거나 false인 경우 토큰 확인
     const token = localStorage.getItem('access_token');
-    return !!token;
+    const hasToken = !!token;
+    console.log('localStorage 토큰 확인:', { hasToken, tokenLength: token?.length });
+    
+    return hasToken;
   };
 
   // 주문 내역 데이터를 가져오는 함수
@@ -285,7 +308,7 @@ const OrderList = () => {
         size: 20
       });
     }
-  };
+  }, [isLoggedIn, refreshToken, navigate, setModalState, setLoading, setError, setOrderData, logout]);
 
   // useEffect 추가
   useEffect(() => {
@@ -474,11 +497,15 @@ const OrderList = () => {
       {/* 하단 네비게이션 컴포넌트 */}
       <BottomNav />
       
-      {/* 모달 컴포넌트 */}
-      <ModalManager
-        {...modalState}
-        onClose={handleModalClose}
-      />
+             {/* 모달 컴포넌트 */}
+       <ModalManager
+         {...modalState}
+         onClose={handleModalClose}
+       />
+       {/* 모달 디버깅용 로그 */}
+       {console.log('ModalManager에 전달되는 props:', { ...modalState, onClose: handleModalClose })}
+       {console.log('modalState.isVisible:', modalState.isVisible)}
+       {console.log('modalState.modalType:', modalState.modalType)}
     </div>
   );
 };
