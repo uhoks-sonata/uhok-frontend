@@ -509,7 +509,7 @@ const RecipeResult = () => {
                recipeObj = {
                  recipe_id: recipe[0],
                  recipe_title: recipe[1],
-                 cooking_name: recipe[2],
+                 recipe_title: recipe[1],
                  scrap_count: recipe[3],
                  cooking_case_name: recipe[4],
                  cooking_category_name: recipe[5],

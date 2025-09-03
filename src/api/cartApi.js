@@ -344,7 +344,7 @@ export const cartApi = {
               recipe_title: recipe.recipe_title,
               name: recipe.name,
               title: recipe.title,
-              cooking_name: recipe.cooking_name
+              recipe_title: recipe.recipe_title
             },
             이미지_필드들: {
               thumbnail_url: recipe.thumbnail_url,
@@ -367,7 +367,7 @@ export const cartApi = {
           
           // 실제 이미지 필드 값들 상세 확인
           console.log(`🔍 레시피 ${index + 1} 이미지 필드 상세:`, {
-            recipe_title: recipe.recipe_title || recipe.name || recipe.title || recipe.cooking_name,
+            recipe_title: recipe.recipe_title ,
             thumbnail_url: recipe.thumbnail_url,
             image_url: recipe.image_url,
             img_url: recipe.img_url,
@@ -450,7 +450,7 @@ export const cartApi = {
           
           return {
             recipe_id: recipeId,
-            recipe_title: recipe.recipe_title || recipe.name || recipe.title || recipe.cooking_name || '레시피',
+            recipe_title: recipe.recipe_title,
             cooking_introduction: recipe.cooking_introduction || recipe.description || recipe.introduction || '',
             thumbnail_url: actualImageUrl || recipe.thumbnail_url || recipe.image_url || recipe.img_url || recipe.image || recipe.thumbnail || recipe.main_image || recipe.main_image_url || 'https://picsum.photos/300/200?random=' + Math.floor(Math.random() * 1000),
             number_of_serving: recipe.number_of_serving || recipe.serving || recipe.cooking_serving || '2인분',
@@ -716,7 +716,7 @@ export const cartApi = {
               
               return {
                 recipe_id: recipeId,
-                recipe_title: recipe.recipe_title || recipe.name || recipe.title || recipe.cooking_name || '레시피',
+                recipe_title: recipe.recipe_title ,
                 cooking_introduction: recipe.cooking_introduction || recipe.description || recipe.introduction || '',
                 thumbnail_url: actualImageUrl || recipe.thumbnail_url || recipe.image_url || recipe.img_url || recipe.image || recipe.thumbnail || recipe.main_image || recipe.main_image_url || 'https://picsum.photos/300/200?random=' + Math.floor(Math.random() * 1000),
                 number_of_serving: recipe.number_of_serving || recipe.serving || recipe.cooking_serving || '2인분',
@@ -862,7 +862,7 @@ export const cartApi = {
           
           return {
             recipe_id: recipeId,
-            recipe_title: recipe.recipe_title || recipe.name || recipe.title || recipe.cooking_name || '레시피',
+            recipe_title: recipe.recipe_title ,
             cooking_introduction: recipe.cooking_introduction || recipe.description || recipe.introduction || '',
             thumbnail_url: actualImageUrl || recipe.thumbnail_url || recipe.image_url || recipe.img_url || recipe.image || recipe.thumbnail || recipe.main_image || recipe.main_image_url || 'https://picsum.photos/300/200?random=' + Math.floor(Math.random() * 1000),
             number_of_serving: recipe.number_of_serving || recipe.serving || recipe.cooking_serving || '2인분',

@@ -9,10 +9,40 @@ const isTokenExpired = (token) => {
     const payload = JSON.parse(atob(tokenParts[1]));
     const currentTime = Math.floor(Date.now() / 1000);
     
-    return payload.exp < currentTime;
+    // 만료 5분 전에 미리 갱신 시도
+    return payload.exp < (currentTime + 300);
   } catch (error) {
     console.warn('토큰 만료 시간 확인 실패:', error);
     return true;
+  }
+};
+
+// 토큰 갱신 시도 함수
+const attemptTokenRefresh = async () => {
+  try {
+    const refreshToken = localStorage.getItem('refresh_token');
+    if (!refreshToken) {
+      console.log('리프레시 토큰이 없습니다.');
+      return false;
+    }
+
+    // 토큰 갱신 API 호출 (백엔드에 구현 필요)
+    const response = await axios.post('/api/auth/refresh', {
+      refresh_token: refreshToken
+    });
+
+    if (response.data.access_token) {
+      localStorage.setItem('access_token', response.data.access_token);
+      if (response.data.refresh_token) {
+        localStorage.setItem('refresh_token', response.data.refresh_token);
+      }
+      console.log('토큰 갱신 성공');
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error('토큰 갱신 실패:', error);
+    return false;
   }
 };
 
@@ -29,23 +59,50 @@ const api = axios.create({
 
 // 요청 인터셉터: 토큰 자동 추가 및 로그인 상태 확인
 api.interceptors.request.use(
-  (config) => {
-
+  async (config) => {
     // 토큰이 있는 경우 헤더에 추가
-    const token = localStorage.getItem('access_token');
+    let token = localStorage.getItem('access_token');
+    
     if (token) {
       // 토큰 만료 확인
       if (isTokenExpired(token)) {
-        console.warn('토큰이 만료되었습니다. 로그아웃 처리합니다.');
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('token_type');
-        // 토큰 만료 시 로그인 페이지로 이동 (alert 제거)
-        console.log('토큰이 만료되었습니다. 로그인 페이지로 이동합니다.');
-        window.location.href = '/login';
-        return Promise.reject(new Error('토큰이 만료되었습니다.'));
+        console.warn('토큰이 만료되었습니다. 갱신을 시도합니다.');
+        
+        // 토큰 갱신 시도
+        const refreshSuccess = await attemptTokenRefresh();
+        if (refreshSuccess) {
+          token = localStorage.getItem('access_token');
+          console.log('토큰 갱신 후 요청 계속');
+        } else {
+          console.warn('토큰 갱신 실패. 로그아웃 처리합니다.');
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('token_type');
+          localStorage.removeItem('refresh_token');
+          
+          // 인증이 필요한 페이지에서만 로그인 페이지로 이동
+          const currentPath = window.location.pathname;
+          const authRequiredPaths = [
+            '/notifications',
+            '/cart',
+            '/wishlist',
+            '/orderlist',
+            '/kok/payment',
+            '/recipes'
+          ];
+          
+          const isAuthRequiredPath = authRequiredPaths.some(path => currentPath.startsWith(path));
+          
+          if (isAuthRequiredPath) {
+            console.log('토큰이 만료되었습니다. 로그인 페이지로 이동합니다.');
+            window.location.href = '/login';
+            return Promise.reject(new Error('토큰이 만료되었습니다.'));
+          }
+        }
       }
       
-      config.headers.Authorization = `Bearer ${token}`;
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     } else {
       // 인증이 필요한 페이지에서 토큰이 없으면 요청을 중단
       const currentPath = window.location.pathname;
@@ -61,9 +118,7 @@ api.interceptors.request.use(
       const isAuthRequiredPath = authRequiredPaths.some(path => currentPath.startsWith(path));
       
       if (isAuthRequiredPath) {
-        // 인증이 필요한 서비스에서 토큰이 없으면 로그인 페이지로 이동 (alert 제거)
         console.log('로그인이 필요한 서비스입니다. 로그인 페이지로 이동합니다.');
-        // 확인 버튼을 누르면 제자리에 유지
         return Promise.reject(new Error('토큰이 없어서 요청을 중단합니다.'));
       }
     }
@@ -79,7 +134,7 @@ api.interceptors.response.use(
   (response) => {
     return response;
   },
-  (error) => {
+  async (error) => {
     // 500 에러 처리 (서버 내부 오류)
     if (error.response?.status === 500) {
       console.error('서버 내부 오류 발생:', {
@@ -103,6 +158,17 @@ api.interceptors.response.use(
         currentPath: window.location.pathname
       });
       
+      // 토큰 갱신 시도
+      const refreshSuccess = await attemptTokenRefresh();
+      if (refreshSuccess) {
+        console.log('토큰 갱신 성공. 원래 요청을 재시도합니다.');
+        // 원래 요청 재시도
+        const originalRequest = error.config;
+        const newToken = localStorage.getItem('access_token');
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        return api(originalRequest);
+      }
+      
       // OrderList 페이지에서는 토큰을 삭제하지 않고 에러만 전달
       const currentPath = window.location.pathname;
       if (currentPath === '/orderlist') {
@@ -114,6 +180,7 @@ api.interceptors.response.use(
       // 토큰 제거
       localStorage.removeItem('access_token');
       localStorage.removeItem('token_type');
+      localStorage.removeItem('refresh_token');
       
       // 인증이 필요한 페이지에서 401 에러가 발생하면 로그인 페이지로 리다이렉트
       const authRequiredPaths = [

@@ -35,9 +35,9 @@ const CartRecipeResult = () => {
   // 조합별로 결과를 캐싱하여 중복 요청 방지
   const combinationCache = useMemo(() => new Map(), []);
 
-  // 레시피별 재료 정보 가져오기 (키워드 검색에서만) - 배치 처리로 개선
+  // 레시피별 상세 정보 가져오기 (재료 정보 + 제목 등) - 배치 처리로 개선
   const fetchRecipeIngredients = useCallback(async (recipeIds) => {
-    if (searchType !== 'keyword' || isFetchingIngredients) {
+    if (isFetchingIngredients) {
       return;
     }
 
@@ -62,15 +62,19 @@ const CartRecipeResult = () => {
         const promises = batch.map(async (recipeId) => {
           try {
             const recipeDetail = await recipeApi.getRecipeDetail(recipeId);
-            if (recipeDetail && recipeDetail.materials) {
+            if (recipeDetail) {
               return {
                 recipeId,
-                used_ingredients: recipeDetail.materials,
-                total_ingredients: recipeDetail.materials.length
+                used_ingredients: recipeDetail.materials || [],
+                total_ingredients: recipeDetail.materials ? recipeDetail.materials.length : 0,
+                recipe_title: recipeDetail.recipe_title || recipeDetail.name || recipeDetail.title,
+                cooking_introduction: recipeDetail.cooking_introduction,
+                number_of_serving: recipeDetail.number_of_serving,
+                scrap_count: recipeDetail.scrap_count || recipeDetail.scrapCount
               };
             }
           } catch (error) {
-            console.log(`레시피 ${recipeId} 재료 정보 조회 실패:`, error);
+            console.log(`레시피 ${recipeId} 상세 정보 조회 실패:`, error);
           }
           return null;
         });
@@ -80,10 +84,7 @@ const CartRecipeResult = () => {
         // 결과를 캐시에 저장
         results.forEach(result => {
           if (result) {
-            newCache.set(result.recipeId, {
-              used_ingredients: result.used_ingredients,
-              total_ingredients: result.total_ingredients
-            });
+            newCache.set(result.recipeId, result);
           }
         });
         
@@ -95,12 +96,12 @@ const CartRecipeResult = () => {
       
       setRecipeIngredientsCache(newCache);
     } catch (error) {
-      console.log('재료 정보 배치 조회 실패:', error);
+      console.log('레시피 상세 정보 배치 조회 실패:', error);
     } finally {
       setIsFetchingIngredients(false);
       setIngredientsLoading(false);
     }
-  }, [searchType, isFetchingIngredients, recipeIngredientsCache]);
+  }, [isFetchingIngredients, recipeIngredientsCache]);
 
   // 백엔드 응답의 이미지 키 다양성 대응 및 로컬 폴백 사용
   const getRecipeImageSrc = (recipe, idx) => {
@@ -246,9 +247,9 @@ const CartRecipeResult = () => {
     }
   }, [location.state, navigate, combinationCache, isInitialized]);
 
-  // 레시피 재료 정보 가져오기 (키워드 검색에서만) - 배치 처리
+  // 레시피 상세 정보 가져오기 (재료 정보 + 제목 등) - 배치 처리
   useEffect(() => {
-    if (searchType === 'keyword' && recipes.length > 0 && !isFetchingIngredients) {
+    if (recipes.length > 0 && !isFetchingIngredients) {
       const recipeIds = recipes
         .map(recipe => recipe.recipe_id || recipe.id)
         .filter(id => id && !recipeIngredientsCache.has(id));
@@ -257,7 +258,7 @@ const CartRecipeResult = () => {
         fetchRecipeIngredients(recipeIds);
       }
     }
-  }, [searchType, recipes, recipeIngredientsCache, fetchRecipeIngredients, isFetchingIngredients]);
+  }, [recipes, recipeIngredientsCache, fetchRecipeIngredients, isFetchingIngredients]);
 
   const handleBack = () => {
     // 검색 타입에 따라 다른 페이지로 이동
@@ -356,27 +357,29 @@ const CartRecipeResult = () => {
         )}
         {!loading && !error && sortedRecipes.length > 0 && (
           sortedRecipes.map((recipe, idx) => {
-            // API 응답 형식에 맞게 레시피 객체 정규화
-            let recipeObj = recipe;
-            if (Array.isArray(recipe)) {
-              recipeObj = {
-                recipe_id: recipe[0],
-                recipe_title: recipe[1],
-                cooking_name: recipe[2],
-                scrap_count: recipe[3],
-                cooking_case_name: recipe[4],
-                cooking_category_name: recipe[5],
-                cooking_introduction: recipe[6],
-                number_of_serving: recipe[7],
-                thumbnail_url: recipe[8],
-                recipe_url: recipe[9],
-                matched_ingredient_count: recipe[10],
-                used_ingredients: Array.isArray(recipe[11]) ? recipe[11] : []
-              };
-            }
+            // recipe 객체를 그대로 사용 (recipe_title 컬럼 사용)
+            const recipeObj = recipe;
             
-            // 재료 정보 가져오기 (캐시에서)
-            const recipeIngredients = recipeIngredientsCache.get(recipeObj.recipe_id || recipeObj.id);
+            // 디버깅을 위한 콘솔 로그 추가
+            console.log(`🔍 레시피 ${idx + 1} 데이터:`, {
+              전체_데이터: recipeObj,
+              사용가능한_키: Object.keys(recipeObj),
+              제목_필드들: {
+                recipe_title: recipeObj.recipe_title,
+                name: recipeObj.name,
+                title: recipeObj.title
+              }
+            });
+            
+            // 상세 정보 가져오기 (캐시에서)
+            const recipeDetail = recipeIngredientsCache.get(recipeObj.recipe_id || recipeObj.id);
+            
+            // 캐시된 상세 정보가 있으면 우선 사용, 없으면 기본 데이터 사용
+            const displayTitle = recipeDetail?.recipe_title || recipeObj.recipe_title || recipeObj.cooking_introduction || '레시피';
+            const displayDescription = recipeDetail?.cooking_introduction || recipeObj.cooking_introduction;
+            const displayServing = recipeDetail?.number_of_serving || recipeObj.number_of_serving;
+            const displayScrapCount = recipeDetail?.scrap_count || recipeObj.scrap_count || recipeObj.scrapCount || 0;
+            const displayIngredients = recipeDetail?.used_ingredients || recipeObj.used_ingredients;
             
             return (
               <div key={recipeObj.recipe_id || recipeObj.id || idx} 
@@ -385,40 +388,40 @@ const CartRecipeResult = () => {
                 <div className="recipe-image">
                   <img 
                     src={getRecipeImageSrc(recipeObj, idx)} 
-                    alt={recipeObj.recipe_title || recipeObj.name || '레시피'} 
+                    alt={displayTitle} 
                     onError={(e)=>{ e.currentTarget.src = fallbackImg; }} 
                   />
                 </div>
                 <div className="recipe-info">
-                  <h3 className="recipe-name" title={recipeObj.recipe_title || recipeObj.name}>
-                    {(recipeObj.recipe_title || recipeObj.name || '').length > 50 
-                      ? (recipeObj.recipe_title || recipeObj.name).substring(0, 50) + '...' 
-                      : (recipeObj.recipe_title || recipeObj.name)}
+                  <h3 className="recipe-name" title={displayTitle}>
+                    {displayTitle.length > 50 
+                      ? displayTitle.substring(0, 50) + '...' 
+                      : displayTitle}
                   </h3>
                   <div className="recipe-stats">
-                    <span className="serving serving-small">{recipeObj.number_of_serving}</span>
+                    <span className="serving serving-small">{displayServing}</span>
                     <span className="separator"> | </span>
                     <span className="scrap-count">
                       <img className="bookmark-icon" src={bookmarkIcon} alt="북마크" />
-                      <span className="bookmark-count">{recipeObj.scrap_count || recipeObj.scrapCount || 0}</span>
+                      <span className="bookmark-count">{displayScrapCount}</span>
                     </span>
                   </div>
                   
                   {/* 레시피 설명 표시 */}
-                  {recipeObj.cooking_introduction && (
-                    <p className="recipe-description">{recipeObj.cooking_introduction}</p>
+                  {displayDescription && (
+                    <p className="recipe-description">{displayDescription}</p>
                   )}
                   
                   {/* 재료 정보 표시 - homeshopping-recommendation 스타일 적용 */}
-                  {recipeObj.used_ingredients && recipeObj.used_ingredients.length > 0 && (
+                  {displayIngredients && displayIngredients.length > 0 && (
                     <div className="used-ingredients-list">
-                      {recipeObj.used_ingredients.slice(0, 3).map((ingredient, idx) => (
+                      {displayIngredients.slice(0, 3).map((ingredient, idx) => (
                         <span key={idx} className="used-ingredient-item">
                           {typeof ingredient === 'string' ? ingredient : ingredient.material_name || ingredient.name || ingredient}
                         </span>
                       ))}
-                      {recipeObj.used_ingredients.length > 3 && (
-                        <span className="more-ingredients">외 {recipeObj.used_ingredients.length - 3}개</span>
+                      {displayIngredients.length > 3 && (
+                        <span className="more-ingredients">외 {displayIngredients.length - 3}개</span>
                       )}
                     </div>
                   )}

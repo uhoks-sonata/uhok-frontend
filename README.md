@@ -1,3 +1,126 @@
+# UHOK Frontend
+
+## 🔐 **인증 및 토큰 관리**
+
+### **401 Unauthorized 에러 해결**
+
+#### **문제 상황**
+- API 요청 시 `401 (Unauthorized)` 에러 발생
+- 주문 내역 조회 등 인증이 필요한 API에서 토큰 인증 실패
+
+#### **해결 방법**
+
+##### **1. 자동 토큰 갱신**
+- 토큰 만료 5분 전에 자동으로 갱신 시도
+- `refresh_token`을 사용하여 `access_token` 갱신
+- 갱신 성공 시 원래 요청 자동 재시도
+
+##### **2. 사용자 경험 개선**
+- 401 에러 발생 시 명확한 안내 메시지 제공
+- 토큰 갱신 실패 시 자동으로 로그인 페이지로 이동
+- 중복 알림 방지를 위한 플래그 관리
+
+#### **구현된 기능**
+
+##### **API 인터셉터 (`src/pages/api.js`)**
+```javascript
+// 요청 인터셉터: 토큰 자동 추가 및 만료 확인
+api.interceptors.request.use(async (config) => {
+  // 토큰 만료 시 자동 갱신 시도
+  if (isTokenExpired(token)) {
+    const refreshSuccess = await attemptTokenRefresh();
+    // 갱신 성공 시 요청 계속, 실패 시 로그아웃
+  }
+});
+
+// 응답 인터셉터: 401 에러 시 토큰 갱신 시도
+api.interceptors.response.use(async (response) => {
+  // 401 에러 발생 시 토큰 갱신 후 원래 요청 재시도
+});
+```
+
+##### **UserContext (`src/contexts/UserContext.js`)**
+```javascript
+// 토큰 갱신 함수
+const refreshToken = async () => {
+  const success = await attemptTokenRefresh();
+  if (success) {
+    // 갱신 성공 시 사용자 상태 업데이트
+    setUser(prev => ({ ...prev, token: newToken }));
+    return true;
+  } else {
+    // 갱신 실패 시 로그아웃
+    logout();
+    return false;
+  }
+};
+```
+
+##### **OrderList 컴포넌트 (`src/pages/user/OrderList.js`)**
+```javascript
+// 401 에러 발생 시 토큰 갱신 시도
+if (error.response?.status === 401) {
+  const refreshSuccess = await refreshToken();
+  if (refreshSuccess) {
+    // 토큰 갱신 성공 시 API 재시도
+    ordersResponse = await orderApi.getUserOrders(20);
+  }
+}
+```
+
+#### **개발용 토큰 테스트**
+
+##### **토큰 생성**
+```javascript
+import { createDevToken } from './utils/authUtils';
+
+// 60분 유효한 개발용 토큰 생성
+const devToken = createDevToken(60);
+localStorage.setItem('access_token', devToken);
+```
+
+##### **토큰 상태 확인**
+```javascript
+import { isTokenExpired, decodeToken } from './utils/authUtils';
+
+// 토큰 만료 확인
+const isExpired = isTokenExpired(token);
+
+// 토큰 정보 디코딩
+const tokenInfo = decodeToken(token);
+```
+
+#### **환경 설정**
+
+##### **프록시 설정 (`package.json`)**
+```json
+{
+  "proxy": "http://api2.uhok.com:9000"
+}
+```
+
+##### **백엔드 API 엔드포인트**
+- 토큰 갱신: `POST /api/auth/refresh`
+- 주문 내역: `GET /api/orders?limit=20`
+
+#### **에러 처리 우선순위**
+
+1. **토큰 자동 갱신** - 사용자 개입 없이 자동 처리
+2. **사용자 안내** - 명확한 에러 메시지와 해결 방법 제시
+3. **자동 리다이렉트** - 인증 실패 시 로그인 페이지로 이동
+4. **폴백 데이터** - API 실패 시 기본 데이터로 UI 표시
+
+#### **모니터링 및 로깅**
+
+- 모든 토큰 관련 작업에 대한 상세 로그
+- API 요청/응답 상태 추적
+- 사용자 인증 이벤트 기록
+- 에러 발생 시 상세 정보 수집
+
+---
+
+## 🚀 **Quick Start**
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

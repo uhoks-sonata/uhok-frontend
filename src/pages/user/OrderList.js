@@ -27,7 +27,7 @@ const OrderList = () => {
   // 페이지 이동을 위한 navigate 훅
   const navigate = useNavigate();
   // 사용자 정보 가져오기
-  const { user, isLoggedIn } = useUser();
+  const { user, isLoggedIn, refreshToken } = useUser();
   
   // ===== 모달 상태 관리 =====
   const [modalState, setModalState] = useState({ isVisible: false });
@@ -106,22 +106,7 @@ const OrderList = () => {
     try {
       setLoading(true);
       setError(null);
-      
-      // 토큰 확인 (장바구니와 동일한 방식)
-      const token = localStorage.getItem('access_token');
-      console.log('🔍 OrderList.js - 토큰 체크:', { 
-        hasToken: !!token, 
-        token: token ? token.substring(0, 20) + '...' : '없음',
-        tokenLength: token?.length,
-        tokenType: token?.includes('dev_signature_') ? '개발용' : token?.includes('temp_token_') ? '임시' : 'JWT'
-      });
-      if (!token) {
-        console.log('❌ OrderList.js - 토큰 없음, 로그인 페이지로 이동');
-        setModalState(showLoginRequiredNotification());
-        setLoading(false);
-        return;
-      }
-      
+
       // orderApi를 활용하여 주문 내역 목록을 비동기로 조회합니다
       let ordersResponse;
       let ordersData;
@@ -142,17 +127,52 @@ const OrderList = () => {
       } catch (error) {
         console.error('주문 내역 API 호출 실패:', error);
         
-        // 401 에러인 경우 더미 데이터 사용 (임시 해결책)
+        // 401 에러인 경우 토큰 갱신 시도
         if (error.response?.status === 401) {
-          console.log('401 에러 발생 - 토큰이 유효하지 않습니다. 더미 데이터를 사용합니다.');
+          console.log('401 에러 발생 - 토큰 갱신을 시도합니다.');
+          
+                      try {
+              // UserContext의 refreshToken 함수 사용
+              if (refreshToken) {
+                const refreshSuccess = await refreshToken();
+                if (refreshSuccess) {
+                  console.log('토큰 갱신 성공. API 재시도합니다.');
+                  // 토큰 갱신 성공 시 API 재시도
+                  ordersResponse = await orderApi.getUserOrders(20);
+                  ordersData = ordersResponse;
+                  console.log('토큰 갱신 후 API 재시도 성공:', ordersData);
+                } else {
+                  throw new Error('토큰 갱신 실패');
+                }
+              } else {
+                throw new Error('토큰 갱신 함수를 사용할 수 없습니다.');
+              }
+            } catch (refreshError) {
+            console.error('토큰 갱신 실패:', refreshError);
+            
+            // 사용자에게 명확한 안내 제공
+            if (!window.authErrorShown) {
+              window.authErrorShown = true;
+              alert('로그인이 만료되었습니다. 다시 로그인해주세요.');
+              setTimeout(() => {
+                window.authErrorShown = false;
+              }, 2000);
+              
+              // 로그인 페이지로 이동
+              navigate('/login');
+              return;
+            }
+          }
         }
         
         // API 실패 시 빈 데이터로 설정
-        ordersData = {
-          limit: 20,
-          total_count: 0,
-          order_groups: []
-        };
+        if (!ordersData) {
+          ordersData = {
+            limit: 20,
+            total_count: 0,
+            order_groups: []
+          };
+        }
       }
       
       // 새로운 API 응답 구조 확인

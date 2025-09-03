@@ -704,16 +704,20 @@ API 연결 테스트 결과:
              {kokProductImages.length > 0 && (
                <div className="product-images-section" style={{ marginTop: '24px' }}>
                  <h3>상품 상세 이미지</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
                   {kokProductImages.map((image) => (
-                    <div key={image.kok_img_id} style={{ width: '100%' }}>
+                    <div key={image.kok_img_id} style={{ width: '100%', margin: '0px', padding: '0px' }}>
                       <img 
                         src={image.kok_img_url} 
                         alt={`상품 상세 이미지 ${image.kok_img_id}`}
                         style={{ 
                           width: '100%', 
                           height: 'auto',
-                          borderRadius: '8px'
+                          borderRadius: '0px',
+                          margin: '0px',
+                          padding: '0px',
+                          display: 'block',
+                          verticalAlign: 'top'
                         }}
                       />
                     </div>
