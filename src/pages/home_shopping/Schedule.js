@@ -1073,7 +1073,17 @@ const Schedule = () => {
                   ) : (
                                          <img 
                        src={item.썸네일} 
-                       alt={item.product_name || '상품 이미지'} 
+                       alt={item.product_name || '상품 이미지'}
+                       onError={(e) => {
+                         e.target.style.display = 'none';
+                         const parent = e.target.parentElement;
+                         if (!parent.querySelector('.image-placeholder')) {
+                           const placeholder = document.createElement('div');
+                           placeholder.className = 'image-placeholder';
+                           placeholder.textContent = '이미지를 준비 중입니다.';
+                           parent.appendChild(placeholder);
+                         }
+                       }}
                      />
                   )}
                   {renderStatusBadge(item.status, item.promotion_type)}

@@ -197,10 +197,24 @@ const HomeShoppingSearch = () => {
             return imageUrl;
           };
           
-          // 방송 시간 안전 처리
+          // 방송 시간 안전 처리 (날짜 + 시분 표시)
           const getBroadcastTime = (liveDate, startTime, endTime) => {
             if (liveDate && startTime && endTime) {
-              return `${liveDate} ${startTime}~${endTime}`;
+              // 날짜를 "2025.09.03" 형태로 변환
+              const formatDate = (date) => {
+                if (date && date.includes('-')) {
+                  return date.replace(/-/g, '.');
+                }
+                return date;
+              };
+              // 시간에서 시분만 추출 (예: "14:30:00" -> "14:30")
+              const formatTime = (time) => {
+                if (time && time.includes(':')) {
+                  return time.substring(0, 5); // "HH:MM" 형태로 자르기
+                }
+                return time;
+              };
+              return `${formatDate(liveDate)} ${formatTime(startTime)}~${formatTime(endTime)}`;
             }
             return '방송 일정 없음';
           };
@@ -389,10 +403,24 @@ const HomeShoppingSearch = () => {
             return imageUrl;
           };
           
-          // 방송 시간 안전 처리
+          // 방송 시간 안전 처리 (날짜 + 시분 표시)
           const getBroadcastTime = (liveDate, startTime, endTime) => {
             if (liveDate && startTime && endTime) {
-              return `${liveDate} ${startTime}~${endTime}`;
+              // 날짜를 "2025.09.03" 형태로 변환
+              const formatDate = (date) => {
+                if (date && date.includes('-')) {
+                  return date.replace(/-/g, '.');
+                }
+                return date;
+              };
+              // 시간에서 시분만 추출 (예: "14:30:00" -> "14:30")
+              const formatTime = (time) => {
+                if (time && time.includes(':')) {
+                  return time.substring(0, 5); // "HH:MM" 형태로 자르기
+                }
+                return time;
+              };
+              return `${formatDate(liveDate)} ${formatTime(startTime)}~${formatTime(endTime)}`;
             }
             return '방송 일정 없음';
           };
@@ -571,8 +599,8 @@ const HomeShoppingSearch = () => {
         rating: product.rating || product.review_score || 0,
         reviewCount: product.review_count || product.review_cnt || 0,
         channel: product.store_name || '홈쇼핑',
-        broadcastTime: product.live_date ? 
-          `${product.live_date} ${product.live_start_time}~${product.live_end_time}` : 
+        broadcastTime: product.live_date && product.live_start_time && product.live_end_time ? 
+          `${product.live_date.replace(/-/g, '.')} ${product.live_start_time.substring(0, 5)}~${product.live_end_time.substring(0, 5)}` : 
           '방송 일정 없음'
       }));
       
@@ -1087,25 +1115,35 @@ const HomeShoppingSearch = () => {
                 >
                   <div className="result-image">
                     <img 
-                      src={result.image || 'https://via.placeholder.com/300x300/CCCCCC/666666?text=No+Image'} 
+                      src={result.image} 
                       alt={result.title}
                       onError={(e) => {
-                        e.target.src = 'https://via.placeholder.com/300x300/CCCCCC/666666?text=No+Image'; // 기본 이미지로 대체
-                        e.target.onerror = null; // 무한 루프 방지
+                        e.target.style.display = 'none';
+                        const parent = e.target.parentElement;
+                        if (!parent.querySelector('.image-placeholder')) {
+                          const placeholder = document.createElement('div');
+                          placeholder.className = 'image-placeholder';
+                          placeholder.textContent = '이미지 준비 중입니다.';
+                          parent.appendChild(placeholder);
+                        }
                       }}
                     />
                   </div>
                   <div className="result-info">
-                    <h4 className="result-title">{result.title}</h4>
-                    
-                    <div className="result-rating">
-                      <span className="rating">★ {result.rating}</span>
-                      <span className="review-count">리뷰 {result.reviewCount}</span>
+                    <div className="homeshopping-info">
+                      <span className="broadcast-time">{result.broadcastTime}</span>
                     </div>
+                    <h4 className="result-title" title={result.title}>
+                      {result.title && result.title.length > 50 
+                        ? result.title.substring(0, 50) + '...' 
+                        : result.title}
+                    </h4>
+
                     <div className="result-price">
-                      <span className="discount">{result.discount}</span>
+                      {result.discount && result.discount !== '0%' && result.discount !== 'null' && result.discount !== 'null%' && result.discount !== null && (
+                        <span className="discount">{result.discount}</span>
+                      )}
                       <span className="price">{result.price}</span>
-                      <span className="original-price">{result.originalPrice}</span>
                     </div>
                   </div>
                 </div>
@@ -1113,13 +1151,7 @@ const HomeShoppingSearch = () => {
               
               {/* 무한 스크롤 상태 표시 */}
               {loadingMore && (
-                <div style={{
-                  textAlign: 'center',
-                  padding: '20px',
-                  color: '#666',
-                  fontSize: '14px',
-                  gridColumn: '1 / -1'
-                }}>
+                <div className="search-loading">
                   <div style={{
                     width: '20px',
                     height: '20px',
@@ -1134,17 +1166,8 @@ const HomeShoppingSearch = () => {
               )}
               
               {!hasMore && searchResults.length > 0 && (
-                <div style={{
-                  textAlign: 'center',
-                  padding: '20px',
-                  color: '#999',
-                  fontSize: '14px',
-                  backgroundColor: '#f8f9fa',
-                  borderRadius: '8px',
-                  margin: '20px 0',
-                  gridColumn: '1 / -1'
-                }}>
-                  더 이상 로드할 검색 결과가 없습니다
+                <div className="no-results">
+                  <p>더 이상 로드할 검색 결과가 없습니다</p>
                 </div>
               )}
             </div>
