@@ -214,8 +214,7 @@ export const UserProvider = ({ children }) => {
       return true;
     } else {
       console.log('UserContext - 토큰 갱신 실패');
-      // 갱신 실패 시 로그아웃
-      logout();
+      // 갱신 실패 시 자동 로그아웃하지 않음 (호출하는 쪽에서 처리하도록 함)
       return false;
     }
   };

@@ -74,29 +74,9 @@ api.interceptors.request.use(
           token = localStorage.getItem('access_token');
           console.log('토큰 갱신 후 요청 계속');
         } else {
-          console.warn('토큰 갱신 실패. 로그아웃 처리합니다.');
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('token_type');
-          localStorage.removeItem('refresh_token');
-          
-          // 인증이 필요한 페이지에서만 로그인 페이지로 이동
-          const currentPath = window.location.pathname;
-          const authRequiredPaths = [
-            '/notifications',
-            '/cart',
-            '/wishlist',
-            '/orderlist',
-            '/kok/payment',
-            '/recipes'
-          ];
-          
-          const isAuthRequiredPath = authRequiredPaths.some(path => currentPath.startsWith(path));
-          
-          if (isAuthRequiredPath) {
-            console.log('토큰이 만료되었습니다. 로그인 페이지로 이동합니다.');
-            window.location.href = '/login';
-            return Promise.reject(new Error('토큰이 만료되었습니다.'));
-          }
+          console.warn('토큰 갱신 실패. 토큰 없이 요청을 계속합니다.');
+          // 토큰 갱신 실패 시에도 토큰을 제거하지 않고 요청을 계속
+          // (서버에서 401 에러를 반환하면 해당 컴포넌트에서 처리하도록 함)
         }
       }
       
@@ -169,10 +149,11 @@ api.interceptors.response.use(
         return api(originalRequest);
       }
       
-      // OrderList 페이지에서는 토큰을 삭제하지 않고 에러만 전달
+      // 특정 페이지에서는 토큰을 삭제하지 않고 에러만 전달
       const currentPath = window.location.pathname;
-      if (currentPath === '/orderlist') {
-        console.log('OrderList 페이지에서 401 에러 - 토큰 유지하고 에러만 전달');
+      const tokenPreservePaths = ['/orderlist', '/mypage'];
+      if (tokenPreservePaths.some(path => currentPath.startsWith(path))) {
+        console.log(`${currentPath} 페이지에서 401 에러 - 토큰 유지하고 에러만 전달`);
         return Promise.reject(error);
       }
       

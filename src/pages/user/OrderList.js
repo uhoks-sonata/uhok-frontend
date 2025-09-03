@@ -27,7 +27,7 @@ const OrderList = () => {
   // 페이지 이동을 위한 navigate 훅
   const navigate = useNavigate();
   // 사용자 정보 가져오기
-  const { user, isLoggedIn, refreshToken } = useUser();
+  const { user, isLoggedIn, refreshToken, isLoading: userContextLoading } = useUser();
   
   // ===== 모달 상태 관리 =====
   const [modalState, setModalState] = useState({ isVisible: false });
@@ -91,12 +91,23 @@ const OrderList = () => {
 
   // 로그인 상태 확인 함수
   const checkLoginStatus = () => {
+    // UserContext의 isLoggedIn 상태를 우선적으로 확인
+    if (isLoggedIn) {
+      return true;
+    }
+    
+    // UserContext가 아직 로딩 중이거나 false인 경우 토큰 확인
     const token = localStorage.getItem('access_token');
     return !!token;
   };
 
   // 주문 내역 데이터를 가져오는 함수
   const loadOrderData = async () => {
+    // UserContext가 로딩 중인 경우 대기
+    if (userContextLoading) {
+      return;
+    }
+    
     // 로그인하지 않은 경우 모달 표시 후 로그인 페이지로 이동
     if (!checkLoginStatus()) {
       setModalState(showLoginRequiredNotification());
@@ -131,37 +142,32 @@ const OrderList = () => {
         if (error.response?.status === 401) {
           console.log('401 에러 발생 - 토큰 갱신을 시도합니다.');
           
-                      try {
-              // UserContext의 refreshToken 함수 사용
-              if (refreshToken) {
-                const refreshSuccess = await refreshToken();
-                if (refreshSuccess) {
-                  console.log('토큰 갱신 성공. API 재시도합니다.');
-                  // 토큰 갱신 성공 시 API 재시도
-                  ordersResponse = await orderApi.getUserOrders(20);
-                  ordersData = ordersResponse;
-                  console.log('토큰 갱신 후 API 재시도 성공:', ordersData);
-                } else {
-                  throw new Error('토큰 갱신 실패');
-                }
+          try {
+            // UserContext의 refreshToken 함수 사용
+            if (refreshToken) {
+              const refreshSuccess = await refreshToken();
+              if (refreshSuccess) {
+                console.log('토큰 갱신 성공. API 재시도합니다.');
+                // 토큰 갱신 성공 시 API 재시도
+                ordersResponse = await orderApi.getUserOrders(20);
+                ordersData = ordersResponse;
+                console.log('토큰 갱신 후 API 재시도 성공:', ordersData);
               } else {
-                throw new Error('토큰 갱신 함수를 사용할 수 없습니다.');
+                throw new Error('토큰 갱신 실패');
               }
-            } catch (refreshError) {
+            } else {
+              throw new Error('토큰 갱신 함수를 사용할 수 없습니다.');
+            }
+          } catch (refreshError) {
             console.error('토큰 갱신 실패:', refreshError);
             
-            // 사용자에게 명확한 안내 제공
-            if (!window.authErrorShown) {
-              window.authErrorShown = true;
-              alert('로그인이 만료되었습니다. 다시 로그인해주세요.');
-              setTimeout(() => {
-                window.authErrorShown = false;
-              }, 2000);
-              
-              // 로그인 페이지로 이동
-              navigate('/login');
-              return;
-            }
+            // 토큰 갱신 실패 시 빈 데이터로 설정 (로그인 모달 표시하지 않음)
+            console.log('토큰 갱신 실패 - 빈 데이터로 설정합니다.');
+            ordersData = {
+              limit: 20,
+              total_count: 0,
+              order_groups: []
+            };
           }
         }
         
@@ -233,10 +239,15 @@ const OrderList = () => {
       // 401 에러 특별 처리 (인증 필요)
       if (error.response?.status === 401) {
         console.log('401 에러 발생 - 토큰이 유효하지 않거나 만료되었습니다.');
-        // 토큰이 유효하지 않으면 로그인 페이지로 이동
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('token_type');
-        setModalState(showLoginRequiredNotification());
+        // 401 에러 시 빈 데이터로 설정 (로그인 모달 표시하지 않음)
+        setError(null); // 에러 상태 초기화
+        setOrderData({
+          orders: [],
+          total_count: 0,
+          page: 1,
+          size: 20
+        });
+        setLoading(false);
         return;
       }
       // 422 에러 특별 처리
@@ -268,6 +279,11 @@ const OrderList = () => {
 
   // useEffect 추가
   useEffect(() => {
+    // UserContext 로딩이 완료될 때까지 대기
+    if (userContextLoading) {
+      return;
+    }
+    
     // 로그인 상태 확인 후 조건부로 API 호출
     const loginStatus = checkLoginStatus();
     if (loginStatus) {
@@ -277,7 +293,7 @@ const OrderList = () => {
       console.log('로그인하지 않은 상태: 주문 내역 API 호출 건너뜀');
       setLoading(false);
     }
-  }, []);
+  }, [userContextLoading, isLoggedIn]); // UserContext 상태 변화 감지
 
   // 뒤로가기 핸들러를 정의합니다
   const handleBack = () => {

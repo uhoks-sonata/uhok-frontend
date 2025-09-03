@@ -358,7 +358,7 @@ const MyPage = () => {
 
     // 컴포넌트가 마운트될 때 데이터를 가져오는 함수를 실행합니다
     fetchMyPageData();
-  }, [userContextLoading, isLoggedIn, user]); // UserContext 상태 변화 감지
+  }, [userContextLoading, isLoggedIn, user, logout, navigate, login]); // UserContext 상태 변화 감지
 
   // 주문 내역 클릭 시 실행되는 핸들러 함수를 정의합니다
   const handleOrderHistoryClick = async () => {
@@ -370,11 +370,30 @@ const MyPage = () => {
         return;
       }
       
+      // 토큰 유효성 확인
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        console.warn('토큰이 없습니다. 로그인 페이지로 이동합니다.');
+        navigate('/login');
+        return;
+      }
+      
+      // 토큰 형식 확인 (JWT 형식)
+      const tokenParts = token.split('.');
+      if (tokenParts.length !== 3) {
+        console.warn('토큰 형식이 올바르지 않습니다. 로그인 페이지로 이동합니다.');
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        navigate('/login');
+        return;
+      }
+      
       // 주문 내역 페이지로 이동합니다 (React Router 사용)
       navigate('/orderlist');
     } catch (error) {
       // 에러 처리
       console.error('주문 내역 페이지 이동 중 오류:', error);
+      setModalState(showAlert('주문 내역 페이지로 이동하는 중 오류가 발생했습니다.'));
     }
   };
 
