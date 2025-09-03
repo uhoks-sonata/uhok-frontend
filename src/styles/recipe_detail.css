@@ -385,11 +385,26 @@
   justify-content: space-between; /* 재료명은 왼쪽, 수량은 오른쪽 */
 }
 
-/* 미보유 재료에 밑줄 추가 */
-.ingredient-item:not(:first-child) .ingredient-name-amount {
+/* 레시피 상세 페이지에서만 재료명과 수량에 핑크색 밑줄 추가 */
+.recipe-detail-page .ingredient-name,
+.recipe-detail-page .ingredient-amount {
   text-decoration: underline;
   text-decoration-color: #FA5F8C;
   text-underline-offset: 2px;
+}
+
+/* 보유하고 있는 재료는 밑줄 제거 */
+.recipe-detail-page .ingredient-name.owned,
+.recipe-detail-page .ingredient-amount.owned,
+.recipe-detail-page .ingredient-name.cart,
+.recipe-detail-page .ingredient-amount.cart {
+  text-decoration: none !important;
+}
+
+/* 미보유 재료는 글씨도 핑크색으로 변경 */
+.recipe-detail-page .ingredient-name.not-owned,
+.recipe-detail-page .ingredient-amount.not-owned {
+  color: #FA5F8C !important;
 }
 
 /* 재료 상태 기본 스타일 */

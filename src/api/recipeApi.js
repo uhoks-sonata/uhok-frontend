@@ -325,6 +325,45 @@ export const recipeApi = {
   },
 
   /**
+   * 9. 식재료 기반 홈쇼핑 상품 추천
+   * GET /api/recipes/{ingredient}/product-recommend
+   * 
+   * API 명세서:
+   * - 상품 이미지, 상품명, 브랜드명, 가격 정보 제공
+   * - 콕쇼핑몰과 홈쇼핑 내 관련 상품 정보
+   */
+  getProductRecommendations: async (ingredient, signal) => {
+    try {
+      if (!ingredient || !ingredient.trim()) {
+        throw new Error('식재료명을 입력해주세요.');
+      }
+
+      const url = `/api/recipes/${encodeURIComponent(ingredient.trim())}/product-recommend`;
+      
+      console.log('🔍 식재료 기반 상품 추천 API 요청:', { 
+        url, 
+        ingredient: ingredient.trim() 
+      });
+      
+      const response = await api.get(url, { 
+        baseURL: '', 
+        timeout: 20000,
+        signal 
+      });
+      
+      console.log('✅ 식재료 기반 상품 추천 API 응답:', {
+        status: response.status,
+        data: response.data
+      });
+      
+      return response.data;
+    } catch (error) {
+      console.error('❌ 식재료 기반 상품 추천 API 오류:', error);
+      throw error;
+    }
+  },
+
+  /**
    * 유틸리티 함수: API 응답 데이터 정규화
    * API 명세서에 맞게 데이터 구조 통일
    */
@@ -336,7 +375,7 @@ export const recipeApi = {
       return {
         recipe_id: recipe[0],
         recipe_title: recipe[1],
-        cooking_name: recipe[2],
+        recipe_title: recipe[1],
         scrap_count: recipe[3],
         cooking_case_name: recipe[4],
         cooking_category_name: recipe[5],
@@ -353,8 +392,7 @@ export const recipeApi = {
     if (typeof recipe === 'object') {
       return {
         recipe_id: recipe.recipe_id || recipe.RECIPE_ID || recipe.id,
-        recipe_title: recipe.recipe_title || recipe.RECIPE_TITLE || recipe.cooking_name || recipe.COOKING_NAME,
-        cooking_name: recipe.cooking_name || recipe.COOKING_NAME,
+        recipe_title: recipe.recipe_title || recipe.RECIPE_TITLE,
         scrap_count: recipe.scrap_count || recipe.SCRAP_COUNT || 0,
         cooking_case_name: recipe.cooking_case_name || recipe.COOKING_CASE_NAME,
         cooking_category_name: recipe.cooking_category_name || recipe.COOKING_CATEGORY_NAME,

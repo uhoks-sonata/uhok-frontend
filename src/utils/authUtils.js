@@ -182,4 +182,88 @@ export const checkBackendConnection = async () => {
   }
 };
 
+// 개발용 토큰 생성 함수 (테스트 목적)
+export const createDevToken = (expiryMinutes = 60) => {
+  const now = Math.floor(Date.now() / 1000);
+  const exp = now + (expiryMinutes * 60);
+  
+  const payload = {
+    sub: 'dev_user_123',
+    email: 'dev@example.com',
+    exp: exp,
+    iat: now
+  };
+  
+  // 간단한 개발용 토큰 생성 (실제 JWT가 아님)
+  const token = `dev_signature_${btoa(JSON.stringify(payload))}`;
+  return token;
+};
+
+// 토큰 만료 시간 확인 함수
+export const isTokenExpired = (token) => {
+  if (!token) return true;
+  
+  // 개발용 토큰인지 확인
+  if (token.includes('dev_signature_')) {
+    try {
+      const payloadStr = token.replace('dev_signature_', '');
+      const payload = JSON.parse(atob(payloadStr));
+      const currentTime = Math.floor(Date.now() / 1000);
+      return payload.exp < currentTime;
+    } catch (error) {
+      console.warn('개발용 토큰 파싱 실패:', error);
+      return true;
+    }
+  }
+  
+  // JWT 토큰 확인
+  try {
+    const tokenParts = token.split('.');
+    if (tokenParts.length !== 3) return true;
+    
+    const payload = JSON.parse(atob(tokenParts[1]));
+    const currentTime = Math.floor(Date.now() / 1000);
+    
+    return payload.exp < currentTime;
+  } catch (error) {
+    console.warn('JWT 토큰 파싱 실패:', error);
+    return true;
+  }
+};
+
+// 토큰 정보 디코딩 함수
+export const decodeToken = (token) => {
+  if (!token) return null;
+  
+  // 개발용 토큰인지 확인
+  if (token.includes('dev_signature_')) {
+    try {
+      const payloadStr = token.replace('dev_signature_', '');
+      const payload = JSON.parse(atob(payloadStr));
+      return {
+        type: 'dev',
+        ...payload
+      };
+    } catch (error) {
+      console.warn('개발용 토큰 디코딩 실패:', error);
+      return null;
+    }
+  }
+  
+  // JWT 토큰 디코딩
+  try {
+    const tokenParts = token.split('.');
+    if (tokenParts.length !== 3) return null;
+    
+    const payload = JSON.parse(atob(tokenParts[1]));
+    return {
+      type: 'jwt',
+      ...payload
+    };
+  } catch (error) {
+    console.warn('JWT 토큰 디코딩 실패:', error);
+    return null;
+  }
+};
+
 

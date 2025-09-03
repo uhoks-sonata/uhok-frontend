@@ -10,6 +10,7 @@ import Loading from '../../components/Loading';
 // 마이페이지 스타일을 가져옵니다
 import '../../styles/mypage.css';
 import '../../styles/logout.css';
+import '../../styles/mypage-logged-out.css';
 // userApi import
 import { userApi } from '../../api/userApi';
 // orderApi import
@@ -33,15 +34,7 @@ import noItemsIcon from '../../assets/no_items.png';
 import testImage1 from '../../assets/test/test1.png';
 import testImage2 from '../../assets/test/test2.png';
 
-// 로그인하지 않은 상태일 때만 mypage-logged-out.css를 동적으로 import
-const loadLoggedOutStyles = () => {
-  if (!document.querySelector('link[href*="mypage-logged-out.css"]')) {
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = '/src/styles/mypage-logged-out.css';
-    document.head.appendChild(link);
-  }
-};
+
 
 // 마이페이지 메인 컴포넌트를 정의합니다
 const MyPage = () => {
@@ -173,12 +166,7 @@ const MyPage = () => {
     // 로그인하지 않은 경우에도 페이지에 머무름 (이전 화면으로 돌아가지 않음)
   }, []); // 빈 의존성 배열로 변경하여 한 번만 실행
 
-  // 로그인 상태에 따라 CSS 파일 동적 로드
-  useEffect(() => {
-    if (!isLoggedIn) {
-      loadLoggedOutStyles();
-    }
-  }, [isLoggedIn]);
+
 
   // 백엔드 API에서 마이페이지 데이터를 가져오는 useEffect를 정의합니다
   useEffect(() => {

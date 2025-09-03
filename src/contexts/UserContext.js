@@ -25,8 +25,8 @@ const validateToken = (token) => {
     // payload 디코딩 시도
     const payload = JSON.parse(atob(parts[1]));
     
-    // 만료 시간 검사
-    if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
+    // 만료 시간 검사 (5분 여유 시간)
+    if (payload.exp && payload.exp < (Math.floor(Date.now() / 1000) + 300)) {
       console.log('토큰이 만료되었습니다.');
       return false;
     }
@@ -35,6 +35,44 @@ const validateToken = (token) => {
     return true;
   } catch (error) {
     console.log('토큰 형식이 올바르지 않습니다:', error.message);
+    return false;
+  }
+};
+
+// 토큰 갱신 시도 함수
+const attemptTokenRefresh = async () => {
+  try {
+    const refreshToken = localStorage.getItem('refresh_token');
+    if (!refreshToken) {
+      console.log('리프레시 토큰이 없습니다.');
+      return false;
+    }
+
+    // 토큰 갱신 API 호출 (백엔드에 구현 필요)
+    const response = await fetch('/api/auth/refresh', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        refresh_token: refreshToken
+      })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data.access_token) {
+        localStorage.setItem('access_token', data.access_token);
+        if (data.refresh_token) {
+          localStorage.setItem('refresh_token', data.refresh_token);
+        }
+        console.log('토큰 갱신 성공');
+        return true;
+      }
+    }
+    return false;
+  } catch (error) {
+    console.error('토큰 갱신 실패:', error);
     return false;
   }
 };
@@ -91,6 +129,11 @@ export const UserProvider = ({ children }) => {
     if (userData.token) {
       localStorage.setItem('access_token', userData.token);
       localStorage.setItem('token_type', userData.tokenType || 'bearer');
+      
+      // 리프레시 토큰이 있다면 저장
+      if (userData.refresh_token) {
+        localStorage.setItem('refresh_token', userData.refresh_token);
+      }
     }
     
     setUser({
@@ -127,6 +170,8 @@ export const UserProvider = ({ children }) => {
 
   // 로그아웃 함수
   const logout = async () => {
+    console.log('UserContext - 로그아웃 함수 호출');
+    
     // 로그아웃 이벤트 로그 기록 (API 명세서에 맞춘 처리)
     try {
       if (user && user.user_id) {
@@ -147,10 +192,32 @@ export const UserProvider = ({ children }) => {
       console.error('❌ 로그아웃 이벤트 로그 기록 실패:', error);
     }
 
+    // 로컬 스토리지에서 모든 토큰 제거
     localStorage.removeItem('access_token');
     localStorage.removeItem('token_type');
+    localStorage.removeItem('refresh_token');
+    
+    // 사용자 상태 초기화
     setUser(null);
     console.log('UserContext - 로그아웃 완료');
+  };
+
+  // 토큰 갱신 함수 (외부에서 호출 가능)
+  const refreshToken = async () => {
+    console.log('UserContext - 토큰 갱신 시도');
+    const success = await attemptTokenRefresh();
+    
+    if (success) {
+      const newToken = localStorage.getItem('access_token');
+      setUser(prev => prev ? { ...prev, token: newToken } : null);
+      console.log('UserContext - 토큰 갱신 성공');
+      return true;
+    } else {
+      console.log('UserContext - 토큰 갱신 실패');
+      // 갱신 실패 시 로그아웃
+      logout();
+      return false;
+    }
   };
 
   // 토큰 업데이트 함수
@@ -173,6 +240,7 @@ export const UserProvider = ({ children }) => {
     login,
     logout,
     updateToken,
+    refreshToken,
     isLoggedIn: !!user && !!user.isLoggedIn && !!user.token
   };
 

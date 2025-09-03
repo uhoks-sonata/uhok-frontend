@@ -629,11 +629,11 @@ const Cart = () => {
                         <div key={index} className="recipe-item">
                           <img 
                             src={recipe.recipe_thumbnail || test1Image} 
-                            alt={recipe.cooking_name} 
+                            alt={recipe.recipe_title} 
                             className="recipe-thumbnail" 
                           />
                           <div className="recipe-info">
-                            <h4>{recipe.cooking_name}</h4>
+                            <h4>{recipe.recipe_title}</h4>
                             <p>조리시간: {recipe.cooking_time} | 난이도: {recipe.difficulty}</p>
                             <div className="recipe-meta">
                               <span className="recipe-tag">스크랩 {recipe.scrap_count}</span>
