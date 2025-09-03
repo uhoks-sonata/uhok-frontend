@@ -124,7 +124,7 @@ const OrderList = () => {
       
       try {
         // 새로운 API 구조: 사용자의 모든 주문 목록 조회
-        ordersResponse = await orderApi.getUserOrders(20); // limit 20으로 설정
+        ordersResponse = await orderApi.getUserOrders(10); // limit 20으로 설정
         ordersData = ordersResponse;
         console.log('사용자 주문 목록 API 응답:', ordersData);
         console.log('🔍 OrderList.js - API 응답 상세:', {
@@ -142,29 +142,39 @@ const OrderList = () => {
         if (error.response?.status === 401) {
           console.log('401 에러 발생 - 토큰 갱신을 시도합니다.');
           
-          try {
-            // UserContext의 refreshToken 함수 사용
-            if (refreshToken) {
-              const refreshSuccess = await refreshToken();
-              if (refreshSuccess) {
-                console.log('토큰 갱신 성공. API 재시도합니다.');
-                // 토큰 갱신 성공 시 API 재시도
+          // UserContext의 refreshToken 함수 사용
+          if (refreshToken) {
+            const refreshSuccess = await refreshToken();
+            if (refreshSuccess) {
+              console.log('토큰 갱신 성공. API 재시도합니다.');
+              // 토큰 갱신 성공 시 API 재시도
+              try {
                 ordersResponse = await orderApi.getUserOrders(20);
                 ordersData = ordersResponse;
                 console.log('토큰 갱신 후 API 재시도 성공:', ordersData);
-              } else {
-                throw new Error('토큰 갱신 실패');
+              } catch (retryError) {
+                console.error('토큰 갱신 후 API 재시도 실패:', retryError);
+                // 재시도 실패 시 빈 데이터로 설정
+                ordersData = {
+                  limit: 10,
+                  total_count: 0,
+                  order_groups: []
+                };
               }
             } else {
-              throw new Error('토큰 갱신 함수를 사용할 수 없습니다.');
+              console.log('토큰 갱신 실패 - 빈 데이터로 설정합니다.');
+              // 토큰 갱신 실패 시 빈 데이터로 설정 (로그인 모달 표시하지 않음)
+              ordersData = {
+                limit: 10,
+                total_count: 0,
+                order_groups: []
+              };
             }
-          } catch (refreshError) {
-            console.error('토큰 갱신 실패:', refreshError);
-            
-            // 토큰 갱신 실패 시 빈 데이터로 설정 (로그인 모달 표시하지 않음)
-            console.log('토큰 갱신 실패 - 빈 데이터로 설정합니다.');
+          } else {
+            console.log('토큰 갱신 함수를 사용할 수 없습니다 - 빈 데이터로 설정합니다.');
+            // refreshToken 함수가 없는 경우 빈 데이터로 설정
             ordersData = {
-              limit: 20,
+              limit: 10,
               total_count: 0,
               order_groups: []
             };
@@ -174,7 +184,7 @@ const OrderList = () => {
         // API 실패 시 빈 데이터로 설정
         if (!ordersData) {
           ordersData = {
-            limit: 20,
+            limit: 10,
             total_count: 0,
             order_groups: []
           };
