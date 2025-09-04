@@ -325,7 +325,49 @@
   ]
   ```
 
-### 13. 결제요청 (롱폴링+웹훅) v2
+### 13. 사용자 주문 목록 조회
+- **기능**: 사용자의 주문내역을 불러온다. 주문번호별로 묶여 있으며, 상품별 정보와 총 결제 금액을 포함한다.
+- **HTTP 메서드**: GET
+- **엔드포인트 URL**: `/api/orders`
+- **Header**: `Authorization: Bearer <access_token>`
+- **Query Parameter**: `limit` (기본값: 10)
+- **Request Body**: -
+- **Response Code**: 200
+- **Response Value**:
+  ```json
+  {
+    "limit": 0,
+    "total_count": 0,
+    "order_groups": [
+      {
+        "order_id": 0,
+        "order_number": "string",
+        "order_date": "string",
+        "total_amount": 0,
+        "item_count": 0,
+        "items": [
+          {
+            "product_name": "string",
+            "product_image": "string",
+            "price": 0,
+            "quantity": 0,
+            "delivery_status": "string",
+            "delivery_date": "string",
+            "recipe_related": false,
+            "recipe_title": "string",
+            "recipe_rating": 0,
+            "recipe_scrap_count": 0,
+            "recipe_description": "string",
+            "ingredients_owned": 0,
+            "total_ingredients": 0
+          }
+        ]
+      }
+    ]
+  }
+  ```
+
+### 14. 결제요청 (롱폴링+웹훅) v2
 - **기능**: v2(롱폴링) 결제확인 API - 클라이언트가 결제하기를 누르면 백엔드로 결제처리 요청, 백엔드에서 결제서버로 롱폴링 방식으로 결제확인, 웹훅으로 결제완료 응답을 받으면 진행사항 반영
 - **HTTP 메서드**: POST
 - **엔드포인트 URL**: `/api/orders/payment/{order_id}/confirm/v2`

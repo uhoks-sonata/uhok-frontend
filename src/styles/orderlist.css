@@ -10,10 +10,10 @@
   
   /* 주문 내역 메인 콘텐츠 */
   .order-list-main {
-    flex: 1;
+    padding-top: 5px;
+    height: calc(100vh - 185px);
+    max-height: calc(100vh - 185px);
     overflow-y: auto;
-    padding: 0px;
-    padding-bottom: 0px; /* 하단 네비게이션 공간 확보 */
     background-color: #ffffff;
   }
   
@@ -41,24 +41,24 @@
   /* 주문 내역 콘텐츠 */
   .order-list-content {
     width: 100%;
-    overflow-y: auto;
+    padding-bottom: 20px;
   }
 
   /* 스크롤바 스타일링 */
-  .order-list-content::-webkit-scrollbar {
-  width: 3px;
-}
+  .order-list-main::-webkit-scrollbar {
+    width: 3px;
+  }
 
-  .order-list-content::-webkit-scrollbar-track {
+  .order-list-main::-webkit-scrollbar-track {
     background: transparent;
   }
 
-  .order-list-content::-webkit-scrollbar-thumb {
+  .order-list-main::-webkit-scrollbar-thumb {
     background: #e0e0e0;
     border-radius: 4px;
   }
 
-  .order-list-content::-webkit-scrollbar-thumb:hover {
+  .order-list-main::-webkit-scrollbar-thumb:hover {
     background: #bbb;
   }
   
@@ -100,22 +100,46 @@
   }
   
   /* 개별 주문 아이템 */
-  .order-list-page .order-item {
-    margin-bottom: 20px !important;
+  .orderlist-order-item {
+    margin-bottom: 20px;
   }
-  
 
-  
-  /* 회색 박스 컨테이너 */
-  .order-list-page .order-content-box {
-    background-color: #ffffff !important;
-    border: 1px solid #e0e0e0 !important;
-    border-radius: 12px !important;
-    padding: 13px !important;
-    gap: 10px !important;
-    box-shadow: none !important;
-    width: 430px !important;
-    height: 170px !important;
+  .orderlist-order-header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 10px;
+    width: 100%;
+  }
+
+  .orderlist-order-info-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* 양 끝 정렬 */
+    width: 100%; /* 전체 너비 사용 */
+    flex-wrap: wrap;
+  }
+
+  .orderlist-order-date {
+    font-size: 14px;
+    color: #333;
+    font-weight: 500;
+  }
+
+  .orderlist-order-number {
+    font-size: 12px;
+    color: #b4b2b2;
+    font-weight: 400;
+    text-align: right; /* 텍스트 우측 정렬 */
+  }
+
+  /* 배송 상태 카드 */
+  .orderlist-delivery-status-card {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px;
+    gap: 10px;
   }
   
   /* 주문 상태 */
@@ -180,73 +204,75 @@
     border-bottom: none;
   }
   
-  .order-list-page .product-info {
-    display: flex !important;
-    gap: 5px !important;
-    align-items: center !important;
-    flex-direction: row !important;
-    padding: 5px 0 !important;
-    width: 100%
+  /* 상품 정보 */
+  .orderlist-product-info {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    flex-direction: inherit;
   }
 
   /* 같은 주문번호 내에서 여러 상품이 있을 때만 구분선 추가 */
-  .order-list-page .order-content-box .product-info:not(:last-child) {
+  .orderlist-delivery-status-card .orderlist-product-info:not(:last-child) {
     border-bottom: 1px solid #f0f0f0 !important;
     padding-bottom: 20px !important;
     margin-bottom: 20px !important;
   }
 
   /* 상품이 하나만 있을 때는 구분선 제거 */
-  .order-list-page .order-content-box .product-info:only-child {
+  .orderlist-delivery-status-card .orderlist-product-info:only-child {
     border-bottom: none !important;
     padding-bottom: 0 !important;
     margin-bottom: 0 !important;
   }
 
-  .order-list-page .order-item .product-image {
-    width: 110px !important;
-    height: 110px !important;
-    border-radius: 8px !important;
-    object-fit: cover !important;
-    border: 1px solid #e9ecef !important;
-    flex-shrink: 0 !important;
+  .orderlist-product-image {
+    width: 110px;
+    height: 110px;
+    border-radius: 8px;
+    object-fit: cover;
   }
 
-  .order-list-page .order-item .product-image img {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
+  .orderlist-product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
-  .order-list-page .product-details {
-    flex: 1 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: flex-start !important;
-    gap: 30px !important;
-    min-height: 100px !important;
-    overflow: hidden !important;
-    min-width: calc(100%) !important;
+  .orderlist-product-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 8px;
+    min-height: 100px;
+    overflow: hidden;
+    max-width: calc(100%);
+    margin-left: 10px;
   }
 
-  .order-list-page .product-name {
-    font-size: 16px !important;
-    font-weight: 400 !important;
-    color: #333 !important;
-    line-height: 1.4 !important;
-    margin-bottom: 0 !important;
-    display: -webkit-box !important;
-    -webkit-line-clamp: 2 !important;
-    -webkit-box-orient: vertical !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    max-width: 100% !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
+  .orderlist-product-name {
+    font-size: 16px;
+    font-weight: 400;
+    color: #333;
+    line-height: 1.4;
+    margin-bottom: 0;
+    /* 2줄 제한 설정 */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    word-wrap: break-word;
+    word-break: break-all;
   }
 
-  .order-list-page .product-name strong {
-    font-weight: 700 !important;
+  .orderlist-product-name .bracket-bold {
+    font-weight: 600;
   }
 
   .product-description {
@@ -256,37 +282,33 @@
     margin-bottom: 0;
   }
 
-  .order-list-page .product-price {
-    font-size: 16px !important;
-    font-weight: 600 !important;
-    color: #333 !important;
-    margin-top: 8px !important;
-    margin-bottom: 0 !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
+  .orderlist-product-price {
+    font-size: 16px;
+    font-weight: 400;
+    color: #333;
+    margin-top: auto;
   }
 
 
   
   /* 배송 상태 */
-  .order-list-page .delivery-status {
-    display: flex !important;
-    align-items: center !important;
-    gap: 8px !important;
-    margin-bottom: 0px !important;
-    padding: 0 !important;
+  .orderlist-delivery-status {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 15px;
+    border-radius: 8px;
   }
-  
-  .order-list-page .delivery-status-text {
-    font-size: 20px !important;
-    color: #666 !important;
-    font-weight: 500 !important;
+
+  .orderlist-delivery-status-text {
+    font-weight: 500;
+    font-size: 18px;
+    color: #666;
   }
-  
-  .order-list-page .delivery-date {
-    font-size: 18px !important;
-    color: #ff6b9d !important;
-    font-weight: 600 !important;
+
+  .orderlist-delivery-date {
+    font-size: 15px;
+    color: #ff6b9d;
   }
   
   /* 주문 푸터 */
@@ -432,51 +454,16 @@
   
   /* 반응형 디자인 */
   @media (max-width: 768px) {
-    .order-list-main {
-      padding-top: 5px;
-        height: calc(100vh - 185px);
-        max-height: calc(100vh - 185px);
-        overflow-y: auto;
-    }
-
-
-    
-    .order-list-page .order-item {
-      padding: 16px !important;
+    .orderlist-delivery-status-card {
+      padding: 15px;
     }
     
-
-    
-    .order-status {
-      align-self: flex-start;
+    .orderlist-product-info {
+      gap: 8px;
     }
     
-    .order-footer {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 12px;
-    }
-    
-    .order-detail-btn {
-      width: 100%;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .order-list-title {
-      font-size: 20px;
-    }
-    
-    .order-item {
-      padding: 12px;
-    }
-    
-    .order-list-page .order-item .product-image {
-      width: 100px !important;
-      height: 100px !important;
-    }
-    
-    .total-amount {
-      font-size: 16px;
+    .orderlist-product-image {
+      width: 100px;
+      height: 100px;
     }
   }

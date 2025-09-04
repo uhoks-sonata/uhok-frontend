@@ -569,25 +569,41 @@ const OrderList = () => {
               })
               .map((order) => {
                 return (
-                  <div key={order.order_id || `unknown_${Date.now()}`} className="order-item">
-                    {/* 회색 박스 컨테이너 */}
-                    <div className="order-content-box">
-                      {/* 주문 정보 헤더 */}
-                      <div className="order-header">
-                        <div className="order-info">
-                          <span className="order-number">주문번호: {order.order_number || '주문번호 없음'}</span>
-                          <span className="order-date">{order.order_date || '날짜 없음'}</span>
-                        </div>
-                        <div className="order-summary">
-                          <span className="total-amount">{formatPrice(order.total_amount || 0)}</span>
-                          <span className="item-count">총 {order.item_count || 0}개 상품</span>
-                        </div>
+                  <div key={order.order_id || `unknown_${Date.now()}`} className="orderlist-order-item">
+                    {/* 주문 정보 헤더 */}
+                    <div className="orderlist-order-header">
+                      {/* 주문 날짜와 주문번호를 한 줄로 표시합니다 */}
+                      <div className="orderlist-order-info-container">
+                        <span className="orderlist-order-date">{formatDate(order.order_date)}</span>
+                        <span className="orderlist-order-number">주문번호 {order.order_number || '주문번호 없음'}</span>
                       </div>
-                      
-                      {/* 배송 상태 */}
-                      <div className="delivery-status">
-                        <span className="delivery-status-text">{(order.items && order.items[0])?.delivery_status || '배송완료'}</span>
-                        <span className="delivery-date">{(order.items && order.items[0])?.delivery_date || `${formatDate(order.order_date)} 도착`}</span>
+                    </div>
+                    
+                    {/* 배송 상태 카드 */}
+                    <div className="orderlist-delivery-status-card">
+                      {/* 배송 상태를 표시합니다 */}
+                      <div className="orderlist-delivery-status">
+                        {(() => {
+                          const firstItem = order.items && order.items[0];
+                          const deliveryStatus = firstItem?.delivery_status || '배송완료';
+                          const deliveryDate = firstItem?.delivery_date || `${formatDate(order.order_date)} 도착`;
+                          
+                          // 디버깅: 렌더링 시 delivery_status 확인
+                          console.log('🔍 OrderList - 렌더링 시 delivery_status:', {
+                            order_id: order.order_id,
+                            order_number: order.order_number,
+                            firstItem: firstItem,
+                            deliveryStatus: deliveryStatus,
+                            deliveryDate: deliveryDate
+                          });
+                          
+                          return (
+                            <>
+                              <span className="orderlist-delivery-status-text">{deliveryStatus}</span>
+                              <span className="orderlist-delivery-date">{deliveryDate}</span>
+                            </>
+                          );
+                        })()}
                       </div>
                       
                       {/* 상품 정보들 - 같은 주문번호의 모든 상품을 표시합니다 */}
@@ -596,34 +612,39 @@ const OrderList = () => {
                         .map((item, index) => (
                         <div 
                           key={`${order.order_id || 'unknown'}-${index}`} 
-                          className="product-info"
+                          className="orderlist-product-info"
                           onClick={() => handleOrderDetailClick(order.order_id || 'unknown')}
                           style={{ cursor: 'pointer' }}
                         >
                           {/* 상품 이미지를 표시합니다 */}
-                          <div className="product-image">
+                          <div className="orderlist-product-image">
                             <img src={item.product_image || ''} alt={item.product_name || '상품 이미지'} />
                           </div>
                           
                           {/* 상품 상세 정보 */}
-                          <div className="product-details">
+                          <div className="orderlist-product-details">
                             {/* 상품명을 표시합니다 */}
-                            <div className="product-name" title={item.product_name || '상품명 없음'}>
+                            <div className="orderlist-product-name" title={item.product_name || '상품명 없음'}>
                               {(() => {
                                 const productName = item.product_name || '상품명 없음';
-                                const displayName = productName.length > 40 
-                                  ? `${productName.substring(0, 40)}...`
+                                const displayName = productName.length > 50 
+                                  ? `${productName.substring(0, 50)}...`
                                   : productName;
                                 
-                                // 대괄호 안의 텍스트를 <strong> 태그로 감싸기
-                                const formattedName = displayName.replace(/\[([^\]]+)\]/g, '<strong>[$1]</strong>');
+                                // 대괄호 안의 텍스트를 찾아서 볼드 처리
+                                const parts = displayName.split(/(\[[^\]]+\])/);
                                 
-                                return <span dangerouslySetInnerHTML={{ __html: formattedName }} />;
+                                return parts.map((part, index) => {
+                                  if (part.startsWith('[') && part.endsWith(']')) {
+                                    return <span key={index} className="bracket-bold">{part}</span>;
+                                  }
+                                  return part;
+                                });
                               })()}
                             </div>
                             
                             {/* 가격과 수량 정보 */}
-                            <div className="product-price">
+                            <div className="orderlist-product-price">
                               {item.price ? `${(item.price || 0).toLocaleString()}원` : '가격 정보 없음'} · {item.quantity || 1}개
                             </div>
                           </div>
