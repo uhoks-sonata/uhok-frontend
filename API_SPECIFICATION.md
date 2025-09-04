@@ -409,7 +409,44 @@
   }
   ```
 
-### 9. 레시피 추천
+### 9. 식재료 기반 홈쇼핑 상품 추천
+- **기능**: 해당 식재료 관련 콕쇼핑몰과 홈쇼핑 내 관련 상품 정보 제공
+- **HTTP 메서드**: GET
+- **엔드포인트 URL**: `/api/recipes/{ingredient}/product-recommend`
+- **Header**: `Authorization: Bearer <access_token>`
+- **Path Parameter**: `ingredient` (string, 필수): 식재료명
+- **Query Parameter**: -
+- **Request Body**: -
+- **Response Code**: 200
+- **Response Value**:
+  ```json
+  {
+    "ingredient": "string",
+    "recommendations": [
+      {
+        "source": "string",
+        "name": "string",
+        "id": 0,
+        "thumb_img_url": "string",
+        "image_url": "string",
+        "brand_name": "string",
+        "price": 0,
+        "homeshopping_id": 0,
+        "kok_discount_rate": 0,
+        "kok_review_cnt": 0,
+        "kok_review_score": 0,
+        "dc_rate": 0
+      }
+    ],
+    "total_count": 0
+  }
+  ```
+- **사용 예시**:
+  ```
+  GET /api/recipes/양파/product-recommend
+  ```
+
+### 10. 레시피 추천
 - **기능**: 선택된 상품들(KOK 상품, 홈쇼핑 상품)을 기반으로 레시피를 추천
 - **HTTP 메서드**: GET
 - **엔드포인트 URL**: `/api/kok/carts/recipe-recommend`

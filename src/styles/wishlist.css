@@ -271,7 +271,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0px;
   align-items: flex-start;
   position: relative;
   max-width: calc(100vw - 160px); /* 이미지 너비(120px) + 패딩(40px) 제외 */
