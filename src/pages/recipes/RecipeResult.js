@@ -37,13 +37,38 @@ const RecipeResult = () => {
   // 재료 정보 로딩 상태
   // 요청 제한을 위한 상태
   const [isFetchingIngredients, setIsFetchingIngredients] = useState(false);
-  // 페이지별 레시피 중복 방지를 위한 상태
-  const [seenRecipeIds, setSeenRecipeIds] = useState(new Set());
+  // 페이지별 레시피 중복 방지를 위한 상태 (페이지별로 분리)
+  const [pageSeenRecipeIds, setPageSeenRecipeIds] = useState(new Map()); // page -> Set of recipeIds
   
   // 조합별로 결과를 캐싱하여 중복 요청 방지
   const combinationCache = useMemo(() => new Map(), []);
 
-
+  // 페이지별 중복 필터링 함수
+  const filterUniqueRecipesForPage = useCallback((recipes, page) => {
+    const currentPageSeenIds = pageSeenRecipeIds.get(page) || new Set();
+    const uniqueRecipes = recipes.filter(recipe => {
+      const recipeId = recipe.recipe_id || recipe.id;
+      if (currentPageSeenIds.has(recipeId)) {
+        console.log(`⚠️ 페이지 ${page}에서 중복 레시피 제외: ${recipeId} - ${recipe.recipe_title || recipe.name}`);
+        return false;
+      }
+      return true;
+    });
+    
+    // 새로운 레시피 ID들을 현재 페이지의 seenRecipeIds에 추가
+    const newRecipeIds = uniqueRecipes.map(recipe => recipe.recipe_id || recipe.id);
+    if (newRecipeIds.length > 0) {
+      setPageSeenRecipeIds(prev => {
+        const newMap = new Map(prev);
+        const currentSet = new Set(currentPageSeenIds);
+        newRecipeIds.forEach(id => currentSet.add(id));
+        newMap.set(page, currentSet);
+        return newMap;
+      });
+    }
+    
+    return uniqueRecipes;
+  }, [pageSeenRecipeIds]);
 
   // 레시피별 재료 정보 가져오기 (키워드 검색에서만) - 배치 처리로 개선
   const fetchRecipeIngredients = useCallback(async (recipeIds) => {
@@ -178,19 +203,8 @@ const RecipeResult = () => {
         return;
       }
       
-             // 초기 레시피 중복 체크 및 필터링
-       const uniqueInitialRecipes = initialRecipes.filter(recipe => {
-         const recipeId = recipe.recipe_id || recipe.id;
-         if (seenRecipeIds.has(recipeId)) {
-           console.log(`⚠️ 초기 로드에서 중복 레시피 제외: ${recipeId} - ${recipe.recipe_title || recipe.name}`);
-           return false;
-         }
-         return true;
-       });
-       
-       // 초기 레시피 ID들을 seenRecipeIds에 추가
-       const initialRecipeIds = uniqueInitialRecipes.map(recipe => recipe.recipe_id || recipe.id);
-       setSeenRecipeIds(prev => new Set([...prev, ...initialRecipeIds]));
+             // 초기 레시피 중복 체크 및 필터링 (페이지별)
+       const uniqueInitialRecipes = filterUniqueRecipesForPage(initialRecipes, initialPage);
        
        console.log(`🔍 초기 레시피 로드 확인:`, {
          totalRecipes: initialRecipes.length,
@@ -263,6 +277,26 @@ const RecipeResult = () => {
   const handlePageChange = async (page) => {
     if (page === currentPage) return;
     
+    // 캐시에서 먼저 확인
+    const cacheKey = searchType === 'keyword' 
+      ? `keyword-${displayIngredients.join(',')}-${page}`
+      : `${ingredients.join(',')}-${page}`;
+    
+    if (combinationCache.has(cacheKey)) {
+      const cachedData = combinationCache.get(cacheKey);
+      console.log(`✅ 캐시에서 페이지 ${page} 데이터 로드`);
+      
+      // 캐시된 데이터를 페이지별 중복 필터링 적용
+      const uniqueCachedRecipes = filterUniqueRecipesForPage(cachedData.recipes, page);
+      
+      setRecipes(uniqueCachedRecipes);
+      setCurrentPage(page);
+      setCombinationNumber(cachedData.combination_number || page);
+      setHasMoreCombinations(cachedData.has_more_combinations || false);
+      setTotal(cachedData.total || 0);
+      return;
+    }
+    
     setLoading(true);
     try {
       let response;
@@ -280,19 +314,8 @@ const RecipeResult = () => {
           // 키워드 검색 결과는 정규화가 필요할 수 있음
           const normalizedRecipes = response.recipes.map(recipe => recipeApi.normalizeRecipeData ? recipeApi.normalizeRecipeData(recipe) : recipe);
           
-          // 중복 레시피 필터링
-          const uniqueRecipes = normalizedRecipes.filter(recipe => {
-            const recipeId = recipe.recipe_id || recipe.id;
-            if (seenRecipeIds.has(recipeId)) {
-              console.log(`⚠️ 중복 레시피 제외: ${recipeId} - ${recipe.recipe_title || recipe.name}`);
-              return false;
-            }
-            return true;
-          });
-          
-          // 새로운 레시피 ID들을 seenRecipeIds에 추가
-          const newRecipeIds = uniqueRecipes.map(recipe => recipe.recipe_id || recipe.id);
-          setSeenRecipeIds(prev => new Set([...prev, ...newRecipeIds]));
+          // 페이지별 중복 필터링 적용
+          const uniqueRecipes = filterUniqueRecipesForPage(normalizedRecipes, page);
           
           // 페이지별 레시피 중복 확인
           console.log(`🔍 키워드 검색 페이지 ${page} 레시피 확인:`, {
@@ -304,53 +327,23 @@ const RecipeResult = () => {
             filteredOut: normalizedRecipes.length - uniqueRecipes.length
           });
           
+          // 캐시에 저장
+          const cacheData = {
+            recipes: uniqueRecipes,
+            combination_number: page,
+            has_more_combinations: false,
+            total: response.total || 0
+          };
+          combinationCache.set(cacheKey, cacheData);
+          
           setRecipes(uniqueRecipes);
           setCurrentPage(page);
           setTotal(response.total || 0);
           
-          console.log(`✅ 키워드 검색 페이지 ${page} 로드 완료 (중복 제거: ${normalizedRecipes.length - uniqueRecipes.length}개)`);
+          console.log(`✅ 키워드 검색 페이지 ${page} 로드 완료 및 캐시 저장 (중복 제거: ${normalizedRecipes.length - uniqueRecipes.length}개)`);
         }
       } else {
         // 재료 검색: getRecipesByIngredients API 사용
-        // 캐시 키 생성 (재료 배열과 페이지 번호로)
-        const cacheKey = `${ingredients.join(',')}-${page}`;
-        
-        // 캐시에 데이터가 있으면 캐시에서 가져오기
-        if (combinationCache.has(cacheKey)) {
-          const cachedData = combinationCache.get(cacheKey);
-          
-          // 캐시된 레시피 중복 확인 및 필터링
-          const uniqueCachedRecipes = cachedData.recipes.filter(recipe => {
-            const recipeId = recipe.recipe_id || recipe.id;
-            if (seenRecipeIds.has(recipeId)) {
-              console.log(`⚠️ 캐시에서 중복 레시피 제외: ${recipeId} - ${recipe.recipe_title || recipe.name}`);
-              return false;
-            }
-            return true;
-          });
-          
-          // 새로운 레시피 ID들을 seenRecipeIds에 추가
-          const newCachedRecipeIds = uniqueCachedRecipes.map(recipe => recipe.recipe_id || recipe.id);
-          setSeenRecipeIds(prev => new Set([...prev, ...newCachedRecipeIds]));
-          
-          console.log(`🔍 캐시에서 재료 검색 페이지 ${page} 레시피 확인:`, {
-            page,
-            combination_number: cachedData.combination_number || page,
-            totalRecipes: cachedData.recipes.length,
-            uniqueRecipes: uniqueCachedRecipes.length,
-            recipeIds: uniqueCachedRecipes.map(r => r.recipe_id || r.id),
-            recipeTitles: uniqueCachedRecipes.map(r => r.recipe_title || r.name),
-            filteredOut: cachedData.recipes.length - uniqueCachedRecipes.length
-          });
-          
-          setRecipes(uniqueCachedRecipes);
-          setCurrentPage(page);
-          setCombinationNumber(cachedData.combination_number || page);
-          setHasMoreCombinations(cachedData.has_more_combinations || false);
-          setTotal(cachedData.total || 0);
-          console.log(`✅ 캐시에서 조합 ${page} 데이터 로드`);
-          return;
-        }
         
         response = await recipeApi.getRecipesByIngredients({
           ingredients: ingredients, // ingredients 배열 전달 (API에서 ingredient로 변환)
@@ -361,19 +354,8 @@ const RecipeResult = () => {
           // API 응답 데이터를 정규화
           const normalizedRecipes = response.recipes.map(recipe => recipeApi.normalizeRecipeData(recipe));
           
-          // 중복 레시피 필터링
-          const uniqueRecipes = normalizedRecipes.filter(recipe => {
-            const recipeId = recipe.recipe_id || recipe.id;
-            if (seenRecipeIds.has(recipeId)) {
-              console.log(`⚠️ 중복 레시피 제외: ${recipeId} - ${recipe.recipe_title || recipe.name}`);
-              return false;
-            }
-            return true;
-          });
-          
-          // 새로운 레시피 ID들을 seenRecipeIds에 추가
-          const newRecipeIds = uniqueRecipes.map(recipe => recipe.recipe_id || recipe.id);
-          setSeenRecipeIds(prev => new Set([...prev, ...newRecipeIds]));
+          // 페이지별 중복 필터링 적용
+          const uniqueRecipes = filterUniqueRecipesForPage(normalizedRecipes, page);
           
           // 페이지별 레시피 중복 확인
           console.log(`🔍 재료 검색 페이지 ${page} 레시피 확인:`, {
@@ -414,7 +396,7 @@ const RecipeResult = () => {
 
   if (loading) {
     return (
-      <div className="recipe-result-page">
+      <div className={`recipe-result-page ${searchType === 'ingredient' ? 'ingredient-search' : 'keyword-search'}`}>
         <HeaderNavRecipeRecommendation onBackClick={handleBack} />
         <div className="selected-ingredients-section">
           <div className="ingredients-tags-container">
@@ -437,7 +419,7 @@ const RecipeResult = () => {
   }
 
   return (
-    <div className="recipe-result-page">
+    <div className={`recipe-result-page ${searchType === 'ingredient' ? 'ingredient-search' : 'keyword-search'}`}>
       {/* 헤더 */}
       <HeaderNavRecipeRecommendation onBackClick={handleBack} />
 
@@ -473,9 +455,20 @@ const RecipeResult = () => {
              </div>
            </div>
          )} */}
+          {/* 키워드 검색인 경우 */}
+          {searchType === 'keyword' && (
+            <>
+              <div className="search-keyword-display">
+                <span className="search-keyword">
+                  {displayIngredients.map(ing => typeof ing === 'string' ? ing : ing.name).join(', ')}
+                </span>
+                <span className="recommendation-text">를 사용한 레시피를 추천드려요</span>
+              </div>
+            </>
+          )}
        </div>
 
-
+      
 
              {/* 레시피 목록 */}
        <main className="recipe-list">
@@ -591,8 +584,8 @@ const RecipeResult = () => {
            </div>
          )}
          
-         {/* 페이지네이션 - recipe-list 내부로 이동 */}
-         {recipes.length > 0 && (
+         {/* 페이지네이션 - 재고 소진 희망 레시피 검색에서만 표시 */}
+         {recipes.length > 0 && searchType === 'ingredient' && (
            <div className="pagination-section">
              <div className="pagination-buttons">
                {[1, 2, 3].map((page) => (
@@ -608,6 +601,7 @@ const RecipeResult = () => {
              </div>
            </div>
          )}
+         
        </main>
 
       {/* 하단 네비게이션 */}

@@ -62,12 +62,36 @@
   color: #333;
   /* padding: 12px 16px 8px 16px; */
   padding-bottom: 16px;
-
   text-align: left;
   background-color: #ffffff;
   border-radius: 8px 8px 0 0;
   margin: 0;
   border-left: 4px solid #ffffff;
+}
+.search-keyword-display {
+  /* display: flex;
+  align-items: center; */
+
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  /* padding: 12px 16px 8px 16px; */
+  padding-bottom: 16px;
+  text-align: left;
+  background-color: #ffffff;
+  border-radius: 8px 8px 0 0;
+  margin: 0;
+  border-left: 4px solid #ffffff;
+}
+
+.search-keyword-display .search-keyword {
+  color: #EA008A;
+  font-weight: 600;
+}
+
+.search-keyword-display .recommendation-text {
+  color: #999;
+  font-weight: 400;
 }
 
 /* 키워드 텍스트 스타일 */
@@ -158,9 +182,19 @@
   padding: 16px 20px;
   background-color: #ffffff;
   overflow-y: auto;
+  position: relative; /* 로딩 오버레이를 위한 상대 위치 */
+}
+
+/* 재고 소진 희망 레시피 검색용 (pagination-buttons 있음) */
+.recipe-result-page.ingredient-search .recipe-list {
   height: calc(100vh - 230px); /* 헤더 + 선택된 재료 + 결과 요약 + 페이지네이션 + 바텀네비 + 패딩 고려 */
   max-height: calc(100vh - 230px); /* 최대 높이 제한 */
-  position: relative; /* 로딩 오버레이를 위한 상대 위치 */
+}
+
+/* 레시피명/식재료명 검색용 (pagination-buttons 없음) */
+.recipe-result-page.keyword-search .recipe-list {
+  height: calc(100vh - 185px); /* 헤더 + 선택된 재료 + 바텀네비 + 패딩 고려 (페이지네이션 제외) */
+  max-height: calc(100vh - 185px); /* 최대 높이 제한 */
 }
 
 /* Webkit 브라우저 스크롤바 스타일링 */
