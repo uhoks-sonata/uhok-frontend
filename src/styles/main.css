@@ -441,7 +441,7 @@
 .main-page .up-btn {
   position: fixed;
   bottom: 100px; /* BottomNav 위에 위치 */
-  right: 199px;
+  right: 750px;
   z-index: 1000;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
