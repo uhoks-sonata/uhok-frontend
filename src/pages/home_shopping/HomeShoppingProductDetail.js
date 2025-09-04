@@ -707,7 +707,7 @@ const HomeShoppingProductDetail = () => {
                <div className="hsproduct-brand-logo">
                  <img 
                    src={getLogoByHomeshoppingId(productDetail.homeshopping_id)?.logo || ''} 
-                   alt={productDetail.homeshopping_name || '홈쇼핑'}
+                   alt={productDetail.homeshopping_name || '' }
                    className="hsproduct-homeshopping-logo"
                  />
                </div>
@@ -857,7 +857,9 @@ const HomeShoppingProductDetail = () => {
                          {/* 방송 상태 텍스트 오버레이 */}
                          {broadcastStatus && (
                            <div className="center-broadcast-status">
-                             <span className="center-status-text">{broadcastStatus.text}</span>
+                             <span className="center-status-text">
+                               {broadcastStatus.text}
+                             </span>
                            </div>
                          )}
                        </>
@@ -949,7 +951,9 @@ const HomeShoppingProductDetail = () => {
                   {/* 상품 기본 정보 */}
          <div className="product-basic-info">
                        <div className="product-header">
-              <span className="hsproduct-store-name">[{productDetail.store_name || '홈쇼핑'}]</span>
+              {productDetail.store_name && productDetail.store_name !== '미정의' && (
+                <span className="hsproduct-store-name">[{productDetail.store_name}]</span>
+              )}
               <h1 className="hsproduct-product-name">{productDetail.product_name}</h1>
             </div>
           

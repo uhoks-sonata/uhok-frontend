@@ -237,6 +237,17 @@ export const showSearchHistoryDeletedNotification = (count) => {
   };
 };
 
+// 결제 완료 알림 모달 표시 함수
+export const showPaymentCompleteNotification = () => {
+  return { 
+    modalType: 'alert', 
+    alertMessage: '결제가 완료되었습니다.', 
+    alertButtonText: '확인',
+    alertButtonStyle: 'primary',
+    isVisible: true 
+  };
+};
+
 export const hideModal = () => {
   return { isVisible: false };
 };

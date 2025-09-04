@@ -10,7 +10,7 @@ import { checkBackendConnection } from '../../utils/authUtils';
 import { performOrderStatusUpdate } from '../../utils/orderUpdateUtils';
 import '../../styles/kok_payment.css';
 // LoadingModal import
-import ModalManager, { showLoginRequiredNotification, showAlert, hideModal } from '../../components/LoadingModal';
+import ModalManager, { showLoginRequiredNotification, showAlert, showPaymentCompleteNotification, hideModal } from '../../components/LoadingModal';
 
 const KokPayment = () => {
   const [paymentMethod] = useState('card'); // 항상 신용카드만 사용
@@ -32,6 +32,13 @@ const KokPayment = () => {
   // ===== 모달 핸들러 =====
   const handleModalClose = () => {
     setModalState(hideModal());
+    
+    // 결제 완료 모달인 경우 마이페이지로 이동
+    if (modalState.modalType === 'alert' && modalState.alertMessage === '결제가 완료되었습니다.') {
+      navigate('/mypage');
+      return;
+    }
+    
     // 로그인 필요 모달인 경우에만 이전 페이지로 돌아가기
     if (modalState.modalType === 'alert' && modalState.alertMessage === '로그인이 필요한 서비스입니다.') {
       window.history.back();
@@ -251,11 +258,11 @@ const KokPayment = () => {
 
     fetchOrderInfo();
     
-    // 테스트용 기본 카드 정보 설정
-    setCardNumber('1234 5678 9012 3456');
-    setExpiryDate('12/25');
-    setCvv('123');
-    setCardHolderName('홍길동');
+    // 테스트용 기본 카드 정보 설정 (placeholder가 보이도록 빈 값으로 설정)
+    setCardNumber('');
+    setExpiryDate('');
+    setCvv('');
+    setCardHolderName('');
   }, [location]);
 
   // 결제 처리 함수 (비동기) - 3단계 프로세스: 주문 생성 + 결제 확인 + 결제 요청 응답 확인 (v2 롱폴링+웹훅)
@@ -585,11 +592,10 @@ const KokPayment = () => {
         // ===== 4단계: 결제 완료 처리 =====
         console.log('🚀 4단계: 결제 완료 처리 시작');
         setPaymentStatus('completed');
-        setModalState(showAlert('결제가 완료되었습니다!'));
+        setModalState(showPaymentCompleteNotification());
         
-        // 결제 완료 - 주문내역 페이지로 이동
-        console.log('🚀 4단계: 결제 완료 - 주문내역 페이지로 이동');
-        navigate('/orderlist', { replace: true });
+        // 결제 완료 모달에서 확인 버튼을 누르면 마이페이지로 이동 (handleModalClose에서 처리)
+        console.log('🚀 4단계: 결제 완료 모달 표시 - 확인 버튼 클릭 시 마이페이지로 이동');
         
       } else {
         // 실제 실패 상태인 경우만 실패로 처리
@@ -702,8 +708,7 @@ const KokPayment = () => {
           
           if (confirmationResult.success) {
             setPaymentStatus('completed');
-            setModalState(showAlert('결제가 완료되었습니다!'));
-            navigate('/mypage');
+            setModalState(showPaymentCompleteNotification());
             return;
           }
         } catch (error) {
@@ -718,8 +723,7 @@ const KokPayment = () => {
           
           if (confirmationResult.success) {
             setPaymentStatus('completed');
-            setModalState(showAlert('결제가 완료되었습니다!'));
-            navigate('/mypage');
+            setModalState(showPaymentCompleteNotification());
             return;
           }
         } catch (error) {
@@ -730,8 +734,7 @@ const KokPayment = () => {
       // 결제 확인 성공 처리
       if (confirmationResult?.success) {
         setPaymentStatus('completed');
-        setModalState(showAlert('결제가 완료되었습니다!'));
-        navigate('/mypage');
+        setModalState(showPaymentCompleteNotification());
         return;
       }
 
@@ -820,16 +823,12 @@ const KokPayment = () => {
       
       <div className="payment-content">        
         <div className="order-summary">
-          <h2>주문 요약</h2>
           
           {orderInfo && (
             <div className="order-summary-items">
               {/* 장바구니에서 넘어온 경우 각 상품을 개별적으로 표시 */}
               {orderInfo.fromCart && orderInfo.cartItems ? (
                 <div className="cart-items-individual">
-                  <h4 style={{ marginBottom: '20px', fontSize: '18px', color: '#212529', fontWeight: '600' }}>
-                    선택된 상품들 ({orderInfo.cartItems.length}개)
-                  </h4>
                   
                   {/* 판매자별로 상품 그룹화 */}
                   {(() => {
@@ -849,7 +848,7 @@ const KokPayment = () => {
                         <div className="store-header">
                           <div className="store-info">
                             <div className="store-details">
-                              <span className="store-name">{storeName}</span>
+                              <span className="payment-store-name">{storeName}</span>
                               <span className="delivery-info">
                                 <span className="delivery-icon">
                                   <img src={require('../../assets/delivery_icon.png')} alt="배송" />
@@ -869,7 +868,7 @@ const KokPayment = () => {
                                   <img 
                                     src={item.kok_thumbnail} 
                                     alt={item.kok_product_name} 
-                                    className="item-image" 
+                                    className="payment-item-image" 
                                     onError={(e) => {
                                       console.log('장바구니 이미지 로드 실패:', item.kok_thumbnail);
                                       e.target.style.display = 'none';
@@ -884,7 +883,7 @@ const KokPayment = () => {
                                   </div>
                                 )}
                               </div>
-                              <div className="item-details">
+                              <div className="payment-item-details">
                                 <h5 className="item-name">{item.kok_product_name}</h5>
                                 
                                 {/* 옵션 정보 (수량) */}

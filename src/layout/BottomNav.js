@@ -263,7 +263,9 @@ const BottomNav = ({ selectedItemsCount = 0, handlePayment = null, productInfo =
               // 현재 경로가 해당 아이템의 경로와 일치하는지 확인 (주문내역 페이지에서는 마이페이지를 활성화, 찜 페이지에서는 찜 아이콘을 활성화)
               const isActive = location.pathname === item.path || 
                               (location.pathname === "/orderlist" && item.path === "/mypage") ||
-                              (location.pathname === "/wishlist" && item.path === "/wishlist");
+                              (location.pathname === "/wishlist" && item.path === "/wishlist") ||
+                              (location.pathname.startsWith("/recipes/result") && item.path === "/recipes") ||
+                              (location.pathname.startsWith("/recipes/") && item.path === "/recipes");
               
               // 현재 활성 상태에 따라 사용할 아이콘 결정
               const currentIcon = isActive ? item.icon : item.blackIcon;

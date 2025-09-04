@@ -13,6 +13,7 @@ import '../../styles/ingredient-tag.css';
 import fallbackImg from '../../assets/no_items.png';
 import bookmarkIcon from '../../assets/bookmark-icon.png';
 import { recipeApi } from '../../api/recipeApi';
+import ModalManager, { showNoRecipeNotification, hideModal } from '../../components/LoadingModal';
 
 const RecipeResult = () => {
   const navigate = useNavigate();
@@ -21,11 +22,7 @@ const RecipeResult = () => {
   // 상태 관리
   const [recipes, setRecipes] = useState([]);
   const [ingredients, setIngredients] = useState([]);
-  const [total, setTotal] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [combinationNumber, setCombinationNumber] = useState(1);
-  const [hasMoreCombinations, setHasMoreCombinations] = useState(false);
   // 에러 상태 관리
   const [error, setError] = useState('');
   // 초기화 상태 관리
@@ -38,11 +35,9 @@ const RecipeResult = () => {
   const [ingredientsLoading, setIngredientsLoading] = useState(false);
   // 요청 제한을 위한 상태
   const [isFetchingIngredients, setIsFetchingIngredients] = useState(false);
-  // 페이지별 레시피 중복 방지를 위한 상태
-  const [seenRecipeIds, setSeenRecipeIds] = useState(new Set());
+  // 모달 상태 관리
+  const [modalState, setModalState] = useState({ isVisible: false });
   
-  // 조합별로 결과를 캐싱하여 중복 요청 방지
-  const combinationCache = useMemo(() => new Map(), []);
 
 
 
@@ -163,64 +158,20 @@ const RecipeResult = () => {
       
       const initialRecipes = location.state.recipes || [];
       const initialIngredients = location.state.ingredients || [];
-      const initialPage = location.state.page || 1;
-      
-
       
       // 에러 상태 확인
       if (location.state.error) {
         setError(location.state.errorMessage || '레시피 검색 중 오류가 발생했습니다.');
         setRecipes([]);
         setIngredients(initialIngredients);
-        setTotal(0);
-        setCurrentPage(initialPage);
-        setCombinationNumber(1);
-        setHasMoreCombinations(false);
         setLoading(false);
         setIsInitialized(true);
         return;
       }
       
-             // 초기 레시피 중복 체크 및 필터링
-       const uniqueInitialRecipes = initialRecipes.filter(recipe => {
-         const recipeId = recipe.recipe_id || recipe.id;
-         if (seenRecipeIds.has(recipeId)) {
-           console.log(`⚠️ 초기 로드에서 중복 레시피 제외: ${recipeId} - ${recipe.recipe_title || recipe.name}`);
-           return false;
-         }
-         return true;
-       });
-       
-       // 초기 레시피 ID들을 seenRecipeIds에 추가
-       const initialRecipeIds = uniqueInitialRecipes.map(recipe => recipe.recipe_id || recipe.id);
-       setSeenRecipeIds(prev => new Set([...prev, ...initialRecipeIds]));
-       
-       console.log(`🔍 초기 레시피 로드 확인:`, {
-         totalRecipes: initialRecipes.length,
-         uniqueRecipes: uniqueInitialRecipes.length,
-         filteredOut: initialRecipes.length - uniqueInitialRecipes.length
-       });
-       
-             setRecipes(uniqueInitialRecipes);
+             setRecipes(initialRecipes);
       setIngredients(initialIngredients);
-      setTotal(location.state.total || 0);
-      setCurrentPage(initialPage);
-      setCombinationNumber(location.state.combination_number || 1);
-      setHasMoreCombinations(location.state.has_more_combinations || false);
       setSearchType(location.state.searchType || 'ingredient'); // 검색 타입 설정
-      
-      // 초기 데이터를 캐시에 저장
-      if (initialRecipes.length > 0) {
-        const cacheKey = `${initialIngredients.join(',')}-${initialPage}`;
-        const cacheData = {
-          recipes: initialRecipes,
-          combination_number: location.state.combination_number || initialPage,
-          has_more_combinations: location.state.has_more_combinations || false,
-          total: location.state.total || 0
-        };
-        combinationCache.set(cacheKey, cacheData);
-        console.log(`초기 조합 ${initialPage} 데이터 캐시 저장`);
-      }
       
       setLoading(false);
       setIsInitialized(true);
@@ -228,7 +179,7 @@ const RecipeResult = () => {
       // state가 없으면 이전 페이지로 이동
       navigate('/recipes');
     }
-  }, [location.state, navigate, combinationCache, isInitialized]);
+  }, [location.state, navigate, isInitialized]);
 
   // 레시피 재료 정보 가져오기 (키워드 검색에서만) - 배치 처리
   useEffect(() => {
@@ -247,6 +198,15 @@ const RecipeResult = () => {
     navigate('/recipes');
   };
 
+  // 모달 핸들러
+  const handleModalClose = () => {
+    setModalState(hideModal());
+    // 돌아가기 버튼을 눌렀을 때 이전 페이지로 이동
+    if (modalState.modalType === 'alert' && modalState.alertButtonText === '돌아가기') {
+      navigate('/recipes');
+    }
+  };
+
   const handleRecipeClick = (recipe) => {
     console.log('레시피 클릭:', recipe);
     // 레시피 상세 페이지로 이동
@@ -263,174 +223,44 @@ const RecipeResult = () => {
     }
   };
 
-  const handlePageChange = async (page) => {
-    if (page === currentPage) return;
-    
-    setLoading(true);
-    try {
-      let response;
-      
-      if (searchType === 'keyword') {
-        // 키워드 검색: searchRecipes API 사용
-        const searchKeyword = displayIngredients.map(ing => typeof ing === 'string' ? ing : ing.name).join(' ');
-        response = await recipeApi.searchRecipes({
-          recipe: searchKeyword,
-          page: page,
-          method: 'recipe'
-        });
-        
-        if (response && response.recipes) {
-          // 키워드 검색 결과는 정규화가 필요할 수 있음
-          const normalizedRecipes = response.recipes.map(recipe => recipeApi.normalizeRecipeData ? recipeApi.normalizeRecipeData(recipe) : recipe);
-          
-          // 중복 레시피 필터링
-          const uniqueRecipes = normalizedRecipes.filter(recipe => {
-            const recipeId = recipe.recipe_id || recipe.id;
-            if (seenRecipeIds.has(recipeId)) {
-              console.log(`⚠️ 중복 레시피 제외: ${recipeId} - ${recipe.recipe_title || recipe.name}`);
-              return false;
-            }
-            return true;
-          });
-          
-          // 새로운 레시피 ID들을 seenRecipeIds에 추가
-          const newRecipeIds = uniqueRecipes.map(recipe => recipe.recipe_id || recipe.id);
-          setSeenRecipeIds(prev => new Set([...prev, ...newRecipeIds]));
-          
-          // 페이지별 레시피 중복 확인
-          console.log(`🔍 키워드 검색 페이지 ${page} 레시피 확인:`, {
-            page,
-            totalRecipes: normalizedRecipes.length,
-            uniqueRecipes: uniqueRecipes.length,
-            recipeIds: uniqueRecipes.map(r => r.recipe_id || r.id),
-            recipeTitles: uniqueRecipes.map(r => r.recipe_title || r.name),
-            filteredOut: normalizedRecipes.length - uniqueRecipes.length
-          });
-          
-          setRecipes(uniqueRecipes);
-          setCurrentPage(page);
-          setTotal(response.total || 0);
-          
-          console.log(`✅ 키워드 검색 페이지 ${page} 로드 완료 (중복 제거: ${normalizedRecipes.length - uniqueRecipes.length}개)`);
-        }
-      } else {
-        // 재료 검색: getRecipesByIngredients API 사용
-        // 캐시 키 생성 (재료 배열과 페이지 번호로)
-        const cacheKey = `${ingredients.join(',')}-${page}`;
-        
-        // 캐시에 데이터가 있으면 캐시에서 가져오기
-        if (combinationCache.has(cacheKey)) {
-          const cachedData = combinationCache.get(cacheKey);
-          
-          // 캐시된 레시피 중복 확인 및 필터링
-          const uniqueCachedRecipes = cachedData.recipes.filter(recipe => {
-            const recipeId = recipe.recipe_id || recipe.id;
-            if (seenRecipeIds.has(recipeId)) {
-              console.log(`⚠️ 캐시에서 중복 레시피 제외: ${recipeId} - ${recipe.recipe_title || recipe.name}`);
-              return false;
-            }
-            return true;
-          });
-          
-          // 새로운 레시피 ID들을 seenRecipeIds에 추가
-          const newCachedRecipeIds = uniqueCachedRecipes.map(recipe => recipe.recipe_id || recipe.id);
-          setSeenRecipeIds(prev => new Set([...prev, ...newCachedRecipeIds]));
-          
-          console.log(`🔍 캐시에서 재료 검색 페이지 ${page} 레시피 확인:`, {
-            page,
-            combination_number: cachedData.combination_number || page,
-            totalRecipes: cachedData.recipes.length,
-            uniqueRecipes: uniqueCachedRecipes.length,
-            recipeIds: uniqueCachedRecipes.map(r => r.recipe_id || r.id),
-            recipeTitles: uniqueCachedRecipes.map(r => r.recipe_title || r.name),
-            filteredOut: cachedData.recipes.length - uniqueCachedRecipes.length
-          });
-          
-          setRecipes(uniqueCachedRecipes);
-          setCurrentPage(page);
-          setCombinationNumber(cachedData.combination_number || page);
-          setHasMoreCombinations(cachedData.has_more_combinations || false);
-          setTotal(cachedData.total || 0);
-          console.log(`✅ 캐시에서 조합 ${page} 데이터 로드`);
-          return;
-        }
-        
-        response = await recipeApi.getRecipesByIngredients({
-          ingredients: ingredients, // ingredients 배열 전달 (API에서 ingredient로 변환)
-          page: page
-        });
-        
-        if (response && response.recipes) {
-          // API 응답 데이터를 정규화
-          const normalizedRecipes = response.recipes.map(recipe => recipeApi.normalizeRecipeData(recipe));
-          
-          // 중복 레시피 필터링
-          const uniqueRecipes = normalizedRecipes.filter(recipe => {
-            const recipeId = recipe.recipe_id || recipe.id;
-            if (seenRecipeIds.has(recipeId)) {
-              console.log(`⚠️ 중복 레시피 제외: ${recipeId} - ${recipe.recipe_title || recipe.name}`);
-              return false;
-            }
-            return true;
-          });
-          
-          // 새로운 레시피 ID들을 seenRecipeIds에 추가
-          const newRecipeIds = uniqueRecipes.map(recipe => recipe.recipe_id || recipe.id);
-          setSeenRecipeIds(prev => new Set([...prev, ...newRecipeIds]));
-          
-          // 페이지별 레시피 중복 확인
-          console.log(`🔍 재료 검색 페이지 ${page} 레시피 확인:`, {
-            page,
-            combination_number: response.combination_number || page,
-            totalRecipes: normalizedRecipes.length,
-            uniqueRecipes: uniqueRecipes.length,
-            recipeIds: uniqueRecipes.map(r => r.recipe_id || r.id),
-            recipeTitles: uniqueRecipes.map(r => r.recipe_title || r.name),
-            filteredOut: normalizedRecipes.length - uniqueRecipes.length
-          });
-          
-          // 응답 데이터를 캐시에 저장 (고유한 레시피만)
-          const cacheData = {
-            recipes: uniqueRecipes,
-            combination_number: response.combination_number || page,
-            has_more_combinations: response.has_more_combinations || false,
-            total: response.total || 0
-          };
-          combinationCache.set(cacheKey, cacheData);
-          
-          // 상태 업데이트
-          setRecipes(uniqueRecipes);
-          setCurrentPage(page);
-          setCombinationNumber(response.combination_number || page);
-          setHasMoreCombinations(response.has_more_combinations || false);
-          setTotal(response.total || 0);
-          
-          console.log(`✅ 조합 ${response.combination_number || page} 로드 완료 및 캐시 저장 (중복 제거: ${normalizedRecipes.length - uniqueRecipes.length}개)`);
-        }
-      }
-    } catch (error) {
-      console.error('페이지 변경 중 오류 발생:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading) {
     return (
       <div className="recipe-result-page">
         <HeaderNavRecipeRecommendation onBackClick={handleBack} />
-        <div className="selected-ingredients-section">
-          <div className="ingredients-tags-container">
-            {Array.isArray(ingredients) && ingredients.map((ingredient, index) => (
-              <IngredientTag
-                key={index}
-                ingredient={ingredient}
-                index={index}
-                showRemoveButton={false}
-              />
-            ))}
-          </div>
+        
+        {/* 검색어 표시 섹션 */}
+        <div className="search-query-section">
+          {/* 소진희망재료 검색인 경우 */}
+          {searchType === 'ingredient' && (
+            <>
+              <div className="search-type-label">선택된 재료(최소 3개 필요)</div>
+              <div className="ingredients-tags-container">
+                {displayIngredients.map((ingredient, index) => (
+                  <IngredientTag
+                    key={index}
+                    ingredient={ingredient}
+                    index={index}
+                    showRemoveButton={false}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+          
+          {/* 키워드 검색인 경우 */}
+          {searchType === 'keyword' && (
+            <>
+              <div className="search-type-label">검색어</div>
+              <div className="search-keyword-display">
+                <span className="search-keyword">
+                  {displayIngredients.map(ing => typeof ing === 'string' ? ing : ing.name).join(', ')}
+                </span>
+              </div>
+            </>
+          )}
         </div>
+        
         <main className="recipe-list">
           <Loading message="레시피를 불러오는 중..." />
         </main>
@@ -444,49 +274,42 @@ const RecipeResult = () => {
       {/* 헤더 */}
       <HeaderNavRecipeRecommendation onBackClick={handleBack} />
 
-             {/* 선택된 재료 태그들 */}
-       <div className="selected-ingredients-section">
-          {/* 소진희망재료 검색에서만 재료 태그들 표시 */}
+             {/* 검색어 표시 섹션 */}
+       <div className="search-query-section">
+          {/* 소진희망재료 검색인 경우 */}
           {searchType === 'ingredient' && (
-            <div className="ingredients-tags-container">
-              {displayIngredients.map((ingredient, index) => (
-                <IngredientTag
-                  key={index}
-                  ingredient={ingredient}
-                  index={index}
-                  showRemoveButton={false}
-                />
-              ))}
-            </div>
+            <>
+              <div className="search-type-label">선택된 재료(최소 3개 필요)</div>
+              <div className="ingredients-tags-container">
+                {displayIngredients.map((ingredient, index) => (
+                  <IngredientTag
+                    key={index}
+                    ingredient={ingredient}
+                    index={index}
+                    showRemoveButton={false}
+                  />
+                ))}
+              </div>
+            </>
           )}
-         
-         {/* 남은 재료 정보 표시
-         {remainingStock.size > 0 && (
-           <div className="remaining-ingredients">
-             <h4>남은 재료:</h4>
-             <div className="remaining-tags">
-               {Array.from(remainingStock.entries()).map(([name, stock]) => (
-                 stock.amount > 0.001 && (
-                   <div key={name} className="remaining-tag">
-                     <span className="ingredient-name">{name}</span>
-                     <span className="amount">{stock.amount.toFixed(1)}{stock.unit}</span>
-                   </div>
-                 )
-               ))}
-             </div>
-           </div>
-         )} */}
+          
+          {/* 키워드 검색인 경우 */}
+          {searchType === 'keyword' && (
+            <>
+              <div className="search-keyword-display">
+                <span className="search-keyword">
+                  {displayIngredients.map(ing => typeof ing === 'string' ? ing : ing.name).join(', ')}
+                </span>
+                <span className="recommendation-text">를 사용한 레시피를 추천드려요</span>
+              </div>
+            </>
+          )}
        </div>
 
 
 
              {/* 레시피 목록 */}
        <main className="recipe-list">
-         {loading && (
-           <div className="loading-overlay">
-             <Loading message="새로운 조합을 생성 중... 잠시만 기다려주세요." />
-           </div>
-         )}
          {!loading && error && (
            <div className="recipe-card">
              <div className="recipe-info">
@@ -509,7 +332,7 @@ const RecipeResult = () => {
                recipeObj = {
                  recipe_id: recipe[0],
                  recipe_title: recipe[1],
-                 recipe_title: recipe[1],
+                 cooking_name: recipe[2], // API 스펙에 맞게 추가
                  scrap_count: recipe[3],
                  cooking_case_name: recipe[4],
                  cooking_category_name: recipe[5],
@@ -626,27 +449,16 @@ const RecipeResult = () => {
            </div>
          )}
          
-         {/* 페이지네이션 - recipe-list 내부로 이동 */}
-         {recipes.length > 0 && (
-           <div className="pagination-section">
-             <div className="pagination-buttons">
-               {[1, 2, 3].map((page) => (
-                 <button
-                   key={page}
-                   className={`pagination-btn ${currentPage === page ? 'active' : ''}`}
-                   onClick={() => handlePageChange(page)}
-                   disabled={loading}
-                 >
-                   {page}
-                 </button>
-               ))}
-             </div>
-           </div>
-         )}
        </main>
 
       {/* 하단 네비게이션 */}
       <BottomNav />
+      
+      {/* 모달 컴포넌트 */}
+      <ModalManager
+        {...modalState}
+        onClose={handleModalClose}
+      />
     </div>
   );
 };

@@ -48,7 +48,50 @@
   margin-right: 40px;
 }
 
-/* 선택된 재료 태그들 */
+/* 검색어 표시 섹션 */
+.search-query-section {
+  background-color: #ffffff;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.search-type-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.search-type-label {
+  font-size: 16px;
+  font-weight: 600;
+  color: #000000;
+}
+
+.search-keyword-display {
+  /* display: flex;
+  align-items: center; */
+
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  /* padding: 12px 16px 8px 16px; */
+  padding-bottom: 16px;
+  text-align: left;
+  background-color: #ffffff;
+  border-radius: 8px 8px 0 0;
+  margin: 0;
+  border-left: 4px solid #ffffff;
+}
+
+.search-keyword-display .search-keyword {
+  color: #EA008A;
+  font-weight: 600;
+}
+
+.search-keyword-display .recommendation-text {
+  color: #999;
+  font-weight: 400;
+}
+
+/* 선택된 재료 태그들 (기존 스타일 유지) */
 .selected-ingredients-section {
   padding: 0px 16px 0px 16px;
   background-color: #ffffff;
