@@ -162,8 +162,8 @@
   transform: scale(1.05);
 }
 
-/* 상품 정보 */
-.product-info {
+/* 상품 정보 - 식재료 추천 섹션에서만 적용 */
+.ingredient-products-section .product-info {
   padding: 4px !important;
   width: 150px !important; /* 카드와 동일한 너비 강제 적용 */
   box-sizing: border-box !important;
@@ -247,8 +247,8 @@
   color: #000000;
 }
 
-/* 할인율 */
-.product-info .discount-rate {
+/* 할인율 - 식재료 추천 섹션에서만 적용 */
+.ingredient-products-section .product-info .discount-rate {
   font-size: 13px !important;
   font-weight: 600 !important;
   color: #FF4444 !important;
@@ -312,12 +312,10 @@
     height: 100px !important;
   }
   
-  .product-info {
+  /* 식재료 추천 섹션의 product-info만 적용되도록 더 구체적인 선택자 사용 */
+  .ingredient-products-section .product-info {
     width: 130px !important; /* 모바일에서도 카드와 동일한 너비 강제 적용 */
     max-width: 130px !important;
-  }
-  
-  .product-info {
     padding: 10px;
   }
   
@@ -333,7 +331,7 @@
     font-size: 13px;
   }
   
-  .product-info .discount-rate {
+  .ingredient-products-section .product-info .discount-rate {
     font-size: 12px !important;
   }
   
