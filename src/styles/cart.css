@@ -161,17 +161,15 @@
 
 /* 장바구니 아이템 스타일 */
 .cart-items {
-  padding: 0 20px;
   margin-top: 6px;
 }
 
 .cart-item {
   background-color: #ffffff;
   border-bottom: 1px solid #f0f0f0;
-  padding: 4px 0;
+  padding: 9px 0;
   border-radius: 8px;
   margin-bottom: 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .item-header {
@@ -179,7 +177,6 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
-  margin-left: 10px;
 }
 
 .store-name {
@@ -492,7 +489,6 @@
 
 /* 레시피 추천 섹션 */
 .recipe-recommendation-section {
-  margin: 16px 20px;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: none;
@@ -665,7 +661,6 @@
 /* 가격 요약 */
 .price-summary {
   background-color: transparent;
-  padding: 20px;
   margin: 16px 20px;
 }
 
