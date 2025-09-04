@@ -152,15 +152,15 @@
 
 /* 레시피 이미지 */
 .recipe-image-section {
-  margin-bottom: 24px;
+  margin-bottom: 12px;
   text-align: center;
 }
 
 .recipe-image-section img {
   width: 100%;
-  max-width: 400px;
+  max-width: 438px;
   height: auto;
-  border-radius: 12px;
+  border-radius: 0px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 

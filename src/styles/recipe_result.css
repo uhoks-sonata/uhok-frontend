@@ -179,7 +179,7 @@
 /* 레시피 목록 */
 .recipe-list {
   flex: 1;
-  padding: 16px 20px;
+  padding: 0px 13px;
   background-color: #ffffff;
   overflow-y: auto;
   position: relative; /* 로딩 오버레이를 위한 상대 위치 */
@@ -620,7 +620,7 @@
 
 /* 하단 네비게이션과의 간격 조정 */
 .recipe-list {
-  padding-bottom: 10px; 
+  padding-bottom: 98px; 
 }
 
 /* 반응형 디자인 */
