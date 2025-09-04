@@ -342,6 +342,16 @@ const RecipeDetail = () => {
     navigate(-1);
   };
 
+  // 알림 클릭 핸들러
+  const handleNotificationClick = () => {
+    navigate('/notifications');
+  };
+
+  // 장바구니 클릭 핸들러
+  const handleCartClick = () => {
+    navigate('/cart');
+  };
+
   // 재료 클릭 시 상품 추천 토글 (라디오버튼 형식 - 한 번에 하나만 열림)
   const [expandedIngredient, setExpandedIngredient] = useState(null);
   const handleIngredientClick = (ingredientName) => {
@@ -367,7 +377,11 @@ const RecipeDetail = () => {
   if (error) {
     return (
       <div className="recipe-detail-page">
-        <HeaderNavRecipeDetail onBackClick={handleBack} />
+        <HeaderNavRecipeDetail 
+          onBackClick={handleBack}
+          onNotificationClick={handleNotificationClick}
+          onCartClick={handleCartClick}
+        />
         <div className="error-message">
           <p>{error}</p>
           <button onClick={handleBack}>뒤로 가기</button>
@@ -379,7 +393,11 @@ const RecipeDetail = () => {
   if (!recipe) {
     return (
       <div className="recipe-detail-page">
-        <HeaderNavRecipeDetail onBackClick={handleBack} />
+        <HeaderNavRecipeDetail 
+          onBackClick={handleBack}
+          onNotificationClick={handleNotificationClick}
+          onCartClick={handleCartClick}
+        />
         <div className="error-message">
           <p>레시피를 찾을 수 없습니다.</p>
           <button onClick={handleBack}>뒤로 가기</button>
