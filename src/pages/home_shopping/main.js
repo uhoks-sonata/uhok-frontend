@@ -115,19 +115,14 @@ const Main = () => {
         const hour = today.getHours(); // 현재 시간 (한국 시간)
         
         // 홈쇼핑 편성표 API 호출 (오늘 날짜 데이터만)
-        // getSchedule 함수에서 자동으로 오늘 날짜를 설정하므로 파라미터로 전달하지 않음
-        const response = await homeShoppingApi.getSchedule();
+        // 오늘 날짜를 파라미터로 전달하여 서버에서 필터링하도록 수정
+        const response = await homeShoppingApi.getSchedule(todayString);
         
         console.log('홈쇼핑 편성표 API 응답:', response.data);
         
         if (response && response.data && response.data.schedules && response.data.schedules.length > 0) {
-          // 오늘 날짜의 데이터만 필터링
-          
-          const todaySchedules = response.data.schedules.filter(item => {
-            const itemDate = new Date(item.live_date);
-            const itemDateString = itemDate.toISOString().split('T')[0];
-            return itemDateString === todayString;
-          });
+          // 서버에서 이미 오늘 날짜로 필터링된 데이터를 받음
+          const todaySchedules = response.data.schedules;
           
           console.log('오늘 날짜 편성표:', todaySchedules);
           

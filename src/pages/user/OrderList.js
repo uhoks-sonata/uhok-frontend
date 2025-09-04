@@ -63,7 +63,7 @@ const OrderList = () => {
     orders: [], // 주문 목록 (API에서 받아옴)
     total_count: 0, // 전체 주문 개수
     page: 1, // 현재 페이지
-    size: 20 // 페이지당 주문 개수
+    size: 10 // 페이지당 주문 개수
   });
 
 
@@ -271,14 +271,14 @@ const OrderList = () => {
       }
       
       // API 응답 구조 확인
-      console.log('🔍 API 응답 구조 확인:', {
-        hasOrdersData: !!ordersData,
-        hasOrderGroups: !!ordersData?.order_groups,
-        orderGroupsType: typeof ordersData?.order_groups,
-        orderGroupsLength: ordersData?.order_groups?.length,
-        totalCount: ordersData?.total_count,
-        limit: ordersData?.limit
-      });
+      // console.log('🔍 API 응답 구조 확인:', {
+      //   hasOrdersData: !!ordersData,
+      //   hasOrderGroups: !!ordersData?.order_groups,
+      //   orderGroupsType: typeof ordersData?.order_groups,
+      //   orderGroupsLength: ordersData?.order_groups?.length,
+      //   totalCount: ordersData?.total_count,
+      //   limit: ordersData?.limit
+      // });
       
       if (!ordersData || !ordersData.order_groups || !Array.isArray(ordersData.order_groups) || ordersData.order_groups.length === 0) {
         // 주문이 없는 경우 빈 배열로 설정
@@ -287,7 +287,7 @@ const OrderList = () => {
           orders: [],
           total_count: 0,
           page: 1,
-          size: 20
+          size: 10
         });
         setLoading(false);
         return;
@@ -323,14 +323,7 @@ const OrderList = () => {
               price: item.price || 0,
               quantity: item.quantity || 1,
               delivery_status: item.delivery_status || '배송완료',
-              delivery_date: item.delivery_date || '',
-              recipe_related: item.recipe_related || false,
-              recipe_title: item.recipe_title || '',
-              recipe_rating: item.recipe_rating || 0,
-              recipe_scrap_count: item.recipe_scrap_count || 0,
-              recipe_description: item.recipe_description || '',
-              ingredients_owned: item.ingredients_owned || 0,
-              total_ingredients: item.total_ingredients || 0
+              delivery_date: item.delivery_date || ''
             };
           }).filter(Boolean) // null 값 제거
         };
@@ -343,7 +336,7 @@ const OrderList = () => {
           orders: [],
           total_count: 0,
           page: 1,
-          size: 20
+          size: 10
         });
         setLoading(false);
         return;
@@ -354,7 +347,7 @@ const OrderList = () => {
         orders: transformedOrders,
         total_count: ordersData.total_count || 0,
         page: 1,
-        size: 20
+        size: 10
       });
       
       // 로딩 상태를 false로 설정합니다
@@ -385,7 +378,7 @@ const OrderList = () => {
               orders: [],
               total_count: 0,
               page: 1,
-              size: 20
+              size: 10
             });
             setLoading(false);
             return;
@@ -418,7 +411,7 @@ const OrderList = () => {
         orders: [],
         total_count: 0,
         page: 1,
-        size: 20
+        size: 10
       });
     }
   }, [userContextLoading, refreshToken, navigate, setModalState, setLoading, setError, setOrderData, logout]);
