@@ -525,7 +525,7 @@ const WishList = () => {
                       <div className="shopping-product-info">
                         <div className="shopping-product-details">
                           <span className="shopping-product-name">
-                            <span className="shopping-brand-name">{product.kok_store_name}</span> | {product.kok_product_name}
+                            <span className="shopping-brand-name">{product.kok_store_name}</span>{product.kok_product_name}
                           </span>
                         </div>
                                                  <div className="shopping-price-section">
