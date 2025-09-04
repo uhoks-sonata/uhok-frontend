@@ -444,6 +444,15 @@ const RecipeDetail = () => {
           <div className="ingredients-list">
             {recipe.materials
               ?.map((material, index) => {
+                // 디버깅: material 데이터 구조 확인
+                console.log(`🔍 Material ${index}:`, {
+                  material_name: material.material_name,
+                  measure_amount: material.measure_amount,
+                  material_unit: material.material_unit,
+                  measure_unit: material.measure_unit,
+                  전체데이터: material
+                });
+                
                 // 재료 상태 확인
                 let status = 'not-owned';
                 let statusText = '미보유';
@@ -523,7 +532,7 @@ const RecipeDetail = () => {
                       </div>
                       {/* 버튼 옆에 수량 표시 */}
                       <span className={`ingredient-amount-next-to-button ${status}`}>
-                        {material.measure_amount} {material.material_unit}
+                        {material.measure_amount} {material.material_unit || material.measure_unit || ''}
                       </span>
                       <span 
                         className={`ingredient-status ${status}`}

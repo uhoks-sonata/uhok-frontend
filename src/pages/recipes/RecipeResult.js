@@ -43,26 +43,32 @@ const RecipeResult = () => {
   // 조합별로 결과를 캐싱하여 중복 요청 방지
   const combinationCache = useMemo(() => new Map(), []);
 
-  // 페이지별 중복 필터링 함수
+  // 페이지별 중복 필터링 함수 (다른 페이지와의 중복만 체크)
   const filterUniqueRecipesForPage = useCallback((recipes, page) => {
-    const currentPageSeenIds = pageSeenRecipeIds.get(page) || new Set();
+    // 다른 모든 페이지에서 본 레시피 ID들을 수집
+    const allOtherPagesSeenIds = new Set();
+    pageSeenRecipeIds.forEach((seenIds, pageNum) => {
+      if (pageNum !== page) {
+        seenIds.forEach(id => allOtherPagesSeenIds.add(id));
+      }
+    });
+    
+    // 다른 페이지에서 본 적이 없는 레시피만 필터링
     const uniqueRecipes = recipes.filter(recipe => {
       const recipeId = recipe.recipe_id || recipe.id;
-      if (currentPageSeenIds.has(recipeId)) {
-        console.log(`⚠️ 페이지 ${page}에서 중복 레시피 제외: ${recipeId} - ${recipe.recipe_title || recipe.name}`);
+      if (allOtherPagesSeenIds.has(recipeId)) {
+        console.log(`⚠️ 다른 페이지에서 이미 본 레시피 제외: ${recipeId} - ${recipe.recipe_title || recipe.name}`);
         return false;
       }
       return true;
     });
     
-    // 새로운 레시피 ID들을 현재 페이지의 seenRecipeIds에 추가
-    const newRecipeIds = uniqueRecipes.map(recipe => recipe.recipe_id || recipe.id);
-    if (newRecipeIds.length > 0) {
+    // 현재 페이지의 레시피 ID들을 기록 (다른 페이지와의 중복 체크용)
+    const currentPageRecipeIds = recipes.map(recipe => recipe.recipe_id || recipe.id);
+    if (currentPageRecipeIds.length > 0) {
       setPageSeenRecipeIds(prev => {
         const newMap = new Map(prev);
-        const currentSet = new Set(currentPageSeenIds);
-        newRecipeIds.forEach(id => currentSet.add(id));
-        newMap.set(page, currentSet);
+        newMap.set(page, new Set(currentPageRecipeIds));
         return newMap;
       });
     }
@@ -72,7 +78,7 @@ const RecipeResult = () => {
 
   // 레시피별 재료 정보 가져오기 (키워드 검색에서만) - 배치 처리로 개선
   const fetchRecipeIngredients = useCallback(async (recipeIds) => {
-    if (searchType !== 'keyword' || isFetchingIngredients) {
+    if ((searchType !== 'recipekeyword' && searchType !== 'ingredientkeyword') || isFetchingIngredients) {
       return;
     }
 
@@ -243,7 +249,7 @@ const RecipeResult = () => {
 
   // 레시피 재료 정보 가져오기 (키워드 검색에서만) - 배치 처리
   useEffect(() => {
-    if (searchType === 'keyword' && recipes.length > 0 && !isFetchingIngredients) {
+    if ((searchType === 'recipekeyword' || searchType === 'ingredientkeyword') && recipes.length > 0 && !isFetchingIngredients) {
       const recipeIds = recipes
         .map(recipe => recipe.recipe_id || recipe.id)
         .filter(id => id && !recipeIngredientsCache.has(id));
@@ -278,7 +284,7 @@ const RecipeResult = () => {
     if (page === currentPage) return;
     
     // 캐시에서 먼저 확인
-    const cacheKey = searchType === 'keyword' 
+    const cacheKey = (searchType === 'recipekeyword' || searchType === 'ingredientkeyword')
       ? `keyword-${displayIngredients.join(',')}-${page}`
       : `${ingredients.join(',')}-${page}`;
     
@@ -301,7 +307,7 @@ const RecipeResult = () => {
     try {
       let response;
       
-      if (searchType === 'keyword') {
+      if (searchType === 'recipekeyword' || searchType === 'ingredientkeyword') {
         // 키워드 검색: searchRecipes API 사용
         const searchKeyword = displayIngredients.map(ing => typeof ing === 'string' ? ing : ing.name).join(' ');
         response = await recipeApi.searchRecipes({
@@ -455,8 +461,20 @@ const RecipeResult = () => {
              </div>
            </div>
          )} */}
-          {/* 키워드 검색인 경우 */}
-          {searchType === 'keyword' && (
+          {/* 레시피명 키워드 검색인 경우 */}
+          {searchType === 'recipekeyword' && (
+            <>
+              <div className="search-keyword-display">
+                <span className="search-keyword">
+                  {displayIngredients.map(ing => typeof ing === 'string' ? ing : ing.name).join(', ')}
+                </span>
+                <span className="recommendation-text">와 관련된 레시피를 추천드려요</span>
+              </div>
+            </>
+          )}
+          
+          {/* 식재료명 키워드 검색인 경우 */}
+          {searchType === 'ingredientkeyword' && (
             <>
               <div className="search-keyword-display">
                 <span className="search-keyword">
@@ -525,7 +543,7 @@ const RecipeResult = () => {
              
                            return (
                 <div key={recipeObj.recipe_id || recipeObj.id || idx} 
-                     className={`recipe-card ${searchType === 'keyword' ? 'keyword-search-card' : 'ingredient-search-card'}`} 
+                     className={`recipe-card ${(searchType === 'recipekeyword' || searchType === 'ingredientkeyword') ? 'keyword-search-card' : 'ingredient-search-card'}`} 
                      onClick={() => handleRecipeClick(recipeObj)}>
                  <div className="recipe-image">
                    <img src={getRecipeImageSrc(recipeObj, idx)} alt={recipeObj.recipe_title || recipeObj.name || '레시피'} onError={(e)=>{ e.currentTarget.src = fallbackImg; }} />
@@ -569,7 +587,7 @@ const RecipeResult = () => {
                      )}
                      
                      {/* 키워드 검색 결과에만 레시피 설명 표시 */}
-                     {searchType === 'keyword' && recipeObj.cooking_introduction && (
+                     {(searchType === 'recipekeyword' || searchType === 'ingredientkeyword') && recipeObj.cooking_introduction && (
                        <p className="recipe-description">{recipeObj.cooking_introduction}</p>
                      )}
                  </div>

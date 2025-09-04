@@ -193,8 +193,8 @@
 
 /* 레시피명/식재료명 검색용 (pagination-buttons 없음) */
 .recipe-result-page.keyword-search .recipe-list {
-  height: calc(100vh - 185px); /* 헤더 + 선택된 재료 + 바텀네비 + 패딩 고려 (페이지네이션 제외) */
-  max-height: calc(100vh - 185px); /* 최대 높이 제한 */
+  height: calc(100vh - 225px); /* 헤더 + 선택된 재료 + 바텀네비 + 패딩 고려 (페이지네이션 제외) */
+  max-height: calc(100vh - 225px); /* 최대 높이 제한 */
 }
 
 /* Webkit 브라우저 스크롤바 스타일링 */
