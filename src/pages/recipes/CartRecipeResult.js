@@ -341,7 +341,7 @@ const CartRecipeResult = () => {
             <Loading message="재료 정보를 불러오는 중..." />
           </div>
         )}
-        {!loading && error && (
+        {!loading && !ingredientsLoading && error && (
           <div className="recipe-card">
             <div className="recipe-info">
               <h3>오류가 발생했습니다</h3>
@@ -355,7 +355,7 @@ const CartRecipeResult = () => {
             </div>
           </div>
         )}
-        {!loading && !error && sortedRecipes.length > 0 && (
+        {!loading && !ingredientsLoading && !error && sortedRecipes.length > 0 && (
           sortedRecipes.map((recipe, idx) => {
             // recipe 객체를 그대로 사용 (recipe_title 컬럼 사용)
             const recipeObj = recipe;
@@ -432,7 +432,7 @@ const CartRecipeResult = () => {
             );
           })
         )}
-        {!loading && !error && recipes.length === 0 && (
+        {!loading && !ingredientsLoading && !error && recipes.length === 0 && (
           <div className="no-results">
             <p>추천할 수 있는 레시피가 없습니다.</p>
             <p>다른 상품을 선택해보세요.</p>

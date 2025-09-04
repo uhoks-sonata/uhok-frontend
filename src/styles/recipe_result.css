@@ -391,7 +391,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 8px;
+  margin-bottom: 0px;
   padding: 0 !important; /* 패딩 강제 제거 */
 }
 
@@ -422,18 +422,7 @@
   vertical-align: middle;
 }
 
-/* recipe-result 페이지 전용 matched-ingredients 스타일 */
-.recipe-result-page .matched-ingredients {
-  font-size: 12px;
-  color: #666;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 0 !important; /* 패딩 강제 제거 */
-}
-
-/* 기존 matched-ingredients 스타일은 유지 */
+/* matched-ingredients 스타일 */
 .matched-ingredients {
   font-size: 12px;
   color: #666;
@@ -441,20 +430,12 @@
   display: flex;
   align-items: center;
   gap: 4px;
+  margin-bottom: 0px;
 }
 
 .matched-count {
   color: #FA5F8C;
   font-weight: 500;
-}
-
-/* 검색 타입별 matched-count 스타일 */
-.ingredient-search-card .matched-count {
-  color: #FA5F8C;
-}
-
-.keyword-search-card .matched-count {
-  color: #FA5F8C;
 }
 
 .separator {
@@ -479,9 +460,12 @@
   font-size: 11px;
   color: #666;
   background-color: #f5f5f5;
-  padding: 2px 6px;
+  padding: 0px 6px 2px 6px;
   border-radius: 4px;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* 소진희망재료 검색용 재료 아이템 스타일 */

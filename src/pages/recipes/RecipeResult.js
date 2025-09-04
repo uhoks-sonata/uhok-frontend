@@ -32,7 +32,6 @@ const RecipeResult = () => {
   // 레시피별 재료 정보 캐시
   const [recipeIngredientsCache, setRecipeIngredientsCache] = useState(new Map());
   // 재료 정보 로딩 상태
-  const [ingredientsLoading, setIngredientsLoading] = useState(false);
   // 요청 제한을 위한 상태
   const [isFetchingIngredients, setIsFetchingIngredients] = useState(false);
   // 모달 상태 관리
@@ -55,7 +54,6 @@ const RecipeResult = () => {
 
     try {
       setIsFetchingIngredients(true);
-      setIngredientsLoading(true);
       
       // 최대 3개씩 배치로 처리
       const batchSize = 3;
@@ -104,7 +102,6 @@ const RecipeResult = () => {
       console.log('재료 정보 배치 조회 실패:', error);
     } finally {
       setIsFetchingIngredients(false);
-      setIngredientsLoading(false);
     }
   }, [searchType, isFetchingIngredients, recipeIngredientsCache]);
 
@@ -350,38 +347,11 @@ const RecipeResult = () => {
               const finalUsedIngredients = recipeObj.used_ingredients || cachedIngredients?.used_ingredients || [];
               const finalTotalIngredients = recipeObj.summary?.total_ingredients || recipeObj.total_ingredients_count || cachedIngredients?.total_ingredients || finalUsedIngredients.length;
 
-              // 실제 일치하는 재료 수 계산
-              // 1. API에서 제공하는 matched_ingredient_count를 우선 사용
-              // 2. 없으면 직접 계산
+              // 재료 소진 검색에서만 matched-ingredients 표시를 위한 계산
               let actualMatchedCount = 0;
-              
-              if (typeof recipeObj.matched_ingredient_count === 'number') {
+              if (searchType === 'ingredient' && typeof recipeObj.matched_ingredient_count === 'number') {
                 actualMatchedCount = recipeObj.matched_ingredient_count;
-              } else if (Array.isArray(finalUsedIngredients)) {
-                actualMatchedCount = finalUsedIngredients.filter(usedIng => 
-                  displayIngredients.some(displayIng => {
-                    const displayName = typeof displayIng === 'string' ? displayIng : displayIng.name || '';
-                    const usedIngName = usedIng && (usedIng.material_name || usedIng.name || '');
-                    return usedIngName && (
-                      displayName.toLowerCase().includes(usedIngName.toLowerCase()) ||
-                      usedIngName.toLowerCase().includes(displayName.toLowerCase())
-                    );
-                  })
-                ).length;
               }
-             
-             // 디버깅을 위한 콘솔 로그
-             console.log('🔍 재료 매칭 디버깅:', {
-               recipeTitle: recipeObj.recipe_title || recipeObj.name,
-               displayIngredients: displayIngredients,
-               finalUsedIngredients: finalUsedIngredients,
-               actualMatchedCount: actualMatchedCount,
-               matched_ingredient_count: recipeObj.matched_ingredient_count,
-               usedAPIValue: typeof recipeObj.matched_ingredient_count === 'number',
-               recipeObjKeys: Object.keys(recipeObj),
-               cachedIngredients: cachedIngredients,
-               searchType: searchType
-             });
              
                            return (
                 <div key={recipeObj.recipe_id || recipeObj.id || idx} 
@@ -404,20 +374,15 @@ const RecipeResult = () => {
                        <span className="bookmark-count">{recipeObj.scrap_count || recipeObj.scrapCount || 0}</span>
                      </span>
                    </div>
-                                       {/* matched-ingredients 표시 - 소진희망재료 검색에서는 matched_ingredient_count가 있을 때만, 키워드 검색에서는 항상 표시 */}
-                                       {(searchType === 'ingredient' && typeof recipeObj.matched_ingredient_count === 'number') || searchType === 'keyword' ? (
+                    
+                    {/* matched-ingredients 표시 - 재료 소진 검색에서만 표시 */}
+                    {searchType === 'ingredient' && typeof recipeObj.matched_ingredient_count === 'number' && (
                       <div className="matched-ingredients">
-                        {searchType === 'keyword' && ingredientsLoading && !cachedIngredients ? (
-                          <span className="matched-count">재료 정보 로딩 중...</span>
-                        ) : (
-                          <>
-                            <span className="matched-count">{actualMatchedCount}개 재료 일치</span>
-                            <span className="separator"> | </span>
-                            <span className="total-ingredients">재료 총 {finalTotalIngredients}개</span>
-                          </>
-                        )}
+                        <span className="matched-count">{actualMatchedCount}개 재료 일치</span>
+                        <span className="separator"> | </span>
+                        <span className="total-ingredients">재료 총 {finalTotalIngredients}개</span>
                       </div>
-                    ) : null}
+                    )}
                     
                                          {/* 사용되는 재료 목록 표시 - 소진 희망 재료 검색에서만 표시 */}
                      {searchType === 'ingredient' && Array.isArray(recipeObj.used_ingredients) && recipeObj.used_ingredients.length > 0 && (
