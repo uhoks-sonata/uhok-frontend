@@ -91,6 +91,7 @@ const IngredientProductRecommendation = ({ ingredientName, ingredientAmount, ing
               <div 
                 key={index} 
                 className="product-card clickable"
+                data-source={product.source === 'kok' || product.source === '콕' ? 'kok' : 'homeshopping'}
                 onClick={() => handleProductClick(product)}
                 style={{ cursor: 'pointer' }}
               >
@@ -110,6 +111,17 @@ const IngredientProductRecommendation = ({ ingredientName, ingredientAmount, ing
                       : product.name
                     }
                   </div>
+                  {/* 콕 상품인 경우 리뷰 정보를 먼저 표시 */}
+                  {(product.source === 'kok' || product.source === '콕') && (
+                    <div className="product-review-info">
+                      <span className="review-score">
+                        ★ {product.kok_review_score !== null ? product.kok_review_score.toFixed(1) : '0.0'}
+                      </span>
+                      <span className="review-count">
+                        {product.kok_review_cnt !== null ? `(${product.kok_review_cnt.toLocaleString()}개)` : '(리뷰 없음)'}
+                      </span>
+                    </div>
+                  )}
                   <div className="product-price-section">
                     <div className="product-source">
                       {product.source === 'kok' || product.source === '콕' ? (
@@ -143,17 +155,6 @@ const IngredientProductRecommendation = ({ ingredientName, ingredientAmount, ing
                       {product.price?.toLocaleString()}원
                     </div>
                   </div>
-                  {/* 리뷰 정보 (콕 상품인 경우에만 표시) */}
-                  {(product.source === 'kok' || product.source === '콕') && (
-                    <div className="product-review-info">
-                      <span className="review-score">
-                        ★ {product.kok_review_score !== null ? product.kok_review_score.toFixed(1) : '0.0'}
-                      </span>
-                      <span className="review-count">
-                        {product.kok_review_cnt !== null ? `(${product.kok_review_cnt.toLocaleString()}개)` : '(리뷰 없음)'}
-                      </span>
-                    </div>
-                  )}
                 </div>
               </div>
             ))}

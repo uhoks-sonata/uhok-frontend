@@ -218,7 +218,7 @@ const RecipeRecommendation = () => {
             total,
             page,
             ingredients: [{ name: recipeInput, amount: '', unit: '' }], // 검색어를 재료 형태로 전달
-            searchType: 'keyword' // 검색 타입 추가
+            searchType: recipeSearchType === 'ingredient' ? 'ingredientkeyword' : 'recipekeyword' // 검색 타입 추가
           },
         });
       }
