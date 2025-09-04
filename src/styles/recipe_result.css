@@ -62,36 +62,12 @@
   color: #333;
   /* padding: 12px 16px 8px 16px; */
   padding-bottom: 16px;
+
   text-align: left;
   background-color: #ffffff;
   border-radius: 8px 8px 0 0;
   margin: 0;
   border-left: 4px solid #ffffff;
-}
-.search-keyword-display {
-  /* display: flex;
-  align-items: center; */
-
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
-  /* padding: 12px 16px 8px 16px; */
-  padding-bottom: 16px;
-  text-align: left;
-  background-color: #ffffff;
-  border-radius: 8px 8px 0 0;
-  margin: 0;
-  border-left: 4px solid #ffffff;
-}
-
-.search-keyword-display .search-keyword {
-  color: #EA008A;
-  font-weight: 600;
-}
-
-.search-keyword-display .recommendation-text {
-  color: #999;
-  font-weight: 400;
 }
 
 /* 키워드 텍스트 스타일 */
@@ -179,22 +155,12 @@
 /* 레시피 목록 */
 .recipe-list {
   flex: 1;
-  padding: 0px 13px;
+  padding: 16px 20px;
   background-color: #ffffff;
   overflow-y: auto;
-  position: relative; /* 로딩 오버레이를 위한 상대 위치 */
-}
-
-/* 재고 소진 희망 레시피 검색용 (pagination-buttons 있음) */
-.recipe-result-page.ingredient-search .recipe-list {
   height: calc(100vh - 230px); /* 헤더 + 선택된 재료 + 결과 요약 + 페이지네이션 + 바텀네비 + 패딩 고려 */
   max-height: calc(100vh - 230px); /* 최대 높이 제한 */
-}
-
-/* 레시피명/식재료명 검색용 (pagination-buttons 없음) */
-.recipe-result-page.keyword-search .recipe-list {
-  height: calc(100vh - 225px); /* 헤더 + 선택된 재료 + 바텀네비 + 패딩 고려 (페이지네이션 제외) */
-  max-height: calc(100vh - 225px); /* 최대 높이 제한 */
+  position: relative; /* 로딩 오버레이를 위한 상대 위치 */
 }
 
 /* Webkit 브라우저 스크롤바 스타일링 */
@@ -382,7 +348,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 0px;
+  margin-bottom: 8px;
   padding: 0 !important; /* 패딩 강제 제거 */
 }
 
@@ -413,7 +379,18 @@
   vertical-align: middle;
 }
 
-/* matched-ingredients 스타일 */
+/* recipe-result 페이지 전용 matched-ingredients 스타일 */
+.recipe-result-page .matched-ingredients {
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 !important; /* 패딩 강제 제거 */
+}
+
+/* 기존 matched-ingredients 스타일은 유지 */
 .matched-ingredients {
   font-size: 12px;
   color: #666;
@@ -421,12 +398,20 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  margin-bottom: 0px;
 }
 
 .matched-count {
   color: #FA5F8C;
   font-weight: 500;
+}
+
+/* 검색 타입별 matched-count 스타일 */
+.ingredient-search-card .matched-count {
+  color: #FA5F8C;
+}
+
+.keyword-search-card .matched-count {
+  color: #FA5F8C;
 }
 
 .separator {
@@ -451,7 +436,7 @@
   font-size: 11px;
   color: #666;
   background-color: #f5f5f5;
-  padding: 0px 6px 2px 6px;
+  padding: 2px 6px 6px 2px;
   border-radius: 4px;
   white-space: nowrap;
   display: flex;
@@ -620,7 +605,7 @@
 
 /* 하단 네비게이션과의 간격 조정 */
 .recipe-list {
-  padding-bottom: 98px; 
+  padding-bottom: 10px; 
 }
 
 /* 반응형 디자인 */

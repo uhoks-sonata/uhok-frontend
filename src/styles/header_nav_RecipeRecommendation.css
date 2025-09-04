@@ -20,7 +20,7 @@
 
 .hn-recipe-right {
   padding-top: 7px;
-  gap: 3px; /* 알림과 장바구니 아이콘 간격 */
+  gap: 0px; /* 알림과 장바구니 아이콘 간격 */
   justify-content: center; /* 중앙 정렬 */
 }
 
