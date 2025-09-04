@@ -15,6 +15,8 @@ import '../../styles/search.css';
 import { kokApi } from '../../api/kokApi';
 // 사용자 Context import
 import { useUser } from '../../contexts/UserContext';
+// 모달 관리자 컴포넌트 import
+import ModalManager, { showAlert, hideModal, showSearchHistoryDeletedNotification } from '../../components/LoadingModal';
 
 // 콕 검색 페이지 컴포넌트를 정의합니다
 const KokSearch = () => {
@@ -39,6 +41,14 @@ const KokSearch = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  // 모달 상태 관리
+  const [modalState, setModalState] = useState({ isVisible: false, modalType: 'loading' });
+
+  // ===== 모달 관련 함수 =====
+  // 모달 닫기 함수
+  const closeModal = () => {
+    setModalState(hideModal());
+  };
 
   // 콕 검색 히스토리 로드 (API 사용)
   const loadSearchHistory = useCallback(async () => {
@@ -824,7 +834,7 @@ const KokSearch = () => {
       
       if (currentHistoryCount === 0) {
         console.log('삭제할 검색 히스토리가 없습니다.');
-        alert('삭제할 검색 히스토리가 없습니다.');
+        setModalState(showAlert('삭제할 검색 히스토리가 없습니다.'));
         return;
       }
       
@@ -900,7 +910,7 @@ const KokSearch = () => {
        }
       
       // 성공 메시지 표시
-      alert(`검색 히스토리 ${currentHistoryCount}개가 삭제되었습니다.`);
+      setModalState(showSearchHistoryDeletedNotification(currentHistoryCount));
       
     } catch (error) {
       console.error('콕 검색 히스토리 전체 삭제 실패:', error);
@@ -931,10 +941,10 @@ const KokSearch = () => {
            });
          }
          
-         alert(`검색 히스토리 ${history.length}개가 삭제되었습니다. (로컬 저장소)`);
+         setModalState(showSearchHistoryDeletedNotification(history.length));
        } catch (localError) {
          console.error('로컬 데이터 삭제도 실패:', localError);
-         alert('검색 히스토리 삭제 중 오류가 발생했습니다.');
+         setModalState(showAlert('검색 히스토리 삭제 중 오류가 발생했습니다.'));
        }
     }
   };
@@ -1162,7 +1172,6 @@ const KokSearch = () => {
         {/* 검색 결과가 없을 때 */}
         {!loading && searchQuery && searchResults.length === 0 && !error && (
           <div className="no-results">
-            <div className="no-results-icon">🔍</div>
             <h3>검색 결과가 없습니다</h3>
             <p>"{searchQuery}"에 대한 검색 결과를 찾을 수 없습니다.</p>
           </div>
@@ -1171,6 +1180,12 @@ const KokSearch = () => {
 
       {/* 하단 네비게이션 */}
       <BottomNav />
+
+      {/* 모달 관리자 */}
+      <ModalManager
+        {...modalState}
+        onClose={closeModal}
+      />
     </div>
   );
 };

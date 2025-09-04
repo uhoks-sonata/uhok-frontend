@@ -88,6 +88,29 @@ const OrderList = () => {
     return date.toISOString().split('T')[0];
   };
 
+  // 토큰 상태 디버깅 함수
+  const debugTokenStatus = () => {
+    if (process.env.NODE_ENV === 'development') {
+      const token = localStorage.getItem('access_token');
+      const refreshToken = localStorage.getItem('refresh_token');
+      
+      // console.log('🔍 토큰 상태 디버깅:', {
+      //   hasAccessToken: !!token,
+      //   accessTokenLength: token?.length || 0,
+      //   hasRefreshToken: !!refreshToken,
+      //   refreshTokenLength: refreshToken?.length || 0,
+      //   userContextLoading,
+      //   isLoggedIn,
+      //   hasUser: !!user,
+      //   currentPath: window.location.pathname
+      // });
+      
+      if (token) {
+        tokenTestUtils.logTokenInfo(token);
+      }
+    }
+  };
+
   // 로그인 상태 확인 함수
   const checkLoginStatus = () => {
     const token = localStorage.getItem('access_token');
@@ -197,11 +220,11 @@ const OrderList = () => {
             const refreshSuccess = await refreshToken();
             if (refreshSuccess) {
               console.log('✅ 토큰 갱신 성공. 주문 내역 다시 로드 시도');
-              // 토큰 갱신 성공 시 다시 API 호출
-              try {
-                ordersResponse = await orderApi.getUserOrders(10);
-                ordersData = ordersResponse;
-                console.log('✅ 토큰 갱신 후 주문 내역 로드 성공');
+                          // 토큰 갱신 성공 시 다시 API 호출
+            try {
+              const ordersResponse = await orderApi.getUserOrders(10);
+              ordersData = ordersResponse;
+              console.log('✅ 토큰 갱신 후 주문 내역 로드 성공');
               } catch (retryError) {
                 console.error('토큰 갱신 후 재시도 실패:', retryError);
                 // 재시도 실패 시 로그인 모달 표시

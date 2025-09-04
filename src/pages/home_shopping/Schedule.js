@@ -948,6 +948,20 @@ const Schedule = () => {
     return (
       <div className="left-sidebar">
         <div className="channel-list">
+          {/* 전체 채널 옵션 */}
+          <div className="channel-item">
+            <div 
+              className={`schedule-channel-logo ${!selectedHomeshopping ? 'selected-channel' : ''}`}
+              onClick={() => {
+                setSelectedHomeshopping(null);
+                console.log('전체 채널 선택');
+              }}
+              style={{ cursor: 'pointer' }}
+            >
+              <div className="all-channels-text">전체 채널</div>
+            </div>
+          </div>
+          
           {homeshoppingChannels.map((channel) => (
             <div key={channel.id} className="channel-item">
               <div 

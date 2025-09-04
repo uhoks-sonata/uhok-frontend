@@ -249,7 +249,7 @@ const Signup = () => {
         {/* 로그인 링크 영역 */}
         <div className="login-link">
           {/* 로그인 페이지로 이동하는 링크 */}
-          <Link to="/">로그인</Link>
+          <Link to="/login">로그인</Link>
         </div>
       </form>
 
