@@ -954,8 +954,8 @@
 }
 
 .kok-product-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .kok-product-image {
@@ -965,9 +965,6 @@
   transition: transform 0.3s ease;
 }
 
-.kok-product-card:hover .kok-product-image {
-  transform: scale(1.1);
-}
 
 .kok-product-info {
   padding: 20px;

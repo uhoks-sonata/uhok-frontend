@@ -11,7 +11,8 @@
 }
 
 .kok-product-card:hover {
-  transform: translateY(-1px); /* 호버 효과 줄임 */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .kok-product-card.special {

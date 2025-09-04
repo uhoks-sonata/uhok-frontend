@@ -357,9 +357,9 @@
 
 .broadcast-date {
   padding: 0px;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: normal;
-  color: #333;
+  color: #666;
   margin: 0
 }
 
@@ -373,6 +373,19 @@
   padding: 4px 8px;
   border-radius: 12px;
   font-weight: 500;
+}
+
+/* 방송 상태별 배경색 */
+.broadcast-status.방송중 {
+  background-color: #FF69B4; /* 분홍색 */
+}
+
+.broadcast-status.방송종료 {
+  background-color: #95a5a6; /* 회색 */
+}
+
+.broadcast-status.방송예정 {
+  background-color: #95a5a6;; /* 파란색 */
 }
 
 .broadcast-time {

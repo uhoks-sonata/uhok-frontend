@@ -231,6 +231,7 @@ const HomeShoppingSearch = () => {
           
           const result = {
             id: safeGet(product, 'product_id') || safeGet(product, 'id') || `homeshopping_${Date.now()}_${Math.random()}`,
+            live_id: safeGet(product, 'live_id') || safeGet(product, 'liveId'),
             title: safeGet(product, 'product_name') || safeGet(product, 'name') || safeGet(product, 'title') || '상품명 없음',
             description: `${safeGet(product, 'store_name', '홈쇼핑')}에서 판매 중인 홈쇼핑 상품`,
             price: `${formatPrice(safeGet(product, 'dc_price') || safeGet(product, 'discounted_price'))}원`,
@@ -245,7 +246,26 @@ const HomeShoppingSearch = () => {
               safeGet(product, 'live_date'),
               safeGet(product, 'live_start_time'),
               safeGet(product, 'live_end_time')
-            )
+            ),
+            // 방송 상태 계산 (live_date와 live_end_time 기준)
+            broadcastStatus: (() => {
+              const now = new Date();
+              const liveEndDateTime = new Date(`${safeGet(product, 'live_date')}T${safeGet(product, 'live_end_time')}`);
+              const timeDiff = liveEndDateTime - now;
+              
+              // 방송 종료 시간이 현재 시간보다 지났으면 방송종료
+              if (timeDiff < 0) {
+                return "방송종료";
+              } 
+              // 방송 종료 시간이 현재 시간보다 미래이면 방송중
+              else if (timeDiff > 0) {
+                return "방송중";
+              } 
+              // 방송 종료 시간이 현재 시간과 같으면 방송중
+              else {
+                return "방송중";
+              }
+            })()
           };
           
           console.log('변환된 홈쇼핑 상품 데이터:', result);
@@ -437,6 +457,7 @@ const HomeShoppingSearch = () => {
           
           const result = {
             id: safeGet(product, 'product_id') || safeGet(product, 'id') || `homeshopping_${Date.now()}_${Math.random()}`,
+            live_id: safeGet(product, 'live_id') || safeGet(product, 'liveId'),
             title: safeGet(product, 'product_name') || safeGet(product, 'name') || safeGet(product, 'title') || '상품명 없음',
             description: `${safeGet(product, 'store_name', '홈쇼핑')}에서 판매 중인 홈쇼핑 상품`,
             price: `${formatPrice(safeGet(product, 'dc_price') || safeGet(product, 'discounted_price'))}원`,
@@ -451,7 +472,26 @@ const HomeShoppingSearch = () => {
               safeGet(product, 'live_date'),
               safeGet(product, 'live_start_time'),
               safeGet(product, 'live_end_time')
-            )
+            ),
+            // 방송 상태 계산 (live_date와 live_end_time 기준)
+            broadcastStatus: (() => {
+              const now = new Date();
+              const liveEndDateTime = new Date(`${safeGet(product, 'live_date')}T${safeGet(product, 'live_end_time')}`);
+              const timeDiff = liveEndDateTime - now;
+              
+              // 방송 종료 시간이 현재 시간보다 지났으면 방송종료
+              if (timeDiff < 0) {
+                return "방송종료";
+              } 
+              // 방송 종료 시간이 현재 시간보다 미래이면 방송중
+              else if (timeDiff > 0) {
+                return "방송중";
+              } 
+              // 방송 종료 시간이 현재 시간과 같으면 방송중
+              else {
+                return "방송중";
+              }
+            })()
           };
           
           console.log('변환된 홈쇼핑 상품 데이터:', result);
@@ -780,8 +820,14 @@ const HomeShoppingSearch = () => {
   // 홈쇼핑 상품 클릭 핸들러
   const handleProductClick = (product) => {
     console.log('홈쇼핑 상품 클릭:', product);
-    // 홈쇼핑 상품의 경우 (현재는 더미 데이터이므로 알림만)
-    alert('홈쇼핑 상품 상세 페이지는 준비 중입니다.');
+    
+    if (product.live_id) {
+      // live_id가 있으면 홈쇼핑 상품 상세 페이지로 이동
+      navigate(`/homeshopping/product/${product.live_id}`);
+    } else {
+      // live_id가 없으면 알림 표시
+      alert('상품 상세 정보를 불러올 수 없습니다.');
+    }
   };
 
   // 검색 히스토리 클릭 핸들러
@@ -1125,7 +1171,7 @@ const HomeShoppingSearch = () => {
               {searchResults.map((result, index) => (
                 <div 
                   key={`homeshopping-${result.id}-${index}`} 
-                  className="result-item clickable"
+                  className="hs-search-result-item clickable"
                   onClick={() => handleProductClick(result)}
                 >
                   <div className="result-image">
@@ -1146,7 +1192,11 @@ const HomeShoppingSearch = () => {
                   </div>
                   <div className="result-info">
                     <div className="homeshopping-info">
-                      <span className="broadcast-time">{result.broadcastTime}</span>
+                      {result.broadcastStatus && (
+                        <span className={`broadcast-status ${result.broadcastStatus}`}>
+                          {result.broadcastStatus}
+                        </span>
+                      )}
                     </div>
                     <h4 className="result-title" title={result.title}>
                       {result.title && result.title.length > 50 

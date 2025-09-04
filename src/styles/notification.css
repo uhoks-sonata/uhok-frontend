@@ -13,6 +13,10 @@
   flex: 1;
   padding: 0 0 80px 0; /* 바텀네비 공간 확보 */
   overflow-y: auto;
+  overflow-x: hidden;
+  height: calc(100vh - 120px); /* 헤더 높이 고려 */
+  max-height: calc(100vh - 120px);
+  -webkit-overflow-scrolling: touch; /* iOS에서 부드러운 스크롤 */
   /* 얇은 스크롤바 스타일링 */
   scrollbar-width: thin; /* Firefox */
   scrollbar-color: #e0e0e0 transparent; /* Firefox */
@@ -191,7 +195,7 @@
 }
 
 .notification-item.notification-default {
-  border-left: 4px solid #7b1fa2;
+  border-left: 4px solid #1976d2;
 }
 
 /* 1. 날짜 시간과 타이틀을 같은 줄에 배치 */

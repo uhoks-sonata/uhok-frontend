@@ -125,22 +125,53 @@ const Notification = () => {
       console.log('콕 쇼핑몰 알림 API 응답:', response);
       
       if (response && response.notifications) {
-                 const transformedNotifications = response.notifications.map(notification => ({
-           id: notification.notification_id,
-           type: notification.notification_type,
-           title: notification.title,
-           message: notification.message,
-           time: new Date(notification.created_at).toLocaleString('ko-KR', {
-             year: 'numeric',
-             month: '2-digit',
-             day: '2-digit',
-             hour: '2-digit',
-             minute: '2-digit'
-           }),
-           isRead: notification.is_read,
-           relatedEntityType: notification.related_entity_type,
-           relatedEntityId: notification.related_entity_id
-         }));
+        // kok_order_id별로 그룹화
+        const groupedNotifications = {};
+        
+        response.notifications.forEach(notification => {
+          const orderId = notification.kok_order_id;
+          if (!groupedNotifications[orderId]) {
+            groupedNotifications[orderId] = [];
+          }
+          groupedNotifications[orderId].push(notification);
+        });
+        
+        // 그룹화된 알림을 변환
+        const transformedNotifications = Object.values(groupedNotifications).map(group => {
+          const firstNotification = group[0];
+          const productNames = group.map(n => n.product_name).filter(name => name);
+          
+          // 상품명 포맷팅 (첫 2개만 보여주고 나머지는 "외 N개"로 표시)
+          let formattedProductName = '';
+          if (productNames.length > 0) {
+            if (productNames.length === 1) {
+              formattedProductName = productNames[0];
+            } else if (productNames.length === 2) {
+              formattedProductName = `${productNames[0]}, ${productNames[1]}`;
+            } else {
+              formattedProductName = `${productNames[0]}, ${productNames[1]} 외 ${productNames.length - 2}개`;
+            }
+          }
+          
+          return {
+            id: firstNotification.notification_id,
+            type: firstNotification.notification_type,
+            title: firstNotification.title,
+            message: firstNotification.message,
+            time: new Date(firstNotification.created_at).toLocaleString('ko-KR', {
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit'
+            }),
+            isRead: firstNotification.is_read,
+            relatedEntityType: firstNotification.related_entity_type,
+            relatedEntityId: firstNotification.related_entity_id,
+            productName: formattedProductName,
+            kokOrderId: firstNotification.kok_order_id
+          };
+        });
         
         setNotifications(transformedNotifications);
       }
@@ -313,7 +344,7 @@ const Notification = () => {
                 </div>
                 
                 {/* 상품명이 있는 경우 추가 표시 */}
-                {(activeTab === 'shopping' || (activeTab === 'homeshopping' && notification.productName)) && notification.productName && (
+                {notification.productName && (
                   <div className="notification-product">
                     {notification.productName}
                   </div>

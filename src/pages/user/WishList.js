@@ -122,18 +122,27 @@ const WishList = () => {
           broadcast_time: product.live_start_time,
           // homeshopping_id를 기반으로 로컬 로고 가져오기
           channel_logo: getLogoByHomeshoppingId(product.homeshopping_id)?.logo,
-          // 방송 상태는 현재 시간과 비교하여 계산
+          // 방송 상태는 live_date와 live_end_time을 모두 고려하여 계산
           broadcast_status: (() => {
             const now = new Date();
-            const liveDateTime = new Date(`${product.live_date}T${product.live_start_time}`);
-            const timeDiff = liveDateTime - now;
             
+            // live_date와 live_end_time을 결합하여 방송 종료 시점 계산
+            const liveEndDateTime = new Date(`${product.live_date}T${product.live_end_time}`);
+            
+            // 현재 시간과 방송 종료 시간 비교
+            const timeDiff = liveEndDateTime - now;
+            
+            // 방송 종료 시간이 현재 시간보다 지났으면 방송종료
             if (timeDiff < 0) {
               return "방송종료";
-            } else if (timeDiff < 30 * 60 * 1000) { // 30분 이내
+            } 
+            // 방송 종료 시간이 현재 시간보다 미래이면 방송중
+            else if (timeDiff > 0) {
               return "방송중";
-            } else {
-              return "방송예정";
+            } 
+            // 방송 종료 시간이 현재 시간과 같으면 방송중
+            else {
+              return "방송중";
             }
           })()
         }));
@@ -484,7 +493,7 @@ const WishList = () => {
                                />
                                {/* <span className="channel-number">[CH 8]</span> */}
                              </div>
-                             <span className="broadcast-status">{product.broadcast_status}</span>
+                             <span className={`broadcast-status ${product.broadcast_status}`}>{product.broadcast_status}</span>
                            </div>
                            <div className="wishlist-product-name">
                              <span className="wishlist-brand-name">{product.hs_store_name}</span> | {product.hs_product_name}

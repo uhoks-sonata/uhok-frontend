@@ -124,7 +124,7 @@
 
 .kok-products-grid .kok-product-card:hover {
   transform: translateY(-2px);
-  box-shadow: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* 제품 카드 내부 스타일 */
