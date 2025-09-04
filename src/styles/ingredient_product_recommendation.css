@@ -104,6 +104,23 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
 
+/* 클릭 가능한 상품 카드 */
+.product-card.clickable {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.product-card.clickable:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  border-color: #FA5F8C;
+}
+
+.product-card.clickable:active {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
 /* 상품 이미지 */
 .product-image {
   width: 100%;
