@@ -116,9 +116,9 @@ const KokMain = () => {
   // KOK API에서 베스트 판매 상품 데이터를 가져오는 함수
   const fetchKokTopSellingProducts = async () => {
     try {
-      console.log('베스트 판매 상품 API 호출 시작...');
-      console.log('API 엔드포인트: /api/kok/top-selling');
-      console.log('요청 파라미터:', { page: 1, size: 20, sort_by: 'review_count' });
+      // console.log('베스트 판매 상품 API 호출 시작...');
+      // console.log('API 엔드포인트: /api/kok/top-selling');
+      // console.log('요청 파라미터:', { page: 1, size: 20, sort_by: 'review_count' });
       
       // 공개 엔드포인트이므로 토큰 검증 없이 진행
       const response = await api.get('/api/kok/top-selling', {
@@ -130,12 +130,12 @@ const KokMain = () => {
         }
       });
       
-      console.log('📤 API 요청 헤더: 공개 엔드포인트 - 토큰 없음');
-      console.log('📤 API 요청 URL:', '/api/kok/top-selling');
-      console.log('📤 API 요청 파라미터:', { page: 1, size: 20, sort_by: 'review_count' });
+      // console.log('📤 API 요청 헤더: 공개 엔드포인트 - 토큰 없음');
+      // console.log('📤 API 요청 URL:', '/api/kok/top-selling');
+      // console.log('📤 API 요청 파라미터:', { page: 1, size: 20, sort_by: 'review_count' });
       
-      console.log('📥 베스트 판매 상품 API 응답 전체:', response);
-      console.log('베스트 판매 상품 API 응답:', response.data);
+      // console.log('📥 베스트 판매 상품 API 응답 전체:', response);
+      // console.log('베스트 판매 상품 API 응답:', response.data);
       
       // 백엔드 응답 구조에 맞게 데이터 처리 (products 필드 우선)
       if (response.data && response.data.products && Array.isArray(response.data.products)) {

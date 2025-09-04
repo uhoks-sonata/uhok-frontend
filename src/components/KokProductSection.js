@@ -115,10 +115,10 @@ const KokProductSection = ({
         sectionType = 'discount';
         break;
       case 'fixed':
-        sectionType = 'high-selling';
+        sectionType = 'reviews';
         break;
       case 'non-duplicated-grid':
-        sectionType = 'reviews';
+        sectionType = 'high-selling';
         break;
       default:
         sectionType = 'all';

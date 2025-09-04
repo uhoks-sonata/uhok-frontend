@@ -324,6 +324,21 @@
   object-fit: contain;
 }
 
+.all-channels-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+  line-height: 1.2;
+  padding: 4px;
+  word-break: keep-all;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+}
+
 .channel-name {
   font-size: 10px;
   color: #333;

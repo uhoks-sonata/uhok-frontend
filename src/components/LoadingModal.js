@@ -226,6 +226,17 @@ export const showAuthExpiredNotification = () => {
   };
 };
 
+// 검색 히스토리 삭제 완료 알림 모달 표시 함수
+export const showSearchHistoryDeletedNotification = (count) => {
+  return { 
+    modalType: 'alert', 
+    alertMessage: `검색 내역이 삭제되었습니다.`, 
+    alertButtonText: '확인',
+    alertButtonStyle: 'primary',
+    isVisible: true 
+  };
+};
+
 export const hideModal = () => {
   return { isVisible: false };
 };
