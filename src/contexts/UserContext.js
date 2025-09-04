@@ -25,9 +25,10 @@ const validateToken = (token) => {
     // payload 디코딩 시도
     const payload = JSON.parse(atob(parts[1]));
     
-    // 만료 시간 검사 (5분 여유 시간)
-    if (payload.exp && payload.exp < (Math.floor(Date.now() / 1000) + 300)) {
-      console.log('토큰이 만료되었습니다.');
+    // 만료 시간 검사 (여유 시간 없이 정확히 검사)
+    const currentTime = Math.floor(Date.now() / 1000);
+    if (payload.exp && payload.exp < currentTime) {
+      console.log('토큰이 만료되었습니다. exp:', payload.exp, 'current:', currentTime, 'diff:', currentTime - payload.exp);
       return false;
     }
     
@@ -36,6 +37,31 @@ const validateToken = (token) => {
   } catch (error) {
     console.log('토큰 형식이 올바르지 않습니다:', error.message);
     return false;
+  }
+};
+
+// 토큰이 곧 만료될지 확인하는 함수 (5분 전에 갱신)
+const isTokenExpiringSoon = (token) => {
+  if (!token) return false;
+  
+  // 개발용 토큰은 항상 유효
+  if (token.includes('dev_signature_') || token.startsWith('temp_token_')) {
+    return false;
+  }
+  
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return true;
+    
+    const payload = JSON.parse(atob(parts[1]));
+    const currentTime = Math.floor(Date.now() / 1000);
+    const fiveMinutes = 5 * 60; // 5분을 초로 변환
+    
+    // 5분 이내에 만료될 예정이면 true 반환
+    return payload.exp < (currentTime + fiveMinutes);
+  } catch (error) {
+    console.warn('토큰 만료 예정 시간 확인 실패:', error);
+    return true;
   }
 };
 
@@ -48,31 +74,93 @@ const attemptTokenRefresh = async () => {
       return false;
     }
 
-    // 토큰 갱신 API 호출 (백엔드에 구현 필요)
-    const response = await fetch('/api/auth/refresh', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        refresh_token: refreshToken
-      })
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      if (data.access_token) {
-        localStorage.setItem('access_token', data.access_token);
-        if (data.refresh_token) {
-          localStorage.setItem('refresh_token', data.refresh_token);
+    console.log('UserContext - 토큰 갱신 시도 중...');
+    
+    // 토큰 갱신 API 호출 - 여러 엔드포인트 시도
+    let response;
+    let data;
+    
+    try {
+      // 첫 번째 시도: 표준 refresh 엔드포인트
+      response = await fetch('/api/auth/refresh', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          refresh_token: refreshToken
+        })
+      });
+      
+      if (response.ok) {
+        data = await response.json();
+      } else {
+        throw new Error(`HTTP ${response.status}`);
+      }
+    } catch (firstError) {
+      console.log('UserContext - 첫 번째 토큰 갱신 시도 실패, 대체 엔드포인트 시도:', firstError.message);
+      
+      try {
+        // 두 번째 시도: 대체 엔드포인트
+        response = await fetch('/api/users/refresh-token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            refresh_token: refreshToken
+          })
+        });
+        
+        if (response.ok) {
+          data = await response.json();
+        } else {
+          throw new Error(`HTTP ${response.status}`);
         }
-        console.log('토큰 갱신 성공');
-        return true;
+      } catch (secondError) {
+        console.log('UserContext - 두 번째 토큰 갱신 시도 실패, 마지막 시도:', secondError.message);
+        
+        // 세 번째 시도: 다른 형식
+        response = await fetch('/api/auth/token/refresh', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            refresh_token: refreshToken
+          })
+        });
+        
+        if (response.ok) {
+          data = await response.json();
+        } else {
+          throw new Error(`HTTP ${response.status}`);
+        }
       }
     }
+
+    if (data && data.access_token) {
+      localStorage.setItem('access_token', data.access_token);
+      if (data.refresh_token) {
+        localStorage.setItem('refresh_token', data.refresh_token);
+      }
+      console.log('✅ UserContext - 토큰 갱신 성공');
+      return true;
+    }
+    
+    console.log('UserContext - 토큰 갱신 응답에 access_token이 없습니다:', data);
     return false;
   } catch (error) {
-    console.error('토큰 갱신 실패:', error);
+    console.error('❌ UserContext - 토큰 갱신 실패:', error);
+    
+    // 개발 환경에서는 토큰 갱신 실패를 더 자세히 로깅
+    if (process.env.NODE_ENV === 'development') {
+      console.error('UserContext - 토큰 갱신 실패 상세:', {
+        message: error.message,
+        stack: error.stack
+      });
+    }
+    
     return false;
   }
 };
@@ -125,11 +213,32 @@ export const UserProvider = ({ children }) => {
   useEffect(() => {
     if (!user || !user.token) return;
     
-    const checkTokenExpiry = () => {
-      const isValid = validateToken(user.token);
+    const checkTokenExpiry = async () => {
+      const currentToken = localStorage.getItem('access_token');
+      if (!currentToken) {
+        console.log('UserContext - 로컬 스토리지에 토큰이 없음, 로그아웃');
+        logout();
+        return;
+      }
+      
+      const isValid = validateToken(currentToken);
       if (!isValid) {
         console.log('UserContext - 토큰 만료 감지, 자동 로그아웃');
         logout();
+        return;
+      }
+      
+      // 토큰이 곧 만료될 예정이면 미리 갱신 시도
+      if (isTokenExpiringSoon(currentToken)) {
+        console.log('UserContext - 토큰이 곧 만료될 예정, 미리 갱신 시도');
+        const refreshSuccess = await attemptTokenRefresh();
+        if (refreshSuccess) {
+          const newToken = localStorage.getItem('access_token');
+          setUser(prev => prev ? { ...prev, token: newToken } : null);
+          console.log('UserContext - 토큰 미리 갱신 성공');
+        } else {
+          console.log('UserContext - 토큰 미리 갱신 실패');
+        }
       }
     };
     

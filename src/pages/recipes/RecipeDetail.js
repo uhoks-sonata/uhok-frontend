@@ -253,6 +253,18 @@ const RecipeDetail = () => {
     navigate(-1);
   };
 
+  // 재료 클릭 시 상품 추천 토글
+  const [expandedIngredients, setExpandedIngredients] = useState([]);
+  const handleIngredientClick = (ingredientName) => {
+    setExpandedIngredients(prev => {
+      if (prev.includes(ingredientName)) {
+        return prev.filter(name => name !== ingredientName);
+      } else {
+        return [...prev, ingredientName];
+      }
+    });
+  };
+
   if (loading) {
     return (
       <div className="recipe-detail-page">
@@ -399,33 +411,60 @@ const RecipeDetail = () => {
               })
               .sort((a, b) => a.priority - b.priority) // 우선순위에 따라 정렬
               .map(({ material, index, status, statusText }) => (
-                                 <div key={index} className="ingredient-item">
-                   <div className="ingredient-info">
-                     <div className="ingredient-name-amount">
-                       <span className={`ingredient-name ${status}`}>{material.material_name}</span>
-                       <span className={`ingredient-amount ${status}`}>
-                         {material.measure_amount} {material.measure_unit}
-                       </span>
-                     </div>
-                    <span 
-                      className={`ingredient-status ${status}`}
-                      style={{
-                        backgroundColor: status === 'owned' ? '#000000' : 
-                                        status === 'cart' ? '#000000' : '#FA5F8C',
-                        color: '#ffffff',
-                        padding: '4px 10px',
-                        borderRadius: '6px',
-                        fontSize: '12px',
-                        fontWeight: '500',
-                        minWidth: '80px',
-                        textAlign: 'center',
-                        display: 'inline-block'
-                      }}
-                    >
-                      {statusText}
-                    </span>
+                <React.Fragment key={index}>
+                  <div className="ingredient-item">
+                    <div className="ingredient-info">
+                      <div className="ingredient-name-amount">
+                        {/* 핑크색 밑줄과 핑크색 글씨 부분을 클릭 가능하게 만들기 */}
+                        {status === 'not-owned' ? (
+                          <div 
+                            className="ingredient-clickable-area"
+                            onClick={() => handleIngredientClick(material.material_name)}
+                            style={{ cursor: 'pointer' }}
+                          >
+                            <span className={`ingredient-name ${status}`}>{material.material_name}</span>
+                          </div>
+                        ) : (
+                          <div className="ingredient-static-area">
+                            <span className={`ingredient-name ${status}`}>{material.material_name}</span>
+                          </div>
+                        )}
+                      </div>
+                      {/* 버튼 옆에 수량 표시 */}
+                      <span className={`ingredient-amount-next-to-button ${status}`}>
+                        {material.measure_amount} {material.material_unit}
+                      </span>
+                      <span 
+                        className={`ingredient-status ${status}`}
+                        style={{
+                          backgroundColor: status === 'owned' ? '#000000' : 
+                                          status === 'cart' ? '#000000' : '#FA5F8C',
+                          color: '#ffffff',
+                          padding: '4px 10px',
+                          borderRadius: '6px',
+                          fontSize: '12px',
+                          fontWeight: '500',
+                          minWidth: '80px',
+                          textAlign: 'center',
+                          display: 'inline-block'
+                        }}
+                      >
+                        {statusText}
+                      </span>
+                    </div>
                   </div>
-                </div>
+                  
+                  {/* 미보유 재료일 때만 상품 추천 토글 표시 - 재료 항목들 사이에 배치 */}
+                  {status === 'not-owned' && expandedIngredients.includes(material.material_name) && (
+                    <div className="ingredient-recommendation-toggle">
+                      <div className="ingredient-products-section">
+                        <IngredientProductRecommendation 
+                          ingredientName={material.material_name}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </React.Fragment>
               ))}
           </div>
         </div>
@@ -433,20 +472,7 @@ const RecipeDetail = () => {
                  {/* 구분선 */}
          <div className="section-divider"></div>
 
-         {/* 미보유 재료 상품 추천 섹션 */}
-         {ingredientsStatus?.ingredients_status?.not_owned?.length > 0 && (
-           <div className="product-recommendations-section">
-             <h3 className="section-title">미보유 재료 상품 추천</h3>
-             <div className="recommendations-container">
-               {ingredientsStatus.ingredients_status.not_owned.map((ingredient, index) => (
-                 <IngredientProductRecommendation 
-                   key={index}
-                   ingredientName={ingredient.material_name}
-                 />
-               ))}
-             </div>
-           </div>
-         )}
+
 
 
 

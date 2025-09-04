@@ -1,5 +1,9 @@
 import axios from 'axios';
 
+// 토큰 갱신 상태 관리
+let isRefreshing = false;
+let refreshPromise = null;
+
 // JWT 토큰 만료 시간 확인 함수
 const isTokenExpired = (token) => {
   try {
@@ -9,41 +13,109 @@ const isTokenExpired = (token) => {
     const payload = JSON.parse(atob(tokenParts[1]));
     const currentTime = Math.floor(Date.now() / 1000);
     
-    // 만료 5분 전에 미리 갱신 시도
-    return payload.exp < (currentTime + 300);
+    // 실제 만료 시간만 확인 (미리 갱신하지 않음)
+    return payload.exp < currentTime;
   } catch (error) {
     console.warn('토큰 만료 시간 확인 실패:', error);
     return true;
   }
 };
 
-// 토큰 갱신 시도 함수
-const attemptTokenRefresh = async () => {
+// 토큰이 곧 만료될지 확인하는 함수 (5분 전에 갱신)
+const isTokenExpiringSoon = (token) => {
   try {
-    const refreshToken = localStorage.getItem('refresh_token');
-    if (!refreshToken) {
-      console.log('리프레시 토큰이 없습니다.');
-      return false;
-    }
-
-    // 토큰 갱신 API 호출 (백엔드에 구현 필요)
-    const response = await axios.post('/api/auth/refresh', {
-      refresh_token: refreshToken
-    });
-
-    if (response.data.access_token) {
-      localStorage.setItem('access_token', response.data.access_token);
-      if (response.data.refresh_token) {
-        localStorage.setItem('refresh_token', response.data.refresh_token);
-      }
-      console.log('토큰 갱신 성공');
-      return true;
-    }
-    return false;
+    const tokenParts = token.split('.');
+    if (tokenParts.length !== 3) return true;
+    
+    const payload = JSON.parse(atob(tokenParts[1]));
+    const currentTime = Math.floor(Date.now() / 1000);
+    const fiveMinutes = 5 * 60; // 5분을 초로 변환
+    
+    // 5분 이내에 만료될 예정이면 true 반환
+    return payload.exp < (currentTime + fiveMinutes);
   } catch (error) {
-    console.error('토큰 갱신 실패:', error);
-    return false;
+    console.warn('토큰 만료 예정 시간 확인 실패:', error);
+    return true;
   }
+};
+
+// 토큰 갱신 시도 함수 (중복 갱신 방지)
+const attemptTokenRefresh = async () => {
+  // 이미 갱신 중이면 기존 Promise 반환
+  if (isRefreshing && refreshPromise) {
+    console.log('토큰 갱신이 이미 진행 중입니다. 기존 Promise 대기...');
+    return refreshPromise;
+  }
+
+  isRefreshing = true;
+  refreshPromise = (async () => {
+    try {
+      const refreshToken = localStorage.getItem('refresh_token');
+      if (!refreshToken) {
+        console.log('리프레시 토큰이 없습니다.');
+        return false;
+      }
+
+      console.log('토큰 갱신 시도 중...');
+      
+      // 토큰 갱신 API 호출 - 여러 엔드포인트 시도
+      let response;
+      try {
+        // 첫 번째 시도: 표준 refresh 엔드포인트
+        response = await axios.post('/api/auth/refresh', {
+          refresh_token: refreshToken
+        });
+      } catch (firstError) {
+        console.log('첫 번째 토큰 갱신 시도 실패, 대체 엔드포인트 시도:', firstError.response?.status);
+        
+        try {
+          // 두 번째 시도: 대체 엔드포인트
+          response = await axios.post('/api/users/refresh-token', {
+            refresh_token: refreshToken
+          });
+        } catch (secondError) {
+          console.log('두 번째 토큰 갱신 시도 실패, 마지막 시도:', secondError.response?.status);
+          
+          // 세 번째 시도: 다른 형식
+          response = await axios.post('/api/auth/token/refresh', {
+            refresh_token: refreshToken
+          });
+        }
+      }
+
+      if (response && response.data && response.data.access_token) {
+        localStorage.setItem('access_token', response.data.access_token);
+        if (response.data.refresh_token) {
+          localStorage.setItem('refresh_token', response.data.refresh_token);
+        }
+        console.log('✅ 토큰 갱신 성공');
+        return true;
+      }
+      
+      console.log('토큰 갱신 응답에 access_token이 없습니다:', response?.data);
+      return false;
+    } catch (error) {
+      console.error('❌ 토큰 갱신 실패:', error);
+      
+      // 개발 환경에서는 토큰 갱신 실패를 더 자세히 로깅
+      if (process.env.NODE_ENV === 'development') {
+        console.error('토큰 갱신 실패 상세:', {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data,
+          message: error.message
+        });
+      }
+      
+      return false;
+    } finally {
+      // 갱신 완료 후 상태 초기화
+      isRefreshing = false;
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
 };
 
 const api = axios.create({
@@ -77,6 +149,17 @@ api.interceptors.request.use(
           console.warn('토큰 갱신 실패. 토큰 없이 요청을 계속합니다.');
           // 토큰 갱신 실패 시에도 토큰을 제거하지 않고 요청을 계속
           // (서버에서 401 에러를 반환하면 해당 컴포넌트에서 처리하도록 함)
+        }
+      } else if (isTokenExpiringSoon(token)) {
+        // 토큰이 곧 만료될 예정이면 미리 갱신 시도
+        console.warn('토큰이 곧 만료될 예정입니다. 미리 갱신을 시도합니다.');
+        
+        const refreshSuccess = await attemptTokenRefresh();
+        if (refreshSuccess) {
+          token = localStorage.getItem('access_token');
+          console.log('토큰 미리 갱신 성공');
+        } else {
+          console.warn('토큰 미리 갱신 실패. 현재 토큰으로 요청 계속');
         }
       }
       
@@ -141,13 +224,16 @@ api.interceptors.response.use(
       // 토큰 갱신 시도
       const refreshSuccess = await attemptTokenRefresh();
       if (refreshSuccess) {
-        console.log('토큰 갱신 성공. 원래 요청을 재시도합니다.');
+        console.log('✅ 토큰 갱신 성공. 원래 요청을 재시도합니다.');
         // 원래 요청 재시도
         const originalRequest = error.config;
         const newToken = localStorage.getItem('access_token');
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return api(originalRequest);
       }
+      
+      // 토큰 갱신 실패 시 처리
+      console.log('❌ 토큰 갱신 실패. 인증 상태를 정리합니다.');
       
       // 특정 페이지에서는 토큰을 삭제하지 않고 에러만 전달
       const currentPath = window.location.pathname;
@@ -157,8 +243,7 @@ api.interceptors.response.use(
         return Promise.reject(error);
       }
       
-      // 다른 페이지에서는 기존 로직 유지
-      // 토큰 제거
+      // 다른 페이지에서는 토큰 제거 및 로그인 페이지로 리다이렉트
       localStorage.removeItem('access_token');
       localStorage.removeItem('token_type');
       localStorage.removeItem('refresh_token');
