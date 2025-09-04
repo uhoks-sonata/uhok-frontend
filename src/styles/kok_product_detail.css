@@ -178,7 +178,7 @@
   color: #333;
   margin: 0 0 12px 0;
   line-height: 1.4;
-  width: 401px !important; /* 너비 401px로 고정 */
+  min-width: 438px !important; /* 너비 401px로 고정 */
   word-wrap: break-word !important; /* 긴 단어 줄바꿈 강제 */
   word-break: keep-all !important; /* 한글 단어 단위로 줄바꿈 강제 */
   white-space: normal !important; /* 줄바꿈 허용 강제 */
