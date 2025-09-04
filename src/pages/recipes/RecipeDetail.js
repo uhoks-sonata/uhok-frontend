@@ -8,6 +8,79 @@ import { recipeApi } from '../../api/recipeApi';
 // LoadingModal import
 import ModalManager, { showAlert, hideModal } from '../../components/LoadingModal';
 import IngredientProductRecommendation from '../../components/IngredientProductRecommendation';
+import { cartApi } from '../../api/cartApi';
+
+// 장바구니 정보를 재료 상태에 반영하는 함수
+const enhanceIngredientStatusWithCart = (statusData, cartIngredients, recipeMaterials) => {
+  if (!statusData || !recipeMaterials) {
+    return statusData;
+  }
+
+  // 재료 상태를 복사하여 수정
+  const enhancedStatus = {
+    ingredients_status: {
+      owned: [...(statusData.ingredients_status?.owned || [])],
+      cart: [...(statusData.ingredients_status?.cart || [])],
+      not_owned: [...(statusData.ingredients_status?.not_owned || [])]
+    },
+    summary: { ...statusData.summary }
+  };
+
+  // 장바구니에 있는 재료들을 확인하여 상태 업데이트
+  recipeMaterials.forEach(material => {
+    const materialName = material.material_name;
+    
+    // 장바구니에 해당 재료가 있는지 확인
+    const isInCart = cartIngredients.some(cartItem => {
+      const normalizedCartItem = cartItem.toLowerCase().trim().replace(/\s+/g, '');
+      const normalizedMaterial = materialName.toLowerCase().trim().replace(/\s+/g, '');
+      
+      // 정확한 매칭 또는 포함 관계 확인
+      return normalizedCartItem === normalizedMaterial || 
+             normalizedCartItem.includes(normalizedMaterial) ||
+             normalizedMaterial.includes(normalizedCartItem);
+    });
+
+    if (isInCart) {
+      // 장바구니에 있는 재료를 cart 상태로 이동
+      const existingInOwned = enhancedStatus.ingredients_status.owned.find(item => item.material_name === materialName);
+      const existingInNotOwned = enhancedStatus.ingredients_status.not_owned.find(item => item.material_name === materialName);
+      
+      // 기존 상태에서 제거
+      if (existingInOwned) {
+        enhancedStatus.ingredients_status.owned = enhancedStatus.ingredients_status.owned.filter(item => item.material_name !== materialName);
+      }
+      if (existingInNotOwned) {
+        enhancedStatus.ingredients_status.not_owned = enhancedStatus.ingredients_status.not_owned.filter(item => item.material_name !== materialName);
+      }
+      
+      // cart 상태에 추가 (중복 방지)
+      const existingInCart = enhancedStatus.ingredients_status.cart.find(item => item.material_name === materialName);
+      if (!existingInCart) {
+        enhancedStatus.ingredients_status.cart.push({ material_name: materialName });
+      }
+      
+      console.log(`✅ 장바구니 재료로 상태 변경: ${materialName}`);
+    }
+  });
+
+  // summary 업데이트
+  enhancedStatus.summary = {
+    total_ingredients: recipeMaterials.length,
+    owned_count: enhancedStatus.ingredients_status.owned.length,
+    cart_count: enhancedStatus.ingredients_status.cart.length,
+    not_owned_count: enhancedStatus.ingredients_status.not_owned.length
+  };
+
+  console.log('🔍 장바구니 정보 반영된 재료 상태:', {
+    owned: enhancedStatus.ingredients_status.owned.map(item => item.material_name),
+    cart: enhancedStatus.ingredients_status.cart.map(item => item.material_name),
+    not_owned: enhancedStatus.ingredients_status.not_owned.map(item => item.material_name),
+    summary: enhancedStatus.summary
+  });
+
+  return enhancedStatus;
+};
 
 const RecipeDetail = () => {
   const navigate = useNavigate();
@@ -68,6 +141,21 @@ const RecipeDetail = () => {
         try {
           const statusData = await recipeApi.getRecipeIngredientStatus(recipeId);
           console.log('🔍 재료 상태 API 응답 데이터:', statusData);
+          
+          // 장바구니 정보도 함께 조회하여 재료 상태 보완
+          let cartIngredients = [];
+          try {
+            const cartData = await cartApi.getCartItems();
+            console.log('🔍 장바구니 데이터:', cartData);
+            
+            // 장바구니에 담긴 상품들의 재료 정보 추출
+            if (cartData && cartData.cart_items) {
+              cartIngredients = cartData.cart_items.map(item => item.kok_product_name).filter(Boolean);
+              console.log('🔍 장바구니 재료들:', cartIngredients);
+            }
+          } catch (cartError) {
+            console.log('장바구니 조회 실패:', cartError);
+          }
           
           // 소진 희망 재료 검색에서 온 경우, API 응답과 초기 설정을 병합
           if (location.state?.searchType === 'ingredient' && location.state?.ingredients) {
@@ -159,8 +247,9 @@ const RecipeDetail = () => {
             });
             setIngredientsStatus(modifiedStatus);
           } else {
-            // 소진 희망 재료 검색이 아닌 경우 원본 API 응답 사용
-            setIngredientsStatus(statusData);
+            // 소진 희망 재료 검색이 아닌 경우 장바구니 정보를 반영하여 재료 상태 업데이트
+            const enhancedStatus = enhanceIngredientStatusWithCart(statusData, cartIngredients, recipeData.materials);
+            setIngredientsStatus(enhancedStatus);
           }
         } catch (statusError) {
           console.log('재료 상태 조회 실패:', statusError);
@@ -253,14 +342,16 @@ const RecipeDetail = () => {
     navigate(-1);
   };
 
-  // 재료 클릭 시 상품 추천 토글
-  const [expandedIngredients, setExpandedIngredients] = useState([]);
+  // 재료 클릭 시 상품 추천 토글 (라디오버튼 형식 - 한 번에 하나만 열림)
+  const [expandedIngredient, setExpandedIngredient] = useState(null);
   const handleIngredientClick = (ingredientName) => {
-    setExpandedIngredients(prev => {
-      if (prev.includes(ingredientName)) {
-        return prev.filter(name => name !== ingredientName);
+    setExpandedIngredient(prev => {
+      // 이미 열린 재료를 다시 클릭하면 닫기
+      if (prev === ingredientName) {
+        return null;
       } else {
-        return [...prev, ingredientName];
+        // 새로운 재료를 클릭하면 이전 토글은 닫고 새 토글만 열기
+        return ingredientName;
       }
     });
   };
@@ -455,7 +546,7 @@ const RecipeDetail = () => {
                   </div>
                   
                   {/* 미보유 재료일 때만 상품 추천 토글 표시 - 재료 항목들 사이에 배치 */}
-                  {status === 'not-owned' && expandedIngredients.includes(material.material_name) && (
+                  {status === 'not-owned' && expandedIngredient === material.material_name && (
                     <div className="ingredient-recommendation-toggle">
                       <div className="ingredient-products-section">
                         <IngredientProductRecommendation 
