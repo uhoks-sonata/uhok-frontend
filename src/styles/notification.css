@@ -10,9 +10,8 @@
 
 /* 알림 콘텐츠 영역 */
 .notification-content {
-  padding-top: 5px;
-  height: calc(100vh - 185px);
-  max-height: calc(100vh - 185px);
+  flex: 1;
+  padding: 0 0 80px 0; /* 바텀네비 공간 확보 */
   overflow-y: auto;
   /* 얇은 스크롤바 스타일링 */
   scrollbar-width: thin; /* Firefox */
@@ -124,7 +123,6 @@
 /* 알림 목록 */
 .notification-list {
   padding: 0 20px;
-  padding-bottom: 20px;
 }
 
 /* 알림 아이템 */

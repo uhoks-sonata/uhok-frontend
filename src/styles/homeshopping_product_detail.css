@@ -12,23 +12,6 @@
   padding-bottom: 80px; /* BottomNav 높이만큼 여백 */
 }
 
-/* 방송 상태 텍스트 오버레이 */
-.center-broadcast-status {
-  position: absolute;
-  top: 10px;
-  left: 3%;
-  background-color: #000000;
-  padding: 7px 19px;
-  border-radius: 17px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-  z-index: 100;
-}
-
-.center-status-text {
-  color: #ffffff;
-  font-size: 15px;
-}
-
 /* UpBtn 위치 관리 */
 .homeshopping-product-detail-page .up-btn {
   position: absolute;
@@ -163,6 +146,22 @@
   justify-content: center;
 }
 
+/* 가운데 방송 상태 텍스트 오버레이 */
+.center-broadcast-status {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgb(255 255 255 / 70%);
+  color: rgb(0, 0, 0);
+  padding: 16px 32px;
+  border-radius: 50px;
+  font-size: 18px;
+  font-weight: 600;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+  /* box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); */
+}
 
 .center-status-text {
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;

@@ -17,29 +17,36 @@
   padding: 0px;
   max-width: 480px;
   margin: -14px auto;
-  padding-top: 5px;
-  height: calc(100vh - 185px);
-  max-height: calc(100vh - 185px);
+  min-height: calc(100vh - 160px); /* 헤더와 하단 네비게이션 높이를 고려한 최소 높이 */
+  /* payment-content에 스크롤 추가 */
   overflow-y: auto;
-  background-color: #ffffff;
+  max-height: calc(100vh - 160px); /* 최대 높이 제한 */
+  scrollbar-width: thin; /* Firefox용 스크롤바 스타일 */
+  scrollbar-color: #c1c1c1 #f1f1f1; /* Firefox용 스크롤바 색상 */
+  /* 부드러운 스크롤 효과 */
+  scroll-behavior: smooth;
+  /* 스크롤 성능 최적화 */
+  -webkit-overflow-scrolling: touch;
+  /* 스크롤 시 그림자 효과를 위한 준비 */
+  position: relative;
 }
 
-/* 스크롤바 스타일링 */
+/* payment-content의 스크롤바 스타일 (Chrome, Safari, Edge) */
 .payment-content::-webkit-scrollbar {
-  width: 3px;
+  width: 3px; /* 8px에서 3px로 변경 */
 }
 
 .payment-content::-webkit-scrollbar-track {
-  background: transparent;
+  background: transparent; /* #f1f1f1에서 투명으로 변경 */
 }
 
 .payment-content::-webkit-scrollbar-thumb {
-  background: #e0e0e0;
-  border-radius: 4px;
+  background: #e0e0e0; /* #c1c1c1에서 #e0e0e0으로 변경 */
+  border-radius: 4px; /* 4px 유지 */
 }
 
 .payment-content::-webkit-scrollbar-thumb:hover {
-  background: #bbb;
+  background: #bbb; /* #a8a8a8에서 #bbb로 변경 */
 }
 
 /* .payment-title {
@@ -53,8 +60,9 @@
 .order-summary {
   background: white;
   border-radius: 12px;
-  padding: 10px;
+  padding: 20px;
   margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .order-summary h2 {
@@ -196,8 +204,9 @@
 .payment-methods {
   background: white;
   border-radius: 12px;
-  padding: 20px 10px;
+  padding: 20px;
   margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .payment-methods h2 {
@@ -281,8 +290,9 @@
 .card-form {
   background: white;
   border-radius: 12px;
-  padding: 10px;
+  padding: 20px;
   margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .card-form h2 {
@@ -453,9 +463,9 @@
 /* 반응형 디자인 */
 @media (max-width: 480px) {
   .payment-content {
-    padding: 0px;
-    height: calc(100vh - 185px);
-    max-height: calc(100vh - 185px);
+    padding: 16px;
+    min-height: calc(100vh - 140px); /* 모바일에서 더 작은 최소 높이 */
+    max-height: calc(100vh - 140px); /* 모바일에서 최대 높이 조정 */
   }
   
   .payment-title {
@@ -476,6 +486,20 @@
     gap: 0;
   }
   
+  /* 모바일에서 payment-content 스크롤바 숨김 (터치 스크롤 사용) */
+  .payment-content::-webkit-scrollbar {
+    width: 0;
+  }
+  
+  .payment-content {
+    scrollbar-width: none; /* Firefox에서 스크롤바 숨김 */
+    -ms-overflow-style: none; /* IE/Edge에서 스크롤바 숨김 */
+  }
+
+  /* 모바일에서 스크롤바 너비 조정 - payment-content용 */
+  .payment-content::-webkit-scrollbar {
+    width: 3px; /* 4px에서 3px로 변경 */
+  }
 }
 
 /* 테스트 컴포넌트 스타일 */
@@ -594,7 +618,7 @@
 
 .store-header {
   background: #f8f9fa;
-  padding: 10px 10px;
+  padding: 5px 10px;
   border-bottom: 1px solid #e9ecef;
 }
 
@@ -612,9 +636,9 @@
   width: 100%;
 }
 
-.payment-store-name {
-  font-weight: 400;
-  font-size: 15px;
+.store-name {
+  font-size: 16px;
+  font-weight: 600;
   color: #212529;
 }
 
@@ -662,9 +686,8 @@
 }
 
 .item-content-container {
-  padding: 10px 0;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   flex: 1;
   gap: 20px;
 }
@@ -673,8 +696,8 @@
   flex-shrink: 0;
 }
 
-.payment-item-image {
-  width: 100x;
+.item-image {
+  width: 100px;
   height: 100px;
   object-fit: cover;
   border-radius: 8px;
@@ -698,7 +721,7 @@
   text-align: center;
 }
 
-.payment-item-details {
+.item-details {
   flex: 1;
   min-width: 0;
 }
@@ -712,7 +735,7 @@
 }
 
 .item-option {
-  margin-bottom: 13px;
+  margin-bottom: 10px;
   font-size: 14px;
   color: #6c757d;
   background: #ffffff;
@@ -729,8 +752,8 @@
 }
 
 .item-price {
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 18px;
+  font-weight: 700;
   color: #212529;
 }
 

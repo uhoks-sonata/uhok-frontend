@@ -125,29 +125,24 @@ const Notification = () => {
       console.log('콕 쇼핑몰 알림 API 응답:', response);
       
       if (response && response.notifications) {
-        console.log('🔍 notifications 배열 상세:', response.notifications);
-        
-        const transformedNotifications = response.notifications.map(notification => ({
-          id: notification.notification_id,
-          type: 'order_status', // API 응답에 notification_type이 없으므로 고정값
-          title: notification.title,
-          message: notification.message,
-          time: new Date(notification.created_at).toLocaleString('ko-KR', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
-          }),
-          isRead: false, // API 응답에 is_read가 없으므로 기본값
-          relatedEntityType: 'kok_order',
-          relatedEntityId: notification.kok_order_id,
-          productName: notification.product_name
-        }));
+                 const transformedNotifications = response.notifications.map(notification => ({
+           id: notification.notification_id,
+           type: notification.notification_type,
+           title: notification.title,
+           message: notification.message,
+           time: new Date(notification.created_at).toLocaleString('ko-KR', {
+             year: 'numeric',
+             month: '2-digit',
+             day: '2-digit',
+             hour: '2-digit',
+             minute: '2-digit'
+           }),
+           isRead: notification.is_read,
+           relatedEntityType: notification.related_entity_type,
+           relatedEntityId: notification.related_entity_id
+         }));
         
         setNotifications(transformedNotifications);
-      } else {
-        setNotifications([]);
       }
     } catch (err) {
       console.error('쇼핑몰 알림 데이터 로딩 실패:', err);
