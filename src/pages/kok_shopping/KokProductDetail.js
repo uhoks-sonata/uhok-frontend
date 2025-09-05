@@ -13,6 +13,7 @@ import VideoPopUp from '../../components/VideoPopUp';
 import api from '../api';
 import { cartApi } from '../../api/cartApi';
 import LiveStreamPlayer from '../../components/player/LiveStreamPlayer';
+import ModalManager, { showAlert, hideModal } from '../../components/LoadingModal';
 
 
 const KokProductDetail = () => {
@@ -42,6 +43,9 @@ const KokProductDetail = () => {
     homeshoppingName: '',
     kokProductId: ''
   });
+
+  // 커스텀 모달 상태 관리
+  const [modalState, setModalState] = useState({ isVisible: false, modalType: 'loading' });
 
 
 
@@ -402,6 +406,11 @@ const KokProductDetail = () => {
     setSelectedQuantity(newQuantity);
   };
 
+  // 커스텀 모달 닫기 함수
+  const closeModal = () => {
+    setModalState(hideModal());
+  };
+
   // API 연결 테스트 함수 (개발자 도구에서 실행 가능)
   const testApiConnection = async () => {
     try {
@@ -416,12 +425,12 @@ API 연결 테스트 결과:
 - 장바구니 조회: ${results.tests.cartRead?.success ? '성공' : '실패'}
 - 상태 코드: ${results.tests.cartRead?.status || 'N/A'}
       `;
-      alert(summary);
+      setModalState(showAlert(summary));
       
       return results;
     } catch (error) {
       console.error('❌ API 연결 테스트 실패:', error);
-      alert('API 연결 테스트 실패: ' + error.message);
+      setModalState(showAlert('API 연결 테스트 실패: ' + error.message));
     }
   };
 
@@ -439,7 +448,7 @@ API 연결 테스트 결과:
       
       const token = localStorage.getItem('access_token');
       if (!token) {
-        alert('로그인이 필요한 서비스입니다.');
+        setModalState(showAlert('로그인이 필요한 서비스입니다.'));
         window.history.back();
         return;
       }
@@ -475,7 +484,7 @@ API 연결 테스트 결과:
       console.log('장바구니 추가 성공:', response);
       
       // 성공 메시지 표시
-      alert('장바구니에 추가되었습니다!');
+      setModalState(showAlert('장바구니에 추가되었습니다!'));
       
       // 모달 닫기
       handleCloseQuantityModal();
@@ -487,15 +496,15 @@ API 연결 테스트 결과:
       console.error('장바구니 추가 실패:', error);
       
       if (error.response?.status === 401) {
-        alert('로그인이 필요한 서비스입니다.');
+        setModalState(showAlert('로그인이 필요한 서비스입니다.'));
       } else if (error.response?.status === 400) {
-        alert('이미 장바구니에 있는 상품입니다.');
+        setModalState(showAlert('이미 장바구니에 있는 상품입니다.'));
       } else if (error.response?.status === 500) {
         // 500 에러는 cartApi에서 이미 임시 모의 응답을 반환했으므로 성공으로 처리
         console.log('서버 오류 발생, 임시 모의 응답 사용됨');
-        alert('장바구니에 추가되었습니다! (임시 모의 응답)');
+        setModalState(showAlert('장바구니에 추가되었습니다! (임시 모의 응답)'));
       } else {
-        alert('장바구니 추가에 실패했습니다. 다시 시도해주세요.');
+        setModalState(showAlert('장바구니 추가에 실패했습니다. 다시 시도해주세요.'));
       }
     } finally {
       setIsAddingToCart(false);
@@ -509,7 +518,7 @@ API 연결 테스트 결과:
       
       const token = localStorage.getItem('access_token');
       if (!token) {
-        alert('로그인이 필요한 서비스입니다.');
+        setModalState(showAlert('로그인이 필요한 서비스입니다.'));
         return;
       }
 
@@ -616,20 +625,20 @@ API 연결 테스트 결과:
          console.error('❌ 주문 생성 실패:', orderError);
          
          if (orderError.response?.status === 401) {
-           alert('로그인이 필요한 서비스입니다.');
+           setModalState(showAlert('로그인이 필요한 서비스입니다.'));
          } else if (orderError.response?.status === 500) {
-           alert('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+           setModalState(showAlert('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'));
          } else {
-           alert('주문 처리에 실패했습니다. 다시 시도해주세요.');
+           setModalState(showAlert('주문 처리에 실패했습니다. 다시 시도해주세요.'));
          }
        }
     } catch (error) {
       console.error('❌ 주문하기 처리 실패:', error);
       
       if (error.response?.status === 401) {
-        alert('로그인이 필요한 서비스입니다.');
+        setModalState(showAlert('로그인이 필요한 서비스입니다.'));
       } else {
-        alert('주문 처리에 실패했습니다. 다시 시도해주세요.');
+        setModalState(showAlert('주문 처리에 실패했습니다. 다시 시도해주세요.'));
       }
     } finally {
       setIsAddingToCart(false);
@@ -641,7 +650,7 @@ API 연결 테스트 결과:
       // API 호출을 위한 토큰 확인
       const token = localStorage.getItem('access_token');
       if (!token) {
-        alert('로그인이 필요한 서비스입니다.');
+        setModalState(showAlert('로그인이 필요한 서비스입니다.'));
         return;
       }
 
@@ -678,9 +687,9 @@ API 연결 테스트 결과:
       
       // 에러 발생 시 사용자에게 알림
       if (error.response?.status === 401) {
-        alert('로그인이 필요한 서비스입니다.');
+        setModalState(showAlert('로그인이 필요한 서비스입니다.'));
       } else {
-        alert('찜 기능을 사용할 수 없습니다. 다시 시도해주세요.');
+        setModalState(showAlert('찜 기능을 사용할 수 없습니다. 다시 시도해주세요.'));
       }
     }
   };
@@ -1513,6 +1522,12 @@ API 연결 테스트 결과:
         onClose={() => setShowVideoPopup(false)}
         broadcastStatus={location.state?.broadcastStatus}
       /> */}
+      
+      {/* 커스텀 모달 관리자 */}
+      <ModalManager
+        {...modalState}
+        onClose={closeModal}
+      />
     </div>
   );
 };
