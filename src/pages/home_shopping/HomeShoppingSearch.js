@@ -832,7 +832,7 @@ const HomeShoppingSearch = () => {
       navigate(`/homeshopping/product/${product.live_id}`);
     } else {
       // live_id가 없으면 알림 표시
-      alert('상품 상세 정보를 불러올 수 없습니다.');
+      setModalState(showAlert('상품 상세 정보를 불러올 수 없습니다.'));
     }
   };
 

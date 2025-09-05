@@ -8,7 +8,7 @@ import Loading from '../../components/Loading';
 import UpBtn from '../../components/UpBtn';
 import HomeshoppingKokRecommendation from '../../components/HomeshoppingKokRecommendation';
 import LiveStreamPlayer from '../../components/player/LiveStreamPlayer';
-import ModalManager, { showWishlistNotification, showWishlistUnlikedNotification, showNoRecipeNotification, hideModal } from '../../components/LoadingModal';
+import ModalManager, { showWishlistNotification, showWishlistUnlikedNotification, showNoRecipeNotification, showAlert, hideModal } from '../../components/LoadingModal';
 import VideoPopUp from '../../components/VideoPopUp';
 import emptyHeartIcon from '../../assets/heart_empty.png';
 import filledHeartIcon from '../../assets/heart_filled.png';
@@ -54,6 +54,11 @@ const HomeShoppingProductDetail = () => {
   
   // 홈쇼핑 주문 모달 상태 관리
   const [showHomeshoppingOrderModal, setShowHomeshoppingOrderModal] = useState(false);
+
+  // 커스텀 모달 닫기 함수
+  const closeModal = () => {
+    setModalState(hideModal());
+  };
   
   // 상품 상세 정보 가져오기
   useEffect(() => {
@@ -308,7 +313,7 @@ const HomeShoppingProductDetail = () => {
       const token = localStorage.getItem('access_token');
       if (!token) {
         // 다른 파일들과 동일하게 alert만 표시하고 제자리에 유지
-        alert('로그인이 필요한 서비스입니다.');
+        setModalState(showAlert('로그인이 필요한 서비스입니다.'));
         return;
       }
 
@@ -367,12 +372,12 @@ const HomeShoppingProductDetail = () => {
       
       // 401 에러 (인증 실패) 시 제자리에 유지
       if (err.response?.status === 401) {
-        alert('로그인이 필요한 서비스입니다.');
+        setModalState(showAlert('로그인이 필요한 서비스입니다.'));
         return;
       }
       
       // 다른 에러의 경우 사용자에게 알림
-      alert('찜 상태 변경에 실패했습니다. 다시 시도해주세요.');
+      setModalState(showAlert('찜 상태 변경에 실패했습니다. 다시 시도해주세요.'));
     }
   };
   
@@ -396,7 +401,7 @@ const HomeShoppingProductDetail = () => {
         }
       });
     } else {
-      alert('현재 스트림을 사용할 수 없습니다.');
+      setModalState(showAlert('현재 스트림을 사용할 수 없습니다.'));
     }
   };
   
@@ -464,11 +469,6 @@ const HomeShoppingProductDetail = () => {
     }
   };
 
-  // 모달 닫기 함수
-  const closeModal = () => {
-    setModalState(hideModal());
-  };
-  
   // 홈쇼핑 주문 모달 닫기 함수
   const closeHomeshoppingOrderModal = () => {
     setShowHomeshoppingOrderModal(false);
@@ -493,13 +493,13 @@ const HomeShoppingProductDetail = () => {
       console.log('✅ 전화 주문 생성 성공:', orderResponse);
       
       // 주문 성공 알림
-      alert(`전화 주문이 성공적으로 생성되었습니다!\n주문번호: ${orderResponse.order_id}\n상품: ${orderResponse.product_name}\n금액: ₩${orderResponse.order_price?.toLocaleString()}`);
+      setModalState(showAlert(`전화 주문이 성공적으로 생성되었습니다!<br>주문번호: ${orderResponse.order_id}<br>상품: ${orderResponse.product_name}<br>금액: ₩${orderResponse.order_price?.toLocaleString()}`));
       
       closeHomeshoppingOrderModal();
       
     } catch (error) {
       console.error('❌ 전화 주문 실패:', error);
-      alert(`전화 주문 생성에 실패했습니다.\n${error.message || '알 수 없는 오류가 발생했습니다.'}`);
+      setModalState(showAlert(`전화 주문 생성에 실패했습니다.<br>${error.message || '알 수 없는 오류가 발생했습니다.'}`));
     }
   };
   
@@ -521,13 +521,13 @@ const HomeShoppingProductDetail = () => {
       console.log('✅ 모바일 주문 생성 성공:', orderResponse);
       
       // 주문 성공 알림
-      alert(`모바일 주문이 성공적으로 생성되었습니다!\n주문번호: ${orderResponse.order_id}\n상품: ${orderResponse.product_name}\n금액: ₩${orderResponse.order_price?.toLocaleString()}`);
+      setModalState(showAlert(`모바일 주문이 성공적으로 생성되었습니다!<br>주문번호: ${orderResponse.order_id}<br>상품: ${orderResponse.product_name}<br>금액: ₩${orderResponse.order_price?.toLocaleString()}`));
       
       closeHomeshoppingOrderModal();
       
     } catch (error) {
       console.error('❌ 모바일 주문 실패:', error);
-      alert(`모바일 주문 생성에 실패했습니다.\n${error.message || '알 수 없는 오류가 발생했습니다.'}`);
+      setModalState(showAlert(`모바일 주문 생성에 실패했습니다.<br>${error.message || '알 수 없는 오류가 발생했습니다.'}`));
     }
   };
   
@@ -1199,6 +1199,12 @@ const HomeShoppingProductDetail = () => {
             </div>
           </div>
         )}
+        
+        {/* 커스텀 모달 관리자 */}
+        <ModalManager
+          {...modalState}
+          onClose={closeModal}
+        />
     </div>
   );
 };

@@ -7,7 +7,7 @@ import { homeShoppingApi } from '../../api/homeShoppingApi';
 import api from '../../pages/api';
 import Loading from '../../components/Loading';
 import UpBtn from '../../components/UpBtn';
-import ModalManager, { showWishlistNotification, showWishlistUnlikedNotification, hideModal } from '../../components/LoadingModal';
+import ModalManager, { showWishlistNotification, showWishlistUnlikedNotification, showAlert, hideModal } from '../../components/LoadingModal';
 import emptyHeartIcon from '../../assets/heart_empty.png';
 import filledHeartIcon from '../../assets/heart_filled.png';
 
@@ -48,6 +48,11 @@ const Schedule = () => {
   
   // 모달 상태 관리
   const [modalState, setModalState] = useState({ isVisible: false, modalType: 'loading' });
+
+  // 커스텀 모달 닫기 함수
+  const closeModal = () => {
+    setModalState(hideModal());
+  };
   
 
   
@@ -707,11 +712,11 @@ const Schedule = () => {
         // 새 창에서 라이브 스트림 열기
         window.open(streamData.stream_url, '_blank', 'width=800,height=600');
       } else {
-        alert('현재 라이브 스트림을 사용할 수 없습니다.');
+        setModalState(showAlert('현재 라이브 스트림을 사용할 수 없습니다.'));
       }
     } catch (error) {
       console.error('라이브 스트림 재생 실패:', error);
-      alert('라이브 스트림을 재생할 수 없습니다.');
+      setModalState(showAlert('라이브 스트림을 재생할 수 없습니다.'));
     }
   };
 
@@ -740,7 +745,7 @@ const Schedule = () => {
       
     } catch (err) {
       console.error('위시리스트 토글 실패:', err);
-      alert('위시리스트 처리에 실패했습니다. 다시 시도해주세요.');
+      setModalState(showAlert('위시리스트 처리에 실패했습니다. 다시 시도해주세요.'));
     }
   };
 
@@ -758,7 +763,7 @@ const Schedule = () => {
       if (!token) {
         console.log('토큰이 없어서 로그인 필요 팝업 표시');
         // 다른 파일들과 동일하게 alert만 표시하고 제자리에 유지
-        alert('로그인이 필요한 서비스입니다.');
+        setModalState(showAlert('로그인이 필요한 서비스입니다.'));
         return;
       }
 
@@ -825,23 +830,18 @@ const Schedule = () => {
       
       // 401 에러 (인증 실패) 시 제자리에 유지
       if (err.response?.status === 401) {
-        alert('로그인이 필요한 서비스입니다.');
+        setModalState(showAlert('로그인이 필요한 서비스입니다.'));
         return;
       }
       
       // 다른 에러의 경우 사용자에게 알림
-      alert('찜 상태 변경에 실패했습니다. 다시 시도해주세요.');
+      setModalState(showAlert('찜 상태 변경에 실패했습니다. 다시 시도해주세요.'));
     }
   };
 
   // 알림 핸들러
   const handleNotification = () => {
     navigate('/notifications');
-  };
-
-  // 모달 닫기 함수
-  const closeModal = () => {
-    setModalState(hideModal());
   };
 
   // 방송 상태 표시 함수

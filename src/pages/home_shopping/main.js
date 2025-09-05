@@ -9,7 +9,7 @@ import BottomNav from '../../layout/BottomNav';
 import Loading from '../../components/Loading';
 import UpBtn from '../../components/UpBtn';
 // 모달 관리자 import
-import ModalManager, { showWishlistNotification, showWishlistUnlikedNotification, hideModal } from '../../components/LoadingModal';
+import ModalManager, { showWishlistNotification, showWishlistUnlikedNotification, showAlert, hideModal } from '../../components/LoadingModal';
 // 메인 페이지 스타일을 가져옵니다
 import '../../styles/main.css';
 // API 설정을 가져옵니다
@@ -49,6 +49,11 @@ const Main = () => {
   
   // 모달 상태 관리
   const [modalState, setModalState] = useState({ isVisible: false, modalType: 'loading' });
+
+  // 커스텀 모달 닫기 함수
+  const closeModal = () => {
+    setModalState(hideModal());
+  };
 
 
 
@@ -271,11 +276,6 @@ const Main = () => {
     }
   };
 
-  // 모달 닫기 함수
-  const closeModal = () => {
-    setModalState(hideModal());
-  };
-
   // 하트 아이콘 클릭 시 실행되는 핸들러 함수를 정의합니다
   const handleHeartClick = async (productId, event) => {
     event.stopPropagation(); // 상품 카드 클릭 이벤트 전파 방지
@@ -333,9 +333,9 @@ const Main = () => {
       console.error('찜하기 토글 실패:', error);
       
       if (error.response?.status === 401) {
-        alert('로그인이 필요한 서비스입니다.');
+        setModalState(showAlert('로그인이 필요한 서비스입니다.'));
       } else {
-        alert('찜하기 처리 중 오류가 발생했습니다.');
+        setModalState(showAlert('찜하기 처리 중 오류가 발생했습니다.'));
       }
     }
   };
