@@ -362,6 +362,14 @@
   gap: 16px;
 }
 
+.result-item {
+  display: flex;
+  flex-direction: row;
+  align-content: center;
+  justify-content: flex-start;
+  align-items: center;
+}
+
 .hs-search-result-item {
   display: flex;
   background: white;
