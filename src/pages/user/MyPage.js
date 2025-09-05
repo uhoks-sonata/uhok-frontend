@@ -664,8 +664,8 @@ const MyPage = () => {
                       <div className="delivery-status-card">
                         {/* 배송 상태를 표시합니다 (API에서 받아옴) */}
                         <div className="delivery-status">
-                          <span className="delivery-status-text">배송완료</span>
-                          <span className="delivery-date">{firstOrder.order_date} 도착</span>
+                          <span className="delivery-status-text">{firstOrder.delivery_status || '배송완료'}</span>
+                          <span className="delivery-date">{firstOrder.delivery_date || `${firstOrder.order_date} 도착`}</span>
                         </div>
                         
                         {/* 상품 정보들 - 실제 데이터 구조에 맞게 표시 */}
