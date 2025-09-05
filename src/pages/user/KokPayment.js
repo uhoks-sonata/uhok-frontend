@@ -820,7 +820,6 @@ const KokPayment = () => {
       
       <div className="payment-content">        
         <div className="order-summary">
-          <h2>주문 요약</h2>
           
           {orderInfo && (
             <div className="order-summary-items">

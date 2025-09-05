@@ -1205,7 +1205,7 @@ const HomeShoppingSearch = () => {
                     </h4>
 
                     <div className="result-price">
-                      {result.discount && result.discount !== '0%' && result.discount !== 'null' && result.discount !== 'null%' && result.discount !== null && (
+                      {result.discount && result.discount !== '0%' && result.discount !== 'null' && result.discount !== 'null%' && result.discount !== null && result.discount !== '0' && (
                         <span className="discount">{result.discount}</span>
                       )}
                       <span className="price">{result.price}</span>

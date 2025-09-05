@@ -291,15 +291,11 @@ const CartRecipeResult = () => {
       <div className="recipe-result-page">
         <HeaderNavRecipeRecommendation onBackClick={handleBack} />
         <div className="selected-ingredients-section">
-          <div className="ingredients-tags-container">
-            {Array.isArray(ingredients) && ingredients.map((ingredient, index) => (
-              <IngredientTag
-                key={index}
-                ingredient={ingredient}
-                index={index}
-                showRemoveButton={false}
-              />
-            ))}
+          <div className="search-keyword-display">
+            <span className="search-keyword">
+              {Array.isArray(ingredients) && ingredients.map(ing => typeof ing === 'string' ? ing : ing.name).join(', ')}
+            </span>
+            <span className="recommendation-text">을 사용한 레시피를 추천드려요</span>
           </div>
         </div>
         <main className="recipe-list">
@@ -317,15 +313,11 @@ const CartRecipeResult = () => {
 
       {/* keyword_extraction을 ingredient-tag로 표시 */}
       <div className="selected-ingredients-section">
-        <div className="ingredients-tags-container">
-          {displayIngredients.map((ingredient, index) => (
-            <IngredientTag
-              key={index}
-              ingredient={ingredient}
-              index={index}
-              showRemoveButton={false}
-            />
-          ))}
+        <div className="search-keyword-display">
+          <span className="search-keyword">
+            {displayIngredients.map(ing => typeof ing === 'string' ? ing : ing.name).join(', ')}
+          </span>
+          <span className="recommendation-text">을 사용한 레시피를 추천드려요</span>
         </div>
       </div>
 

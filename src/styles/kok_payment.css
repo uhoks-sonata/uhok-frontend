@@ -60,9 +60,8 @@
 .order-summary {
   background: white;
   border-radius: 12px;
-  padding: 20px;
+  padding: 9px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .order-summary h2 {
@@ -204,9 +203,8 @@
 .payment-methods {
   background: white;
   border-radius: 12px;
-  padding: 20px;
+  padding: 9px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .payment-methods h2 {
@@ -290,9 +288,8 @@
 .card-form {
   background: white;
   border-radius: 12px;
-  padding: 20px;
+  padding: 9px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .card-form h2 {

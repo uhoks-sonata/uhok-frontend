@@ -286,11 +286,11 @@ const MyPage = () => {
               return false;
             });
             
-            // 최신 날짜 순으로 정렬 (내림차순)
+            // 최신 날짜와 시간 순으로 정렬 (내림차순)
             const sortedOrders = filteredOrders.sort((a, b) => {
               const dateA = new Date(a.order_date);
               const dateB = new Date(b.order_date);
-              return dateB - dateA; // 최신 날짜가 먼저 오도록
+              return dateB - dateA; // 최신 날짜와 시간이 먼저 오도록
             });
             
             ordersData.orders = sortedOrders;
@@ -638,11 +638,11 @@ const MyPage = () => {
                   return groups;
                 }, {});
                 
-                // 그룹화된 주문들을 날짜 순으로 정렬 (최신 날짜가 먼저)
+                // 그룹화된 주문들을 주문번호 순으로 정렬 (최신 주문번호가 먼저)
                 const sortedGroupedOrders = Object.entries(groupedOrders).sort(([orderIdA, ordersA], [orderIdB, ordersB]) => {
-                  const dateA = new Date(ordersA[0].order_date);
-                  const dateB = new Date(ordersB[0].order_date);
-                  return dateB - dateA; // 최신 날짜가 먼저 오도록
+                  const numA = parseInt(orderIdA);
+                  const numB = parseInt(orderIdB);
+                  return numB - numA; // 최신 주문번호가 먼저 오도록
                 });
                 
                 // 정렬된 그룹화된 주문들을 렌더링합니다

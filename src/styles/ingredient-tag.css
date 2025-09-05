@@ -1,11 +1,15 @@
 /* 독립적인 Ingredient Tag 스타일 */
 .ingredient-tag {
+  padding-right: 13px;
+  padding-left: 12px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+
   display: inline-flex;
   align-items: center;
   background-color: #ffffff;
   border: 1px solid #e0e0e0;
   border-radius: 20px;
-  padding: 2px 8px;
   margin: 0px 3px;
   gap: 6px;
   transition: all 0.2s ease;

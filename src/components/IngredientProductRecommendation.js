@@ -22,7 +22,28 @@ const IngredientProductRecommendation = ({ ingredientName, ingredientAmount, ing
       setError(null);
       
       const data = await recipeApi.getProductRecommendations(ingredientName);
-      setProducts(data.recommendations || []);
+      console.log('🔍 상품 추천 API 응답:', data);
+      
+      // 새로운 API 응답 구조에 맞게 데이터 처리
+      if (data && data.recommendations) {
+        // 각 상품의 ID 필드들을 상세히 로깅
+        data.recommendations.forEach((product, index) => {
+          console.log(`🔍 상품 ${index + 1} ID 정보:`, {
+            source: product.source,
+            id: product.id,
+            live_id: product.live_id,
+            homeshopping_id: product.homeshopping_id,
+            kok_product_id: product.kok_product_id,
+            name: product.name
+          });
+        });
+        
+        setProducts(data.recommendations);
+        console.log('✅ 상품 추천 데이터 설정 완료:', data.recommendations.length, '개');
+      } else {
+        setProducts([]);
+        console.log('⚠️ 추천 상품이 없습니다.');
+      }
     } catch (err) {
       console.error(`${ingredientName} 상품 추천 조회 실패:`, err);
       setError('상품 정보를 불러오는데 실패했습니다.');
@@ -37,28 +58,31 @@ const IngredientProductRecommendation = ({ ingredientName, ingredientAmount, ing
     
     // source에 따라 다른 상세페이지로 이동
     if (product.source === 'kok' || product.source === '콕') {
-      // 콕 상품 상세페이지로 이동
-      if (product.id) {
-        navigate(`/kok/product/${product.id}`);
-        console.log('✅ 콕 상품 상세페이지로 이동:', product.id);
+      // 콕 상품 상세페이지로 이동 - kok_product_id 사용
+      if (product.kok_product_id) {
+        navigate(`/kok/product/${product.kok_product_id}`);
+        console.log('✅ 콕 상품 상세페이지로 이동:', product.kok_product_id);
       } else {
         console.warn('⚠️ 콕 상품 ID가 없습니다:', product);
       }
     } else if (product.source === 'homeshopping' || product.source === '홈쇼핑') {
-      // 홈쇼핑 상품 상세페이지로 이동 - id를 우선 사용
-      if (product.id) {
-        navigate(`/homeshopping/product/${product.id}`);
-        console.log('✅ 홈쇼핑 상품 상세페이지로 이동 (id 사용):', product.id);
-        console.log('🔍 상품 정보:', {
-          id: product.id,
+      // 홈쇼핑 상품 상세페이지로 이동 - live_id 우선, null이거나 없으면 homeshopping_id 사용
+      const productId = (product.live_id && product.live_id !== null && product.live_id !== 0) 
+        ? product.live_id 
+        : (product.homeshopping_id && product.homeshopping_id !== null && product.homeshopping_id !== 0)
+        ? product.homeshopping_id
+        : product.id;
+      
+      if (productId) {
+        navigate(`/homeshopping/product/${productId}`);
+        console.log('✅ 홈쇼핑 상품 상세페이지로 이동:', {
+          사용된_ID: productId,
+          live_id: product.live_id,
           homeshopping_id: product.homeshopping_id,
+          id: product.id,
           name: product.name,
           source: product.source
         });
-      } else if (product.homeshopping_id) {
-        // id가 없는 경우 homeshopping_id 사용 (fallback)
-        navigate(`/homeshopping/product/${product.homeshopping_id}`);
-        console.log('✅ 홈쇼핑 상품 상세페이지로 이동 (homeshopping_id 사용):', product.homeshopping_id);
       } else {
         console.warn('⚠️ 홈쇼핑 상품 ID가 없습니다:', product);
       }
@@ -111,6 +135,12 @@ const IngredientProductRecommendation = ({ ingredientName, ingredientAmount, ing
                       : product.name
                     }
                   </div>
+                  {/* 브랜드명 표시 */}
+                  {product.brand_name && (
+                    <div className="product-brand">
+                      {product.brand_name}
+                    </div>
+                  )}
                   {/* 콕 상품인 경우 리뷰 정보를 먼저 표시 */}
                   {(product.source === 'kok' || product.source === '콕') && (
                     <div className="product-review-info">
@@ -148,8 +178,12 @@ const IngredientProductRecommendation = ({ ingredientName, ingredientAmount, ing
                         <span className="source-text">{product.source}</span>
                       )}
                     </div>
-                    {product.kok_discount_rate && product.kok_discount_rate > 0 && (
+                    {/* 할인율 표시 - 콕 상품은 kok_discount_rate, 홈쇼핑 상품은 dc_rate 사용 */}
+                    {((product.source === 'kok' || product.source === '콕') && product.kok_discount_rate && product.kok_discount_rate > 0) && (
                       <span className="discount-rate">{product.kok_discount_rate}%</span>
+                    )}
+                    {((product.source === 'homeshopping' || product.source === '홈쇼핑') && product.dc_rate && product.dc_rate > 0) && (
+                      <span className="discount-rate">{product.dc_rate}%</span>
                     )}
                     <div className="product-price">
                       {product.price?.toLocaleString()}원

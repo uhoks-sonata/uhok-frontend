@@ -22,7 +22,7 @@ import '../../styles/liveStream.css';
 
 const HomeShoppingProductDetail = () => {
   const navigate = useNavigate();
-  const { live_id } = useParams(); // live_id로 사용
+  const { live_id } = useParams(); // live_id 또는 homeshopping_id로 사용
   const location = useLocation();
   const { user, isLoggedIn } = useUser();
   
@@ -65,6 +65,12 @@ const HomeShoppingProductDetail = () => {
       return;
     }
     
+    console.log('🔍 홈쇼핑 상세 페이지 로드:', {
+      live_id: live_id,
+      type: typeof live_id,
+      location_state: location.state
+    });
+    
     let isMounted = true;
     let retryCount = 0;
     const maxRetries = 2; // 최대 2번만 재시도
@@ -77,7 +83,12 @@ const HomeShoppingProductDetail = () => {
         setError(null);
         
         // 상품 상세 정보 가져오기 (live_id 사용)
+        console.log('🔍 홈쇼핑 상품 상세 API 호출:', {
+          live_id: live_id,
+          api_url: `/api/homeshopping/product/${live_id}`
+        });
         const detailResponse = await homeShoppingApi.getProductDetail(live_id);
+        console.log('✅ 홈쇼핑 상품 상세 API 응답:', detailResponse);
         
         if (!isMounted) return;
         
@@ -87,9 +98,21 @@ const HomeShoppingProductDetail = () => {
           
           // 상세 정보와 이미지 설정 (새로운 API 스펙에 맞게)
           if (detailResponse.detail_infos) {
+            console.log('🔍 상세 정보 설정:', detailResponse.detail_infos);
             setDetailInfos(detailResponse.detail_infos);
           }
           if (detailResponse.images) {
+            console.log('🔍 이미지 데이터 설정:', detailResponse.images);
+            // 이미지 데이터 상세 분석
+            detailResponse.images.forEach((img, index) => {
+              console.log(`🔍 이미지 ${index + 1}:`, {
+                img_url: img.img_url,
+                sort_order: img.sort_order,
+                is_null: img.img_url === null,
+                is_empty: img.img_url === '',
+                is_undefined: img.img_url === undefined
+              });
+            });
             setProductImages(detailResponse.images);
           }
           
@@ -1047,11 +1070,13 @@ const HomeShoppingProductDetail = () => {
              {activeTab === 'detail' && (
                <div className="detail-tab">
                  {/* 상품 상세 이미지들 */}
-                 {productImages && productImages.length > 0 && (
+                 {productImages && productImages.length > 0 && productImages.some(img => img.img_url) && (
                    <div className="product-detail-images-section">
                      <h3 className="section-title">상품 상세 이미지</h3>
                      <div className="detail-images-container">
-                       {productImages.map((image, index) => (
+                       {productImages
+                         .filter(image => image.img_url && image.img_url !== null && image.img_url.trim() !== '')
+                         .map((image, index) => (
                          <div key={index} className="detail-image-item">
                            <img 
                              src={image.img_url} 
@@ -1060,6 +1085,7 @@ const HomeShoppingProductDetail = () => {
                              onClick={() => window.open(image.img_url, '_blank')}
                              onError={(e) => {
                                e.target.alt = '이미지 로드 실패';
+                               console.log('❌ 이미지 로드 실패:', image.img_url);
                              }}
                            />
                          </div>
@@ -1070,7 +1096,7 @@ const HomeShoppingProductDetail = () => {
                  
                                                     {/* 상세 정보나 이미지가 없는 경우 */}
                    {(!detailInfos || detailInfos.length === 0) && 
-                    (!productImages || productImages.length === 0) && (
+                    (!productImages || productImages.length === 0 || !productImages.some(img => img.img_url)) && (
                      <div className="no-detail-content">
                        <div className="no-detail-icon">📋</div>
                        <p className="no-detail-text">상품 상세 정보가 없습니다</p>
