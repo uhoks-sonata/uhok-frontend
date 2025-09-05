@@ -95,7 +95,7 @@ const tokenInfo = decodeToken(token);
 ##### **프록시 설정 (`package.json`)**
 ```json
 {
-  "proxy": "http://api2.uhok.com:9000"
+  "proxy": "http://api2.uhok.com:80"
 }
 ```
 
@@ -205,8 +205,8 @@ const result = await kokApi.confirmOrderUnitPayment('ORD-001');
 ## 개발 환경 설정
 
 ### 백엔드 서버 설정
-1. 백엔드 서버를 포트 8000에서 실행하세요
-2. 프록시 설정이 `package.json`에 `"proxy": "http://localhost:8000"`으로 되어 있습니다
+1. 백엔드 서버를 포트 80에서 실행하세요
+2. 프록시 설정이 `package.json`에 `"proxy": "http://localhost:80"`으로 되어 있습니다
 3. 백엔드 서버가 실행되지 않은 경우 모의 모드로 동작합니다
 
 ### 환경 변수
@@ -227,8 +227,8 @@ You may also see any lint errors in the console.
 
 **주의사항**: 
 - 백엔드 서버가 실행되지 않은 경우 모의 모드로 동작합니다.
-- 실제 결제 처리를 위해서는 백엔드 서버가 포트 8000에서 실행되어야 합니다.
-- 프록시 설정: `package.json`에서 `"proxy": "http://localhost:8000"`으로 설정되어 있습니다.
+- 실제 결제 처리를 위해서는 백엔드 서버가 포트 80에서 실행되어야 합니다.
+- 프록시 설정: `package.json`에서 `"proxy": "http://localhost:80"`으로 설정되어 있습니다.
 
 ### `npm test`
 
