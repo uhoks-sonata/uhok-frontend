@@ -1294,6 +1294,7 @@ const Schedule = () => {
                   <div 
                     key={index} 
                     className={`time-slot ${isCurrentTime(time) ? 'current-time' : ''} ${selectedTime === time ? 'selected-time' : ''}`}
+                    style={isCurrentTime(time) ? { backgroundColor: 'rgba(233, 30, 99, 0.1)' } : {}}
                     onClick={() => handleTimeClick(time)}
                   >
                     {time}

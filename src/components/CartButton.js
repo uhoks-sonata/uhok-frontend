@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../pages/api';
+import ModalManager, { showAlert, hideModal } from './LoadingModal';
 
 import cartIcon from '../assets/icon-park-outline_weixin-market.png';
 
@@ -14,7 +15,13 @@ const CartButton = ({
   style = {}
 }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [modalState, setModalState] = useState({ isVisible: false, modalType: 'loading' });
   const navigate = useNavigate();
+
+  // 모달 닫기 함수
+  const closeModal = () => {
+    setModalState(hideModal());
+  };
 
   const handleAddToCart = async () => {
     try {
@@ -22,12 +29,12 @@ const CartButton = ({
       
       // 입력 데이터 검증
       if (!productId) {
-        alert('상품 ID가 필요합니다.');
+        setModalState(showAlert('상품 ID가 필요합니다.'));
         return;
       }
       
       if (quantity <= 0) {
-        alert('수량은 1개 이상이어야 합니다.');
+        setModalState(showAlert('수량은 1개 이상이어야 합니다.'));
         return;
       }
       
@@ -35,7 +42,7 @@ const CartButton = ({
       const token = localStorage.getItem('access_token');
       
       if (!token) {
-        alert('로그인이 필요한 서비스입니다.');
+        setModalState(showAlert('로그인이 필요한 서비스입니다.'));
         return;
       }
 
@@ -64,7 +71,7 @@ const CartButton = ({
       console.log('장바구니 추가 성공:', response.data);
       
       // 성공 메시지 표시
-      alert('장바구니에 추가되었습니다!');
+      setModalState(showAlert('장바구니에 추가되었습니다!'));
       
       // 클릭 이벤트가 있으면 실행
       if (onClick) {
@@ -82,25 +89,25 @@ const CartButton = ({
       });
       
       if (error.response?.status === 401) {
-        alert('로그인이 필요한 서비스입니다.');
+        setModalState(showAlert('로그인이 필요한 서비스입니다.'));
       } else if (error.response?.status === 409) {
-        alert('이미 장바구니에 있는 상품입니다.');
+        setModalState(showAlert('이미 장바구니에 있는 상품입니다.'));
       } else if (error.response?.status === 400) {
         const errorMessage = error.response?.data?.error || '잘못된 요청입니다.';
-        alert(`요청 오류: ${errorMessage}`);
+        setModalState(showAlert(`요청 오류: ${errorMessage}`));
       } else if (error.response?.status === 500) {
         console.error('서버 내부 오류 상세:', error.response?.data);
         
-        alert('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.\n\n개발자 도구의 콘솔에서 자세한 오류 정보를 확인할 수 있습니다.');
+        setModalState(showAlert('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.<br><span class="sub-message">개발자 도구의 콘솔에서 자세한 오류 정보를 확인할 수 있습니다.</span>'));
       } else if (error.response?.status === 404) {
-        alert('API 엔드포인트를 찾을 수 없습니다.');
+        setModalState(showAlert('API 엔드포인트를 찾을 수 없습니다.'));
       } else if (error.code === 'ECONNABORTED') {
-        alert('요청 시간이 초과되었습니다. 네트워크 상태를 확인해주세요.');
+        setModalState(showAlert('요청 시간이 초과되었습니다. 네트워크 상태를 확인해주세요.'));
       } else if (!error.response) {
-        alert('네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.');
+        setModalState(showAlert('네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.'));
       } else {
         const errorMessage = error.response?.data?.error || '알 수 없는 오류가 발생했습니다.';
-        alert(`장바구니 추가 실패: ${errorMessage}`);
+        setModalState(showAlert(`장바구니 추가 실패: ${errorMessage}`));
       }
     } finally {
       setIsLoading(false);
@@ -108,21 +115,29 @@ const CartButton = ({
   };
 
   return (
-    <img 
-      src={cartIcon}
-      alt="장바구니"
-      className={`cart-button ${className}`}
-      style={{ 
-        width: size, 
-        height: size, 
-        cursor: isLoading ? 'not-allowed' : 'pointer',
-        opacity: isLoading ? 0.6 : 1,
-        transition: 'transform 0.15s ease-in-out, opacity 0.2s ease',
-        ...style
-      }}
-      onClick={isLoading ? undefined : handleAddToCart}
-      title={isLoading ? '처리 중...' : '장바구니에 추가'}
-    />
+    <>
+      <img 
+        src={cartIcon}
+        alt="장바구니"
+        className={`cart-button ${className}`}
+        style={{ 
+          width: size, 
+          height: size, 
+          cursor: isLoading ? 'not-allowed' : 'pointer',
+          opacity: isLoading ? 0.6 : 1,
+          transition: 'transform 0.15s ease-in-out, opacity 0.2s ease',
+          ...style
+        }}
+        onClick={isLoading ? undefined : handleAddToCart}
+        title={isLoading ? '처리 중...' : '장바구니에 추가'}
+      />
+      
+      {/* 모달 관리자 */}
+      <ModalManager
+        {...modalState}
+        onClose={closeModal}
+      />
+    </>
   );
 };
 
