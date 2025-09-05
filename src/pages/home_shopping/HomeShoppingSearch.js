@@ -236,7 +236,10 @@ const HomeShoppingSearch = () => {
             description: `${safeGet(product, 'store_name', '홈쇼핑')}에서 판매 중인 홈쇼핑 상품`,
             price: `${formatPrice(safeGet(product, 'dc_price') || safeGet(product, 'discounted_price'))}원`,
             originalPrice: `${formatPrice(safeGet(product, 'sale_price') || safeGet(product, 'original_price'))}원`,
-            discount: `${safeNumber(safeGet(product, 'dc_rate') || safeGet(product, 'discount_rate'), 0)}%`,
+            discount: (() => {
+              const discountRate = safeNumber(safeGet(product, 'dc_rate') || safeGet(product, 'discount_rate'), 0);
+              return discountRate > 0 ? `${discountRate}%` : null;
+            })(),
             image: getImageUrl(safeGet(product, 'thumb_img_url') || safeGet(product, 'image') || safeGet(product, 'thumbnail')),
             category: safeGet(product, 'category') || '홈쇼핑',
             rating: safeNumber(safeGet(product, 'rating'), 0),
@@ -462,7 +465,10 @@ const HomeShoppingSearch = () => {
             description: `${safeGet(product, 'store_name', '홈쇼핑')}에서 판매 중인 홈쇼핑 상품`,
             price: `${formatPrice(safeGet(product, 'dc_price') || safeGet(product, 'discounted_price'))}원`,
             originalPrice: `${formatPrice(safeGet(product, 'sale_price') || safeGet(product, 'original_price'))}원`,
-            discount: `${safeNumber(safeGet(product, 'dc_rate') || safeGet(product, 'discount_rate'), 0)}%`,
+            discount: (() => {
+              const discountRate = safeNumber(safeGet(product, 'dc_rate') || safeGet(product, 'discount_rate'), 0);
+              return discountRate > 0 ? `${discountRate}%` : null;
+            })(),
             image: getImageUrl(safeGet(product, 'thumb_img_url') || safeGet(product, 'image') || safeGet(product, 'thumbnail')),
             category: safeGet(product, 'category') || '홈쇼핑',
             rating: safeNumber(safeGet(product, 'rating'), 0),
@@ -643,7 +649,7 @@ const HomeShoppingSearch = () => {
         description: `${product.store_name}에서 판매 중인 홈쇼핑 상품`,
         price: `${product.dc_price?.toLocaleString() || '0'}원`,
         originalPrice: `${product.sale_price?.toLocaleString() || '0'}원`,
-        discount: `${product.dc_rate || 0}%`,
+        discount: (product.dc_rate && product.dc_rate > 0) ? `${product.dc_rate}%` : null,
                     image: product.thumb_img_url || 'https://via.placeholder.com/300x300/CCCCCC/666666?text=No+Image',
         category: '홈쇼핑',
         rating: product.rating || product.review_score || 0,
