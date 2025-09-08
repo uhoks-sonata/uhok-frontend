@@ -1,34 +1,43 @@
-# 멀티스테이지 빌드를 사용한 React 앱 Dockerfile
+# syntax=docker/dockerfile:1.7
 
-# 1단계: 빌드 스테이지
-FROM node:18-alpine AS builder
-
-# 작업 디렉토리 설정
+########## 1) Build Stage ##########
+FROM node:20-alpine AS builder
 WORKDIR /app
 
-# package.json과 package-lock.json 복사 (의존성 캐싱 최적화)
+# 빌드 안정성
+ENV CI=false NODE_ENV=production
+
+# npm 캐시 활용 (BuildKit 필요)
 COPY package*.json ./
+RUN --mount=type=cache,target=/root/.npm npm ci --silent
 
-# 의존성 설치
-RUN npm ci --silent
-
-# 소스 코드 복사
+# 소스 복사 후 빌드
 COPY . .
-
-# React 앱 빌드
+# 정적 자산 빌드
 RUN npm run build
 
-# 2단계: 프로덕션 스테이지
-FROM nginx:alpine AS production
+# (선택) 정적 gzip 미리 생성 → Nginx가 바로 서빙 가능
+# - js/css/html/svg/ico만 예시로 압축
+RUN apk add --no-cache gzip && \
+    find build -type f \( -name "*.js" -o -name "*.css" -o -name "*.html" -o -name "*.svg" -o -name "*.ico" \) \
+      -exec gzip -9 -k {} \;
 
-# nginx 설정 파일 복사
+########## 2) Runtime (Nginx) ##########
+FROM nginx:1.25-alpine AS production
+
+# 헬스체크용 curl (경량)
+RUN apk add --no-cache curl
+
+# SPA 친화적인 nginx conf (아래에 예시 제공)
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# 빌드된 React 앱을 nginx 웹 루트로 복사
+# 빌드 산출물 복사
 COPY --from=builder /app/build /usr/share/nginx/html
 
-# 포트 80 노출
 EXPOSE 80
 
-# nginx 실행
+# 헬스체크: 루트 문서가 200이면 OK
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+  CMD curl -fsS http://localhost/ >/dev/null || exit 1
+
 CMD ["nginx", "-g", "daemon off;"]
