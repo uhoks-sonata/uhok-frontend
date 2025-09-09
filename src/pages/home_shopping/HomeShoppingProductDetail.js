@@ -234,8 +234,22 @@ const HomeShoppingProductDetail = () => {
           setKokRecommendations(products);
         }
         
-        // 상품이 식재료인지 확인 (별도 체크 API 사용)
+        // 상품이 식재료인지 확인 (별도 체크 API 사용 - product_id 사용)
         try {
+          console.log('🔍 상품 타입 확인 - productDetail:', productDetail);
+          console.log('🔍 상품 타입 확인 - product_id:', productDetail?.product_id);
+          
+          if (!productDetail?.product_id) {
+            console.error('❌ product_id가 없어서 상품 타입 확인을 건너뜁니다:', productDetail);
+            if (isMounted) {
+              setProductDetail(prev => ({
+                ...prev,
+                is_ingredient: false
+              }));
+            }
+            return;
+          }
+          
           const checkResponse = await homeShoppingApi.checkProductType(productDetail.product_id);
           
           // 체크 API 응답에서 is_ingredient 정보를 가져와서 productDetail에 저장
@@ -448,14 +462,23 @@ const HomeShoppingProductDetail = () => {
   // 레시피 가용성 확인 함수
   const checkRecipeAvailability = async () => {
     try {
-      // 먼저 상품이 식재료인지 확인
+      console.log('🔍 레시피 가용성 확인 - productDetail:', productDetail);
+      console.log('🔍 레시피 가용성 확인 - product_id:', productDetail?.product_id);
+      
+      if (!productDetail?.product_id) {
+        console.error('❌ product_id가 없습니다:', productDetail);
+        setModalState(showNoRecipeNotification());
+        return;
+      }
+      
+      // 먼저 상품이 식재료인지 확인 (product_id 사용)
       const checkResponse = await homeShoppingApi.checkProductType(productDetail.product_id);
       
       if (checkResponse && checkResponse.is_ingredient) {
         // 식재료인 경우 레시피 추천 페이지로 이동
         navigate('/recipes/homeshopping-recommendation', {
           state: {
-            product_id: productDetail.product_id,
+            product_id: productDetail.product_id, // product_id 사용
             product_name: productDetail.product_name
           }
         });
