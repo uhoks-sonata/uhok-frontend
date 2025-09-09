@@ -39,9 +39,6 @@
   min-width: 80px;
 }
 
-.schedule-btn:hover {
-  background-color: #b81e6b;
-}
 
 .schedule-btn:active {
   background-color: #b81e6b;

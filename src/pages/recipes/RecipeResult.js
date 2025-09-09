@@ -428,11 +428,14 @@ const RecipeResult = () => {
     <div className={`recipe-result-page ${searchType === 'ingredient' ? 'ingredient-search' : 'keyword-search'}`}>
       {/* 헤더 */}
       <HeaderNavRecipeRecommendation onBackClick={handleBack} />
-
-             {/* 선택된 재료 태그들 */}
-       <div className="selected-ingredients-section">
-          {/* 소진희망재료 검색에서만 재료 태그들 표시 */}
-          {searchType === 'ingredient' && (
+      {/* 선택된 재료 태그들 */}
+      <div className="selected-ingredients-section">
+        {/* 소진희망재료 검색에서만 재료 태그들 표시 */}
+        {searchType === 'ingredient' && (
+          <>
+            <div className="recommendation-notice">
+              ※ 입력한 재료를 소진할 수 있는 레시피 추천 조합입니다.
+            </div>
             <div className="ingredients-tags-container">
               {displayIngredients.map((ingredient, index) => (
                 <IngredientTag
@@ -443,7 +446,8 @@ const RecipeResult = () => {
                 />
               ))}
             </div>
-          )}
+          </>
+        )}
          
          {/* 남은 재료 정보 표시
          {remainingStock.size > 0 && (

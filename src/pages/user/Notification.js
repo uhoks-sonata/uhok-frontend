@@ -136,8 +136,10 @@ const Notification = () => {
           groupedNotifications[orderId].push(notification);
         });
         
-        // 그룹화된 알림을 변환
-        const transformedNotifications = Object.values(groupedNotifications).map(group => {
+        // 그룹화된 알림을 변환하고 최신순으로 정렬
+        const transformedNotifications = Object.values(groupedNotifications)
+          .sort((a, b) => new Date(b[0].created_at) - new Date(a[0].created_at)) // 최신순 정렬
+          .map(group => {
           const firstNotification = group[0];
           const productNames = group.map(n => n.product_name).filter(name => name);
           

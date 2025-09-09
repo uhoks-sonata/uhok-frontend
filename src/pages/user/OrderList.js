@@ -188,9 +188,9 @@ const OrderList = () => {
       let ordersData;
       
       try {
-        console.log('🚀 API 호출 시작 - getUserOrders(10)');
+        console.log('🚀 API 호출 시작 - getUserOrders(30)');
         // 새로운 API 구조: 사용자의 모든 주문 목록 조회
-        const ordersResponse = await orderApi.getUserOrders(10);
+        const ordersResponse = await orderApi.getUserOrders(30);
         ordersData = ordersResponse;
         // console.log('사용자 주문 목록 API 응답:', ordersData);
         // console.log('🔍 OrderList.js - API 응답 상세:', {
@@ -222,7 +222,7 @@ const OrderList = () => {
               console.log('✅ 토큰 갱신 성공. 주문 내역 다시 로드 시도');
                           // 토큰 갱신 성공 시 다시 API 호출
             try {
-              const ordersResponse = await orderApi.getUserOrders(10);
+              const ordersResponse = await orderApi.getUserOrders(30);
               ordersData = ordersResponse;
               console.log('✅ 토큰 갱신 후 주문 내역 로드 성공');
               } catch (retryError) {

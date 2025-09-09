@@ -18,10 +18,10 @@ export const cartApi = {
       throw new Error(`유효하지 않은 상품 ID: ${productData.kok_product_id}`);
     }
     
-    // API 명세서에 맞는 요청 데이터 형식 (수량은 1개로 고정)
+    // API 명세서에 맞는 요청 데이터 형식
     const requestData = {
       kok_product_id: productId,
-      kok_quantity: 1, // 수량은 1개로 고정
+      kok_quantity: parseInt(productData.kok_quantity) || 1, // 전달받은 수량 사용, 없으면 1
       recipe_id: parseInt(productData.recipe_id) || 0
     };
     
@@ -33,6 +33,9 @@ export const cartApi = {
         kok_product_id: productData.kok_product_id,
         kok_product_id_type: typeof productData.kok_product_id,
         kok_product_id_parsed: productId,
+        kok_quantity: productData.kok_quantity,
+        kok_quantity_type: typeof productData.kok_quantity,
+        kok_quantity_parsed: parseInt(productData.kok_quantity) || 1,
         recipe_id: productData.recipe_id,
         recipe_id_parsed: parseInt(productData.recipe_id) || 0
       });

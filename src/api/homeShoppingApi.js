@@ -130,6 +130,17 @@ export const homeShoppingApi = {
     }
   },
 
+  // 상품이 식재료/완제품인지 확인
+  checkProductType: async (productId) => {
+    try {
+      const response = await api.get(`/api/homeshopping/product/${productId}/check`);
+      return response.data;
+    } catch (error) {
+      console.error('❌ 상품 타입 확인 실패:', error);
+      throw error;
+    }
+  },
+
   // 레시피 추천 (식재료인 경우)
   getRecipeRecommendations: async (productId) => {
     try {
