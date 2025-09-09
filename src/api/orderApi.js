@@ -270,7 +270,7 @@ export const orderApi = {
   // ===== 주문 내역 관련 =====
   
   // 사용자의 모든 주문 목록 조회
-  getUserOrders: async (limit = 10) => {
+  getUserOrders: async (limit = 30) => {
     try {
       console.log('🚀 사용자 주문 목록 조회 API 요청:', { limit });
       
