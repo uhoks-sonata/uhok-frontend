@@ -996,7 +996,7 @@ const HomeShoppingProductDetail = () => {
                   {/* 상품 기본 정보 */}
          <div className="product-basic-info">
                        <div className="product-header">
-              <span className="hsproduct-store-name">[{productDetail.store_name || '홈쇼핑'}]</span>
+              <span className="hsproduct-store-name">[{productDetail.homeshopping_name}]</span>
               <h1 className="hsproduct-product-name">{productDetail.product_name}</h1>
             </div>
           
