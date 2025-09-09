@@ -13,7 +13,7 @@ import VideoPopUp from '../../components/VideoPopUp';
 import api from '../api';
 import { cartApi } from '../../api/cartApi';
 import LiveStreamPlayer from '../../components/player/LiveStreamPlayer';
-import ModalManager, { showAlert, hideModal } from '../../components/LoadingModal';
+import ModalManager, { showAlert, showConfirm, hideModal } from '../../components/LoadingModal';
 
 
 const KokProductDetail = () => {
@@ -46,6 +46,10 @@ const KokProductDetail = () => {
 
   // 커스텀 모달 상태 관리
   const [modalState, setModalState] = useState({ isVisible: false, modalType: 'loading' });
+  
+  // 장바구니 중복 확인 모달 상태
+  const [showCartConfirmModal, setShowCartConfirmModal] = useState(false);
+  const [existingCartItem, setExistingCartItem] = useState(null);
 
 
 
@@ -411,6 +415,23 @@ const KokProductDetail = () => {
     setModalState(hideModal());
   };
 
+  // 장바구니 중복 확인 모달 - 장바구니로 이동
+  const handleCartConfirm = () => {
+    console.log('사용자가 장바구니로 이동을 선택했습니다.');
+    setShowCartConfirmModal(false);
+    setExistingCartItem(null);
+    handleCloseQuantityModal();
+    navigate('/cart');
+  };
+
+  // 장바구니 중복 확인 모달 - 현재 페이지에서 계속 쇼핑
+  const handleCartCancel = () => {
+    console.log('사용자가 현재 페이지에서 계속 쇼핑을 선택했습니다.');
+    setShowCartConfirmModal(false);
+    setExistingCartItem(null);
+    handleCloseQuantityModal();
+  };
+
   // API 연결 테스트 함수 (개발자 도구에서 실행 가능)
   const testApiConnection = async () => {
     try {
@@ -467,7 +488,7 @@ API 연결 테스트 결과:
 
       const cartData = {
         kok_product_id: parsedProductId,
-        kok_quantity: 1, // 수량은 1개로 고정
+        kok_quantity: selectedQuantity, // 선택된 수량 사용
         recipe_id: 0 // 레시피 ID는 0으로 설정
       };
 
@@ -476,7 +497,9 @@ API 연결 테스트 결과:
         productId: productId,
         productIdType: typeof productId,
         productIdParsed: parseInt(productId),
-        isNaN: isNaN(parseInt(productId))
+        isNaN: isNaN(parseInt(productId)),
+        selectedQuantity: selectedQuantity,
+        selectedQuantityType: typeof selectedQuantity
       });
       
       const response = await cartApi.addToCart(cartData);
@@ -538,21 +561,10 @@ API 연결 테스트 결과:
       if (existingCartItem) {
         console.log('이미 장바구니에 있는 상품 발견:', existingCartItem);
         
-        // 사용자에게 선택권 제공
-        const userChoice = window.confirm('이미 해당 상품이 장바구니에 있습니다.\n\n장바구니로 이동하시겠습니까?\n\n[확인] 장바구니로 이동\n[취소] 현재 페이지에서 계속 쇼핑');
-        
-        if (userChoice) {
-          // 장바구니로 이동
-          console.log('사용자가 장바구니로 이동을 선택했습니다.');
-          handleCloseQuantityModal();
-          navigate('/cart');
-          return;
-        } else {
-          // 현재 페이지에서 계속 쇼핑
-          console.log('사용자가 현재 페이지에서 계속 쇼핑을 선택했습니다.');
-          handleCloseQuantityModal();
-          return;
-        }
+        // 모달로 사용자에게 선택권 제공
+        setExistingCartItem(existingCartItem);
+        setShowCartConfirmModal(true);
+        return;
       }
 
                     // 3. 장바구니에 상품 추가
@@ -1528,6 +1540,19 @@ API 연결 테스트 결과:
         {...modalState}
         onClose={closeModal}
       />
+      
+      {/* 장바구니 중복 확인 모달 */}
+      {showCartConfirmModal && (
+        <ModalManager
+          {...showConfirm(
+            '이미 해당 상품이 장바구니에 있습니다.\n\n장바구니로 이동하시겠습니까?',
+            '장바구니로 이동',
+            '계속 쇼핑'
+          )}
+          onConfirm={handleCartConfirm}
+          onCancel={handleCartCancel}
+        />
+      )}
     </div>
   );
 };
