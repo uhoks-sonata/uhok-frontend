@@ -113,9 +113,8 @@
 .recommendation-notice {
   color: #EA008A;
   font-size: 13px;
-  font-weight: 500;
   margin-top: 8px;
-  text-align: left;
+  margin-bottom: 5px;
 }
 
 /* 추출된 키워드 섹션 스타일 */
