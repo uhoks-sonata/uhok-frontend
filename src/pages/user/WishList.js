@@ -229,9 +229,9 @@ const WishList = () => {
       
       // 상품 타입에 따라 다른 API 호출
       if (productType === 'homeshopping') {
-        // 홈쇼핑 상품 찜 토글
+        // 홈쇼핑 상품 찜 토글 - live_id 사용
         response = await api.post('/api/homeshopping/likes/toggle', {
-          product_id: productId
+          live_id: productId
         }, {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -281,14 +281,17 @@ const WishList = () => {
           }, 150);
         }
         
-        // 찜 상태에 따른 알림 모달 표시
-        if (isLiked) {
-          // 찜 추가 시 알림
-          setModalState(showWishlistNotification());
-        } else {
-          // 찜 해제 시 알림
-          setModalState(showWishlistUnlikedNotification());
+        // 찜 상태에 따른 알림 모달 표시 (홈쇼핑 상품일 때만)
+        if (productType === 'homeshopping') {
+          if (isLiked) {
+            // 찜 추가 시 알림
+            setModalState(showWishlistNotification());
+          } else {
+            // 찜 해제 시 알림
+            setModalState(showWishlistUnlikedNotification());
+          }
         }
+        // 쇼핑몰 상품의 경우 팝업 표시하지 않음
         
         // 위시리스트 데이터는 즉시 동기화하지 않음
         // 페이지 벗어나거나 새로고침할 때 동기화됨
@@ -516,13 +519,13 @@ const WishList = () => {
                             <div className="wishlist-right-info">
                               <button 
                                 className="shopping-heart-button"
-                                data-product-id={product.hs_product_id}
+                                data-product-id={product.hs_live_id}
                                 onClick={(e) => {
                                   e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
-                                  handleHeartToggle(product.hs_product_id, product.type);
+                                  handleHeartToggle(product.hs_live_id, product.type);
                                 }}>
                                 <img 
-                                  src={unlikedProducts.has(product.hs_product_id) ? emptyHeartIcon : filledHeartIcon} 
+                                  src={unlikedProducts.has(product.hs_live_id) ? emptyHeartIcon : filledHeartIcon} 
                                   alt="찜 토글" 
                                   className="shopping-heart-icon"
                                 />
