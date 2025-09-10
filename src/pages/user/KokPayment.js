@@ -32,8 +32,13 @@ const KokPayment = () => {
   // ===== 모달 핸들러 =====
   const handleModalClose = () => {
     setModalState(hideModal());
+    
+    // 결제 완료 모달인 경우 주문내역으로 이동
+    if (modalState.modalType === 'alert' && modalState.alertMessage === '결제가 완료되었습니다!') {
+      navigate('/orderlist', { replace: true });
+    }
     // 로그인 필요 모달인 경우에만 이전 페이지로 돌아가기
-    if (modalState.modalType === 'alert' && modalState.alertMessage === '로그인이 필요한 서비스입니다.') {
+    else if (modalState.modalType === 'alert' && modalState.alertMessage === '로그인이 필요한 서비스입니다.') {
       window.history.back();
     }
   };
@@ -587,9 +592,8 @@ const KokPayment = () => {
         setPaymentStatus('completed');
         setModalState(showAlert('결제가 완료되었습니다!'));
         
-        // 결제 완료 - 주문내역 페이지로 이동
-        console.log('🚀 4단계: 결제 완료 - 주문내역 페이지로 이동');
-        navigate('/orderlist', { replace: true });
+        // 결제 완료 모달 표시 - 사용자가 확인 버튼을 눌러야 주문내역으로 이동
+        console.log('🚀 4단계: 결제 완료 모달 표시 - 확인 버튼 대기 중');
         
       } else {
         // 실제 실패 상태인 경우만 실패로 처리
