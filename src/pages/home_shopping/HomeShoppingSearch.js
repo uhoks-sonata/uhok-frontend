@@ -11,6 +11,7 @@ import Loading from '../../components/Loading';
 import HeaderNavBackBtn from '../../components/HeaderNavBackBtn';
 // 검색 페이지 스타일을 가져옵니다
 import '../../styles/search.css';
+import '../../styles/infinite_scroll.css';
 // 홈쇼핑 API를 가져옵니다
 import { homeShoppingApi } from '../../api/homeShoppingApi';
 // 사용자 Context import
@@ -1220,25 +1221,22 @@ const HomeShoppingSearch = () => {
                 </div>
               ))}
               
-              {/* 무한 스크롤 상태 표시 */}
+              {/* 무한 스크롤 상태 표시 - 20개씩 로딩 */}
               {loadingMore && (
-                <div className="search-loading">
-                  <div style={{
-                    width: '20px',
-                    height: '20px',
-                    border: '2px solid #f3f3f3',
-                    borderTop: '2px solid #FA5F8C',
-                    borderRadius: '50%',
-                    animation: 'spin 1s linear infinite',
-                    margin: '0 auto 10px'
-                  }}></div>
-                  더 많은 검색 결과를 불러오는 중...
+                <div className="infinite-scroll-loading">
+                  <div className="loading-spinner"></div>
+                  <div className="loading-text">
+                    <div>20개 검색 결과를 불러오는 중...</div>
+                    <div className="loading-subtext">잠시만 기다려주세요</div>
+                  </div>
                 </div>
               )}
               
               {!hasMore && searchResults.length > 0 && (
-                <div className="no-results">
-                  <p>더 이상 로드할 검색 결과가 없습니다</p>
+                <div className="no-more-products">
+                  <div className="no-more-icon">🔍</div>
+                  <div className="no-more-text">모든 검색 결과를 불러왔습니다</div>
+                  <div className="no-more-subtext">총 {searchResults.length}개의 검색 결과</div>
                 </div>
               )}
             </div>

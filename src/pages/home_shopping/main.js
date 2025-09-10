@@ -87,7 +87,7 @@ const Main = () => {
       try {
         const response = await api.get('/api/homeshopping/likes', {
           params: {
-            limit: 50
+            limit: 20
           }
         });
         

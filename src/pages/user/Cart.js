@@ -77,7 +77,7 @@ const Cart = () => {
     try {
       const response = await api.get('/api/kok/likes', {
         params: {
-          limit: 50
+          limit: 20
         }
       });
       

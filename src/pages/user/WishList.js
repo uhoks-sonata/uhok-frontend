@@ -70,7 +70,7 @@ const WishList = () => {
       // 콕 쇼핑몰 찜한 상품 조회
       const kokResponse = await api.get('/api/kok/likes', {
         params: {
-          limit: 50
+          limit: 20
         },
         headers: {
           'Authorization': `Bearer ${token}`
