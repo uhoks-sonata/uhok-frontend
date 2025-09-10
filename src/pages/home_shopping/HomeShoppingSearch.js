@@ -1232,13 +1232,13 @@ const HomeShoppingSearch = () => {
                 </div>
               )}
               
-              {!hasMore && searchResults.length > 0 && (
+              {/* {!hasMore && searchResults.length > 0 && (
                 <div className="no-more-products">
                   <div className="no-more-icon">🔍</div>
                   <div className="no-more-text">모든 검색 결과를 불러왔습니다</div>
                   <div className="no-more-subtext">총 {searchResults.length}개의 검색 결과</div>
                 </div>
-              )}
+              )} */}
             </div>
           </div>
         )}
