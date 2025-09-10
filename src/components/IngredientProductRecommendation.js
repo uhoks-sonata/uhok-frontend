@@ -180,22 +180,29 @@ const IngredientProductRecommendation = ({ ingredientName, ingredientAmount, ing
                         <span className="source-text">{product.source}</span>
                       )}
                     </div>
-                     {/* 할인율 표시 - 콕 상품은 kok_discount_rate, 홈쇼핑 상품은 dc_rate 사용 */}
+                    <div className="product-price-section">
+                     {/* 콕 상품의 할인율과 가격 - 가로 배치 */}
                      {((product.source === 'kok' || product.source === '콕') && product.kok_discount_rate !== null && product.kok_discount_rate !== undefined && product.kok_discount_rate !== '' && Number(product.kok_discount_rate) > 0) && (
                        <span className="discount-rate">{product.kok_discount_rate}%</span>
                      )}
-                     {((product.source === 'homeshopping' || product.source === '홈쇼핑') && product.dc_rate !== null && product.dc_rate !== undefined && product.dc_rate !== '' && Number(product.dc_rate) > 0) && (
-                       <span className="discount-rate">
-                         {product.dc_rate}%<br />
-                         <span className="product-price">{product.price?.toLocaleString()}원</span>
-                       </span>
-                     )}
-                     {/* 콕 상품의 가격은 별도로 유지 */}
-                     {((product.source === 'kok' || product.source === '콕') && (
+                     {/* 콕 상품의 가격 */}
+                     {(product.source === 'kok' || product.source === '콕') && (
                        <div className="product-price">
                          {product.price?.toLocaleString()}원
                        </div>
-                     ))}
+                     )}
+                     {/* 홈쇼핑 상품의 할인율과 가격 - 세로 배치 */}
+                     {(product.source === 'homeshopping' || product.source === '홈쇼핑') && (
+                       <div className="homeshopping-price-container">
+                         {product.dc_rate !== null && product.dc_rate !== undefined && product.dc_rate !== '' && Number(product.dc_rate) > 0 && (
+                           <span className="discount-rate">{product.dc_rate}%</span>
+                         )}
+                         <span className="product-price">
+                           {product.price?.toLocaleString()}원
+                         </span>
+                       </div>
+                     )}
+                    </div>
                   </div>
                 </div>
               </div>
