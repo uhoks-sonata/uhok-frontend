@@ -81,6 +81,13 @@ const RecipeDetail = () => {
               not_owned: []
             };
             
+            // 소진 희망 재료 검색에서 온 경우 입력한 재료들을 보유로 처리
+            const inputIngredients = location.state?.searchType === 'ingredient' && location.state?.ingredients 
+              ? location.state.ingredients.map(ing => typeof ing === 'string' ? ing : ing.name || ing.material_name).filter(Boolean)
+              : [];
+            
+            console.log('🔍 입력된 재료들 (보유 처리):', inputIngredients);
+            
             statusData.ingredients.forEach(ingredient => {
               const ingredientData = {
                 material_name: ingredient.material_name,
@@ -88,19 +95,32 @@ const RecipeDetail = () => {
                 cart_info: ingredient.cart_info
               };
               
-              switch (ingredient.status) {
-                case 'owned':
-                  ingredientsStatus.owned.push(ingredientData);
-                  break;
-                case 'cart':
-                  ingredientsStatus.cart.push(ingredientData);
-                  break;
-                case 'not_owned':
-                  ingredientsStatus.not_owned.push(ingredientData);
-                  break;
-                default:
-                  console.warn('알 수 없는 재료 상태:', ingredient.status);
-                  ingredientsStatus.not_owned.push(ingredientData);
+              // 입력한 재료인지 확인 (대소문자 구분 없이)
+              const isInputIngredient = inputIngredients.some(inputIng => 
+                inputIng.toLowerCase().trim() === ingredient.material_name.toLowerCase().trim()
+              );
+              
+              // 7일 이내 구매 상품인지 확인
+              const isRecentPurchase = ingredient.order_info && ingredient.order_info.purchase_date ? 
+                (() => {
+                  const purchaseDate = new Date(ingredient.order_info.purchase_date);
+                  const sevenDaysAgo = new Date();
+                  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+                  return purchaseDate >= sevenDaysAgo;
+                })() : false;
+              
+              // 입력한 재료이거나 7일 이내 구매 상품이거나 API에서 owned로 반환된 경우 보유로 처리
+              if (isInputIngredient || isRecentPurchase || ingredient.status === 'owned') {
+                ingredientsStatus.owned.push(ingredientData);
+                const reason = isInputIngredient ? '입력한 재료' : 
+                              isRecentPurchase ? '7일 이내 구매' : 'API owned';
+                console.log(`✅ ${ingredient.material_name} - 보유 (${reason})`);
+              } else if (ingredient.status === 'cart') {
+                ingredientsStatus.cart.push(ingredientData);
+                console.log(`🛒 ${ingredient.material_name} - 장바구니`);
+              } else {
+                ingredientsStatus.not_owned.push(ingredientData);
+                console.log(`❌ ${ingredient.material_name} - 미보유`);
               }
             });
             
@@ -134,13 +154,6 @@ const RecipeDetail = () => {
                 not_owned_count: 0
               }
             });
-          }
-          
-          // 소진 희망 재료 검색에서 온 경우 로그만 출력 (API에서 이미 올바른 상태 반환)
-          if (location.state?.searchType === 'ingredient' && location.state?.ingredients) {
-            console.log('🔍 소진 희망 재료 검색 - API에서 이미 올바른 상태 반환됨');
-            console.log('입력된 재료들:', location.state.ingredients);
-            console.log('레시피 재료들:', recipeData.materials.map(m => m.material_name));
           }
         } catch (statusError) {
           console.log('재료 상태 조회 실패:', statusError);

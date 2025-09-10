@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import OptimizedImage from './OptimizedImage';
+import OptimizedImage from './OptimizedImage.js';
 import '../styles/kok_product_card.css';
 
 const KokProductCard = memo(({ product, type = 'default', style = {} }) => {
