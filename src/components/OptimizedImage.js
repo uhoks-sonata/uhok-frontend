@@ -4,7 +4,7 @@ const OptimizedImage = ({
   src, 
   alt, 
   className = '', 
-  fallback = '/no-image.png',
+  fallback = null,
   loading = 'lazy',
   width,
   height,
@@ -49,6 +49,10 @@ const OptimizedImage = ({
         setIsLoaded(true);
       };
       img.src = src;
+    } else if (isInView && !src) {
+      // src가 없으면 fallback으로 설정하거나 로딩 완료 처리
+      setImageSrc(fallback);
+      setIsLoaded(true);
     }
   }, [isInView, src, fallback]);
 
@@ -66,7 +70,7 @@ const OptimizedImage = ({
       }}
       {...props}
     >
-      {isInView && (
+      {isInView && imageSrc && (
         <img
           src={imageSrc}
           alt={alt}

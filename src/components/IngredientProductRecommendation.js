@@ -120,13 +120,15 @@ const IngredientProductRecommendation = ({ ingredientName, ingredientAmount, ing
                 style={{ cursor: 'pointer' }}
               >
                 <div className="product-image">
-                  <img 
-                    src={product.thumb_img_url || product.image_url || '/no-image.png'} 
-                    alt={product.name}
-                    onError={(e) => {
-                      e.currentTarget.src = '/no-image.png';
-                    }}
-                  />
+                  {(product.thumb_img_url || product.image_url) && (
+                    <img 
+                      src={product.thumb_img_url || product.image_url} 
+                      alt={product.name}
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  )}
                 </div>
                 <div className="product-info">
                   <div className="product-name">
