@@ -247,6 +247,42 @@
   margin-bottom: 4px;
 }
 
+/* 홈쇼핑 상품의 가격 섹션 - 1행 2열 그리드 */
+.product-card[data-source="homeshopping"] .product-price-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  align-items: center;
+}
+
+/* 홈쇼핑 상품의 로고를 첫 번째 열에 */
+.product-card[data-source="homeshopping"] .product-source {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 홈쇼핑 상품의 할인율+가격을 두 번째 열에 */
+.product-card[data-source="homeshopping"] .discount-rate {
+  grid-column: 2;
+  grid-row: 1;
+  order: unset;
+  font-size: 8px !important;
+  font-weight: 600 !important;
+  color: #FA5F8C !important;
+  text-align: left;
+}
+
+/* 홈쇼핑 상품의 가격 스타일 */
+.product-card[data-source="homeshopping"] .discount-rate .product-price {
+  font-size: 14px;
+  font-weight: 500;
+  color: #000000;
+  display: block;
+}
+
 .product-price {
   font-size: 14px;
   font-weight: 500;
@@ -255,7 +291,7 @@
 
 /* 할인율 - 식재료 추천 섹션에서만 적용 */
 .ingredient-products-section .product-info .discount-rate {
-  font-size: 13px !important;
+  font-size: 11px !important;
   font-weight: 600 !important;
   color: #FF4444 !important;
   background: none !important;
@@ -268,7 +304,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  margin-top: 4px;
+  margin-bottom: 4px;
 }
 
 .review-score {
@@ -337,12 +373,27 @@
     gap: 4px;
   }
   
+  /* 모바일에서 홈쇼핑 상품의 가격 섹션 */
+  .product-card[data-source="homeshopping"] .product-price-section {
+    gap: 2px;
+  }
+  
   .product-price {
     font-size: 13px;
   }
   
   .ingredient-products-section .product-info .discount-rate {
     font-size: 12px !important;
+  }
+  
+  /* 모바일에서 홈쇼핑 상품의 할인율 */
+  .product-card[data-source="homeshopping"] .discount-rate {
+    font-size: 7px !important;
+  }
+  
+  /* 모바일에서 홈쇼핑 상품의 가격 */
+  .product-card[data-source="homeshopping"] .discount-rate .product-price {
+    font-size: 13px;
   }
   
   .review-score {

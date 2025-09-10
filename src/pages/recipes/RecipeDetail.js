@@ -245,7 +245,10 @@ const RecipeDetail = () => {
               not_owned: Array.from(notOwnedMaterials),
               summary: modifiedStatus.summary
             });
-            setIngredientsStatus(modifiedStatus);
+            
+            // 소진 희망 재료 설정 후 장바구니 정보도 반영
+            const enhancedStatus = enhanceIngredientStatusWithCart(modifiedStatus, cartIngredients, recipeData.materials);
+            setIngredientsStatus(enhancedStatus);
           } else {
             // 소진 희망 재료 검색이 아닌 경우 장바구니 정보를 반영하여 재료 상태 업데이트
             const enhancedStatus = enhanceIngredientStatusWithCart(statusData, cartIngredients, recipeData.materials);
@@ -409,7 +412,11 @@ const RecipeDetail = () => {
   return (
     <div className="recipe-detail-page">
       {/* 헤더 */}
-      <HeaderNavRecipeDetail onBackClick={handleBack} />
+      <HeaderNavRecipeDetail 
+        onBackClick={handleBack}
+        onNotificationClick={handleNotificationClick}
+        onCartClick={handleCartClick}
+      />
 
       {/* 스크롤 가능한 컨텐츠 영역 */}
       <div className="recipe-content-scrollable">
