@@ -247,46 +247,61 @@
   margin-bottom: 4px;
 }
 
-/* 홈쇼핑 상품의 가격 섹션 - 1행 2열 그리드 */
+/* 홈쇼핑 상품의 가격 섹션 - 두 줄로 분리 */
 .product-card[data-source="homeshopping"] .product-price-section {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2px;
-  align-items: center;
-}
-
-/* 홈쇼핑 상품의 로고를 첫 번째 열에 */
-.product-card[data-source="homeshopping"] .product-source {
-  grid-column: 1;
-  grid-row: 1;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  gap: 0px;
+  align-items: flex-start;
+}
+
+/* 홈쇼핑 상품의 가격 컨테이너 - 세로 배치 */
+.homeshopping-price-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+/* 홈쇼핑 상품의 로고 스타일 */
+.product-card[data-source="homeshopping"] .product-source {
+  display: flex;
+  justify-content: flex-start;
   align-items: center;
 }
 
-/* 홈쇼핑 상품의 할인율+가격을 두 번째 열에 */
-.product-card[data-source="homeshopping"] .discount-rate {
-  grid-column: 2;
-  grid-row: 1;
-  order: unset;
-  font-size: 8px !important;
+/* 홈쇼핑 상품의 가격 컨테이너 스타일 */
+.product-card[data-source="homeshopping"] .homeshopping-price-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex-direction: row;
+}
+
+/* 홈쇼핑 상품의 할인율 스타일 */
+.product-card[data-source="homeshopping"] .homeshopping-price-container .discount-rate {
+  /* font-size: 8px !important; */
   font-weight: 600 !important;
   color: #FA5F8C !important;
   text-align: left;
 }
 
 /* 홈쇼핑 상품의 가격 스타일 */
-.product-card[data-source="homeshopping"] .discount-rate .product-price {
+.product-card[data-source="homeshopping"] .homeshopping-price-container .product-price {
   font-size: 14px;
   font-weight: 500;
   color: #000000;
   display: block;
+  white-space: nowrap;
+  text-align: left;
 }
 
 .product-price {
   font-size: 14px;
   font-weight: 500;
   color: #000000;
+  white-space: nowrap;
 }
 
 /* 할인율 - 식재료 추천 섹션에서만 적용 */
@@ -380,6 +395,7 @@
   
   .product-price {
     font-size: 13px;
+    white-space: nowrap;
   }
   
   .ingredient-products-section .product-info .discount-rate {
@@ -387,13 +403,14 @@
   }
   
   /* 모바일에서 홈쇼핑 상품의 할인율 */
-  .product-card[data-source="homeshopping"] .discount-rate {
+  .product-card[data-source="homeshopping"] .homeshopping-price-container .discount-rate {
     font-size: 7px !important;
   }
   
   /* 모바일에서 홈쇼핑 상품의 가격 */
-  .product-card[data-source="homeshopping"] .discount-rate .product-price {
+  .product-card[data-source="homeshopping"] .homeshopping-price-container .product-price {
     font-size: 13px;
+    white-space: nowrap;
   }
   
   .review-score {
