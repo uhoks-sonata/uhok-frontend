@@ -409,7 +409,11 @@ const RecipeDetail = () => {
   return (
     <div className="recipe-detail-page">
       {/* 헤더 */}
-      <HeaderNavRecipeDetail onBackClick={handleBack} />
+      <HeaderNavRecipeDetail 
+        onBackClick={handleBack}
+        onNotificationClick={handleNotificationClick}
+        onCartClick={handleCartClick}
+      />
 
       {/* 스크롤 가능한 컨텐츠 영역 */}
       <div className="recipe-content-scrollable">
