@@ -268,10 +268,10 @@ export const homeShoppingApi = {
   // ===== 찜 기능 =====
   
   // 상품 찜 등록/해제
-  toggleProductLike: async (productId) => {
+  toggleProductLike: async (liveId) => {
     try {
       const response = await api.post('/api/homeshopping/likes/toggle', {
-        product_id: productId
+        live_id: liveId
       });
       return response.data;
     } catch (error) {
