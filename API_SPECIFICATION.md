@@ -398,30 +398,53 @@
 - `src/api/logApi.js`: 로그 관련 API 함수들
 - `src/api/cartApi.js`: 장바구니 관련 API 함수들 (기존)
 
+### 상품 찜&알림 등록/해제
+- **기능**: 사용자가 특정 상품을 찜하거나, 이미 찜 한 경우 취소한다. 찜 할 경우에 알림이 설정되고, 찜을 취소하면 알림도 취소된다.
+- **HTTP 메서드**: POST
+- **엔드포인트 URL**: `/api/homeshopping/likes/toggle`
+- **Header**: `Authorization: Bearer <access_token>`
+- **Query Parameter**: -
+- **Request Body**:
+  ```json
+  {
+    "live_id": 0
+  }
+  ```
+- **Response Code**: 200
+- **Response Value**:
+  ```json
+  {
+    "liked": true,
+    "message": "string"
+  }
+  ```
+
 ### 찜한 상품 API 응답 구조
 
 #### 홈쇼핑 찜한 상품 목록 조회
-- **기능**: 사용자가 찜한 홈쇼핑 상품 목록을 조회
+- **기능**: 사용자가 찜한 모든 상품을 조회한다.
 - **HTTP 메서드**: GET
 - **엔드포인트 URL**: `/api/homeshopping/likes`
 - **Header**: `Authorization: Bearer <access_token>`
-- **Query Parameter**: `limit` (기본값: 50)
+- **Query Parameter**: `limit` (1 ~ 50)
 - **Response Code**: 200
 - **Response Value**:
   ```json
   {
     "liked_products": [
       {
+        "live_id": 0,
         "product_id": 0,
         "product_name": "string",
         "store_name": "string",
         "dc_price": 0,
         "dc_rate": 0,
         "thumb_img_url": "string",
-        "homeshopping_like_created_at": "2025-08-30T03:04:55.605Z",
+        "homeshopping_like_created_at": "2025-09-10T05:50:22.016Z",
         "homeshopping_id": 0,
-        "live_start_time": "03:04:55.605Z",
-        "live_date": "2025-08-30"
+        "live_date": "2025-09-10",
+        "live_start_time": "05:50:22.016Z",
+        "live_end_time": "05:50:22.016Z"
       }
     ]
   }

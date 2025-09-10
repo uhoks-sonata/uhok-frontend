@@ -354,9 +354,9 @@ const Schedule = () => {
       });
 
       if (response.data && response.data.liked_products) {
-        const likedProductIds = new Set(response.data.liked_products.map(product => product.product_id || product.live_id));
+        const likedProductIds = new Set(response.data.liked_products.map(product => product.live_id));
         setWishlistedProducts(likedProductIds);
-        console.log('찜 상태 초기화 완료:', likedProductIds.size, '개 상품 (product_id 기준)');
+        console.log('찜 상태 초기화 완료:', likedProductIds.size, '개 상품 (live_id 기준)');
       }
     } catch (error) {
       console.error('찜 상태 초기화 실패:', error);
@@ -767,10 +767,10 @@ const Schedule = () => {
         return;
       }
 
-      // 찜 토글 API 호출 (product_id 사용 - 백엔드 호환성)
-      // scheduleData에서 해당 live_id의 product_id 찾기
-      const scheduleItem = scheduleData.find(item => item.live_id === liveId);
-      const requestPayload = { product_id: scheduleItem?.product_id || liveId };
+      // 찜 토글 API 호출 (live_id 사용 - 새로운 API 명세)
+      const requestPayload = { 
+        live_id: liveId
+      };
       
       // console.log('🔍 찜 토글 API 요청 페이로드:', requestPayload);
       
@@ -788,7 +788,7 @@ const Schedule = () => {
          
          // 백엔드 응답의 liked 상태에 따라 찜 상태 업데이트
          const isLiked = response.data.liked;
-         const productId = scheduleItem?.product_id || liveId;
+         const productId = liveId;
          
          setWishlistedProducts(prev => {
            const newSet = new Set(prev);
@@ -1147,7 +1147,7 @@ const Schedule = () => {
                               }}
                             >
                               <img 
-                                src={wishlistedProducts.has(item.product_id || item.live_id) ? filledHeartIcon : emptyHeartIcon} 
+                                src={wishlistedProducts.has(item.live_id) ? filledHeartIcon : emptyHeartIcon} 
                                 alt="찜 토글" 
                                 className="heart-icon"
                               />
@@ -1170,7 +1170,7 @@ const Schedule = () => {
                             }}
                           >
                             <img 
-                              src={wishlistedProducts.has(item.product_id || item.live_id) ? filledHeartIcon : emptyHeartIcon} 
+                              src={wishlistedProducts.has(item.live_id) ? filledHeartIcon : emptyHeartIcon} 
                               alt="찜 토글" 
                               className="heart-icon"
                             />

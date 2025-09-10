@@ -326,7 +326,7 @@ export const kokApi = {
   },
 
   // 찜한 상품 조회
-  getLikedProducts: async (limit = 50) => {
+  getLikedProducts: async (limit = 20) => {
     try {
       console.log('🚀 찜한 상품 조회 API 호출:', { limit });
       const response = await api.get('/api/kok/likes', {

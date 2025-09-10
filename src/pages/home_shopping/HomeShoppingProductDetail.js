@@ -313,7 +313,11 @@ const HomeShoppingProductDetail = () => {
       });
 
       if (response.data && response.data.liked_products) {
-        const likedProductIds = new Set(response.data.liked_products.map(product => product.product_id || product.live_id));
+        const likedProductIds = new Set(response.data.liked_products.map(product => String(product.live_id)));
+        console.log('🔍 찜 상태 초기화 - API 응답:', response.data.liked_products);
+        console.log('🔍 찜 상태 초기화 - likedProductIds:', likedProductIds);
+        console.log('🔍 찜 상태 초기화 - 현재 live_id:', live_id, typeof live_id);
+        console.log('🔍 찜 상태 초기화 - live_id가 Set에 있는지:', likedProductIds.has(String(live_id)));
         setWishlistedProducts(likedProductIds);
       }
     } catch (error) {
@@ -332,8 +336,10 @@ const HomeShoppingProductDetail = () => {
         return;
       }
 
-      // 찜 토글 API 호출 (product_id 사용 - 백엔드 호환성)
-      const requestPayload = { product_id: productDetail?.product_id || liveId };
+      // 찜 토글 API 호출 (live_id 사용 - 새로운 API 명세)
+      const requestPayload = { 
+        live_id: liveId
+      };
       
       // console.log('🔍 찜 토글 API 요청 페이로드:', requestPayload);
       
@@ -347,16 +353,15 @@ const HomeShoppingProductDetail = () => {
       if (response.data) {
         // 백엔드 응답의 liked 상태에 따라 찜 상태 업데이트
         const isLiked = response.data.liked;
-        const productId = productDetail?.product_id || liveId;
         
         setWishlistedProducts(prev => {
           const newSet = new Set(prev);
           if (isLiked) {
             // 백엔드에서 찜된 상태로 응답
-            newSet.add(productId);
+            newSet.add(String(liveId));
           } else {
             // 백엔드에서 찜 해제된 상태로 응답
-            newSet.delete(productId);
+            newSet.delete(String(liveId));
           }
           return newSet;
         });
@@ -800,7 +805,15 @@ const HomeShoppingProductDetail = () => {
                   }}
                 >
                   <img 
-                    src={wishlistedProducts.has(productDetail?.product_id || live_id) ? filledHeartIcon : emptyHeartIcon} // product_id 우선 사용
+                    src={(() => {
+                      const isLiked = wishlistedProducts.has(String(live_id));
+                      // console.log('🔍 하트 아이콘 표시 - live_id:', live_id, typeof live_id);
+                      // console.log('🔍 하트 아이콘 표시 - wishlistedProducts:', wishlistedProducts);
+                      // console.log('🔍 하트 아이콘 표시 - isLiked:', isLiked);
+                      // console.log('🔍 하트 아이콘 표시 - filledHeartIcon:', filledHeartIcon);
+                      // console.log('🔍 하트 아이콘 표시 - emptyHeartIcon:', emptyHeartIcon);
+                      return isLiked ? filledHeartIcon : emptyHeartIcon;
+                    })()}
                     alt="찜 토글" 
                     className="hsproduct-heart-icon"
                   />

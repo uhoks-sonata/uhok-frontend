@@ -29,7 +29,7 @@ const KokMain = () => {
   const { user, isLoggedIn } = useUser();
 
   // KOK API에서 오늘의 특가 상품 데이터를 가져오는 함수
-  const fetchKokProducts = async () => {
+  const fetchKokProducts = async (limitTo20 = true) => {
     try {
       console.log('오늘의 특가 상품 API 호출 시작...');
       console.log('API 엔드포인트: /api/kok/discounted');
@@ -63,15 +63,19 @@ const KokMain = () => {
             : product.kok_discounted_price, // 할인율이 0이면 할인가가 원가
           discountPrice: product.kok_discounted_price,
           discountRate: product.kok_discount_rate,
-          image: product.kok_thumbnail || 'https://via.placeholder.com/300x300/CCCCCC/666666?text=No+Image',
+          image: product.kok_thumbnail,
           rating: product.kok_review_score || 0, // 백엔드에서 제공하는 별점
           reviewCount: product.kok_review_cnt || 0, // 백엔드에서 제공하는 리뷰 수
           storeName: product.kok_store_name
         }));
         
-        console.log('변환된 상품 데이터:', transformedProducts);
-        console.log('변환된 상품의 별점과 리뷰수:', transformedProducts.map(p => ({ name: p.name, rating: p.rating, reviewCount: p.reviewCount })));
-        setKokProducts(transformedProducts);
+        // 항상 20개로 제한 (초기 로딩과 무한 스크롤 모두)
+        const finalProducts = transformedProducts.slice(0, 20);
+        
+        console.log('변환된 상품 데이터 (20개 제한):', finalProducts);
+        console.log('원본 데이터 개수:', transformedProducts.length, '→ 최종 데이터 개수:', finalProducts.length);
+        console.log('변환된 상품의 별점과 리뷰수:', finalProducts.map(p => ({ name: p.name, rating: p.rating, reviewCount: p.reviewCount })));
+        setKokProducts(finalProducts);
       } else if (response.data && Array.isArray(response.data)) {
         console.log('API 응답이 배열 형태입니다 (products 필드 없음).');
         // 배열 형태로 직접 응답받은 경우 (하위 호환성)
@@ -83,12 +87,18 @@ const KokMain = () => {
             : product.kok_discounted_price,
           discountPrice: product.kok_discounted_price,
           discountRate: product.kok_discount_rate,
-          image: product.kok_thumbnail || 'https://via.placeholder.com/300x300/CCCCCC/666666?text=No+Image',
+          image: product.kok_thumbnail,
           rating: product.kok_review_score || 0,
           reviewCount: product.kok_review_cnt || 0,
           storeName: product.kok_store_name
         }));
-        setKokProducts(transformedProducts);
+        
+        // 항상 20개로 제한 (초기 로딩과 무한 스크롤 모두)
+        const finalProducts = transformedProducts.slice(0, 20);
+        
+        console.log('변환된 상품 데이터 (20개 제한):', finalProducts);
+        console.log('원본 데이터 개수:', transformedProducts.length, '→ 최종 데이터 개수:', finalProducts.length);
+        setKokProducts(finalProducts);
       } else {
         console.log('API 응답 구조가 예상과 다릅니다. 응답 데이터:', response.data);
         console.log('임시 데이터를 사용합니다.');
@@ -114,7 +124,7 @@ const KokMain = () => {
   };
 
   // KOK API에서 베스트 판매 상품 데이터를 가져오는 함수
-  const fetchKokTopSellingProducts = async () => {
+  const fetchKokTopSellingProducts = async (limitTo20 = true) => {
     try {
       // console.log('베스트 판매 상품 API 호출 시작...');
       // console.log('API 엔드포인트: /api/kok/top-selling');
@@ -150,15 +160,19 @@ const KokMain = () => {
             : product.kok_discounted_price,
           discountPrice: product.kok_discounted_price,
           discountRate: product.kok_discount_rate,
-          image: product.kok_product_image || product.kok_thumbnail || '/test1.png',
+          image: product.kok_product_image || product.kok_thumbnail,
           rating: product.kok_review_score || 0, // 백엔드에서 제공하는 별점
           reviewCount: product.kok_review_cnt || 0, // 백엔드에서 제공하는 리뷰 수
           storeName: product.kok_store_name
         }));
         
-        console.log('변환된 상품 데이터:', transformedProducts);
-        console.log('변환된 상품의 별점과 리뷰수:', transformedProducts.map(p => ({ name: p.name, rating: p.rating, reviewCount: p.reviewCount })));
-        setKokTopSellingProducts(transformedProducts);
+        // 항상 20개로 제한 (초기 로딩과 무한 스크롤 모두)
+        const finalProducts = transformedProducts.slice(0, 20);
+        
+        console.log('변환된 상품 데이터 (20개 제한):', finalProducts);
+        console.log('원본 데이터 개수:', transformedProducts.length, '→ 최종 데이터 개수:', finalProducts.length);
+        console.log('변환된 상품의 별점과 리뷰수:', finalProducts.map(p => ({ name: p.name, rating: p.rating, reviewCount: p.reviewCount })));
+        setKokTopSellingProducts(finalProducts);
       } else if (response.data && Array.isArray(response.data)) {
         console.log('API 응답이 배열 형태입니다 (products 필드 없음).');
         // 배열 형태로 직접 응답받은 경우 (하위 호환성)
@@ -170,12 +184,18 @@ const KokMain = () => {
             : product.kok_discounted_price,
           discountPrice: product.kok_discounted_price,
           discountRate: product.kok_discount_rate,
-          image: product.kok_product_image || product.kok_thumbnail || '/test1.png',
+          image: product.kok_product_image || product.kok_thumbnail,
           rating: product.kok_review_score || 0,
           reviewCount: product.kok_review_cnt || 0,
           storeName: product.kok_store_name
         }));
-        setKokTopSellingProducts(transformedProducts);
+        
+        // 항상 20개로 제한 (초기 로딩과 무한 스크롤 모두)
+        const finalProducts = transformedProducts.slice(0, 20);
+        
+        console.log('변환된 상품 데이터 (20개 제한):', finalProducts);
+        console.log('원본 데이터 개수:', transformedProducts.length, '→ 최종 데이터 개수:', finalProducts.length);
+        setKokTopSellingProducts(finalProducts);
       } else {
         console.log('API 응답 구조가 예상과 다릅니다. 응답 데이터:', response.data);
         console.log('임시 데이터를 사용합니다.');
@@ -257,7 +277,7 @@ const KokMain = () => {
             : product.kok_discounted_price,
           discountPrice: product.kok_discounted_price,
           discountRate: product.kok_discount_rate,
-          image: product.kok_product_image || product.kok_thumbnail || '/test1.png',
+          image: product.kok_product_image || product.kok_thumbnail,
           rating: product.kok_review_score || 0, // 백엔드에서 제공하는 별점
           reviewCount: product.kok_review_cnt || 0, // 백엔드에서 제공하는 리뷰 수
           storeName: product.kok_store_name
@@ -286,7 +306,7 @@ const KokMain = () => {
             : product.kok_discounted_price,
           discountPrice: product.kok_discounted_price,
           discountRate: product.kok_discount_rate,
-          image: product.kok_product_image || product.kok_thumbnail || '/test1.png',
+          image: product.kok_product_image || product.kok_thumbnail,
           rating: product.kok_review_score || 0,
           reviewCount: product.kok_review_cnt || 0,
           storeName: product.kok_store_name

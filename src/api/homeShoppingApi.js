@@ -11,14 +11,14 @@ export const homeShoppingApi = {
       const today = new Date();
       const formattedDate = liveDate || today.toISOString().split('T')[0]; // yyyy-mm-dd 형식
       
-      // API 요청 시 날짜 파라미터만 전달 (limit 파라미터 제거)
-      const params = {};
+      // API 요청 시 날짜 파라미터와 limit 파라미터 전달
+      const params = {
+        page: 1,
+        size: 20
+      };
       if (liveDate) {
         params.live_date = formattedDate;
       }
-      
-      // limit 파라미터 제거 - 백엔드에서 지원하지 않을 수 있음
-      // params.limit = 10000; // 백엔드에서 limit을 지원한다면 이 줄을 활성화
       
       const response = await api.get('/api/homeshopping/schedule', { params });
       return response;
@@ -38,7 +38,7 @@ export const homeShoppingApi = {
       let allSchedules = [];
       let page = 1;
       let hasMore = true;
-      const pageSize = 100; // 한 번에 가져올 데이터 개수
+      const pageSize = 20; // 한 번에 가져올 데이터 개수
       let lastResponse = null; // 마지막 응답을 저장할 변수
       
       // 페이지네이션을 통해 모든 데이터 수집
@@ -268,10 +268,10 @@ export const homeShoppingApi = {
   // ===== 찜 기능 =====
   
   // 상품 찜 등록/해제
-  toggleProductLike: async (productId) => {
+  toggleProductLike: async (liveId) => {
     try {
       const response = await api.post('/api/homeshopping/likes/toggle', {
-        product_id: productId
+        live_id: liveId
       });
       return response.data;
     } catch (error) {
@@ -281,7 +281,7 @@ export const homeShoppingApi = {
   },
 
   // 찜한 상품 목록 조회
-  getLikedProducts: async (limit = 50) => {
+  getLikedProducts: async (limit = 20) => {
     try {
       const response = await api.get('/api/homeshopping/likes', {
         params: { limit }
@@ -382,7 +382,7 @@ export const homeShoppingApi = {
   },
 
   // 알림 내역 통합 조회 (주문 + 방송)
-  getAllNotifications: async (limit = 100, offset = 0) => {
+  getAllNotifications: async (limit = 20, offset = 0) => {
     try {
       const response = await api.get('/api/homeshopping/notifications/all', {
         params: { limit, offset }

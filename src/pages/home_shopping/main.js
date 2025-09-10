@@ -87,12 +87,12 @@ const Main = () => {
       try {
         const response = await api.get('/api/homeshopping/likes', {
           params: {
-            limit: 50
+            limit: 20
           }
         });
         
         if (response.data && response.data.liked_products) {
-          const likedIds = new Set(response.data.liked_products.map(product => product.product_id || product.id));
+          const likedIds = new Set(response.data.liked_products.map(product => product.live_id || product.product_id || product.id));
           setLikedProducts(likedIds);
           console.log('찜한 상품 목록 로드 완료:', likedIds);
         }
@@ -277,7 +277,7 @@ const Main = () => {
   };
 
   // 하트 아이콘 클릭 시 실행되는 핸들러 함수를 정의합니다
-  const handleHeartClick = async (productId, event) => {
+  const handleHeartClick = async (liveId, event) => {
     event.stopPropagation(); // 상품 카드 클릭 이벤트 전파 방지
     
     // 로그인 상태 확인
@@ -289,7 +289,7 @@ const Main = () => {
     try {
       // 찜하기 토글 API 호출
       const response = await api.post('/api/homeshopping/likes/toggle', {
-        product_id: productId
+        live_id: liveId
       });
       
       console.log('찜하기 토글 응답:', response.data);
@@ -303,12 +303,12 @@ const Main = () => {
           const newSet = new Set(prev);
           if (isLiked) {
             // 백엔드에서 찜된 상태로 응답
-            newSet.add(productId);
-            console.log('찜 추가:', productId);
+            newSet.add(liveId);
+            console.log('찜 추가:', liveId);
           } else {
             // 백엔드에서 찜 해제된 상태로 응답
-            newSet.delete(productId);
-            console.log('찜 해제:', productId);
+            newSet.delete(liveId);
+            console.log('찜 해제:', liveId);
           }
           return newSet;
         });
@@ -571,13 +571,13 @@ const Main = () => {
                                    {/* 하트 아이콘 */}
                                    <button 
                                      className="shopping-heart-button"
-                                     data-product-id={item.상품_아이디}
+                                     data-product-id={item.라이브_아이디}
                                      onClick={(e) => {
                                        e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
-                                       handleHeartClick(item.상품_아이디, e);
+                                       handleHeartClick(item.라이브_아이디, e);
                                      }}>
                                      <img 
-                                       src={likedProducts.has(item.상품_아이디) ? heartFilled : heartEmpty} 
+                                       src={likedProducts.has(item.라이브_아이디) ? heartFilled : heartEmpty} 
                                        alt="찜하기" 
                                        className="shopping-heart-icon"
                                      />

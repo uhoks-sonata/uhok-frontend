@@ -92,7 +92,7 @@ export const cartApi = {
   },
 
   // 장바구니 상품 조회
-  getCartItems: async (limit = 50) => {
+  getCartItems: async (limit = 20) => {
     try {
       console.log('🛒 장바구니 조회 API 요청:', { limit });
       const response = await api.get(`/api/kok/carts?limit=${limit}`);
@@ -285,7 +285,7 @@ export const cartApi = {
       console.log('🛒 레시피 추천 API 요청:', { selectedCartIds, page, size });
       
       // 먼저 장바구니 아이템들을 조회하여 상품 ID를 추출
-      const cartResponse = await api.get('/api/kok/carts?limit=200');
+      const cartResponse = await api.get('/api/kok/carts?limit=20');
       const cartItems = cartResponse.data?.cart_items || [];
       
       console.log('🔍 전체 장바구니 아이템:', cartItems);
@@ -979,7 +979,7 @@ export const cartApi = {
       console.log('🛒 장바구니 통계 API 요청');
       
       // 장바구니 상품 조회
-      const cartResponse = await api.get('/api/kok/carts?limit=200');
+      const cartResponse = await api.get('/api/kok/carts?limit=20');
       const cartItems = cartResponse.data?.cart_items || [];
       
       // 통계 계산

@@ -39,7 +39,7 @@ const Notification = () => {
   };
 
   // 홈쇼핑 통합 알림 API 호출 (주문 + 방송)
-  const fetchHomeShoppingAllNotifications = async (limit = 100) => {
+  const fetchHomeShoppingAllNotifications = async (limit = 20) => {
     // 로그인하지 않은 경우 모달 표시
     if (!checkLoginStatus()) {
       setModalState(showLoginRequiredNotification());

@@ -98,13 +98,29 @@ export const performOrderStatusUpdate = async (orderInfo) => {
      const updatePromises = orderIdsToProcess.map(async (orderId, index) => {
        console.log(`🔄 [${index + 1}/${orderIdsToProcess.length}] ${orderType} ${orderId} 상태 업데이트 중...`);
        
-       try {
-         const updateResponse = await orderApi.startAutoUpdate(orderId);
-         console.log(`✅ [${index + 1}/${orderIdsToProcess.length}] ${orderType} ${orderId} 상태 업데이트 성공:`, updateResponse);
-         return { success: true, orderId, orderType, response: updateResponse };
-       } catch (individualUpdateError) {
-         console.error(`❌ [${index + 1}/${orderIdsToProcess.length}] ${orderType} ${orderId} 상태 업데이트 실패:`, individualUpdateError);
-         return { success: false, orderId, orderType, error: individualUpdateError };
+       // 재시도 로직: 최대 3회, 1초 간격
+       const maxRetries = 3;
+       const retryDelay = 1000; // 1초
+       
+       for (let attempt = 1; attempt <= maxRetries; attempt++) {
+         try {
+           // 첫 번째 시도가 아닌 경우 지연
+           if (attempt > 1) {
+             console.log(`🔄 [${index + 1}/${orderIdsToProcess.length}] ${orderType} ${orderId} 재시도 ${attempt}/${maxRetries} - ${retryDelay}ms 대기 중...`);
+             await new Promise(resolve => setTimeout(resolve, retryDelay));
+           }
+           
+           const updateResponse = await orderApi.startAutoUpdate(orderId);
+           console.log(`✅ [${index + 1}/${orderIdsToProcess.length}] ${orderType} ${orderId} 상태 업데이트 성공 (시도 ${attempt}):`, updateResponse);
+           return { success: true, orderId, orderType, response: updateResponse, attempts: attempt };
+         } catch (individualUpdateError) {
+           console.error(`❌ [${index + 1}/${orderIdsToProcess.length}] ${orderType} ${orderId} 상태 업데이트 실패 (시도 ${attempt}):`, individualUpdateError);
+           
+           // 마지막 시도인 경우 실패로 처리
+           if (attempt === maxRetries) {
+             return { success: false, orderId, orderType, error: individualUpdateError, attempts: attempt };
+           }
+         }
        }
      });
     

@@ -70,7 +70,7 @@ const WishList = () => {
       // 콕 쇼핑몰 찜한 상품 조회
       const kokResponse = await api.get('/api/kok/likes', {
         params: {
-          limit: 50
+          limit: 20
         },
         headers: {
           'Authorization': `Bearer ${token}`
@@ -120,6 +120,7 @@ const WishList = () => {
           // API에서 제공되는 방송 정보 사용
           broadcast_date: product.live_date,
           broadcast_time: product.live_start_time,
+          broadcast_end_time: product.live_end_time, // 새로운 필드 추가
           // homeshopping_id를 기반으로 로컬 로고 가져오기
           channel_logo: getLogoByHomeshoppingId(product.homeshopping_id)?.logo,
           // 방송 상태는 live_date와 live_end_time을 모두 고려하여 계산
