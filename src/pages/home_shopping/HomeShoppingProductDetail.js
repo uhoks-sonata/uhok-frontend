@@ -122,7 +122,9 @@ const HomeShoppingProductDetail = () => {
           }
           
           // 상품 상세 정보 로딩 완료 후 찜 상태 초기화
-          initializeWishlistStatus();
+          if (isMounted) {
+            initializeWishlistStatus();
+          }
         }
         
                  // 콕 상품 추천과 레시피 추천은 productDetail이 설정된 후에 호출
@@ -807,11 +809,11 @@ const HomeShoppingProductDetail = () => {
                   <img 
                     src={(() => {
                       const isLiked = wishlistedProducts.has(String(live_id));
-                      // console.log('🔍 하트 아이콘 표시 - live_id:', live_id, typeof live_id);
-                      // console.log('🔍 하트 아이콘 표시 - wishlistedProducts:', wishlistedProducts);
-                      // console.log('🔍 하트 아이콘 표시 - isLiked:', isLiked);
-                      // console.log('🔍 하트 아이콘 표시 - filledHeartIcon:', filledHeartIcon);
-                      // console.log('🔍 하트 아이콘 표시 - emptyHeartIcon:', emptyHeartIcon);
+                      console.log('🔍 하트 아이콘 표시 - live_id:', live_id, typeof live_id);
+                      console.log('🔍 하트 아이콘 표시 - wishlistedProducts:', wishlistedProducts);
+                      console.log('🔍 하트 아이콘 표시 - isLiked:', isLiked);
+                      console.log('🔍 하트 아이콘 표시 - filledHeartIcon:', filledHeartIcon);
+                      console.log('🔍 하트 아이콘 표시 - emptyHeartIcon:', emptyHeartIcon);
                       return isLiked ? filledHeartIcon : emptyHeartIcon;
                     })()}
                     alt="찜 토글" 
