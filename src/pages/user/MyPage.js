@@ -31,8 +31,6 @@ import userIcon from '../../assets/user_icon.png';
 import noItemsIcon from '../../assets/no_items.png';
 
 // 테스트용 상품 이미지들을 가져옵니다
-import testImage1 from '../../assets/test/test1.png';
-import testImage2 from '../../assets/test/test2.png';
 
 
 
@@ -90,7 +88,7 @@ const MyPage = () => {
         return {
           product_name: productInfo.kok_product_name || `콕 상품 ${productId}`,
           product_description: productInfo.kok_product_description || '콕 상품입니다',
-          product_image: productInfo.kok_thumbnail || testImage1,
+          product_image: productInfo.kok_thumbnail || '',
           brand_name: productInfo.kok_store_name || '콕 스토어'
         };
       } else if (type === 'homeshopping') {
@@ -98,7 +96,7 @@ const MyPage = () => {
         return {
           product_name: productInfo.product_name || `홈쇼핑 상품 ${productId}`,
           product_description: productInfo.product_description || '홈쇼핑 상품입니다',
-          product_image: productInfo.product_image || testImage2,
+          product_image: productInfo.product_image || '',
           brand_name: productInfo.brand_name || '홈쇼핑'
         };
       }
@@ -107,7 +105,7 @@ const MyPage = () => {
       return {
         product_name: type === 'kok' ? `콕 상품 ${productId}` : `홈쇼핑 상품 ${productId}`,
         product_description: type === 'kok' ? '콕 상품입니다' : '홈쇼핑 상품입니다',
-        product_image: type === 'kok' ? testImage1 : testImage2,
+        product_image: '',
         brand_name: type === 'kok' ? '콕 스토어' : '홈쇼핑'
       };
     }
@@ -129,7 +127,7 @@ const MyPage = () => {
           product_description: "반숙란 훈제 맥반석 삶은 구운란",
           product_price: 11900,
           product_quantity: 1,
-          product_image: testImage1,
+          product_image: '',
           order_date: "2025-07-25"
         },
         {
@@ -139,7 +137,7 @@ const MyPage = () => {
           product_description: "부드러운 초콜릿과 마시멜로우가 듬뿍",
           product_price: 8500,
           product_quantity: 1,
-          product_image: testImage2,
+          product_image: '',
           order_date: "2025-07-25"
         },
         {
@@ -149,7 +147,7 @@ const MyPage = () => {
           product_description: "새우깡",
           product_price: 1500,
           product_quantity: 2,
-          product_image: testImage1,
+          product_image: '',
           order_date: "2025-07-24"
         }
       ]
@@ -673,7 +671,7 @@ const MyPage = () => {
                           <div key={`${orderId}-${index}`} className="mypage-product-info">
                             {/* 상품 이미지를 표시합니다 */}
                             <div className="mypage-product-image">
-                              <img src={order.product_image || testImage1} alt={order.product_name} />
+                              <img src={order.product_image || ''} alt={order.product_name} />
                             </div>
                             
                             {/* 상품 상세 정보 */}

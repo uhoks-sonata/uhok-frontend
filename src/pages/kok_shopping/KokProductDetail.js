@@ -125,16 +125,7 @@ const KokProductDetail = () => {
       } else {
         console.log('API 응답에 images 필드가 없어 기본 이미지를 사용합니다.');
         return {
-          images: [
-            {
-              kok_img_id: 1,
-              kok_img_url: "/test1.png"
-            },
-            {
-              kok_img_id: 2,
-              kok_img_url: "/test2.png"
-            }
-          ]
+          images: []
         };
       }
     } catch (err) {
@@ -142,16 +133,7 @@ const KokProductDetail = () => {
       console.log('임시 데이터를 사용합니다.');
       // API 실패 시 더미 데이터 반환
       return {
-        images: [
-          {
-            kok_img_id: 1,
-            kok_img_url: "/test1.png"
-          },
-          {
-            kok_img_id: 2,
-            kok_img_url: "/test2.png"
-          }
-        ]
+        images: []
       };
     }
   };
@@ -264,7 +246,7 @@ const KokProductDetail = () => {
               originalPrice: 15000,
               discountPrice: 12000,
               discountRate: 20,
-              image: '/test1.png',
+              image: '',
               rating: 4.5,
               reviewCount: 15
             };
@@ -277,7 +259,7 @@ const KokProductDetail = () => {
               originalPrice: kokProductInfo.kok_product_price || 0,
               discountPrice: kokProductInfo.kok_discounted_price || kokProductInfo.kok_product_price || 0,
               discountRate: kokProductInfo.kok_discount_rate || 0,
-                             image: kokProductInfo.kok_thumbnail || '/test1.png',
+                             image: kokProductInfo.kok_thumbnail || '',
               rating: 0, // API에서 별도로 제공되지 않음
               reviewCount: kokProductInfo.kok_review_cnt || 0,
               storeName: kokProductInfo.kok_store_name || ''
@@ -298,12 +280,7 @@ const KokProductDetail = () => {
             setKokProductImages(kokProductTabs.images);
           } else {
             console.log('상품 이미지 데이터가 없어 기본 이미지를 사용합니다.');
-            setKokProductImages([
-              {
-                kok_img_id: 1,
-                kok_img_url: "/test1.png"
-              }
-            ]);
+            setKokProductImages([]);
           }
 
           // 상품 리뷰 데이터 처리
@@ -340,7 +317,7 @@ const KokProductDetail = () => {
           setKokProductImages([
             {
               kok_img_id: 1,
-              kok_img_url: "/test1.png"
+              kok_img_url: ""
             }
           ]);
         }
@@ -458,8 +435,8 @@ API 연결 테스트 결과:
   // 개발자 도구에서 실행할 수 있도록 window 객체에 추가
   useEffect(() => {
     window.testCartApi = testApiConnection;
-    console.log('🧪 API 테스트 함수가 window.testCartApi로 등록되었습니다.');
-    console.log('개발자 도구에서 window.testCartApi()를 실행하여 테스트하세요.');
+    // console.log('🧪 API 테스트 함수가 window.testCartApi로 등록되었습니다.');
+    // console.log('개발자 도구에서 window.testCartApi()를 실행하여 테스트하세요.');
   }, []);
 
   // 장바구니에 추가 (일반)
@@ -612,7 +589,7 @@ API 연결 테스트 결과:
            discountPrice: (kokProduct?.discountPrice || 0) * selectedQuantity,
            originalPrice: (kokProduct?.originalPrice || 0) * selectedQuantity,
            productName: kokProduct?.name || `제품 ${productId}`,
-                       productImage: kokProduct?.image || kokProductImages[0]?.kok_img_url || '/test1.png',
+                       productImage: kokProduct?.image || kokProductImages[0]?.kok_img_url || '',
            orderId: String(orderResponse.order_id || `ORDER-${Date.now()}`),
            orderDetails: orderResponse.order_details || [],
            kokOrderIds: orderResponse.order_details?.map(detail => detail.kok_order_id) || []
