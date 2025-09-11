@@ -4,7 +4,8 @@ import { homeShoppingApi } from '../../api/homeShoppingApi';
 import BottomNav from '../../layout/BottomNav';
 import HeaderNavRecipeRecommendation from '../../layout/HeaderNavRecipeRecommendation';
 import Loading from '../../components/Loading';
-import ModalManager, { showNoRecipeNotification, hideModal } from '../../components/LoadingModal';
+import ModalManager, { showNoRecipeNotification, showLoginRequiredNotification, hideModal } from '../../components/LoadingModal';
+import { useUser } from '../../contexts/UserContext';
 import '../../styles/recipe_result.css';
 import fallbackImg from '../../assets/no_items.png';
 import bookmarkIcon from '../../assets/bookmark-icon.png';
@@ -12,6 +13,7 @@ import bookmarkIcon from '../../assets/bookmark-icon.png';
 const HomeShoppingRecipeRecommendation = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, isLoading: userLoading } = useUser();
   
   // 상태 관리
   const [recipes, setRecipes] = useState([]);
@@ -21,8 +23,21 @@ const HomeShoppingRecipeRecommendation = () => {
   const [error, setError] = useState('');
   const [modalState, setModalState] = useState({ isVisible: false, modalType: 'loading' });
   
-  // 컴포넌트 마운트 시 레시피 추천 데이터 가져오기
+  // 로그인 상태 체크 및 레시피 추천 데이터 가져오기
   useEffect(() => {
+    // 사용자 로딩이 완료될 때까지 대기
+    if (userLoading) {
+      return;
+    }
+    
+    // 로그인하지 않은 경우 로그인 필요 모달 표시
+    if (!user || !user.isLoggedIn) {
+      console.log('❌ 로그인하지 않은 사용자, 레시피 추천 접근 차단');
+      setModalState(showLoginRequiredNotification());
+      setLoading(false);
+      return;
+    }
+    
     const fetchRecipeRecommendations = async () => {
       try {
         setLoading(true);
@@ -74,8 +89,18 @@ const HomeShoppingRecipeRecommendation = () => {
     };
     
     fetchRecipeRecommendations();
-  }, [location.state]);
+  }, [location.state, user, userLoading]);
   
+  // 모달 닫기 핸들러
+  const handleModalClose = () => {
+    setModalState(hideModal());
+    
+    // 로그인 필요 모달인 경우 직전 페이지로 돌아가기
+    if (modalState.modalType === 'alert' && modalState.alertMessage === '로그인이 필요한 서비스입니다.') {
+      navigate(-1);
+    }
+  };
+
   // 레시피 클릭 시 상세 페이지로 이동
   const handleRecipeClick = (recipeId) => {
     navigate(`/recipes/${recipeId}`);
@@ -236,7 +261,7 @@ const HomeShoppingRecipeRecommendation = () => {
       {/* 모달 관리자 */}
       <ModalManager
         {...modalState}
-        onClose={closeModal}
+        onClose={handleModalClose}
       />
     </div>
   );
