@@ -8,7 +8,6 @@ import Loading from '../../components/Loading';
 import '../../styles/cart.css';
 import heartIcon from '../../assets/heart_empty.png';
 import heartFilledIcon from '../../assets/heart_filled.png';
-import test1Image from '../../assets/test/test1.png';
 // LoadingModal import
 import ModalManager, { showLoginRequiredNotification, showAlert, hideModal } from '../../components/LoadingModal';
 
@@ -551,7 +550,7 @@ const Cart = () => {
                     
                     <div className="item-main-section">
                       <div className="item-image">
-                        <img src={item.kok_thumbnail || test1Image} alt={item.kok_product_name} />
+                        <img src={item.kok_thumbnail || ''} alt={item.kok_product_name} />
                       </div>
                       
                       <div className="item-details">
@@ -628,7 +627,7 @@ const Cart = () => {
                       {recipeRecommendations.map((recipe, index) => (
                         <div key={index} className="recipe-item">
                           <img 
-                            src={recipe.recipe_thumbnail || test1Image} 
+                            src={recipe.recipe_thumbnail || ''} 
                             alt={recipe.recipe_title} 
                             className="recipe-thumbnail" 
                           />

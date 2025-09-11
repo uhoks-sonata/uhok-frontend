@@ -1,7 +1,4 @@
 // 이미지 import
-import test1Image from '../assets/test/test1.png';
-import test2Image from '../assets/test/test2.png';
-import test3Image from '../assets/test/test3.png';
 
 // 기본 제품 3개 정의
 const product1 = {
@@ -10,7 +7,7 @@ const product1 = {
   originalPrice: 150000,
   discountPrice: 124000,
   discountRate: 17,
-  image: test1Image,
+  image: '',
   rating: 4.4,
   reviewCount: 23,
   isSpecial: true
@@ -22,7 +19,7 @@ const product2 = {
   originalPrice: 13600,
   discountPrice: 13600,
   discountRate: 51,
-  image: test2Image,
+  image: '',
   rating: 4.1,
   reviewCount: 17
 };
@@ -33,7 +30,7 @@ const product3 = {
   originalPrice: 25000,
   discountPrice: 20900,
   discountRate: 16,
-  image: test3Image,
+  image: '',
   rating: 4.8,
   reviewCount: 24,
   isSpecial: true
